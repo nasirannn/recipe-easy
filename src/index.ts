@@ -221,6 +221,153 @@ export default {
       }
     }
 
+    // 处理食材查询 /api/ingredients
+    if (url.pathname === '/api/ingredients' && request.method === 'GET') {
+      try {
+        const searchParams = url.searchParams;
+        const language = searchParams.get('lang') || 'en';
+        const category = searchParams.get('category');
+        const limit = parseInt(searchParams.get('limit') || '100');
+        const offset = parseInt(searchParams.get('offset') || '0');
+
+        let query = `
+          SELECT
+            i.id, i.slug, ii.name,
+            ic.id as category_id, ic.slug as category_slug, ici.name as category_name,
+            i.is_custom, i.user_id
+          FROM ingredients i
+          JOIN ingredients_i18n ii ON i.id = ii.ingredient_id
+          LEFT JOIN ingredient_categories ic ON i.category_id = ic.id
+          LEFT JOIN ingredient_categories_i18n ici ON ic.id = ici.category_id AND ici.language_code = ?
+          WHERE ii.language_code = ? AND i.is_active = TRUE
+        `;
+
+        const params = [language, language];
+
+        if (category) {
+          query += ' AND ic.slug = ?';
+          params.push(category);
+        }
+
+        query += ' ORDER BY ii.name ASC LIMIT ? OFFSET ?';
+        params.push(limit, offset);
+
+        const result = await env.DB.prepare(query).bind(...params).all();
+
+        const ingredients = result.results.map((row: any) => ({
+          id: row.id,
+          slug: row.slug,
+          name: row.name,
+          category: row.category_id ? {
+            id: row.category_id,
+            slug: row.category_slug,
+            name: row.category_name || row.category_slug
+          } : null,
+          is_custom: Boolean(row.is_custom),
+          user_id: row.user_id
+        }));
+
+        // 获取总数
+        let countQuery = `
+          SELECT COUNT(*) as total
+          FROM ingredients i
+          JOIN ingredients_i18n ii ON i.id = ii.ingredient_id
+          LEFT JOIN ingredient_categories ic ON i.category_id = ic.id
+          WHERE ii.language_code = ? AND i.is_active = TRUE
+        `;
+
+        const countParams = [language];
+        if (category) {
+          countQuery += ' AND ic.slug = ?';
+          countParams.push(category);
+        }
+
+        const countResult = await env.DB.prepare(countQuery).bind(...countParams).first();
+
+        return new Response(JSON.stringify({
+          success: true,
+          data: ingredients,
+          total: (countResult as any)?.total || 0,
+          limit,
+          offset,
+          language,
+          source: 'database'
+        }), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders(),
+          },
+        });
+
+      } catch (error) {
+        console.error('Database query error:', error);
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Failed to fetch ingredients from database',
+          details: error instanceof Error ? error.message : 'Unknown error'
+        }), {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders(),
+          },
+        });
+      }
+    }
+
+    // 处理食材分类查询 /api/ingredients/categories
+    if (url.pathname === '/api/ingredients/categories' && request.method === 'GET') {
+      try {
+        const language = url.searchParams.get('lang') || 'en';
+
+        const query = `
+          SELECT ic.id, ic.slug, ici.name, ic.sort_order
+          FROM ingredient_categories ic
+          JOIN ingredient_categories_i18n ici ON ic.id = ici.category_id
+          WHERE ici.language_code = ? AND ic.is_active = TRUE
+          ORDER BY ic.sort_order ASC
+        `;
+
+        const result = await env.DB.prepare(query).bind(language).all();
+
+        const categories = result.results.map((row: any) => ({
+          id: row.id,
+          slug: row.slug,
+          name: row.name,
+          sort_order: row.sort_order
+        }));
+
+        return new Response(JSON.stringify({
+          success: true,
+          data: categories,
+          total: categories.length,
+          language,
+          source: 'database'
+        }), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders(),
+          },
+        });
+
+      } catch (error) {
+        console.error('Database query error:', error);
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Failed to fetch ingredient categories from database',
+          details: error instanceof Error ? error.message : 'Unknown error'
+        }), {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders(),
+          },
+        });
+      }
+    }
+
     // 处理菜系查询 /api/cuisines
     if (url.pathname === '/api/cuisines' && request.method === 'GET') {
       try {

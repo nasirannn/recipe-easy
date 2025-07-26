@@ -1,7 +1,9 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/language-context";
 
 export const FeaturesSection = () => {
+  const { t } = useLanguage();
 
   const handleScrollToHero = () => {
     const heroSection = document.getElementById("hero");
@@ -18,20 +20,20 @@ export const FeaturesSection = () => {
       <div className="container grid lg:grid-cols-2 gap-8 place-items-center">
         <div className="lg:text-left text-center">
           <h2 className="text-lg text-base mb-2 tracking-wider">
-        Brand New AI Recipe Generator
+            {t('features.subtitle')}
           </h2>
 
           <h2 className="text-3xl text-primary md:text-4xl font-bold mb-4">
-            {/* From Leftovers to Delicious Meals in a Snap */}
-            Free Online AI Recipes Generator
+            {t('features.title')}
           </h2>
 
           <p className="text-lg text-muted-foreground mb-8">
-            Simply select or enter the ingredients, and our AI will
-            craft random,creative and easy-to-follow recipes for you. No more "What's for dinner?" stress.
+            {t('features.description')}
           </p>
 
-          <Button className="rounded-full px-6" onClick={handleScrollToHero}>Try It Now &rarr;</Button>
+          <Button className="rounded-full px-6" onClick={handleScrollToHero}>
+            {t('features.tryNow')} &rarr;
+          </Button>
         </div>
 
         <div className="w-full aspect-video rounded-lg overflow-hidden">

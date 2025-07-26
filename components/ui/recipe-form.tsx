@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { IngredientSelector } from "./ingredients-selector";
 import { Sliders, Clock, Users, Gauge, Globe, Sparkles, Image as ImageIcon } from "lucide-react";
-import { Ingredient } from "@/lib/constants/ingredients";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
@@ -16,6 +15,21 @@ import { IMAGE_GEN_CONFIG } from "@/lib/config";
 import { ImageModel } from "@/lib/services/image-service";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCuisines } from "@/hooks/use-cuisines";
+
+// 食材接口定义
+interface Ingredient {
+  id: string;
+  slug?: string;
+  name: string;
+  englishName: string;
+  category?: {
+    id: number;
+    slug: string;
+    name: string;
+  };
+  isCustom?: boolean;
+  userId?: string;
+}
 
 export interface RecipeFormData {
   ingredients: Ingredient[];

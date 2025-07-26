@@ -67,7 +67,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
             <AccordionItem
               key={recipe.id}
               value={recipe.id}
-              className="bg-white dark:bg-gray-50 p-12 shadow-sm sm:shadow-md rounded-lg border-0 my-8 "
+              className="bg-white dark:bg-gray-50 p-12 shadow-sm sm:shadow-md rounded-lg border-0 my-6"
             >
               <div className="w-full">
                 {/* Header Section - Always Visible */}

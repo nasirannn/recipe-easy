@@ -8,8 +8,11 @@ import { RecipeDisplay } from "@/components/ui/recipe-display";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { generateImageForRecipe } from "@/lib/services/image-service";
 import { IMAGE_GEN_CONFIG, APP_CONFIG } from "@/lib/config";
+import { useLanguage } from "@/contexts/language-context";
 
 export const HeroSection = () => {
+  const { t } = useLanguage();
+
   //Recipe Form
   const [formData, setFormData] = useState<RecipeFormData>({
     ingredients: [],
@@ -132,13 +135,21 @@ export const HeroSection = () => {
 
           <div className="max-w-screen-lg mx-auto text-center text-3xl md:text-6xl font-bold">
             <h1>
-              With our AI-powered assistant, you can<span className="text-transparent px-2 bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">generate recipes</span> easily
+              {t('hero.title').split('generate recipes').map((part, index, array) => (
+                <span key={index}>
+                  {part}
+                  {index < array.length - 1 && (
+                    <span className="text-transparent px-2 bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">
+                      generate recipes
+                    </span>
+                  )}
+                </span>
+              ))}
             </h1>
           </div>
 
           <p className="max-w-screen-md mx-auto text-xl text-muted-foreground">
-          {'No longer have to worry about what to eat for dinner with our random recipe generator! '}
-          {/* {`Use our AI-powered recipe generator to turn your ingredients into quick, random meal ideas.`} */}
+            {t('hero.subtitle')}
           </p>
 
           <div className="space-y-4 md:space-y-0 md:space-x-4">

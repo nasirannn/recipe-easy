@@ -25,7 +25,8 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { ToggleTheme } from "./toogle-theme";
-import { LanguageToggle } from "./language-toggle";
+import { LanguageSwitcher } from "../ui/language-switcher";
+import { useLanguage } from "@/contexts/language-context";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from 'next/navigation'
@@ -43,20 +44,27 @@ interface RouteProps {
 //   description: string;
 // }
 
-const routeList: RouteProps[] = [
-  {
-    href: "#features",
-    label: "Features",
-  },
-  {
-    href: "#testimonials",
-    label: "Testimonials",
-  },
-  {
-    href: "#faq",
-    label: "FAQ",
-  },
-];
+export const Navbar = () => {
+  const router = useRouter();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { user, loading, signOut } = useAuth();
+  const [isOpen, setIsOpen] = React.useState(false);
+  const { t } = useLanguage();
+
+  const routeList: RouteProps[] = [
+    {
+      href: "#features",
+      label: t("nav.features"),
+    },
+    {
+      href: "#testimonials",
+      label: t("nav.testimonials"),
+    },
+    {
+      href: "#faq",
+      label: t("nav.faq"),
+    },
+  ];
 
 // const featureList: FeatureProps[] = [
 //   {
@@ -75,11 +83,6 @@ const routeList: RouteProps[] = [
 //   },
 // ];
 
-export const Navbar = () => {
-  const router = useRouter();
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const { user, loading, signOut } = useAuth();
-  const [isOpen, setIsOpen] = React.useState(false);
   const handleLogout = async () => {
     try {
       await signOut();
@@ -152,7 +155,7 @@ export const Navbar = () => {
 
           <div className="flex flex-col gap-4 items-center">
             <div className="flex gap-4">
-                <LanguageToggle />
+                <LanguageSwitcher />
                 <ToggleTheme />
             </div>
 
@@ -212,7 +215,7 @@ export const Navbar = () => {
   
     {/* 右侧功能按钮 */}
     <div className="hidden lg:flex items-center gap-4">
-      <LanguageToggle />
+      <LanguageSwitcher />
       <ToggleTheme />
       {!loading && (
             user ? (
