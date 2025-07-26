@@ -1,0 +1,160 @@
+import { NextResponse } from 'next/server';
+import axios from 'axios';
+import { IMAGE_GEN_CONFIG } from '@/lib/config';
+import type { ImageModel } from '@/lib/services/image-service';
+
+export async function POST(request: Request) {
+  try {
+    const { 
+      prompt, 
+      style = 'photographic', 
+      negativePrompt, // 允许覆盖默认的负面提示词
+      size = '1024*1024', 
+      n = 1,
+      model = 'wanx' // 默认使用万象模型
+    } = await request.json();
+    
+    if (!prompt) {
+      return NextResponse.json({ success: false, error: 'Prompt is required' }, { status: 400 });
+    }
+    
+    // 如果没有提供负面提示词，使用默认配置
+    const finalNegativePrompt = negativePrompt || 
+      (model === 'wanx' ? IMAGE_GEN_CONFIG.NEGATIVE_PROMPTS.WANX : IMAGE_GEN_CONFIG.NEGATIVE_PROMPTS.FLUX);
+    
+    // 根据所选模型调用不同的API
+    if (model === 'wanx') {
+      return await generateWithWanx(prompt, style, finalNegativePrompt, size, n);
+    } else if (model === 'flux') {
+      // 使用Replicate API处理flux模型
+      return await generateWithReplicate(prompt, finalNegativePrompt);
+    } else {
+      return NextResponse.json(
+        { success: false, error: `Unsupported model: ${model}` }, 
+        { status: 400 }
+      );
+    }
+  } catch (error: any) {
+    console.error('Image generation error:', error);
+    console.error('Error details:', error.response?.data || error.message);
+    
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error.response?.data?.message || error.message || 'Failed to generate image' 
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// 使用万象模型生成图像
+async function generateWithWanx(
+  prompt: string, 
+  style: string, 
+  negativePrompt: string,
+  size: string,
+  n: number
+) {
+  const count = Math.min(Math.max(1, n), IMAGE_GEN_CONFIG.WANX.MAX_IMAGES);
+    
+  console.log('正在请求通义千问API:', IMAGE_GEN_CONFIG.WANX.BASE_URL);
+  console.log('使用的提示词:', prompt);
+  
+  if (!process.env.DASHSCOPE_API_KEY) {
+    console.error('DASHSCOPE_API_KEY 环境变量未设置');
+    return NextResponse.json({ 
+      success: false, 
+      error: 'API key is not configured' 
+    }, { status: 500 });
+  }
+  
+  const requestBody = {
+    model: IMAGE_GEN_CONFIG.WANX.MODEL,
+    input: {
+      prompt: prompt,
+      negative_prompt: negativePrompt,
+    },
+    parameters: {
+      style: IMAGE_GEN_CONFIG.WANX.STYLES.includes(style as any) ? style : 'photographic',
+      size: size,
+      n: count,
+      return_type: "url"
+    }
+  };
+  
+  console.log('API请求体:', JSON.stringify(requestBody, null, 2));
+  
+  const response = await axios.post(
+    IMAGE_GEN_CONFIG.WANX.BASE_URL,
+    requestBody,
+    {
+      headers: {
+        'Authorization': `Bearer ${process.env.DASHSCOPE_API_KEY}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-DashScope-Async': 'enable' // 启用异步调用
+      }
+    }
+  );
+
+  console.log('API异步任务提交响应:', JSON.stringify(response.data, null, 2));
+
+  const taskId = response.data.output.task_id;
+
+  if (!taskId) {
+    throw new Error('Failed to get task_id from async submission');
+  }
+
+  return NextResponse.json({ 
+    success: true, 
+    taskId: taskId 
+  });
+}
+
+// 使用Replicate Flux Schnell模型生成图像
+async function generateWithReplicate(prompt: string, negativePrompt: string) {
+  console.log('正在请求Replicate API:', IMAGE_GEN_CONFIG.REPLICATE.BASE_URL);
+  console.log('使用的提示词:', prompt);
+  console.log('使用模型:', IMAGE_GEN_CONFIG.REPLICATE.MODEL_ID);
+  
+  if (!process.env.REPLICATE_API_TOKEN) {
+    console.error('REPLICATE_API_TOKEN 环境变量未设置');
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Replicate API token is not configured' 
+    }, { status: 500 });
+  }
+  
+  const response = await axios.post(
+    `${IMAGE_GEN_CONFIG.REPLICATE.BASE_URL}/predictions`,
+    {
+      version: "black-forest-labs/flux-schnell",  // 不带具体版本ID
+      input: {
+        prompt,
+        negative_prompt: negativePrompt,
+        aspect_ratio: "1:1",
+        output_format: "png"
+      }
+    },
+    {
+      headers: {
+        'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+
+  console.log('Replicate API响应:', JSON.stringify(response.data, null, 2));
+
+  const taskId = response.data.id;
+
+  if (!taskId) {
+    throw new Error('Failed to get task ID from Replicate submission');
+  }
+
+  return NextResponse.json({ 
+    success: true, 
+    taskId: taskId 
+  });
+}

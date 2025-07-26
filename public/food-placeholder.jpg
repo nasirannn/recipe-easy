@@ -1,0 +1,12 @@
+This file should be replaced with a actual food-placeholder.jpg image.
+
+Recommended characteristics for the placeholder image:
+1. Simple, neutral food-related design
+2. Approximately 800x600 pixels
+3. Not too large in file size (ideally under 100KB)
+4. Clearly visible in both light and dark modes
+5. Professional looking (not a "broken image" icon)
+
+You can use a generic food photo, a simple plate icon, or a custom "image not available" design with food elements.
+
+Place this image file at: /public/images/food-placeholder.jpg 
