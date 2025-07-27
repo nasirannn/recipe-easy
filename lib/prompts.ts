@@ -89,7 +89,7 @@ Please create authentic, innovative, and appropriately portioned dishes based on
 - seasoning: 调味料列表（中文字符串数组，每项包含调味料名称和用量）
 - instructions: 烹饪步骤（中文字符串数组，每步清晰简洁）
 - tags: 标签列表（字符串数组，包含"Chinese"以及菜系、特点、成本等）
-- chefTips: 厨师提示（中文字符串，提供中式烹饪技巧和建议）
+- chefTips: 厨师提示（中文字符串数组，提供1-3个中式烹饪技巧和建议）
 
 ## 中式菜谱生成规则
 

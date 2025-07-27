@@ -308,14 +308,21 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                   <div className="mt-16">
                     <div className="w-full h-px bg-gray-300 dark:bg-gray-400 mb-8"></div>
                     <h3 className="text-xl font-medium text-gray-900 dark:text-gray-800 tracking-wide mb-6">
-                      <span>📍</span> Chef Tips
+                      <span>📍</span> {t('chefTips')} 
                     </h3>
                     <div className="space-y-4 max-w-4xl">
-                      {recipe.chefTips.map((tip, i) => (
-                        <p key={i} className="text-gray-700 dark:text-gray-800 text-base leading-relaxed italic">
-                          {tip}
-                        </p>
-                      ))}
+                      {Array.isArray(recipe.chefTips)
+                        ? recipe.chefTips.map((tip, i) => (
+                            <p key={i} className="text-gray-700 dark:text-gray-800 text-base leading-relaxed italic">
+                              {tip}
+                            </p>
+                          ))
+                        : (
+                            <p className="text-gray-700 dark:text-gray-800 text-base leading-relaxed italic">
+                              {recipe.chefTips}
+                            </p>
+                          )
+                      }
                     </div>
                   </div>
                 )}
