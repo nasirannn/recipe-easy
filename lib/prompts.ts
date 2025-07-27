@@ -15,7 +15,7 @@ Each generated recipe must include the following fields:
 - ingredients: Ingredient list (string array, each item includes ingredient name, quantity, and preparation method such as whole, chunks, slices, strips, diced, minced, roll-cut pieces, etc.DO NOT include any seasonings)
 - seasoning: Seasoning list (string array, each item includes seasoning name, quantity, and usage method such as whole, ground, chopped, etc.)
 - instructions: Cooking steps (string array, each step clear and concise)
-- tags: (string array, including "Chinese" as well as cuisine types, features, costs, etc.)
+- tags: (string array, including cuisine types, features, costs, etc.)
 - chefTips: Chef's cooking tips and suggestions (string array, 1-3 practical tips)
 
 ## Recipe Generation Rules
@@ -88,7 +88,7 @@ Please create authentic, innovative, and appropriately portioned dishes based on
 - ingredients: 食材列表（中文字符串数组，每项包含食材名称和用量以及预处理方法，如整块、切块、切片、切条、切丁、切碎、滚刀块等, 注意：不要包含任何调味料）
 - seasoning: 调味料列表（中文字符串数组，每项包含调味料名称和用量）
 - instructions: 烹饪步骤（中文字符串数组，每步清晰简洁）
-- tags: 标签列表（字符串数组，包含"Chinese"以及菜系、特点、成本等）
+- tags: 标签列表（字符串数组，包含菜系、特点、成本等）
 - chefTips: 厨师提示（中文字符串数组，提供1-3个中式烹饪技巧和建议）
 
 ## 中式菜谱生成规则

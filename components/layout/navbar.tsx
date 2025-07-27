@@ -106,7 +106,7 @@ export const Navbar = () => {
     <header
       className={`fixed top-0 left-0 right-0 z-50 w-full rounded-none flex justify-between items-center p-4 lg:px-8 transition-all duration-300 ${
         isScrolled
-          ? 'bg-background/30 backdrop-blur-sm shadow-sm'
+          ? 'bg-background/15 backdrop-blur-sm shadow-sm'
           : 'bg-transparent backdrop-blur-none'
       }`}
     >
@@ -162,7 +162,7 @@ export const Navbar = () => {
                   key={label}
                   href={href}
                   onClick={() => setIsOpen(false)}
-                  className="text-lg font-medium hover:text-primary transition-colors"
+                  className="text-lg text-muted-foreground font-medium hover:text-primary transition-colors"
                 >
                   {label}
                 </Link>

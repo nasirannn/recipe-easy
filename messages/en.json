@@ -117,32 +117,32 @@
     "review1": {
       "name": "Jane Doe",
       "userName": "Foodie Jane",
-      "comment": "This app is a lifesaver for dinner planning. I just input my ingredients and get delicious recipes my family loves. So easy!"
+      "comment": "As a foodie, I crave new flavors daily. This AI recipe generator gives me creative, gourmet ideas using random ingredients. Seriously, it’s like a flavor adventure – no more boring dinners!"
     },
     "review2": {
       "name": "Mike T.",
       "userName": "College Student",
-      "comment": "I'm not a great cook, but this app makes it so easy. The step-by-step instructions are super clear. I've actually started to enjoy cooking!"
+      "comment": "Broke college student here! This app saves me with cheap, 10-minute meals using pantry scraps. No more ramen – just real food that’s actually tasty. Total lifesaver on a budget."
     },
     "review3": {
       "name": "Jessica P.",
       "userName": "Foodie on a Budget",
-      "comment": "I was tired of wasting food. This app helps me use up all my leftovers in creative ways. It's great for my wallet and the environment."
+      "comment": "I love fancy food but hate spending cash. This AI tool finds budget-friendly recipes that still feel gourmet. My wallet’s happy, and dinner’s delicious – win-win for frugal foodies!"
     },
     "review4": {
       "name": "David H.",
       "userName": "Health Enthusiast",
-      "comment": "I love how I can filter for healthy options. The AI gives me great, balanced meal ideas that fit my dietary goals. Highly recommend!"
+      "comment": "Need healthy recipes fast? This AI generator creates nutritious, diet-friendly meals in seconds. No guesswork – just clean eating that fits my wellness goals. Game-changer for busy health nuts!"
     },
     "review5": {
       "name": "Emily R.",
       "userName": "Kitchen Novice",
-      "comment": "I never knew I could make something so delicious with just a few ingredients. The pictures are also super helpful. This is my go-to app now."
+      "comment": "Total kitchen newbie here – I burned toast once! But the step-by-step instructions are foolproof. Now I cook confidently. Seriously, this app makes beginners feel like pros."
     },
     "review6": {
       "name": "Chris G.",
       "userName": "Remote Worker",
-      "comment": "Working from home, it's easy to get into a lunch rut. This app gives me quick and exciting ideas to break the monotony. It's fantastic!"
+      "comment": "Working from home? This AI recipe app gives quick lunches between Zoom calls. Saves time, uses fridge leftovers, and keeps me energized. Essential for remote workers avoiding takeout!"
     }
   },
   "faq": {

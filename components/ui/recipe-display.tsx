@@ -62,23 +62,23 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
   };
 
   return (
-    <div className="w-full mx-auto bg-transparent py-4 sm:py-8">
-      <div className="wu-full mx-auto space-y-16">
+    <div className="w-full bg-gradient-to-br from-gray-50/30 via-white to-orange-50/20">
+      <div className="w-full mx-auto space-y-8">
         <Accordion type="single" collapsible defaultValue={recipes[0]?.id}>
           {recipes.map((recipe) => (
             <AccordionItem
               key={recipe.id}
               value={recipe.id}
-              className="bg-white dark:bg-gray-50 p-12 shadow-sm sm:shadow-md rounded-lg border-0 my-6"
+              className="bg-white/80 backdrop-blur-sm dark:bg-gray-50/90 p-8 shadow-lg rounded-2xl border border-gray-100/50"
             >
               <div className="w-full">
                 {/* Header Section - Always Visible */}
                 <div className="flex justify-between items-start">
                   <div className="flex-1 max-w-3xl">
                     <AccordionTrigger className="hover:no-underline">
-                      <h1 className="text-xl text-left md:text-2xl font-light hover:text-primary text-gray-700 dark:text-primary-dark mb-4 uppercase tracking-[0.2em] leading-tight">
+                      <h2 className="text-xl text-left md:text-2xl font-light hover:text-primary text-gray-700 dark:text-primary-dark mb-4 uppercase tracking-[0.2em] leading-tight">
                         {recipe.title}
-                      </h1>
+                      </h2>
                     </AccordionTrigger>
                     <div className="flex items-center gap-6 text-sm dark:text-gray-700 mb-6">
                       <div className="flex items-center gap-2">
@@ -115,7 +115,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                           alt={recipe.title}
                           width={288}
                           height={288}
-                          className="w-full h-full object-cover rounded-lg shadow-md"
+                          className="w-full h-full object-cover rounded-xl shadow-md"
                         />
                       </div>
                     ) : (
@@ -128,13 +128,12 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
               </div>
 
               <AccordionContent>
-                <div className="max-w-3xl h-px bg-gray-300 dark:bg-gray-400 mb-6"></div>
-
-                {/* Ingredients and Seasoning in same row */}
-                <div className="grid md:grid-cols-2 gap-16 mb-16">
+                <div className="mt-8">
+                  {/* Ingredients and Seasoning in same row */}
+                  <div className="grid md:grid-cols-2 gap-16 mb-16">
 
                   {/* Ingredients */}
-                  <div>
+                  <div className="bg-green-50/30 p-6 rounded-xl border border-green-100/50">
                     <div className="flex items-center mb-8">
                       <h2 className="text-xl font-medium text-gray-900 dark:text-gray-800 tracking-wide">
                         <span>🥬</span> {t('ingredients')}
@@ -180,9 +179,14 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
 
                     <ul className="space-y-3">
                       {recipe.ingredients?.map((ingredient, index) => (
-                        <li key={index} className="text-gray-700 dark:text-gray-800 text-base leading-relaxed flex">
-                          <span className="mr-3 text-gray-400">•</span>
-                          <span>{ingredient}</span>
+                        <li key={index} className="text-gray-700 dark:text-gray-800 text-base leading-relaxed">
+                          <div className="flex items-start">
+                            <span className="mr-3 text-green-500 font-bold text-lg leading-none">•</span>
+                            <span>{ingredient}</span>
+                          </div>
+                          {index < recipe.ingredients!.length - 1 && (
+                            <div className="w-3/4 h-px bg-gray-200/60 mt-2 ml-6"></div>
+                          )}
                         </li>
                       ))}
                     </ul>
@@ -190,7 +194,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
 
                   {/* Seasoning */}
                   {recipe.seasoning && recipe.seasoning.length > 0 && (
-                    <div>
+                    <div className="bg-yellow-50/30 p-6 rounded-xl border border-yellow-100/50">
                       <div className="flex items-center mb-8">
                         <h2 className="text-xl font-medium text-gray-900 dark:text-gray-800 tracking-wide">
                           <span>🫙</span> {t('seasoning')}
@@ -236,9 +240,14 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
 
                       <ul className="space-y-3">
                         {recipe.seasoning.map((seasoning, index) => (
-                          <li key={index} className="text-gray-700 dark:text-gray-800 text-base leading-relaxed flex">
-                            <span className="mr-3 text-gray-400">•</span>
-                            <span>{seasoning}</span>
+                          <li key={index} className="text-gray-700 dark:text-gray-800 text-base leading-relaxed">
+                            <div className="flex items-start">
+                              <span className="mr-3 text-yellow-500 font-bold text-lg leading-none">•</span>
+                              <span>{seasoning}</span>
+                            </div>
+                            {index < recipe.seasoning.length - 1 && (
+                              <div className="w-3/4 h-px bg-gray-200/60 mt-2 ml-6"></div>
+                            )}
                           </li>
                         ))}
                       </ul>
@@ -248,12 +257,12 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
 
                 {/* Instructions Section */}
                 <div className="mt-16">
-                  <div className="w-full h-px bg-gray-300 dark:bg-gray-400 mb-8"></div>
 
-                  <div className="flex items-center mb-8">
-                    <h2 className="text-xl font-medium text-gray-900 dark:text-gray-800 tracking-wide">
-                      <span>📖</span> {t('instructions')}
-                    </h2>
+                  <div className="bg-orange-50/30 p-6 rounded-xl border border-orange-100/50">
+                    <div className="flex items-center mb-8">
+                      <h2 className="text-xl font-medium text-gray-900 dark:text-gray-800 tracking-wide">
+                        <span>📖</span> {t('instructions')}
+                      </h2>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -293,36 +302,47 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                     </TooltipProvider>
                   </div>
 
-                  <div className="space-y-6 max-w-4xl">
-                    {recipe.instructions?.map((instruction, index) => (
-                      <p key={index} className="text-gray-700 dark:text-gray-800 text-base leading-relaxed">
-                        <span className="font-medium mr-2">{index + 1}.</span>
-                        {instruction}
-                      </p>
-                    ))}
+                    <div className="space-y-6 max-w-6xl">
+                      {recipe.instructions?.map((instruction, index) => (
+                        <div key={index} className="pb-4">
+                          <div className="flex items-start gap-4">
+                            <div className="flex-shrink-0 w-7 h-7 bg-gradient-to-br from-orange-400 to-orange-500 text-white rounded-full flex items-center justify-center text-xs font-semibold shadow-sm">
+                              {index + 1}
+                            </div>
+                            <p className="text-gray-700 dark:text-gray-800 text-base leading-relaxed pt-1">
+                              {instruction}
+                            </p>
+                          </div>
+                          {index < recipe.instructions!.length - 1 && (
+                            <div className="w-4/5 h-px bg-gray-200/60 mt-3 ml-12"></div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
                 {/* Chef Tips */}
                 {recipe.chefTips && recipe.chefTips.length > 0 && (
                   <div className="mt-16">
-                    <div className="w-full h-px bg-gray-300 dark:bg-gray-400 mb-8"></div>
-                    <h3 className="text-xl font-medium text-gray-900 dark:text-gray-800 tracking-wide mb-6">
-                      <span>📍</span> {t('chefTips')} 
-                    </h3>
-                    <div className="space-y-4 max-w-4xl">
-                      {Array.isArray(recipe.chefTips)
-                        ? recipe.chefTips.map((tip, i) => (
-                            <p key={i} className="text-gray-700 dark:text-gray-800 text-base leading-relaxed italic">
-                              {tip}
-                            </p>
-                          ))
-                        : (
-                            <p className="text-gray-700 dark:text-gray-800 text-base leading-relaxed italic">
-                              {recipe.chefTips}
-                            </p>
-                          )
-                      }
+                    <div className="bg-blue-50/30 p-6 rounded-xl border border-blue-100/50">
+                      <h3 className="text-xl font-medium text-gray-900 dark:text-gray-800 tracking-wide mb-6">
+                        <span>📍</span> {t('chefTips')}
+                      </h3>
+                      <div className="space-y-4 max-w-4xl">
+                        {Array.isArray(recipe.chefTips)
+                          ? recipe.chefTips.map((tip, i) => (
+                              <p key={i} className="text-gray-700 dark:text-gray-800 text-base leading-relaxed italic">
+                                {tip}
+                              </p>
+                            ))
+                          : (
+                              <p className="text-gray-700 dark:text-gray-800 text-base leading-relaxed italic">
+                                {recipe.chefTips}
+                              </p>
+                            )
+                        }
+                      </div>
                     </div>
                   </div>
                 )}
@@ -342,6 +362,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                     </div>
                   </div>
                 )}
+                </div>
               </AccordionContent>
             </AccordionItem>
           ))}

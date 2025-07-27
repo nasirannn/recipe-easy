@@ -332,7 +332,7 @@ export const IngredientSelector = ({
               className={cn(
                 "gap-1 py-1 text-sm",
                 // @ts-ignore - 检查是否为自定义食材
-                ingredient.isCustom && "border border-dashed border-primary/50"
+                ingredient.isCustom && "bg-white text-yellow-600 border-2 border-dashed border-yellow-400 hover:bg-white/90"
               )}
             >
               {ingredient.englishName}
