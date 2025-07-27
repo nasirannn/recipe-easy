@@ -127,6 +127,7 @@ export const HeroSection = () => {
           cookingTime: formData.cookingTime,
           difficulty: formData.difficulty,
           cuisine: formData.cuisine,
+          language: locale, // 传递当前用户选择的语言
           imageModel: formData.imageModel, // 传递选择的图片生成模型
           languageModel: formData.languageModel // 传递选择的语言模型
         }),

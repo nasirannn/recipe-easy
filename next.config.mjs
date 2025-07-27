@@ -23,7 +23,6 @@ const nextConfig = {
         protocol: "https",
         hostname: "recipe-easy.annnb016.workers.dev",
       },
-      // 删除 *.workers.dev，这种写法不支持
     ],
   },
 };
