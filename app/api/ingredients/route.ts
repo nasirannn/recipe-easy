@@ -10,8 +10,6 @@ interface Ingredient {
     slug: string;
     name: string;
   };
-  is_custom: boolean;
-  user_id?: string;
 }
 
 interface IngredientCategory {
@@ -51,7 +49,7 @@ export async function GET(request: NextRequest) {
           return NextResponse.json(data);
         }
       }
-      
+
       console.log('Workers API failed, falling back to static data');
     } catch (workerError) {
       console.error('Workers API error, falling back to static data:', workerError);
@@ -67,8 +65,7 @@ export async function GET(request: NextRequest) {
           id: 4,
           slug: 'fruits',
           name: language === 'zh' ? '水果' : 'Fruits'
-        },
-        is_custom: false
+        }
       },
       {
         id: 2,
@@ -78,8 +75,7 @@ export async function GET(request: NextRequest) {
           id: 1,
           slug: 'meat',
           name: language === 'zh' ? '肉类' : 'Meat'
-        },
-        is_custom: false
+        }
       },
       {
         id: 3,
@@ -89,8 +85,7 @@ export async function GET(request: NextRequest) {
           id: 3,
           slug: 'vegetables',
           name: language === 'zh' ? '蔬菜' : 'Vegetables'
-        },
-        is_custom: false
+        }
       }
     ];
 

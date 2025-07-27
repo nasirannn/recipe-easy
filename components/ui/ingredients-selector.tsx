@@ -19,6 +19,7 @@ import { useState, useRef, useEffect } from "react";
 import { Badge } from "./badge";
 import { Input } from "./input";
 import { Button } from "./button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
 import {
   Dialog,
   DialogContent,
@@ -42,8 +43,7 @@ interface Ingredient {
     slug: string;
     name: string;
   };
-  isCustom?: boolean;
-  userId?: string;
+  isCustom?: boolean; // 仅用于前端临时标识自定义食材
 }
 
 // 分类图标映射
@@ -110,8 +110,7 @@ export const IngredientSelector = ({
           name: item.name,
           englishName: item.name,
           category: item.category,
-          isCustom: item.is_custom || false,
-          userId: item.user_id
+          isCustom: false // 数据库中的食材都是系统预置的
         }));
 
         setAllIngredients(ingredients);
@@ -352,31 +351,40 @@ export const IngredientSelector = ({
 
       {/* 分类选择器 - 桌面版 */}
       {!isMobile && (
-        <ScrollArea className="w-full">
-          <div className="flex gap-2 pb-2">
-            {Object.entries(CATEGORIES).map(([categoryId, category]) => {
-              const Icon = category.icon;
-              const isActive = activeCategory === categoryId;
+        <TooltipProvider>
+          <div className="w-full">
+            <div className="flex gap-2 pb-2">
+              {Object.entries(CATEGORIES).map(([categoryId, category]) => {
+                const Icon = category.icon;
+                const isActive = activeCategory === categoryId;
+                const categoryName = t(`categories.${categoryId}`);
 
-              return (
-                <button
-                  key={categoryId}
-                  onClick={() => handleCategoryChange(categoryId as keyof typeof CATEGORIES)}
-                  className={cn(
-                    "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <Icon className={cn("h-4 w-4", isActive ? "text-primary-foreground" : category.color)} />
-                  {t(`categories.${categoryId}`)}
-                </button>
-              );
-            })}
+                return (
+                  <Tooltip key={categoryId}>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => handleCategoryChange(categoryId as keyof typeof CATEGORIES)}
+                        className={cn(
+                          "flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap overflow-hidden",
+                          "min-w-[85px] max-w-[140px]",
+                          isActive
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Icon className={cn("h-4 w-4 flex-shrink-0", isActive ? "text-primary-foreground" : category.color)} />
+                        <span className="truncate">{categoryName}</span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{categoryName}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+            </div>
           </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        </TooltipProvider>
       )}
 
       {/* 移动端分类选择器 */}

@@ -11,8 +11,7 @@ export interface Ingredient {
     slug: string;
     name: string;
   };
-  isCustom?: boolean;
-  userId?: string;
+  isCustom?: boolean; // 仅用于前端临时标识自定义食材
 }
 
 export interface Recipe {

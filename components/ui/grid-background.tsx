@@ -15,7 +15,6 @@ import {
   Utensils,
   Wine
 } from "lucide-react";
-import { useTheme } from "next-themes";
 
 interface FloatingIconProps {
   icon: React.ReactNode;
@@ -38,8 +37,6 @@ export const GridBackground = ({
 }: {
   className?: string;
 }) => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
 
   const icons = [
     // 左侧区域
@@ -47,48 +44,37 @@ export const GridBackground = ({
     { Icon: Coffee, position: "top-[25%] left-[8%]" },
     { Icon: Apple, position: "top-[45%] left-[4%]" },
     { Icon: Cookie, position: "top-[65%] left-[7%]" },
-    
+
     // 右侧区域
     { Icon: Croissant, position: "top-[15%] right-[5%]" },
     { Icon: Fish, position: "top-[35%] right-[3%]" },
     { Icon: Beer, position: "top-[55%] right-[6%]" },
     { Icon: Wine, position: "top-[75%] right-[4%]" },
-    
+
     // 中间区域（较少的图标）
     { Icon: IceCream2, position: "top-[20%] left-[30%]" },
     { Icon: Sandwich, position: "top-[50%] right-[35%]" },
     { Icon: Cake, position: "top-[30%] left-[45%]" },
-    
+
     // 远两侧（点缀）
     { Icon: Beef, position: "top-[10%] left-[2%]" },
     { Icon: Soup, position: "top-[40%] right-[2%]" },
-    { Icon: Utensils, position: "top-[60%] left-[3%]" },
-    { Icon: Cookie, position: "top-[70%] right-[25%]" }
+    { Icon: Utensils, position: "top-[60%] left-[3%]" }
   ];
 
   return (
     <div className={cn("absolute inset-0", className)}>
-      {/* 网格背景 */}
-      <div className="absolute inset-0 bg-grid-pattern bg-grid" />
-
-      {/* 渐变遮罩 - 顶部 */}
-      <div 
-        className={cn(
-          "absolute top-0 left-0 right-0 h-40 bg-gradient-to-b",
-          isDark 
-            ? "from-background via-background/50 to-transparent" 
-            : "from-background via-background/50 to-transparent"
-        )} 
-      />
-
-      {/* 渐变遮罩 - 底部 */}
-      <div 
-        className={cn(
-          "absolute bottom-0 left-0 right-0 h-80 bg-gradient-to-t",
-          isDark 
-            ? "from-background via-background/50 to-transparent" 
-            : "from-background via-background/50 to-transparent"
-        )} 
+      {/* 网格背景 - 使用 mask 实现渐变效果 */}
+      <div
+        className="absolute inset-0 bg-grid"
+        style={{
+          maskImage: `
+            linear-gradient(to bottom, transparent 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 80%, transparent 100%)
+          `,
+          WebkitMaskImage: `
+            linear-gradient(to bottom, transparent 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 80%, transparent 100%)
+          `
+        }}
       />
 
       {/* 浮动图标 */}

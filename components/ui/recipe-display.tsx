@@ -104,7 +104,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                   <div className="ml-2 flex-shrink-0">
                     {recipe.image ? (
                       <div
-                        className="w-74 h-74 cursor-pointer hover:scale-105 transition-transform duration-300"
+                        className="w-60 h-60 cursor-pointer hover:scale-105 transition-transform duration-300"
                         onClick={(e) => {
                           e.stopPropagation();
                           openImageDialog(recipe.image!);
@@ -135,7 +135,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
 
                   {/* Ingredients */}
                   <div>
-                    <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center mb-8">
                       <h2 className="text-xl font-medium text-gray-900 dark:text-gray-800 tracking-wide">
                         <span>🥬</span> {t('ingredients')}
                       </h2>
@@ -191,7 +191,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                   {/* Seasoning */}
                   {recipe.seasoning && recipe.seasoning.length > 0 && (
                     <div>
-                      <div className="flex items-center justify-between mb-8">
+                      <div className="flex items-center mb-8">
                         <h2 className="text-xl font-medium text-gray-900 dark:text-gray-800 tracking-wide">
                           <span>🫙</span> {t('seasoning')}
                         </h2>
@@ -250,7 +250,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                 <div className="mt-16">
                   <div className="w-full h-px bg-gray-300 dark:bg-gray-400 mb-8"></div>
 
-                  <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center mb-8">
                     <h2 className="text-xl font-medium text-gray-900 dark:text-gray-800 tracking-wide">
                       <span>📖</span> {t('instructions')}
                     </h2>

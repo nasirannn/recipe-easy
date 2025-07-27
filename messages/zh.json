@@ -83,6 +83,9 @@
     "seasoning": "调料",
     "instructions": "制作步骤",
     "chefTips": "厨师提示",
+    "cookTime": "烹饪时间",
+    "serves": "份量",
+    "mins": "分钟",
     "copyIngredients": "复制食材",
     "copySeasoning": "复制调料",
     "copyInstructions": "复制制作步骤"
@@ -110,7 +113,37 @@
   },
   "testimonials": {
     "title": "用户评价",
-    "subtitle": "用户怎么说"
+    "subtitle": "用户怎么说",
+    "review1": {
+      "name": "简·多伊",
+      "userName": "美食爱好者简",
+      "comment": "这个应用对晚餐规划来说是救星。我只需输入食材，就能得到家人喜爱的美味食谱。太简单了！"
+    },
+    "review2": {
+      "name": "迈克·T",
+      "userName": "大学生",
+      "comment": "我不是很会做饭，但这个应用让一切变得如此简单。分步说明非常清楚。我实际上开始享受烹饪了！"
+    },
+    "review3": {
+      "name": "杰西卡·P",
+      "userName": "节约美食家",
+      "comment": "我厌倦了浪费食物。这个应用帮我以创意方式用完所有剩菜。对我的钱包和环境都很好。"
+    },
+    "review4": {
+      "name": "大卫·H",
+      "userName": "健康爱好者",
+      "comment": "我喜欢可以筛选健康选项。AI给我很棒的、均衡的餐食想法，符合我的饮食目标。强烈推荐！"
+    },
+    "review5": {
+      "name": "艾米丽·R",
+      "userName": "厨房新手",
+      "comment": "我从不知道用几种食材就能做出如此美味的东西。图片也非常有帮助。这现在是我的首选应用。"
+    },
+    "review6": {
+      "name": "克里斯·G",
+      "userName": "远程工作者",
+      "comment": "在家工作，很容易陷入午餐单调。这个应用给我快速而令人兴奋的想法来打破单调。太棒了！"
+    }
   },
   "faq": {
     "title": "常见问题",

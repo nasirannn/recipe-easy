@@ -1,9 +1,9 @@
 "use client";
-import { useTheme } from "next-themes";
+
 import { useState } from "react";
 import { Recipe } from "@/lib/types";
 import { RecipeForm, RecipeFormData } from "@/components/ui/recipe-form";
-import { GridBackground } from "@/components/ui/grid-background";
+
 import { RecipeDisplay } from "@/components/ui/recipe-display";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { generateImageForRecipe } from "@/lib/services/image-service";
@@ -158,10 +158,9 @@ export const HeroSection = () => {
     }
   };
 
-  const { theme } = useTheme();
+
   return (
     <section id="hero" className="w-full bg-primary/5">
-      <GridBackground className="absolute inset-0 z-[-1]" /> 
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center space-y-8">
           {/* <Badge variant="outline" className="text-sm py-1 border-grey">

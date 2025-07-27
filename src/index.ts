@@ -2,7 +2,7 @@
 
 export interface Env {
   DB: D1Database;
-  RECIPE_IMAGES: R2Bucket;
+  RECIPE_IMAGES: any;
 }
 
 interface Recipe {
@@ -25,7 +25,6 @@ interface Recipe {
 interface RecipeResponse {
   id: number;
   title: string;
-  name: string;
   image_url: string;
   description: string;
   tags: string[];
@@ -45,20 +44,29 @@ interface RecipeResponse {
 
 // 将数据库记录转换为 API 响应格式
 function transformRecipe(dbRecipe: any): RecipeResponse {
+  const safeJsonParse = (jsonString: string | null | undefined): any[] => {
+    if (!jsonString) return [];
+    try {
+      return JSON.parse(jsonString);
+    } catch (e) {
+      console.error('JSON parse error:', e, 'for string:', jsonString);
+      return [];
+    }
+  };
+
   return {
     id: dbRecipe.id,
     title: dbRecipe.title,
-    name: dbRecipe.name || dbRecipe.title,
     image_url: dbRecipe.image_url,
     description: dbRecipe.description,
-    tags: JSON.parse(dbRecipe.tags),
+    tags: safeJsonParse(dbRecipe.tags),
     cookTime: dbRecipe.cook_time,
     servings: dbRecipe.servings,
     difficulty: dbRecipe.difficulty,
-    ingredients: JSON.parse(dbRecipe.ingredients),
-    seasoning: JSON.parse(dbRecipe.seasoning),
-    instructions: JSON.parse(dbRecipe.instructions),
-    chefTips: JSON.parse(dbRecipe.chef_tips),
+    ingredients: safeJsonParse(dbRecipe.ingredients),
+    seasoning: safeJsonParse(dbRecipe.seasoning),
+    instructions: safeJsonParse(dbRecipe.instructions),
+    chefTips: safeJsonParse(dbRecipe.chef_tips),
     cuisine: dbRecipe.cuisine_name ? {
       id: dbRecipe.cuisine_id,
       name: dbRecipe.cuisine_name
@@ -77,7 +85,7 @@ function corsHeaders() {
 }
 
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: any): Promise<Response> {
     const url = new URL(request.url);
     
     // 处理 CORS 预检请求
@@ -154,21 +162,40 @@ export default {
         const offset = parseInt(searchParams.get('offset') || '0');
         const tag = searchParams.get('tag');
         const difficulty = searchParams.get('difficulty');
+        const language = searchParams.get('lang') || 'en';
 
-        let query = 'SELECT r.*, c.name as cuisine_name FROM recipes r LEFT JOIN cuisines c ON r.cuisine_id = c.id';
-        let countQuery = 'SELECT COUNT(*) as total FROM recipes r';
-        const params: any[] = [];
+        let query = `
+          SELECT r.*, c.name as cuisine_name,
+                 COALESCE(ri.title, r.title) as title,
+                 COALESCE(ri.description, r.description) as description,
+                 COALESCE(ri.ingredients, r.ingredients) as ingredients,
+                 COALESCE(ri.seasoning, r.seasoning) as seasoning,
+                 COALESCE(ri.instructions, r.instructions) as instructions,
+                 COALESCE(ri.chef_tips, r.chef_tips) as chef_tips
+          FROM recipes r
+          LEFT JOIN recipes_i18n ri ON r.id = ri.recipe_id AND ri.language_code = ?
+          LEFT JOIN cuisines c ON r.cuisine_id = c.id
+        `;
+        let countQuery = `
+          SELECT COUNT(*) as total
+          FROM recipes r
+          LEFT JOIN recipes_i18n ri ON r.id = ri.recipe_id AND ri.language_code = ?
+        `;
+        const params: any[] = [language];
+        const countParams: any[] = [language];
         const conditions: string[] = [];
 
         // 添加过滤条件
         if (tag) {
           conditions.push('r.tags LIKE ?');
           params.push(`%"${tag}"%`);
+          countParams.push(`%"${tag}"%`);
         }
 
         if (difficulty) {
           conditions.push('r.difficulty = ?');
           params.push(difficulty);
+          countParams.push(difficulty);
         }
 
         if (conditions.length > 0) {
@@ -184,7 +211,7 @@ export default {
         // 执行查询
         const [recipesResult, countResult] = await Promise.all([
           env.DB.prepare(query).bind(...params).all(),
-          env.DB.prepare(countQuery).bind(...params.slice(0, -2)).first()
+          env.DB.prepare(countQuery).bind(...countParams).first()
         ]);
 
         const recipes = recipesResult.results.map((recipe: any) => transformRecipe(recipe as Recipe));
@@ -233,13 +260,12 @@ export default {
         let query = `
           SELECT
             i.id, i.slug, ii.name,
-            ic.id as category_id, ic.slug as category_slug, ici.name as category_name,
-            i.is_custom, i.user_id
+            ic.id as category_id, ic.slug as category_slug, ici.name as category_name
           FROM ingredients i
           JOIN ingredients_i18n ii ON i.id = ii.ingredient_id
           LEFT JOIN ingredient_categories ic ON i.category_id = ic.id
           LEFT JOIN ingredient_categories_i18n ici ON ic.id = ici.category_id AND ici.language_code = ?
-          WHERE ii.language_code = ? AND i.is_active = TRUE
+          WHERE ii.language_code = ?
         `;
 
         const params = [language, language];
@@ -250,7 +276,7 @@ export default {
         }
 
         query += ' ORDER BY ii.name ASC LIMIT ? OFFSET ?';
-        params.push(limit, offset);
+        params.push(limit.toString(), offset.toString());
 
         const result = await env.DB.prepare(query).bind(...params).all();
 
@@ -263,8 +289,7 @@ export default {
             slug: row.category_slug,
             name: row.category_name || row.category_slug
           } : null,
-          is_custom: Boolean(row.is_custom),
-          user_id: row.user_id
+          is_custom: false // 数据库中的食材都是系统预置的
         }));
 
         // 获取总数
@@ -273,7 +298,7 @@ export default {
           FROM ingredients i
           JOIN ingredients_i18n ii ON i.id = ii.ingredient_id
           LEFT JOIN ingredient_categories ic ON i.category_id = ic.id
-          WHERE ii.language_code = ? AND i.is_active = TRUE
+          WHERE ii.language_code = ?
         `;
 
         const countParams = [language];
@@ -325,7 +350,7 @@ export default {
           SELECT ic.id, ic.slug, ici.name, ic.sort_order
           FROM ingredient_categories ic
           JOIN ingredient_categories_i18n ici ON ic.id = ici.category_id
-          WHERE ici.language_code = ? AND ic.is_active = TRUE
+          WHERE ici.language_code = ?
           ORDER BY ic.sort_order ASC
         `;
 
@@ -415,7 +440,24 @@ export default {
     if (recipeIdMatch && request.method === 'GET') {
       try {
         const id = parseInt(recipeIdMatch[1]);
-        const result = await env.DB.prepare('SELECT r.*, c.name as cuisine_name FROM recipes r LEFT JOIN cuisines c ON r.cuisine_id = c.id WHERE r.id = ?').bind(id).first();
+        const language = url.searchParams.get('lang') || 'en';
+
+        const query = `
+          SELECT r.*, c.name as cuisine_name,
+                 COALESCE(ri.title, r.title) as title,
+                 COALESCE(ri.description, r.description) as description,
+                 COALESCE(ri.ingredients, r.ingredients) as ingredients,
+                 COALESCE(ri.seasoning, r.seasoning) as seasoning,
+                 COALESCE(ri.instructions, r.instructions) as instructions,
+                 COALESCE(ri.chef_tips, r.chef_tips) as chef_tips
+          FROM recipes r
+          LEFT JOIN recipes_i18n ri ON r.id = ri.recipe_id AND ri.language_code = ?
+          LEFT JOIN cuisines c ON r.cuisine_id = c.id
+          WHERE r.id = ?
+        `;
+
+        const result = await env.DB.prepare(query).bind(language, id).first();
+
         
         if (!result) {
           return new Response(JSON.stringify({

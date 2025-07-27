@@ -36,12 +36,14 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
     const tag = searchParams.get('tag')
     const difficulty = searchParams.get('difficulty')
+    const language = searchParams.get('lang') || 'en'
 
     // 尝试从 Cloudflare Workers API 获取数据
     try {
       const workerUrl = new URL('https://recipe-easy.annnb016.workers.dev/api/recipes');
       workerUrl.searchParams.set('limit', limit.toString());
       workerUrl.searchParams.set('offset', offset.toString());
+      workerUrl.searchParams.set('lang', language);
       if (tag) workerUrl.searchParams.set('tag', tag);
       if (difficulty) workerUrl.searchParams.set('difficulty', difficulty);
 

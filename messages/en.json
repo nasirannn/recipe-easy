@@ -83,6 +83,9 @@
     "seasoning": "Seasoning",
     "instructions": "Instructions",
     "chefTips": "Chef Tips",
+    "cookTime": "Cook",
+    "serves": "Serves",
+    "mins": "mins",
     "copyIngredients": "Copy ingredients",
     "copySeasoning": "Copy seasoning",
     "copyInstructions": "Copy instructions"
@@ -110,7 +113,37 @@
   },
   "testimonials": {
     "title": "Testimonials",
-    "subtitle": "What Our Users Are Saying"
+    "subtitle": "What Our Users Are Saying",
+    "review1": {
+      "name": "Jane Doe",
+      "userName": "Foodie Jane",
+      "comment": "This app is a lifesaver for dinner planning. I just input my ingredients and get delicious recipes my family loves. So easy!"
+    },
+    "review2": {
+      "name": "Mike T.",
+      "userName": "College Student",
+      "comment": "I'm not a great cook, but this app makes it so easy. The step-by-step instructions are super clear. I've actually started to enjoy cooking!"
+    },
+    "review3": {
+      "name": "Jessica P.",
+      "userName": "Foodie on a Budget",
+      "comment": "I was tired of wasting food. This app helps me use up all my leftovers in creative ways. It's great for my wallet and the environment."
+    },
+    "review4": {
+      "name": "David H.",
+      "userName": "Health Enthusiast",
+      "comment": "I love how I can filter for healthy options. The AI gives me great, balanced meal ideas that fit my dietary goals. Highly recommend!"
+    },
+    "review5": {
+      "name": "Emily R.",
+      "userName": "Kitchen Novice",
+      "comment": "I never knew I could make something so delicious with just a few ingredients. The pictures are also super helpful. This is my go-to app now."
+    },
+    "review6": {
+      "name": "Chris G.",
+      "userName": "Remote Worker",
+      "comment": "Working from home, it's easy to get into a lunch rut. This app gives me quick and exciting ideas to break the monotony. It's fantastic!"
+    }
   },
   "faq": {
     "title": "Frequently Asked Questions",

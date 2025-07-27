@@ -19,53 +19,55 @@ interface ReviewProps {
   rating: number;
 }
 
-const reviewList: ReviewProps[] = [
+interface ReviewData {
+  image: string;
+  nameKey: string;
+  userNameKey: string;
+  commentKey: string;
+  rating: number;
+}
+
+const reviewData: ReviewData[] = [
   {
     image: "https://i.pravatar.cc/150?img=35",
-    name: "Jane Doe",
-    userName: "Foodie Jane",
-    comment:
-      "This app is a lifesaver for dinner planning. I just input my ingredients and get delicious recipes my family loves. So easy!",
+    nameKey: "review1.name",
+    userNameKey: "review1.userName",
+    commentKey: "review1.comment",
     rating: 5.0,
   },
   {
     image: "https://randomuser.me/api/portraits/men/2.jpg",
-    name: "Mike T.",
-    userName: "College Student",
-    comment:
-      "I'm not a great cook, but this app makes it so easy. The step-by-step instructions are super clear. I've actually started to enjoy cooking!",
+    nameKey: "review2.name",
+    userNameKey: "review2.userName",
+    commentKey: "review2.comment",
     rating: 4.8,
   },
   {
     image: "https://randomuser.me/api/portraits/women/3.jpg",
-    name: "Jessica P.",
-    userName: "Foodie on a Budget",
-    comment:
-      "I was tired of wasting food. This app helps me use up all my leftovers in creative ways. It's great for my wallet and the environment.",
+    nameKey: "review3.name",
+    userNameKey: "review3.userName",
+    commentKey: "review3.comment",
     rating: 4.9,
   },
   {
     image: "https://randomuser.me/api/portraits/men/4.jpg",
-    name: "David H.",
-    userName: "Health Enthusiast",
-    comment:
-      "I love how I can filter for healthy options. The AI gives me great, balanced meal ideas that fit my dietary goals. Highly recommend!",
+    nameKey: "review4.name",
+    userNameKey: "review4.userName",
+    commentKey: "review4.comment",
     rating: 5.0,
   },
   {
     image: "https://randomuser.me/api/portraits/women/5.jpg",
-    name: "Emily R.",
-    userName: "Kitchen Novice",
-    comment:
-      "I never knew I could make something so delicious with just a few ingredients. The pictures are also super helpful. This is my go-to app now.",
+    nameKey: "review5.name",
+    userNameKey: "review5.userName",
+    commentKey: "review5.comment",
     rating: 5.0,
   },
   {
     image: "https://randomuser.me/api/portraits/men/6.jpg",
-    name: "Chris G.",
-    userName: "Remote Worker",
-    comment:
-      "Working from home, it's easy to get into a lunch rut. This app gives me quick and exciting ideas to break the monotony. It's fantastic!",
+    nameKey: "review6.name",
+    userNameKey: "review6.userName",
+    commentKey: "review6.comment",
     rating: 4.9,
   },
 ];
@@ -86,42 +88,48 @@ export const TestimonialSection = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {reviewList.map((review) => (
-          <Card
-            key={review.name}
-            className="bg-muted/50 dark:bg-card flex flex-col"
-          >
-            <CardHeader>
-              <div className="flex gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="size-4 fill-primary text-primary"
-                  />
-                ))}
-              </div>
-            </CardHeader>
-            <CardContent className="flex-grow">
-              <p className="text-muted-foreground">{`"${review.comment}"`}</p>
-            </CardContent>
-            <CardFooter>
-              <div className="flex flex-row items-center gap-4">
-                <Avatar>
-                  <AvatarImage
-                    src={review.image}
-                    alt={review.userName}
-                  />
-                  <AvatarFallback>{review.name.substring(0, 2)}</AvatarFallback>
-                </Avatar>
+        {reviewData.map((review, index) => {
+          const name = t(review.nameKey);
+          const userName = t(review.userNameKey);
+          const comment = t(review.commentKey);
 
-                <div className="flex flex-col">
-                  <CardTitle className="text-lg">{review.name}</CardTitle>
-                  <CardDescription>{review.userName}</CardDescription>
+          return (
+            <Card
+              key={index}
+              className="bg-muted/50 dark:bg-card flex flex-col"
+            >
+              <CardHeader>
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className="size-4 fill-primary text-primary"
+                    />
+                  ))}
                 </div>
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <p className="text-muted-foreground">{`"${comment}"`}</p>
+              </CardContent>
+              <CardFooter>
+                <div className="flex flex-row items-center gap-4">
+                  <Avatar>
+                    <AvatarImage
+                      src={review.image}
+                      alt={userName}
+                    />
+                    <AvatarFallback>{name.substring(0, 2)}</AvatarFallback>
+                  </Avatar>
+
+                  <div className="flex flex-col">
+                    <CardTitle className="text-lg">{name}</CardTitle>
+                    <CardDescription>{userName}</CardDescription>
+                  </div>
+                </div>
+              </CardFooter>
+            </Card>
+          );
+        })}
       </div>
     </section>
   );

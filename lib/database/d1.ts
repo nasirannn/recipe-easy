@@ -11,7 +11,7 @@ export interface Recipe {
   difficulty: string;
   ingredients: string; // JSON string
   seasoning: string; // JSON string
-  steps: string; // JSON string
+  instructions: string; // JSON string
   chef_tips: string; // JSON string
   created_at?: string;
   updated_at?: string;
@@ -28,7 +28,7 @@ export interface RecipeResponse {
   difficulty: string;
   ingredients: string[];
   seasoning: string[];
-  steps: string[];
+  instructions: string[];
   chefTips: string[];
 }
 
@@ -45,7 +45,7 @@ export function transformRecipe(dbRecipe: Recipe): RecipeResponse {
     difficulty: dbRecipe.difficulty,
     ingredients: JSON.parse(dbRecipe.ingredients),
     seasoning: JSON.parse(dbRecipe.seasoning),
-    steps: JSON.parse(dbRecipe.steps),
+    instructions: JSON.parse(dbRecipe.instructions),
     chefTips: JSON.parse(dbRecipe.chef_tips)
   };
 }

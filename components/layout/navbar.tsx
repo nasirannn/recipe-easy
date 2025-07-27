@@ -1,6 +1,6 @@
 "use client";
 import { Menu } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
@@ -47,8 +47,20 @@ export const Navbar = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user, loading, signOut } = useAuth();
   const [isOpen, setIsOpen] = React.useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const t = useTranslations('navigation');
   const locale = useLocale();
+
+  // 监听页面滚动
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 50); // 滚动超过50px时显示背景
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const routeList: RouteProps[] = [
     {
@@ -91,7 +103,13 @@ export const Navbar = () => {
     }
   };
   return (
-    <header className="shadow-inner bg-opacity-15 w-full rounded-none flex justify-between items-center p-4 bg-card lg:px-8">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 w-full rounded-none flex justify-between items-center p-4 lg:px-8 transition-all duration-300 ${
+        isScrolled
+          ? 'bg-background/15 backdrop-blur-sm shadow-sm'
+          : 'bg-transparent backdrop-blur-none'
+      }`}
+    >
     {/* 左侧Logo和品牌名称 */}
     <Link href="/" className="font-bold text-base sm:text-lg flex items-center gap-1.5 sm:gap-2">
       <div className="relative w-7 h-7 sm:w-8 sm:h-8">
@@ -202,7 +220,7 @@ export const Navbar = () => {
           <NavigationMenuItem>
             {routeList.map(({ href, label }) => (
               <NavigationMenuLink key={href} asChild>
-                <Link href={href} className="text-base px-2 hover:text-primary">
+                <Link href={href} className="text-base px-4 hover:text-primary">
                   {label}
                 </Link>
               </NavigationMenuLink>

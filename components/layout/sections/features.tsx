@@ -16,7 +16,7 @@ export const FeaturesSection = () => {
   return (
     <section
       id="features"
-      className="w-full bg-primary/5 py-24 sm:py-32"
+      className="w-full bg-primary/5 pt-32 pb-24 sm:pt-40 sm:pb-32 relative"
     >
       <GridBackground className="absolute inset-0 z-[-1]" />
       <div className="container grid lg:grid-cols-2 gap-8 place-items-center">
