@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
         { id: 2, slug: 'seafood', name: language === 'zh' ? '海鲜' : 'Seafood', sort_order: 2 },
         { id: 3, slug: 'vegetables', name: language === 'zh' ? '蔬菜' : 'Vegetables', sort_order: 3 },
         { id: 4, slug: 'fruits', name: language === 'zh' ? '水果' : 'Fruits', sort_order: 4 },
-        { id: 5, slug: 'dairy-eggs', name: language === 'zh' ? '乳制品和蛋类' : 'Dairy & Eggs', sort_order: 5 },
+        { id: 5, slug: 'dairy-eggs', name: language === 'zh' ? '乳品和蛋类' : 'Dairy & Eggs', sort_order: 5 },
         { id: 6, slug: 'grains-bread', name: language === 'zh' ? '谷物和面包' : 'Grains & Bread', sort_order: 6 },
         { id: 7, slug: 'nuts-seeds', name: language === 'zh' ? '坚果和种子' : 'Nuts & Seeds', sort_order: 7 },
         { id: 8, slug: 'herbs-spices', name: language === 'zh' ? '香草和香料' : 'Herbs & Spices', sort_order: 8 },

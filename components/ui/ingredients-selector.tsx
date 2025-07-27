@@ -89,12 +89,65 @@ export const IngredientSelector = ({
   const [filteredIngredients, setFilteredIngredients] = useState<Ingredient[]>([]);
   const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
   const [categorizedIngredients, setCategorizedIngredients] = useState<Record<string, Ingredient[]>>({});
+  const [dynamicCategories, setDynamicCategories] = useState<Record<string, {name: string, icon: any, color: string}>>({});
   const [loading, setLoading] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [showFloatingButton, setShowFloatingButton] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // 获取分类数据
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('/api/ingredients', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'getCategories',
+          language: locale
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const categories: Record<string, {name: string, icon: any, color: string}> = {};
+
+        data.data.forEach((category: any) => {
+          // 映射数据库分类到UI分类
+          const uiCategoryKey = categoryMapping[category.slug] || 'condiments';
+          if (CATEGORIES[uiCategoryKey]) {
+            categories[uiCategoryKey] = {
+              name: category.name,
+              icon: CATEGORIES[uiCategoryKey].icon,
+              color: CATEGORIES[uiCategoryKey].color
+            };
+          }
+        });
+
+        setDynamicCategories(categories);
+      }
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+      // 如果获取失败，使用静态翻译作为备用
+    }
+  };
+
+  // 映射数据库分类到UI分类的函数
+  const categoryMapping: Record<string, keyof typeof CATEGORIES> = {
+    'meat': 'meat',
+    'seafood': 'seafood',
+    'vegetables': 'vegetable',
+    'fruits': 'fruit',
+    'dairy-eggs': 'dairy',
+    'grains-bread': 'grains',
+    'nuts-seeds': 'nuts',
+    'herbs-spices': 'herbs',
+    'oils-condiments': 'condiments'
+  };
 
   // 获取所有食材数据并按分类组织
   const fetchAllIngredients = async () => {
@@ -117,19 +170,6 @@ export const IngredientSelector = ({
 
         // 按分类组织食材
         const categorized: Record<string, Ingredient[]> = {};
-
-        // 映射数据库分类到UI分类
-        const categoryMapping: Record<string, keyof typeof CATEGORIES> = {
-          'meat': 'meat',
-          'seafood': 'seafood',
-          'vegetables': 'vegetable',
-          'fruits': 'fruit',
-          'dairy-eggs': 'dairy',
-          'grains-bread': 'grains',
-          'nuts-seeds': 'nuts',
-          'herbs-spices': 'herbs',
-          'oils-condiments': 'condiments'
-        };
 
         ingredients.forEach((ingredient: Ingredient) => {
           const dbCategory = ingredient.category?.slug;
@@ -183,6 +223,7 @@ export const IngredientSelector = ({
   // 初始化数据
   useEffect(() => {
     fetchAllIngredients();
+    fetchCategories();
   }, [locale]);
 
   // 处理搜索输入
@@ -357,7 +398,8 @@ export const IngredientSelector = ({
               {Object.entries(CATEGORIES).map(([categoryId, category]) => {
                 const Icon = category.icon;
                 const isActive = activeCategory === categoryId;
-                const categoryName = t(`categories.${categoryId}`);
+                // 优先使用动态获取的分类名称，如果没有则使用翻译作为备用
+                const categoryName = dynamicCategories[categoryId]?.name || t(`categories.${categoryId}`);
 
                 return (
                   <Tooltip key={categoryId}>
@@ -401,7 +443,7 @@ export const IngredientSelector = ({
                 {React.createElement(CATEGORIES[activeCategory].icon, {
                   className: cn("h-4 w-4", CATEGORIES[activeCategory].color)
                 })}
-                {t(`categories.${activeCategory}`)}
+                {dynamicCategories[activeCategory]?.name || t(`categories.${activeCategory}`)}
               </>
             )}
             <ChevronDown className={cn("h-4 w-4 transition-transform", showCategories && "rotate-180")} />
@@ -428,7 +470,7 @@ export const IngredientSelector = ({
                 )}
               >
                 <Icon className={cn("h-4 w-4", isActive ? "text-primary-foreground" : category.color)} />
-                {t(`categories.${categoryId}`)}
+                {dynamicCategories[categoryId]?.name || t(`categories.${categoryId}`)}
               </button>
             );
           })}
