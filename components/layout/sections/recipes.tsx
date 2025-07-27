@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { Spinner } from '@/components/ui/spinner';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Users, ChefHat } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 // Recipe 类型定义
 type Recipe = {
@@ -29,6 +30,7 @@ type Recipe = {
 };
 
 export const RecipesSection = () => {
+  const t = useTranslations('recipes');
   const [isLoading, setIsLoading] = useState(true);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
@@ -64,10 +66,10 @@ export const RecipesSection = () => {
     <section id="recipes" className="py-12 md:py-20 bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4 md:px-6">
         <h2 className="text-3xl text-primary font-bold text-center mb-2 md:mb-4">
-          Get Inspired
+          {t('title')}
         </h2>
         <p className="text-center text-xl text-muted-foreground dark:text-gray-300 mb-8 md:mb-12 max-w-2xl mx-auto">
-          Get inspired by our collection of delicious recipes from around the world.
+          {t('subtitle')}
         </p>
         {isLoading ? (
           <div className="flex justify-center items-center py-20">

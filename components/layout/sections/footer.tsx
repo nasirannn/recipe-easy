@@ -1,8 +1,11 @@
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from 'next-intl';
 
 export const FooterSection = () => {
+  const t = useTranslations('footer');
+
   return (
     <footer id="footer" className="container py-24 sm:py-32">
       <div className="p-10 bg-card rounded-2xl">
@@ -21,7 +24,7 @@ export const FooterSection = () => {
         RecipeEasy
       </Link>
       <p className="text-sm text-muted-foreground mt-3 max-w-xs">
-        RecipeEasy is an AI-powered platform that transforms your ingredients into delicious recipes. Experience the magic of culinary creativity in seconds.
+        {t('description')}
       </p>
           </div>
 
@@ -30,10 +33,10 @@ export const FooterSection = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <h3 className="font-bold text-lg">About</h3>
+            <h3 className="font-bold text-lg">{t('about')}</h3>
             <div>
               <Link href="#" className="opacity-60 hover:opacity-100">
-                Features
+                {t('features')}
               </Link>
             </div>
           </div>
@@ -48,16 +51,16 @@ export const FooterSection = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <h3 className="font-bold text-lg">Help</h3>
+            <h3 className="font-bold text-lg">{t('help')}</h3>
             <div>
               <Link href="#" className="opacity-60 hover:opacity-100">
-                Contact Us
+                {t('contact')}
               </Link>
             </div>
 
             <div>
               <Link href="#" className="opacity-60 hover:opacity-100">
-                FAQ
+                {t('faq')}
               </Link>
             </div>
           </div>
@@ -66,7 +69,7 @@ export const FooterSection = () => {
         <Separator className="my-6" />
         <section className="">
           <h3 className="text-left text-gray-500">
-            &copy; 2025 Recipe Easy. Not affiliated with recipeeasy.com.
+            {t('copyright')}
             {/* <Link
               target="_blank"
               href="https://github.com/leoMirandaa"

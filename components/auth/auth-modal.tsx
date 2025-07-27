@@ -14,8 +14,8 @@ import {
 import { Mail, AlertCircle, Loader2, Eye } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
-// 移除邮箱域名验证功能
 import { GoogleIcon } from "@/components/icons/google-icon";
+import { useTranslations } from 'next-intl';
 
 
 
@@ -24,15 +24,8 @@ interface AuthModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-function getLang() {
-  if (typeof window !== 'undefined') {
-    const lang = localStorage.getItem('lang') || navigator.language || 'en';
-    return lang.startsWith('zh') ? 'zh' : 'en';
-  }
-  return 'en';
-}
-
 export function AuthModal({ open, onOpenChange }: AuthModalProps) {
+  const t = useTranslations('auth');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -49,16 +42,16 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     
     try {
       if (typeof signInWithGoogle !== 'function') {
-        throw new Error("Sign in function not properly initialized");
+        throw new Error(t('signInNotInitialized'));
       }
-      
+
       await signInWithGoogle();
       // 成功时不重置 loading 状态，因为页面会跳转
       // 保持加载状态直到页面跳转完成
     } catch (error) {
       console.error("Google sign in error:", error);
-      setError(error instanceof Error ? error.message : "An error occurred during sign in");
-      toast.error("Sign in failed, please try again later");
+      setError(error instanceof Error ? error.message : t('generalError'));
+      toast.error(t('signInFailed'));
       setIsLoading(false); // 只在出错时重置加载状态
     }
   };
@@ -71,11 +64,11 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     
     try {
       await signInWithEmail(email, password);
-      toast.success("Signed in successfully");
+      toast.success(t('signInSuccess'));
       onOpenChange(false);
     } catch (error) {
       console.error("Email sign in error:", error);
-      setError(error instanceof Error ? error.message : "Sign in failed, please check your credentials");
+      setError(error instanceof Error ? error.message : t('signInError'));
     } finally {
       setIsLoading(false);
     }
@@ -90,11 +83,11 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     
     try {
       await signUpWithEmail(email, password);
-      toast.success("Verification email sent. Please check your inbox.");
+      toast.success(t('signUpSuccess'));
       onOpenChange(false);
     } catch (error) {
       console.error("Email sign up error:", error);
-      setError(error instanceof Error ? error.message : "Sign up failed, please try again");
+      setError(error instanceof Error ? error.message : t('signUpError'));
     } finally {
       setIsLoading(false);
     }
@@ -108,11 +101,11 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     
     try {
       await resetPassword(email);
-      toast.success("Password reset email sent. Please check your inbox.");
+      toast.success(t('resetPasswordSuccess'));
       setShowResetPassword(false);
     } catch (error) {
       console.error("Password reset error:", error);
-      setError(error instanceof Error ? error.message : "Failed to send password reset email");
+      setError(error instanceof Error ? error.message : t('resetPasswordError'));
     } finally {
       setIsLoading(false);
     }
@@ -125,10 +118,10 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
           <div className="p-6">
             <DialogHeader className="text-center mb-4">
               <DialogTitle className="text-2xl font-bold">
-                Reset Password
+                {t('resetPassword')}
               </DialogTitle>
               <DialogDescription className="text-muted-foreground">
-                Enter your email to receive a password reset link
+                {t('resetPasswordDescription')}
               </DialogDescription>
             </DialogHeader>
 
@@ -141,11 +134,11 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email-reset">Email</Label>
+                <Label htmlFor="email-reset">{t('email')}</Label>
                 <Input
                   id="email-reset"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={t('enterYourEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="h-12 rounded-md"
@@ -159,7 +152,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                   className="w-1/2 h-12"
                   disabled={isLoading}
                 >
-                  Back
+                  {t('back')}
                 </Button>
                 
                 <Button
@@ -172,7 +165,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                   ) : (
                     <Mail className="mr-2 h-4 w-4" />
                   )}
-                  Send Reset Link
+                  {t('sendResetEmail')}
                 </Button>
               </div>
             </div>
@@ -188,10 +181,10 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
         <div className="p-6">
           <DialogHeader className="text-center mb-4">
             <DialogTitle className="text-2xl font-bold text-center">
-              {isSignUp ? 'Sign Up' : 'Sign In'}
+              {isSignUp ? t('signUpTitle') : t('signInTitle')}
             </DialogTitle>
             <DialogDescription className="text-muted-foreground text-center">
-              {isSignUp ? 'Create your account' : 'Sign in to your account'}
+              {isSignUp ? t('signUpDescription') : t('signInDescription')}
             </DialogDescription>
           </DialogHeader>
 
@@ -204,11 +197,11 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Input your email here"
+                placeholder={t('emailPlaceholder')}
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
@@ -225,14 +218,14 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">
-                  Password
+                  {t('password')}
                 </Label>
               </div>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Input your password here"
+                  placeholder={t('passwordPlaceholder')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="h-12 rounded-md pr-10"
@@ -255,17 +248,17 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : null}
-              {isSignUp ? 'Sign Up' : 'Sign In'}
+              {isSignUp ? t('signUp') : t('signIn')}
             </Button>
 
             {!isSignUp && (
               <div className="flex justify-start mt-2">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowResetPassword(true)}
                   className="text-xs text-primary hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
                 >
-                  Forgot password?
+                  {t('forgotPassword')}
                 </button>
               </div>
             )}
@@ -276,7 +269,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  or continue with
+                  {t('or')}
                 </span>
               </div>
             </div>
@@ -292,7 +285,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               ) : (
                 <GoogleIcon className="h-5 w-5 mr-2" />
               )}
-              {isLoading ? 'Signing in...' : 'Continue with Google'}
+              {isLoading ? t('signingIn') : t('continueWithGoogle')}
             </Button>
             
             <div className="text-center mt-4">
@@ -301,9 +294,9 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 onClick={() => setIsSignUp(!isSignUp)}
                 className="text-sm text-primary hover:text-primary/80"
               >
-                {isSignUp 
-                  ? "Already have an account? Sign in"
-                  : "Don't have an account? Sign up"}
+                {isSignUp
+                  ? t('alreadyHaveAccount')
+                  : t('dontHaveAccount')}
               </button>
             </div>
           </div>

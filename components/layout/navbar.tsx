@@ -12,7 +12,6 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
 } from "../ui/navigation-menu";
 import {
   DropdownMenu,
@@ -26,13 +25,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { ToggleTheme } from "./toogle-theme";
 import { LanguageSwitcher } from "../ui/language-switcher";
-import { useLanguage } from "@/contexts/language-context";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { useAuth } from "@/contexts/auth-context";
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation'
 import { LogOut } from "lucide-react";
 import { AuthModal } from "@/components/auth/auth-modal";
-import { RoleManager } from "../admin/role-manager";
 
 interface RouteProps {
   href: string;
@@ -49,20 +47,21 @@ export const Navbar = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user, loading, signOut } = useAuth();
   const [isOpen, setIsOpen] = React.useState(false);
-  const { t } = useLanguage();
+  const t = useTranslations('navigation');
+  const locale = useLocale();
 
   const routeList: RouteProps[] = [
     {
       href: "#features",
-      label: t("nav.features"),
+      label: t("features"),
     },
     {
       href: "#testimonials",
-      label: t("nav.testimonials"),
+      label: t("testimonials"),
     },
     {
       href: "#faq",
-      label: t("nav.faq"),
+      label: t("faq"),
     },
   ];
 
@@ -170,15 +169,15 @@ export const Navbar = () => {
                   </div>
                   <Button onClick={handleLogout} variant="outline" className="w-full">
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
+                    <span>{t('logout')}</span>
                   </Button>
                 </div>
               ) : (
                 <Button onClick={() => {
                   setIsOpen(false);
                   setShowAuthModal(true);
-                }} variant="default" className="w-full">            
-                  Sign In
+                }} variant="default" className="w-full">
+                  {t('login')}
                 </Button>
               )
             )}
@@ -234,13 +233,13 @@ export const Navbar = () => {
                   </DropdownMenuLabel>
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
+                    <span>{t('logout')}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button onClick={() => setShowAuthModal(true)} variant="default" size="sm">            
-                Sign In
+              <Button onClick={() => setShowAuthModal(true)} variant="default" size="sm">
+                {t('login')}
               </Button>
             )
           )}

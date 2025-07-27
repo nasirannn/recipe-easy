@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Star } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
 interface ReviewProps {
   image: string;
@@ -70,15 +71,17 @@ const reviewList: ReviewProps[] = [
 ];
 
 export const TestimonialSection = () => {
+  const t = useTranslations('testimonials');
+
   return (
     <section id="testimonials" className="container py-4 sm:py-12">
       <div className="text-center mb-8">
         <h2 className="text-lg text-primary text-center mb-2 tracking-wider">
-          Testimonials
+          {t('title')}
         </h2>
 
         <h2 className="text-3xl md:text-4xl text-center font-bold mb-4">
-          What Our Users Are Saying
+          {t('subtitle')}
         </h2>
       </div>
 

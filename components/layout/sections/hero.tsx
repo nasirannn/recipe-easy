@@ -8,10 +8,47 @@ import { RecipeDisplay } from "@/components/ui/recipe-display";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { generateImageForRecipe } from "@/lib/services/image-service";
 import { IMAGE_GEN_CONFIG, APP_CONFIG } from "@/lib/config";
-import { useLanguage } from "@/contexts/language-context";
+import { useTranslations, useLocale } from 'next-intl';
 
 export const HeroSection = () => {
-  const { t } = useLanguage();
+  const t = useTranslations('hero');
+  const locale = useLocale();
+
+  // 处理标题的渐变效果
+  const renderTitle = () => {
+    const title = t('title');
+    // 英文版本：With our AI-powered assistant, you can generate recipes easily
+    // 中文版本：借助我们的 AI 助手，您可以轻松生成食谱
+
+    if (title.includes('generate recipes')) {
+      // 英文版本
+      const parts = title.split('generate recipes');
+      return (
+        <>
+          {parts[0]}
+          <span className="text-transparent px-2 bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">
+            generate recipes
+          </span>
+          {parts[1]}
+        </>
+      );
+    } else if (title.includes('生成食谱')) {
+      // 中文版本
+      const parts = title.split('生成食谱');
+      return (
+        <>
+          {parts[0]}
+          <span className="text-transparent px-2 bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">
+            生成食谱
+          </span>
+          {parts[1]}
+        </>
+      );
+    } else {
+      // 回退方案
+      return title;
+    }
+  };
 
   //Recipe Form
   const [formData, setFormData] = useState<RecipeFormData>({
@@ -123,7 +160,7 @@ export const HeroSection = () => {
   const { theme } = useTheme();
   return (
     <section id="hero" className="w-full bg-primary/5">
-      <GridBackground className="absolute inset-0 z-[-1]" />
+      <GridBackground className="absolute inset-0 z-[-1]" /> 
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center space-y-8">
           {/* <Badge variant="outline" className="text-sm py-1 border-grey">
@@ -135,21 +172,12 @@ export const HeroSection = () => {
 
           <div className="max-w-screen-lg mx-auto text-center text-3xl md:text-6xl font-bold">
             <h1>
-              {t('hero.title').split('generate recipes').map((part, index, array) => (
-                <span key={index}>
-                  {part}
-                  {index < array.length - 1 && (
-                    <span className="text-transparent px-2 bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">
-                      generate recipes
-                    </span>
-                  )}
-                </span>
-              ))}
+              {renderTitle()}
             </h1>
           </div>
 
           <p className="max-w-screen-md mx-auto text-xl text-muted-foreground">
-            {t('hero.subtitle')}
+            {t('subtitle')}
           </p>
 
           <div className="space-y-4 md:space-y-0 md:space-x-4">
@@ -169,7 +197,7 @@ export const HeroSection = () => {
         {showRecipe && (
           <div id="loading-animation-container">
             {loading ? (
-              <LoadingAnimation />
+              <LoadingAnimation language={locale as 'en' | 'zh'} />
             ) : (
               recipes.length > 0 && (
                 <RecipeDisplay

@@ -9,6 +9,7 @@ import { Badge } from "./badge";
 import Image from "next/image";
 import { Spinner } from "./spinner";
 import { Dialog, DialogContent } from "./dialog";
+import { useTranslations } from 'next-intl';
 
 interface RecipeDisplayProps {
   recipes: Recipe[];
@@ -16,10 +17,11 @@ interface RecipeDisplayProps {
 }
 
 export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayProps) => {
+  const t = useTranslations('recipeDisplay');
   const [activeItemId, setActiveItemId] = useState<string | undefined>(
     recipes.find(r => r.recommended)?.id || (recipes.length > 0 ? recipes[0].id : undefined)
   );
-  
+
   const [copiedSection, setCopiedSection] = useState<{recipeId: string, type: 'ingredients' | 'seasoning' | 'instructions'} | null>(null);
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -31,9 +33,9 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
 
   const getDifficultyLabel = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return 'Easy';
-      case 'medium': return 'Medium';
-      case 'hard': return 'Hard';
+      case 'easy': return t('easy');
+      case 'medium': return t('medium');
+      case 'hard': return t('hard');
       default: return difficulty;
     }
   };
@@ -81,15 +83,15 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                     <div className="flex items-center gap-6 text-sm dark:text-gray-700 mb-6">
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4" />
-                        <span>{recipe.servings} servings</span>
+                        <span>{recipe.servings} {t('servings')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4" />
-                        <span>{recipe.time} minutes</span>
+                        <span>{recipe.time} {t('minutes')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <ChefHat className="h-4 w-4" />
-                        <span>{recipe.difficulty} difficulty</span>
+                        <span>{getDifficultyLabel(recipe.difficulty)} {t('difficulty')}</span>
                       </div>
                     </div>
 
@@ -135,7 +137,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                   <div>
                     <div className="flex items-center justify-between mb-8">
                       <h2 className="text-xl font-medium text-gray-900 dark:text-gray-800 tracking-wide">
-                        <span>🥬</span> Ingredients
+                        <span>🥬</span> {t('ingredients')}
                       </h2>
                       <TooltipProvider>
                         <Tooltip>
@@ -146,7 +148,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                               className="h-8 w-8 p-0 hover:bg-gray-100"
                               onClick={() => {
                                 const recipeName = `${recipe.title}`;
-                                const sectionTitle = "Ingredients:";
+                                const sectionTitle = `${t('ingredients')}:`;
                                 const steps = recipe.ingredients
                                   ?.map((instr) => `• ${instr}`)
                                   .join('\n')
@@ -170,7 +172,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Copy ingredients</p>
+                            <p>{t('copyIngredients')}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -191,7 +193,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                     <div>
                       <div className="flex items-center justify-between mb-8">
                         <h2 className="text-xl font-medium text-gray-900 dark:text-gray-800 tracking-wide">
-                          <span>🫙</span> Seasoning
+                          <span>🫙</span> {t('seasoning')}
                         </h2>
                         <TooltipProvider>
                           <Tooltip>
@@ -202,7 +204,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                                 className="h-8 w-8 p-0 hover:bg-gray-100"
                                 onClick={() => {
                                   const recipeName = `${recipe.title}`;
-                                  const sectionTitle = "Seasoning:";
+                                  const sectionTitle = `${t('seasoning')}:`;
                                   const steps = recipe.seasoning
                                     ?.map((season) => `• ${season}`)
                                     .join('\n')
@@ -226,7 +228,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>Copy seasoning</p>
+                              <p>{t('copySeasoning')}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -250,7 +252,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
 
                   <div className="flex items-center justify-between mb-8">
                     <h2 className="text-xl font-medium text-gray-900 dark:text-gray-800 tracking-wide">
-                      <span>📖</span> Instructions
+                      <span>📖</span> {t('instructions')}
                     </h2>
                     <TooltipProvider>
                       <Tooltip>
@@ -261,7 +263,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                             className="h-8 w-8 p-0 hover:bg-gray-100"
                             onClick={() => {
                               const recipeName = `${recipe.title}`;
-                              const sectionTitle = "Instructions:";
+                              const sectionTitle = `${t('instructions')}:`;
                               const steps = recipe.instructions
                                 ?.map((instr, idx) => `${idx + 1}. ${instr}`)
                                 .join('\n')
@@ -285,7 +287,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Copy instructions</p>
+                          <p>{t('copyInstructions')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>

@@ -1,5 +1,19 @@
-import type { Ingredient } from "./constants/ingredients";
 import type { ImageModel } from "./services/image-service";
+
+// 食材接口定义
+export interface Ingredient {
+  id: string;
+  slug?: string;
+  name: string;
+  englishName: string;
+  category?: {
+    id: number;
+    slug: string;
+    name: string;
+  };
+  isCustom?: boolean;
+  userId?: string;
+}
 
 export interface Recipe {
   id: string;

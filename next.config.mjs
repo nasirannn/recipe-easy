@@ -1,7 +1,11 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./i18n.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    remotePatterns: [      
+    remotePatterns: [
       {
         protocol: "https",
         hostname: "**.aliyuncs.com",
@@ -13,22 +17,15 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-      {
-        protocol: "https",
         hostname: "replicate.delivery",
       },
       {
         protocol: "https",
         hostname: "recipe-easy.annnb016.workers.dev",
       },
-      {
-        protocol: "https",
-        hostname: "*.workers.dev",
-      },
+      // 删除 *.workers.dev，这种写法不支持
     ],
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

@@ -29,6 +29,7 @@ import {
   DialogTrigger,
   DialogClose
 } from "./dialog";
+import { useLocale, useTranslations } from 'next-intl';
 
 // 食材接口定义
 interface Ingredient {
@@ -47,15 +48,15 @@ interface Ingredient {
 
 // 分类图标映射
 const CATEGORIES = {
-  meat: { icon: Beef, label: 'Meat', color: 'text-red-600' },
-  seafood: { icon: Fish, label: 'Seafood', color: 'text-blue-600' },
-  vegetable: { icon: Carrot, label: 'Vegetables', color: 'text-green-600' },
-  fruit: { icon: Apple, label: 'Fruits', color: 'text-yellow-600' },
-  dairy: { icon: Milk, label: 'Dairy & Eggs', color: 'text-purple-600' },
-  grains: { icon: Sandwich, label: 'Grains & Bread', color: 'text-amber-600' },
-  nuts: { icon: Nut, label: 'Nuts & Seeds', color: 'text-orange-600' },
-  herbs: { icon: Flower, label: 'Herbs & Spices', color: 'text-emerald-600' },
-  condiments: { icon: Cookie, label: 'Oils & Condiments', color: 'text-indigo-600' }
+  meat: { icon: Beef, color: 'text-red-600' },
+  seafood: { icon: Fish, color: 'text-blue-600' },
+  vegetable: { icon: Carrot, color: 'text-green-600' },
+  fruit: { icon: Apple, color: 'text-yellow-600' },
+  dairy: { icon: Milk, color: 'text-purple-600' },
+  grains: { icon: Sandwich, color: 'text-amber-600' },
+  nuts: { icon: Nut, color: 'text-orange-600' },
+  herbs: { icon: Flower, color: 'text-emerald-600' },
+  condiments: { icon: Cookie, color: 'text-indigo-600' }
 } as const;
 
 interface IngredientSelectorProps {
@@ -63,7 +64,6 @@ interface IngredientSelectorProps {
   onIngredientSelect: (ingredient: Ingredient) => void;
   onIngredientRemove?: (ingredient: Ingredient) => void;
   onClearAll?: () => void;
-  language?: 'en' | 'zh';
 }
 
 // 自定义食材类型
@@ -81,8 +81,9 @@ export const IngredientSelector = ({
   onIngredientSelect,
   onIngredientRemove,
   onClearAll,
-  language = 'en',
 }: IngredientSelectorProps) => {
+  const locale = useLocale();
+  const t = useTranslations('ingredientSelector');
   const [searchValue, setSearchValue] = useState("");
   const [activeCategory, setActiveCategory] = React.useState<keyof typeof CATEGORIES>('meat');
   const [filteredIngredients, setFilteredIngredients] = useState<Ingredient[]>([]);
@@ -99,7 +100,7 @@ export const IngredientSelector = ({
   const fetchAllIngredients = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/ingredients?lang=${language}&limit=200`);
+      const response = await fetch(`/api/ingredients?lang=${locale}&limit=200`);
       const data = await response.json();
 
       if (data.success) {
@@ -183,7 +184,7 @@ export const IngredientSelector = ({
   // 初始化数据
   useEffect(() => {
     fetchAllIngredients();
-  }, [language]);
+  }, [locale]);
 
   // 处理搜索输入
   useEffect(() => {
@@ -307,7 +308,7 @@ export const IngredientSelector = ({
             <Input
               ref={inputRef}
               type="text"
-              placeholder={selectedIngredients.length > 0 ? "Add more ingredients..." : "select or enter ingredients..."}
+              placeholder={selectedIngredients.length > 0 ? t('addMoreIngredients') : t('selectOrEnterIngredients')}
               className="border-none shadow-none focus-visible:ring-0 p-0 h-7 text-sm"
               value={searchValue}
               onChange={handleInputChange}
@@ -324,22 +325,22 @@ export const IngredientSelector = ({
                     className="h-7 px-2 text-muted-foreground hover:text-destructive"
                   >
                     <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">Clear all</span>
+                    <span className="sr-only">{t('clearAll')}</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Clear all ingredients?</DialogTitle>
+                    <DialogTitle>{t('clearAllIngredients')}</DialogTitle>
                     <DialogDescription>
-                      Are you sure you want to remove all selected ingredients? This action cannot be undone.
+                      {t('clearAllConfirmation')}
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter>
                     <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
+                      <Button variant="outline">{t('cancel')}</Button>
                     </DialogClose>
                     <Button variant="destructive" onClick={handleClearAll}>
-                      Remove All
+                      {t('confirm')}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -369,7 +370,7 @@ export const IngredientSelector = ({
                   )}
                 >
                   <Icon className={cn("h-4 w-4", isActive ? "text-primary-foreground" : category.color)} />
-                  {category.label}
+                  {t(`categories.${categoryId}`)}
                 </button>
               );
             })}
@@ -392,7 +393,7 @@ export const IngredientSelector = ({
                 {React.createElement(CATEGORIES[activeCategory].icon, {
                   className: cn("h-4 w-4", CATEGORIES[activeCategory].color)
                 })}
-                {CATEGORIES[activeCategory].label}
+                {t(`categories.${activeCategory}`)}
               </>
             )}
             <ChevronDown className={cn("h-4 w-4 transition-transform", showCategories && "rotate-180")} />
@@ -419,7 +420,7 @@ export const IngredientSelector = ({
                 )}
               >
                 <Icon className={cn("h-4 w-4", isActive ? "text-primary-foreground" : category.color)} />
-                {category.label}
+                {t(`categories.${categoryId}`)}
               </button>
             );
           })}
@@ -431,7 +432,7 @@ export const IngredientSelector = ({
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <span className="ml-3 text-muted-foreground">Loading ingredients...</span>
+            <span className="ml-3 text-muted-foreground">{t('loadingIngredients')}</span>
           </div>
         ) : (
           <ScrollArea className="h-64 w-full">
@@ -440,12 +441,12 @@ export const IngredientSelector = ({
                 <button
                   key={ingredient.id}
                   onClick={() => handleIngredientSelect(ingredient)}
-                  className="group relative p-3 rounded-lg bg-card hover:bg-accent border border-border hover:border-primary/50 text-sm text-center transition-all duration-200 hover:shadow-sm"
+                  className="group relative p-3 rounded-lg bg-card hover:bg-accent border border-border text-sm text-center transition-all duration-200 hover:shadow-sm"
                 >
                   <div className="font-medium text-foreground group-hover:text-accent-foreground">
                     {ingredient.englishName}
                   </div>
-                  {language === 'zh' && ingredient.name !== ingredient.englishName && (
+                  {locale === 'zh' && ingredient.name !== ingredient.englishName && (
                     <div className="text-xs text-muted-foreground mt-1">
                       {ingredient.name}
                     </div>
@@ -461,10 +462,10 @@ export const IngredientSelector = ({
         {!loading && filteredIngredients.length === 0 && searchValue.trim() && (
           <div className="text-center py-8 space-y-2">
             <div className="text-muted-foreground">
-              No ingredients found for "{searchValue}"
+              {t('noIngredientsFound')} "{searchValue}"
             </div>
             <div className="text-sm text-muted-foreground">
-              Press <kbd className="px-2 py-1 bg-muted rounded text-xs">Enter</kbd> to add it as a custom ingredient
+              Press <kbd className="px-2 py-1 bg-muted rounded text-xs">Enter</kbd> {t('pressEnterToAdd')}
             </div>
           </div>
         )}
@@ -472,7 +473,7 @@ export const IngredientSelector = ({
         {/* 分类为空时的提示 */}
         {!loading && filteredIngredients.length === 0 && !searchValue.trim() && (
           <div className="text-center py-8 text-muted-foreground">
-            No ingredients available in this category
+{t('noIngredientsInCategory')}
           </div>
         )}
       </div>
@@ -490,7 +491,7 @@ export const IngredientSelector = ({
           >
             <div className="flex flex-col items-center">
               <div className="text-xs font-bold">{selectedIngredients.length}</div>
-              <div className="text-xs">items</div>
+              <div className="text-xs">{t('items')}</div>
             </div>
           </Button>
         </div>

@@ -15,6 +15,7 @@ import { IMAGE_GEN_CONFIG } from "@/lib/config";
 import { ImageModel } from "@/lib/services/image-service";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCuisines } from "@/hooks/use-cuisines";
+import { useTranslations } from 'next-intl';
 
 // 食材接口定义
 interface Ingredient {
@@ -63,6 +64,7 @@ export const RecipeForm = ({
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const { cuisines, loading: cuisinesLoading } = useCuisines();
+  const t = useTranslations('recipeForm');
   
   // 检测屏幕尺寸
   useEffect(() => {
@@ -134,7 +136,7 @@ export const RecipeForm = ({
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="text-xs flex gap-1.5 h-7 px-2 sm:px-3">
                   <Sliders className="h-3 w-3" />
-                  <span className="hidden sm:inline-block">More Options</span>
+                  <span className="hidden sm:inline-block">{t('moreOptions')}</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[280px] sm:w-80">
@@ -143,9 +145,9 @@ export const RecipeForm = ({
                     <div className="flex items-center justify-between">
                       <Label htmlFor="servings" className="flex items-center gap-1 sm:gap-2 text-sm">
                         <Users className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
-                        <span>Servings</span>
+                        <span>{t('servings')}</span>
                       </Label>
-                      <span className="text-xs sm:text-sm font-medium">{formData.servings} servings</span>
+                      <span className="text-xs sm:text-sm font-medium">{formData.servings} {t('servingsCount')}</span>
                     </div>
                     <Slider
                       id="servings"
@@ -163,9 +165,9 @@ export const RecipeForm = ({
                     <div className="flex items-center justify-between">
                       <Label htmlFor="recipeCount" className="flex items-center gap-1 sm:gap-2 text-sm">
                         <Sparkles className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
-                        <span>Recipe Count</span>
+                        <span>{t('recipeCount')}</span>
                       </Label>
-                      <span className="text-xs sm:text-sm font-medium">{formData.recipeCount} recipes</span>
+                      <span className="text-xs sm:text-sm font-medium">{formData.recipeCount} {t('recipesCount')}</span>
                     </div>
                     <Slider
                       id="recipeCount"
@@ -182,19 +184,19 @@ export const RecipeForm = ({
                   <div className="space-y-1 sm:space-y-2">
                     <Label htmlFor="cookingTime" className="flex items-center gap-1 sm:gap-2 text-sm">
                       <Clock className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
-                      <span>Cooking Time</span>
+                      <span>{t('cookingTime')}</span>
                     </Label>
                     <Select
                       value={formData.cookingTime}
                       onValueChange={(value) => onFormChange({ ...formData, cookingTime: value })}
                     >
                       <SelectTrigger id="cookingTime" className="h-8 sm:h-9 text-xs sm:text-sm">
-                        <SelectValue placeholder="Select cooking time" />
+                        <SelectValue placeholder={t('selectCookingTime')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="quick">Quick</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="long">Long</SelectItem>
+                        <SelectItem value="quick">{t('quick')}</SelectItem>
+                        <SelectItem value="medium">{t('medium')}</SelectItem>
+                        <SelectItem value="long">{t('long')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -202,19 +204,19 @@ export const RecipeForm = ({
                   <div className="space-y-1 sm:space-y-2">
                     <Label htmlFor="difficulty" className="flex items-center gap-1 sm:gap-2 text-sm">
                       <Gauge className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
-                      <span>Difficulty</span>
+                      <span>{t('difficulty')}</span>
                     </Label>
                     <Select
                       value={formData.difficulty}
                       onValueChange={(value: 'easy' | 'medium' | 'hard') => onFormChange({ ...formData, difficulty: value })}
                     >
                       <SelectTrigger id="difficulty" className="h-8 sm:h-9 text-xs sm:text-sm">
-                        <SelectValue placeholder="Select difficulty level" />
+                        <SelectValue placeholder={t('selectDifficulty')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="easy">Easy (Beginner friendly)</SelectItem>
-                        <SelectItem value="medium">Medium (Some experience)</SelectItem>
-                        <SelectItem value="hard">Hard (Advanced techniques)</SelectItem>
+                        <SelectItem value="easy">{t('easy')}</SelectItem>
+                        <SelectItem value="medium">{t('mediumDifficulty')}</SelectItem>
+                        <SelectItem value="hard">{t('hard')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -222,19 +224,19 @@ export const RecipeForm = ({
                   <div className="space-y-1 sm:space-y-2">
                     <Label htmlFor="cuisine" className="flex items-center gap-1 sm:gap-2 text-sm">
                       <Globe className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
-                      <span>Cuisine</span>
+                      <span>{t('cuisine')}</span>
                     </Label>
                     <Select
                       value={formData.cuisine}
                       onValueChange={(value) => onFormChange({ ...formData, cuisine: value })}
                     >
                       <SelectTrigger id="cuisine" className="h-8 sm:h-9 text-xs sm:text-sm">
-                        <SelectValue placeholder="Select cuisine style" />
+                        <SelectValue placeholder={t('selectCuisine')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="any">Any Cuisine</SelectItem>
+                        <SelectItem value="any">{t('anyCuisine')}</SelectItem>
                         {cuisinesLoading ? (
-                          <SelectItem value="" disabled>Loading cuisines...</SelectItem>
+                          <SelectItem value="" disabled>{t('loadingCuisines')}</SelectItem>
                         ) : (
                           cuisines.map((cuisine) => (
                             <SelectItem key={cuisine.id} value={cuisine.name.toLowerCase()}>
@@ -374,8 +376,8 @@ export const RecipeForm = ({
             disabled={loading || formData.ingredients.length < 2}
           >
             <Sparkles className="h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">{loading ? 'Generating...' : 'Generate'}</span>
-            <span className="sm:hidden">{loading ? 'Wait...' : 'Go'}</span>
+            <span className="hidden sm:inline">{loading ? t('generating') : t('generate')}</span>
+            <span className="sm:hidden">{loading ? t('wait') : t('go')}</span>
           </Button>
         </div>
       </div>
