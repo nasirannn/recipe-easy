@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,7 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Globe } from 'lucide-react';
+import { Globe, Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const languages = [
   { code: 'en', name: 'English' },
@@ -18,7 +19,6 @@ const languages = [
 
 export function LanguageSwitcher() {
   const locale = useLocale();
-  const router = useRouter();
   const pathname = usePathname();
 
   const switchLanguage = (newLocale: string) => {
@@ -41,24 +41,36 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2">
-          <Globe className="h-4 w-4" />
-          <span className="hidden sm:inline">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-2 hover:bg-accent/50 transition-colors duration-200 rounded-full px-3 py-2"
+        >
+          <Globe className="h-4 w-4 text-muted-foreground" />
+          <span className="hidden sm:inline font-medium">
             {currentLanguage?.name}
           </span>
-         
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent
+        align="end"
+        className="w-40 p-2 bg-background/95 backdrop-blur-md border shadow-xl rounded-xl"
+        sideOffset={8}
+      >
         {languages.map((language) => (
           <DropdownMenuItem
             key={language.code}
             onClick={() => switchLanguage(language.code)}
-            className={`gap-2 ${locale === language.code ? 'bg-accent' : ''}`}
+            className={cn(
+              "flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200 font-medium",
+              locale === language.code
+                ? "bg-primary/10 text-primary shadow-sm"
+                : "hover:bg-accent text-foreground"
+            )}
           >
-            <span>{language.name}</span>
+            <span className="text-sm">{language.name}</span>
             {locale === language.code && (
-              <span className="ml-auto text-xs text-muted-foreground">✓</span>
+              <Check className="h-4 w-4 text-primary" />
             )}
           </DropdownMenuItem>
         ))}

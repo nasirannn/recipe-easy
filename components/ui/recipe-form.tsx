@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/auth-context";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { cn } from "@/lib/utils";
-import { IMAGE_GEN_CONFIG } from "@/lib/config";
+import { IMAGE_GEN_CONFIG, APP_CONFIG } from "@/lib/config";
 import { ImageModel } from "@/lib/services/image-service";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCuisines } from "@/hooks/use-cuisines";
@@ -263,11 +263,11 @@ export const RecipeForm = ({
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium">Language Model</h3>
                   <RadioGroup
-                    value={formData.languageModel || 'deepseek'}
+                    value={formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL}
                     onValueChange={value => onFormChange({ ...formData, languageModel: value as 'deepseek' | 'qwenplus' | 'gpt4o-mini' })}
                     className="grid grid-cols-1 gap-3"
                   >
-                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || 'deepseek') === 'deepseek' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL) === 'deepseek' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
                       <div className="flex items-center gap-2">
                         <RadioGroupItem value="deepseek" id="lm-deepseek" />
                         <Label htmlFor="lm-deepseek" className="font-medium cursor-pointer">Deepseek</Label>
@@ -280,7 +280,7 @@ export const RecipeForm = ({
                         </ul>
                       </div>
                     </div>
-                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || 'deepseek') === 'qwenplus' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL) === 'qwenplus' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
                       <div className="flex items-center gap-2">
                         <RadioGroupItem value="qwenplus" id="lm-qwenplus" />
                         <Label htmlFor="lm-qwenplus" className="font-medium cursor-pointer">Qwen Plus</Label>
@@ -293,7 +293,7 @@ export const RecipeForm = ({
                         </ul>
                       </div>
                     </div>
-                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || 'deepseek') === 'gpt4o-mini' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL) === 'gpt4o-mini' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
                       <div className="flex items-center gap-2">
                         <RadioGroupItem value="gpt4o-mini" id="lm-gpt4o-mini" />
                         <Label htmlFor="lm-gpt4o-mini" className="font-medium cursor-pointer">GPT-4o Mini</Label>
@@ -325,11 +325,11 @@ export const RecipeForm = ({
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium">Image Generation Model</h3>
                   <RadioGroup 
-                    value={formData.imageModel || 'wanx'} 
+                    value={formData.imageModel || APP_CONFIG.DEFAULT_IMAGE_MODEL}
                     onValueChange={value => handleModelChange(value as ImageModel)}
                     className="grid grid-cols-1 gap-3"
                   >
-                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.imageModel || 'wanx') === 'wanx' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.imageModel || APP_CONFIG.DEFAULT_IMAGE_MODEL) === 'wanx' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
                       <div className="flex items-center gap-2">
                         <RadioGroupItem value="wanx" id="model-wanx" />
                         <Label htmlFor="model-wanx" className="font-medium cursor-pointer">Wanx Model</Label>
@@ -343,7 +343,7 @@ export const RecipeForm = ({
                       </div>
                     </div>
                     
-                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.imageModel || 'wanx') === 'flux' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.imageModel || APP_CONFIG.DEFAULT_IMAGE_MODEL) === 'flux' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
                       <div className="flex items-center gap-2">
                         <RadioGroupItem value="flux" id="model-flux" />
                         <Label htmlFor="model-flux" className="font-medium cursor-pointer">Flux Schnell</Label>

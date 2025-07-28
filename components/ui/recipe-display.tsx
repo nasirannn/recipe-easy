@@ -1,7 +1,6 @@
 import { ChefHat, Users, Clock, Copy, Check, X } from "lucide-react";
 import { Recipe } from "@/lib/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
 import { Button } from "./button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
@@ -10,10 +9,18 @@ import Image from "next/image";
 import { Spinner } from "./spinner";
 import { Dialog, DialogContent } from "./dialog";
 import { useTranslations } from 'next-intl';
+import { cn } from "@/lib/utils";
+
+interface Ingredient {
+  id: string;
+  name: string;
+  englishName: string;
+  isCustom?: boolean;
+}
 
 interface RecipeDisplayProps {
   recipes: Recipe[];
-  selectedIngredients: string[];
+  selectedIngredients: Ingredient[];
 }
 
 export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayProps) => {
@@ -62,16 +69,62 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
   };
 
   return (
-    <div className="w-full bg-gradient-to-br from-gray-50/30 via-white to-orange-50/20">
-      <div className="w-full mx-auto space-y-8">
-        <Accordion type="single" collapsible defaultValue={recipes[0]?.id}>
+    <div className="w-full">
+      {/* Beautiful Title and Ingredients Section */}
+      <div className="relative my-12 p-8 bg-gradient-to-r from-orange-50/80 via-white to-yellow-50/80 dark:from-gray-800/50 dark:via-gray-700/30 dark:to-gray-800/50 rounded-2xl border border-orange-100/50 dark:border-gray-600/30 shadow-lg backdrop-blur-sm">
+        {/* Decorative elements */}
+        <div className="absolute top-4 right-6 opacity-10">
+          <ChefHat className="h-16 w-16 text-orange-400" />
+        </div>
+
+        {/* Title - Centered */}
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
+            {t('generatedWithIngredients')}
+          </h2>
+        </div>
+
+        {/* Selected Ingredients Display - Centered and smaller */}
+        <div className="relative">
+          <div className="flex flex-wrap justify-center gap-1.5">
+            {selectedIngredients.map((ingredient, index) => (
+              <Badge
+                key={ingredient.id}
+                variant="secondary"
+                className={cn(
+                  "gap-1 py-0.5 text-xs animate-in fade-in slide-in-from-bottom-2",
+                  ingredient.isCustom && "bg-white text-yellow-600 border-2 border-dashed border-yellow-400 hover:bg-white/90"
+                )}
+                style={{
+                  animationDelay: `${index * 100}ms`,
+                  animationDuration: '600ms'
+                }}
+              >
+                {ingredient.englishName}
+              </Badge>
+            ))}
+          </div>
+
+          {/* Subtle connecting line */}
+          <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-24 h-0.5 bg-gradient-to-r from-transparent via-orange-300 to-transparent opacity-30"></div>
+        </div>
+      </div>
+
+      {/* Recipes Section */}
+      <div className="w-full bg-gradient-to-br from-gray-50/30 via-white to-orange-50/20">
+        <div className="w-full mx-auto">
+          <Accordion type="single" collapsible defaultValue={recipes[0]?.id}>
           {recipes.map((recipe) => (
             <AccordionItem
               key={recipe.id}
               value={recipe.id}
-              className="bg-white/80 backdrop-blur-sm dark:bg-gray-50/90 p-8 shadow-lg rounded-2xl border border-gray-100/50"
+              className="bg-transparent my-0 px-0 rounded-none border-0"
             >
-              <div className="w-full">
+              <div className="w-full py-6 px-8 relative">
+                {/* Custom divider line */}
+                {recipes.indexOf(recipe) < recipes.length - 1 && (
+                  <div className="absolute bottom-0 left-8 right-72 h-px bg-gray-300 dark:bg-gray-600"></div>
+                )}
                 {/* Header Section - Always Visible */}
                 <div className="flex justify-between items-start">
                   <div className="flex-1 max-w-3xl">
@@ -128,7 +181,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
               </div>
 
               <AccordionContent>
-                <div className="mt-8">
+                <div className="mt-8 px-8">
                   {/* Ingredients and Seasoning in same row */}
                   <div className="grid md:grid-cols-2 gap-16 mb-16">
 
@@ -395,6 +448,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
-}; 
+};

@@ -202,7 +202,7 @@ export const HeroSection = () => {
               recipes.length > 0 && (
                 <RecipeDisplay
                   recipes={recipes}
-                  selectedIngredients={searchedIngredients.map(ing => ing.name)}
+                  selectedIngredients={searchedIngredients}
                 />
               )
             )}

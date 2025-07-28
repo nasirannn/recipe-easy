@@ -27,8 +27,7 @@ export async function POST(request: NextRequest) {
       difficulty,
       cuisine,
       language = APP_CONFIG.DEFAULT_LANGUAGE,
-      imageModel,
-      languageModel = 'deepseek',
+      languageModel = APP_CONFIG.DEFAULT_LANGUAGE_MODEL,
     } = body;
 
     if (!ingredients || ingredients.length < APP_CONFIG.MIN_INGREDIENTS) {

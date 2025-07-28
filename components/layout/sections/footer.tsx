@@ -32,6 +32,10 @@ export const FooterSection = () => {
 
           </div>
 
+           <div className="flex flex-col gap-2">
+
+          </div>
+
           <div className="flex flex-col gap-2">
             <h3 className="font-bold text-lg">{t('about')}</h3>
             <div>
@@ -41,14 +45,14 @@ export const FooterSection = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
+          {/* <div className="flex flex-col gap-2">
             <h3 className="font-bold text-lg">{t('platforms')}</h3>
             <div>
               <Link href="#" className="opacity-60 hover:opacity-100">
                 {t('web')}
               </Link>
             </div>
-          </div>
+          </div> */}
 
           <div className="flex flex-col gap-2">
             <h3 className="font-bold text-lg">{t('help')}</h3>
@@ -67,17 +71,18 @@ export const FooterSection = () => {
         </div>
 
         <Separator className="my-6" />
-        <section className="">
+        <section className="flex justify-between items-center">
           <h3 className="text-left text-gray-500">
             {t('copyright')}
-            {/* <Link
-              target="_blank"
-              href="https://github.com/leoMirandaa"
-              className="text-primary transition-all border-primary hover:border-b-2 ml-1"
-            >
-              Leo Miranda
-            </Link> */}
           </h3>
+          <div className="flex gap-6 text-sm">
+            <Link href="/privacy" className="text-gray-500 hover:text-gray-700 transition-colors">
+              {t('privacy')}
+            </Link>
+            <Link href="/terms" className="text-gray-500 hover:text-gray-700 transition-colors">
+              {t('terms')}
+            </Link>
+          </div>
         </section>
       </div>
     </footer>

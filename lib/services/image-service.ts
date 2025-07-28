@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { IMAGE_GEN_CONFIG } from '../config';
+import { IMAGE_GEN_CONFIG, APP_CONFIG } from '../config';
 
 export type ImageStyle = typeof IMAGE_GEN_CONFIG.WANX.STYLES[number];
 export type ImageSize = typeof IMAGE_GEN_CONFIG.WANX.SIZES[number];
@@ -30,7 +30,7 @@ export type ImageGenResponse = {
  */
 export async function generateImage(params: ImageGenParams): Promise<ImageGenResponse> {
   try {
-    const model = params.model || 'wanx'; // 默认使用万象模型
+    const model = params.model || APP_CONFIG.DEFAULT_IMAGE_MODEL; // 使用配置文件中的默认图片模型
     const n = params.n ? Math.min(Math.max(1, params.n), 
       model === 'wanx' ? IMAGE_GEN_CONFIG.WANX.MAX_IMAGES : IMAGE_GEN_CONFIG.REPLICATE.MAX_IMAGES) : 1;
     
@@ -85,7 +85,7 @@ export function generateRecipeImagePrompt(recipe: {
   name: string; 
   description?: string; 
   ingredients?: string[];
-}, model: ImageModel = 'wanx'): string {
+}, model: ImageModel = APP_CONFIG.DEFAULT_IMAGE_MODEL): string {
   const { name, ingredients } = recipe;
   
   // 基础提示词
@@ -158,7 +158,7 @@ export async function generateImageForRecipe(recipe: {
   name: string; 
   description?: string; 
   ingredients?: string[];
-}, style: ImageStyle = 'photographic', model: ImageModel = 'wanx', n: number = 1): Promise<string | null> {
+}, style: ImageStyle = 'photographic', model: ImageModel = APP_CONFIG.DEFAULT_IMAGE_MODEL, n: number = 1): Promise<string | null> {
   try {
     const prompt = generateRecipeImagePrompt(recipe, model);
     console.log(`使用${model}模型生成图片，提示词:`, prompt);

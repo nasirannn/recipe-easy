@@ -88,7 +88,8 @@
     "mins": "mins",
     "copyIngredients": "Copy ingredients",
     "copySeasoning": "Copy seasoning",
-    "copyInstructions": "Copy instructions"
+    "copyInstructions": "Copy instructions",
+    "generatedWithIngredients": "AI Chef's Delicious Creations"
   },
   "recipes": {
     "title": "Get Inspired",
@@ -97,19 +98,19 @@
   "services": {
     "title": "Services",
     "subtitle": "Powerful Recipe Features",
-    "description": "From ingredient recognition to recipe generation, we provide everything you need to create amazing meals.",
+    "description": "From ingredient selection to recipe generation, we provide everything you need to create amazing meals.",
     "aiGeneration": "AI Recipe Generation",
-    "aiGenerationDesc": "Transform your available ingredients into delicious recipes using advanced AI technology.",
-    "smartIngredient": "Smart Ingredient Recognition",
-    "smartIngredientDesc": "Intelligent ingredient suggestions and categorization to help you find the perfect combinations.",
+    "aiGenerationDesc": "Transform your selected ingredients into creative and delicious recipes using advanced AI technology.",
+    "customIngredients": "Custom Ingredient Input",
+    "customIngredientsDesc": "Add ingredients not in our database - AI will intelligently recognize and generate recipes accordingly.",
+    "recipeImage": "AI Image Generation",
+    "recipeImageDesc": "Automatically generate beautiful food images based on the recipe name using AI technology.",
     "multipleCuisine": "Multiple Cuisine Styles",
-    "multipleCuisineDesc": "Generate recipes from various cuisines including Chinese, Italian, Mexican, and more.",
-    "recipeImage": "Recipe Image Generation",
-    "recipeImageDesc": "AI-powered food photography to visualize your recipes before cooking.",
-    "dietaryFilter": "Dietary Preference Filtering",
-    "dietaryFilterDesc": "Customize recipes based on vegetarian, vegan, gluten-free, and other dietary needs.",
-    "recipeSaving": "Recipe Saving & History",
-    "recipeSavingDesc": "Save your favorite recipes and access your generation history anytime."
+    "multipleCuisineDesc": "Support for various international cuisines including Chinese, Italian, French, and more.",
+    "multiLanguage": "Bilingual Support",
+    "multiLanguageDesc": "Complete Chinese and English interface to meet different users' language preferences.",
+    "weeklyLimit": "Weekly Free Quota",
+    "weeklyLimitDesc": "7 free uses per week to fully experience the magic of AI recipe generation."
   },
   "testimonials": {
     "title": "Testimonials",
@@ -149,14 +150,14 @@
     "title": "Frequently Asked Questions",
     "q1": "Is this service completely free?",
     "a1": "Yes, our AI Recipe Generator is completely free to use, but with a weekly limit. You get 7 free uses per week. Once you've used them up, another 7 free uses will be available the following week.",
-    "q2": "How reliable are the AI-generated recipes?",
-    "a2": "Our AI is trained on a vast global database of trusted recipes, mastering flavor combinations and cooking techniques to deliver consistently delicious results. That said, cooking is an art—so don't hesitate to get creative and make each recipe your own!",
-    "q3": "Is my recipe content secure?",
-    "a3": "Your privacy is our priority. We DO NOT store any recipe data you generate. To preserve your creations, please save any recipes you want to keep to your local device.",
-    "q4": "How can I provide feedback or report issues?",
-    "a4": "We'd love to hear from you! Please share your feedback or report any problems by contacting our support team at annnb016@gmail.com. Your input helps us continuously improve our service.",
-    "q5": "How long does the transformation process take?",
-    "a5": "Most recipes are generated in 20-60 seconds. The exact time depends on the AI model selected and current server load. During peak hours, you may experience slightly longer wait times due to high demand.",
+    "q2": "Can I add ingredients that aren't listed?",
+    "a2": "Yes! Simply type any ingredient into the search box and press Enter. Custom ingredients show up with a white background and yellow text, so you can easily spot them. Our AI will create recipes with whatever ingredients you add!",
+    "q3": "How are recipe images generated?",
+    "a3": "We first use AI to generate recipes based on the ingredients you select and input. Once the recipe is created, we use AI again to generate corresponding images based on the recipe name.",
+    "q4": "How long does the transformation process take?",
+    "a4": "Most recipes are generated in 20-60 seconds. The exact time depends on the AI model selected and current server load. During peak hours, you may experience slightly longer wait times due to high demand.",
+    "q5": "How can I provide feedback or report issues?",
+    "a5": "We'd love to hear from you! Please share your feedback or report any problems by contacting our support team at annnb016@gmail.com. Your input helps us continuously improve our service.",
     "q6": "Can I use the generated images commercially?",
     "a6": "Yes. The generated images are free for both personal and commercial use, but please ensure not to infringe on other brands' copyright."
   },
@@ -169,7 +170,9 @@
     "contact": "Contact Us",
     "faq": "FAQ",
     "description": "RecipeEasy is an AI-powered platform that transforms your ingredients into delicious recipes. Experience the magic of culinary creativity in seconds.",
-    "copyright": "© 2025 Recipe Easy. Not affiliated with recipeeasy.com."
+    "copyright": "© 2025 Recipe Easy. Not affiliated with recipeeasy.com.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
   },
   "ingredients": {
     "loading": "Loading ingredients...",

@@ -38,7 +38,7 @@ export const IMAGE_GEN_CONFIG = {
     BASE_URL: 'https://api.replicate.com/v1',
     MODEL_ID: 'black-forest-labs/flux-schnell',
     VERSION: '8f650a20e68cf347b2b193ac1cbdfb7c0d173aaa27b584012112fd5cdfcebed4',
-    MAX_IMAGES: 1 // Replicate API免费账户限制
+    MAX_IMAGES: 4 // Replicate API免费账户限制
   },
   // 统一定义负面提示词
   NEGATIVE_PROMPTS: {
@@ -59,6 +59,9 @@ export const APP_CONFIG = {
   DEFAULT_RECIPE_COUNT: 1,
   MAX_RECIPE_COUNT: 4,
   SUPPORTED_LANGUAGES: ['en', 'zh'] as const,
+  // 默认模型配置
+  DEFAULT_LANGUAGE_MODEL: 'qwenplus' as const,
+  DEFAULT_IMAGE_MODEL: 'wanx' as const,
   DIFFICULTY_LEVELS: {
     EASY: 'easy',
     MEDIUM: 'medium',

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
-import { IMAGE_GEN_CONFIG } from '@/lib/config';
+import { IMAGE_GEN_CONFIG, APP_CONFIG } from '@/lib/config';
 import type { ImageModel } from '@/lib/services/image-service';
 
 export async function POST(request: Request) {
@@ -11,7 +11,7 @@ export async function POST(request: Request) {
       negativePrompt, // 允许覆盖默认的负面提示词
       size = '1024*1024', 
       n = 1,
-      model = 'wanx' // 默认使用万象模型
+      model = APP_CONFIG.DEFAULT_IMAGE_MODEL // 使用配置文件中的默认图片模型
     } = await request.json();
     
     if (!prompt) {

@@ -23,8 +23,13 @@ const serviceList: ServiceProps[] = [
     pro: 0,
   },
   {
-    titleKey: "smartIngredient",
-    descriptionKey: "smartIngredientDesc",
+    titleKey: "customIngredients",
+    descriptionKey: "customIngredientsDesc",
+    pro: 0,
+  },
+  {
+    titleKey: "recipeImage",
+    descriptionKey: "recipeImageDesc",
     pro: 0,
   },
   {
@@ -33,19 +38,14 @@ const serviceList: ServiceProps[] = [
     pro: 0,
   },
   {
-    titleKey: "recipeImage",
-    descriptionKey: "recipeImageDesc",
-    pro: 1,
+    titleKey: "multiLanguage",
+    descriptionKey: "multiLanguageDesc",
+    pro: 0,
   },
   {
-    titleKey: "dietaryFilter",
-    descriptionKey: "dietaryFilterDesc",
-    pro: 1,
-  },
-  {
-    titleKey: "recipeSaving",
-    descriptionKey: "recipeSavingDesc",
-    pro: 1,
+    titleKey: "weeklyLimit",
+    descriptionKey: "weeklyLimitDesc",
+    pro: 0,
   },
 ];
 
