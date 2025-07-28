@@ -310,10 +310,10 @@ export const RecipeForm = ({
                 </div>
               </PopoverContent>
             </Popover>
-            )}
+            )} 
 
             {/* 图片生成模型选择器 - 仅管理员可见 */}
-            {isAdmin && (
+          {isAdmin && (
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="text-xs flex gap-1.5 h-7 px-2 sm:px-3">
