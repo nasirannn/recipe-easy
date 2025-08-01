@@ -1,54 +1,24 @@
 "use client";
-
+import { GridBackground } from "@/components/ui/grid-background";
 import { useState } from "react";
-import { Recipe } from "@/lib/types";
-import { RecipeForm, RecipeFormData } from "@/components/ui/recipe-form";
-
+import { Recipe, RecipeFormData } from "@/lib/types";
+import { RecipeForm } from "@/components/ui/recipe-form";
 import { RecipeDisplay } from "@/components/ui/recipe-display";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { generateImageForRecipe } from "@/lib/services/image-service";
 import { IMAGE_GEN_CONFIG, APP_CONFIG } from "@/lib/config";
 import { useTranslations, useLocale } from 'next-intl';
+import { useAuth } from "@/contexts/auth-context";
+import { useUserUsage } from "@/hooks/use-user-usage";
+import { Button } from "@/components/ui/button";
+import React from "react";
+import { trackRecipeGeneration, trackFeatureUsage } from "@/lib/gtag";
 
 export const HeroSection = () => {
   const t = useTranslations('hero');
   const locale = useLocale();
-
-  // 处理标题的渐变效果
-  const renderTitle = () => {
-    const title = t('title');
-    // 英文版本：With our AI-powered assistant, you can generate recipes easily
-    // 中文版本：借助我们的 AI 助手，您可以轻松生成食谱
-
-    if (title.includes('generate recipes')) {
-      // 英文版本
-      const parts = title.split('generate recipes');
-      return (
-        <>
-          {parts[0]}
-          <span className="text-transparent px-2 bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">
-            generate recipes
-          </span>
-          {parts[1]}
-        </>
-      );
-    } else if (title.includes('生成食谱')) {
-      // 中文版本
-      const parts = title.split('生成食谱');
-      return (
-        <>
-          {parts[0]}
-          <span className="text-transparent px-2 bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">
-            生成食谱
-          </span>
-          {parts[1]}
-        </>
-      );
-    } else {
-      // 回退方案
-      return title;
-    }
-  };
+  const { user, isAdmin } = useAuth();
+  const { updateCreditsLocally } = useUserUsage();
 
   //Recipe Form
   const [formData, setFormData] = useState<RecipeFormData>({
@@ -94,6 +64,11 @@ export const HeroSection = () => {
             updatedRecipes[index] = { ...updatedRecipes[index], image: imageUrl };
             // 实时更新UI
             setRecipes([...updatedRecipes]);
+            
+            // 每生成一张图片消耗一个积分（非管理员用户）
+            if (user?.id && !isAdmin) {
+              updateCreditsLocally(1);
+            }
           }
           return imageUrl;
         })
@@ -129,7 +104,9 @@ export const HeroSection = () => {
           cuisine: formData.cuisine,
           language: locale, // 传递当前用户选择的语言
           imageModel: formData.imageModel, // 传递选择的图片生成模型
-          languageModel: formData.languageModel // 传递选择的语言模型
+          languageModel: formData.languageModel, // 传递选择的语言模型
+          userId: user?.id, // 传递用户ID
+          isAdmin: isAdmin // 传递管理员标识
         }),
       });
 
@@ -142,6 +119,15 @@ export const HeroSection = () => {
       const generatedRecipes = data.recipes || [];
       setRecipes(generatedRecipes);
       setSearchedIngredients(formData.ingredients);
+      
+      // 跟踪菜谱生成事件
+      trackRecipeGeneration(formData.cuisine, formData.ingredients.length);
+      trackFeatureUsage('recipe_generation');
+      
+      // 立即在本地更新积分（非管理员用户）
+      if (user?.id && !isAdmin) {
+        updateCreditsLocally(1);
+      }
       
       // 在获取菜谱后自动生成图片
       if (generatedRecipes.length > 0) {
@@ -160,59 +146,93 @@ export const HeroSection = () => {
 
 
   return (
-    <section id="hero" className="w-full bg-primary/5">
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center space-y-8">
-          {/* <Badge variant="outline" className="text-sm py-1 border-grey">
-            <span className="mr-2 text-primary">
-              <Badge>Free to use</Badge>
-            </span>
-            <span> Cook smarter, not harder </span>
-          </Badge> */}
+    <section id="hero" className="w-full bg-primary/5 pt-20">
 
-          <div className="max-w-screen-lg mx-auto text-center text-3xl md:text-6xl font-bold">
-            <h1>
-              {renderTitle()}
+    <GridBackground className="absolute inset-0 z-[-1] opacity-50" />
+      {/* 上半部分：左侧标题和描述，右侧视频 */}
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex flex-col lg:flex-row items-center gap-8">
+          {/* 左侧标题和描述 */}
+          <div className="w-full lg:w-3/5 space-y-6 text-center lg:text-left">
+            <h1 className="text-3xl md:text-5xl font-bold">
+              {locale === 'en' ? (
+                <>
+                  Free Online <span className="text-transparent bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">AI Recipe Generator</span>
+                </>
+              ) : (
+                <>
+                  免费在线<span className="text-transparent bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">AI食谱生成器</span>
+                </>
+              )}
             </h1>
+            <p className="text-xl text-muted-foreground max-w-md leading-relaxed mx-auto lg:mx-0">
+              {t('description').split('. ').map((sentence, index, array) => (
+                <React.Fragment key={index}>
+                  {sentence}
+                  {index < array.length - 1 ? '. ' : ''}
+                  {index < array.length - 1 && <br />}
+                </React.Fragment>
+              ))}
+            </p>
+            <Button 
+              size="lg" 
+              className="rounded-full px-6 mt-4"
+              onClick={() => {
+                const recipeFormElement = document.getElementById('recipe-form-section');
+                recipeFormElement?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              {t('tryNow')} &rarr;
+            </Button>
           </div>
-
-          <p className="max-w-screen-md mx-auto text-xl text-muted-foreground">
-            {t('subtitle')}
-          </p>
-
-          <div className="space-y-4 md:space-y-0 md:space-x-4">
-           {/* Select Ingredients */}
-            <RecipeForm
-                formData={formData}
-                onFormChange={handleFormChange}
-                onSubmit={handleSubmit}
-                loading={loading || imageGenerating}
-                showRecipe={showRecipe}
-                setShowRecipe={setShowRecipe}
-              />
+          
+          {/* 右侧视频 */}
+          <div className="w-full lg:w-2/5 aspect-video rounded-lg overflow-hidden shadow-lg">
+            <iframe
+              className="w-full h-full"
+              title="vimeo-player"
+              src="https://player.vimeo.com/video/1103051913?h=e71848409d&byline=0&portrait=0&title=0"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+              allowFullScreen
+            ></iframe>
           </div>
         </div>
-        
-        {/* Recipe Display Section */}
-        {showRecipe && (
-          <div id="loading-animation-container">
-            {loading ? (
-              <LoadingAnimation language={locale as 'en' | 'zh'} />
-            ) : (
-              recipes.length > 0 && (
-                <RecipeDisplay
-                  recipes={recipes}
-                  selectedIngredients={searchedIngredients}
-                />
-              )
-            )}
-            {error && (
-              <div className="max-w-screen-md mx-auto text-center mt-8 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400">
-                {error}
-              </div>
-            )}
-          </div>
-        )}
+      </div>
+      
+      {/* 下半部分：食材选择和菜谱生成区域 */}
+      <div id="recipe-form-section" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 pt-16">
+        <div className="rounded-xl p-6">
+          <RecipeForm
+            formData={formData}
+            onFormChange={handleFormChange}
+            onSubmit={handleSubmit}
+            loading={loading || imageGenerating}
+            showRecipe={showRecipe}
+            setShowRecipe={setShowRecipe}
+          />
+          
+          {/* Recipe Display Section */}
+          {showRecipe && (
+            <div id="loading-animation-container" className="mt-10">
+              {loading ? (
+                <LoadingAnimation language={locale as 'en' | 'zh'} />
+              ) : (
+                recipes.length > 0 && (
+                  <RecipeDisplay
+                    recipes={recipes}
+                    selectedIngredients={searchedIngredients}
+                  />
+                )
+              )}
+              {error && (
+                <div className="max-w-screen-md mx-auto text-center mt-8 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400">
+                  {error}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

@@ -5,22 +5,53 @@
     "services": "Services",
     "testimonials": "Testimonials",
     "faq": "FAQ",
-    "login": "Login",
+    "signin": "Sign In",
     "signup": "Sign Up",
-    "logout": "Logout",
-    "profile": "Profile"
+    "signout": "Sign Out",
+    "profile": "Profile",
+    "credits": "Credits",
+    "usage": "Usage",
+    "loading": "Loading...",
+    "totalEarned": "Total Earned",
+    "admin": "Admin",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "settings": "Settings",
+    "appearance": "Appearance",
+    "language": "Language"
+  },
+  "profile": {
+    "editDisplayName": "Edit Display Name",
+    "displayNamePlaceholder": "Enter your display name",
+    "save": "Save",
+    "cancel": "Cancel",
+    "reset": "Reset",
+    "updating": "Updating...",
+    "updateFailed": "Failed to update display name",
+    "updateSuccess": "Display name updated successfully"
   },
   "hero": {
-    "title": "With our AI-powered assistant, you can generate recipes easily",
-    "subtitle": "No longer have to worry about what to eat for dinner with our random recipe generator!",
-    "cta": "Start Cooking",
-    "tryDemo": "Try Demo"
+    "title": "Free Online AI Recipe Generator",
+    "description": "Simply select or enter ingredients, and our AI will create random, creative, and easy-to-follow recipes for you. No more \"What's for dinner?\" stress.",
+    "tryNow": "Try Now"
   },
   "features": {
-    "subtitle": "Brand New AI Recipe Generator",
-    "title": "Free Online AI Recipes Generator",
-    "description": "Simply select or enter the ingredients, and our AI will craft random,creative and easy-to-follow recipes for you. No more \"What's for dinner?\" stress.",
-    "tryNow": "Try It Now"
+    "title": "Smart AI-Powered Culinary Features",
+    "description": "Transform your cooking journey with cutting-edge AI technology, multi-language support, stunning visual generation, and seamless cross-platform experience designed for food lovers worldwide.",
+    "aiGeneration": "Multi-Language Model Support",
+    "aiGenerationDesc": "Supports multiple AI language models: Deepseek, Qwen Plus, and GPT-4o Mini for optimal recipe generation",
+    "imageModels": "Multi-Image Model Support",
+    "imageModelsDesc": "Utilizes advanced image models including Wanx and Flux Schnell to create beautiful dish visualizations",
+    "customIngredients": "Custom Ingredients",
+    "customIngredientsDesc": "Input any ingredients you have in your refrigerator for AI to craft delicious meals",
+    "multipleCuisine": "Multiple Cuisine Styles",
+    "multipleCuisineDesc": "Support for global cuisine styles from Chinese to Western, Japanese to Indian",
+    "multiLanguage": "Multilingual Support",
+    "multiLanguageDesc": "Support for multiple languages including English and Chinese to meet diverse user needs",
+    "responsive": "Responsive Design",
+    "responsiveDesc": "Fully optimized for all devices - desktop, tablet, and mobile, providing seamless experience across all platforms",
+    "weeklyLimit": "Credits System",
+    "weeklyLimitDesc": "Smart credit system for AI-powered recipe and image generation, providing balanced usage limits"
   },
   "recipeForm": {
     "servings": "Servings",
@@ -49,7 +80,7 @@
   },
   "ingredientSelector": {
     "addMoreIngredients": "Add more ingredients...",
-    "selectOrEnterIngredients": "select or enter ingredients...",
+    "selectOrEnterIngredients": "select or enter at least 2 ingredients...",
     "clearAll": "Clear all",
     "clearAllIngredients": "Clear all ingredients?",
     "clearAllConfirmation": "Are you sure you want to remove all selected ingredients? This action cannot be undone.",
@@ -63,13 +94,13 @@
     "categories": {
       "meat": "Meat",
       "seafood": "Seafood",
-      "vegetable": "Vegetables",
-      "fruit": "Fruits",
-      "dairy": "Dairy & Eggs",
-      "grains": "Grains & Bread",
-      "nuts": "Nuts & Seeds",
-      "herbs": "Herbs & Spices",
-      "condiments": "Oils & Condiments"
+      "vegetables": "Vegetables",
+      "fruits": "Fruits",
+      "dairy-eggs": "Dairy & Eggs",
+      "grains-bread": "Grains & Bread",
+      "nuts-seeds": "Nuts & Seeds",
+      "herbs-spices": "Herbs & Spices",
+      "oils-condiments": "Oils & Condiments"
     }
   },
   "recipeDisplay": {
@@ -95,6 +126,18 @@
     "title": "Get Inspired",
     "subtitle": "Get inspired by our collection of delicious recipes from around the world."
   },
+
+  "credits": {
+    "credits": "Credits",
+    "remaining": "remaining",
+    "unlimited": "Unlimited",
+    "insufficientCredits": "Insufficient credits",
+    "spendSuccess": "Successfully spent {count} credits",
+    "spendError": "Failed to spend credits",
+    "loading": "Loading...",
+    "noCreditsLeft": "No credits left",
+    "consumeOneCredit": "1 recipe = 1 credit"
+  },
   "services": {
     "title": "Services",
     "subtitle": "Powerful Recipe Features",
@@ -118,30 +161,30 @@
     "review1": {
       "name": "Jane Doe",
       "userName": "Foodie Jane",
-      "comment": "As a foodie, I crave new flavors daily. This AI recipe generator gives me creative, gourmet ideas using random ingredients. Seriously, it’s like a flavor adventure – no more boring dinners!"
+      "comment": "As a foodie, I crave new flavors daily. This AI recipe generator gives me creative, gourmet ideas using random ingredients. Seriously, it's like a flavor adventure – no more boring dinners!"
     },
     "review2": {
-      "name": "Mike T.",
+      "name": "Mike Thompson",
       "userName": "College Student",
-      "comment": "Broke college student here! This app saves me with cheap, 10-minute meals using pantry scraps. No more ramen – just real food that’s actually tasty. Total lifesaver on a budget."
+      "comment": "Broke college student here! This app saves me with cheap, 10-minute meals using pantry scraps. No more ramen – just real food that's actually tasty. Total lifesaver on a budget."
     },
     "review3": {
-      "name": "Jessica P.",
+      "name": "Jessica Parker",
       "userName": "Foodie on a Budget",
-      "comment": "I love fancy food but hate spending cash. This AI tool finds budget-friendly recipes that still feel gourmet. My wallet’s happy, and dinner’s delicious – win-win for frugal foodies!"
+      "comment": "I love fancy food but hate spending cash. This AI tool finds budget-friendly recipes that still feel gourmet. My wallet's happy, and dinner's delicious – win-win for frugal foodies!"
     },
     "review4": {
-      "name": "David H.",
+      "name": "David Harris",
       "userName": "Health Enthusiast",
       "comment": "Need healthy recipes fast? This AI generator creates nutritious, diet-friendly meals in seconds. No guesswork – just clean eating that fits my wellness goals. Game-changer for busy health nuts!"
     },
     "review5": {
-      "name": "Emily R.",
+      "name": "Emily Rodriguez",
       "userName": "Kitchen Novice",
       "comment": "Total kitchen newbie here – I burned toast once! But the step-by-step instructions are foolproof. Now I cook confidently. Seriously, this app makes beginners feel like pros."
     },
     "review6": {
-      "name": "Chris G.",
+      "name": "Chris Garcia",
       "userName": "Remote Worker",
       "comment": "Working from home? This AI recipe app gives quick lunches between Zoom calls. Saves time, uses fridge leftovers, and keeps me energized. Essential for remote workers avoiding takeout!"
     }
@@ -149,7 +192,7 @@
   "faq": {
     "title": "Frequently Asked Questions",
     "q1": "Is this service completely free?",
-    "a1": "Yes, our AI Recipe Generator is completely free to use, but with a weekly limit. You get 7 free uses per week. Once you've used them up, another 7 free uses will be available the following week.",
+    "a1": "New users receive 100 credits upon registration, and each recipe generation consumes 1 credit. We will soon launch service packages and reward systems to provide more ways to earn credits.",
     "q2": "Can I add ingredients that aren't listed?",
     "a2": "Yes! Simply type any ingredient into the search box and press Enter. Custom ingredients show up with a white background and yellow text, so you can easily spot them. Our AI will create recipes with whatever ingredients you add!",
     "q3": "How are recipe images generated?",
@@ -185,14 +228,15 @@
   "auth": {
     "signIn": "Sign In",
     "signUp": "Sign Up",
+    "signOut": "Sign Out",
     "email": "Email",
     "password": "Password",
     "signInTitle": "Sign In",
     "signUpTitle": "Sign Up",
     "signInDescription": "Sign in to your account",
     "signUpDescription": "Create your account",
-    "emailPlaceholder": "Input your email here",
-    "passwordPlaceholder": "Input your password here",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
     "forgotPassword": "Forgot password?",
     "continueWithGoogle": "Continue with Google",
     "signingIn": "Signing in...",
@@ -213,5 +257,15 @@
     "resetPasswordError": "Failed to send password reset email",
     "signInNotInitialized": "Sign in function not properly initialized",
     "generalError": "An error occurred during sign in"
+  },
+
+
+  "Theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "Language": {
+    "toggle": "Toggle language"
   }
 }

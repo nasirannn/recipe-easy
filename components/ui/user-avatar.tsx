@@ -1,13 +1,14 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { User } from "lucide-react"
-import { User as SupabaseUser } from '@supabase/supabase-js'
+import { User as UserIcon } from "lucide-react"
+import { User } from '@supabase/supabase-js'
 import { useState, useEffect } from 'react'
 import { cn } from "@/lib/utils"
+import { getUserDisplayName, getUserAvatarUrl } from '@/lib/utils/user-display'
 
 interface UserAvatarProps {
-  user: SupabaseUser | null
+  user: User | null
   className?: string
   size?: 'sm' | 'md' | 'lg' | 'xl'
   showFallback?: boolean
@@ -31,12 +32,12 @@ export function UserAvatar({
   user, 
   className, 
   size = 'md', 
-  showFallback = true 
+  showFallback = true
 }: UserAvatarProps) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [imageError, setImageError] = useState(false)
 
-  // 获取头像URL的优先级：avatar_url > picture > null
+  // 获取头像URL
   useEffect(() => {
     if (!user) {
       setAvatarUrl(null)
@@ -44,35 +45,14 @@ export function UserAvatar({
       return
     }
 
-    const newAvatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture || null
-    
+    const newAvatarUrl = getUserAvatarUrl(user)
+
     // 只有当URL真正改变时才更新
     if (newAvatarUrl !== avatarUrl) {
       setAvatarUrl(newAvatarUrl)
       setImageError(false)
     }
-  }, [user?.user_metadata?.avatar_url, user?.user_metadata?.picture, user?.id])
-
-  // 获取用户显示名称
-  const getDisplayName = () => {
-    if (!user) return ''
-    return user.user_metadata?.full_name || 
-           user.user_metadata?.name || 
-           user.email?.split('@')[0] || 
-           'User'
-  }
-
-  // 获取用户首字母
-  const getInitials = () => {
-    const displayName = getDisplayName()
-    if (!displayName) return 'U'
-    
-    const names = displayName.split(' ')
-    if (names.length >= 2) {
-      return `${names[0][0]}${names[1][0]}`.toUpperCase()
-    }
-    return displayName.slice(0, 2).toUpperCase()
-  }
+  }, [user, avatarUrl])
 
   const handleImageError = () => {
     setImageError(true)
@@ -87,16 +67,14 @@ export function UserAvatar({
       {avatarUrl && !imageError ? (
         <AvatarImage 
           src={avatarUrl} 
-          alt={getDisplayName()}
+          alt={getUserDisplayName(user)}
           onError={handleImageError}
           onLoad={handleImageLoad}
-          // 添加时间戳防止缓存
-          key={`${avatarUrl}-${Date.now()}`}
         />
       ) : null}
       {showFallback && (
-        <AvatarFallback className="bg-primary text-primary-foreground">
-          {user ? getInitials() : <User className={iconSizes[size]} />}
+        <AvatarFallback className="bg-primary/10 text-primary">
+          <UserIcon className={iconSizes[size]} />
         </AvatarFallback>
       )}
     </Avatar>

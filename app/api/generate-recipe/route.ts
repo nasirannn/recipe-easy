@@ -4,108 +4,135 @@ import { SYSTEM_PROMPTS, USER_PROMPT_TEMPLATES } from '@/lib/prompts';
 import { API_CONFIG, APP_CONFIG } from '@/lib/config';
 import { Recipe } from '@/lib/types';
 
+// 强制动态渲染
+export const dynamic = 'force-dynamic';
+
 const modelConfig = {
   deepseek: API_CONFIG.DEEPSEEK,
   qwenplus: API_CONFIG.QWENPLUS,
-  'gpt4o-mini': API_CONFIG.GPT4O_MINI,
+  gpt4o_mini: API_CONFIG.GPT4o_MINI,
 };
 
 const apiKeys = {
   deepseek: process.env.DEEPSEEK_API_KEY,
   qwenplus: process.env.QWENPLUS_API_KEY,
-  'gpt4o-mini': process.env.REPLICATE_API_TOKEN,
+  gpt4o_mini: process.env.REPLICATE_API_TOKEN,
 };
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const {
-      ingredients,
-      servings,
-      recipeCount = APP_CONFIG.DEFAULT_RECIPE_COUNT,
-      cookingTime,
-      difficulty,
-      cuisine,
-      language = APP_CONFIG.DEFAULT_LANGUAGE,
-      languageModel = APP_CONFIG.DEFAULT_LANGUAGE_MODEL,
-    } = body;
+    const { ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, languageModel, userId, isAdmin } = body;
 
-    if (!ingredients || ingredients.length < APP_CONFIG.MIN_INGREDIENTS) {
-      return NextResponse.json(
-        { error: `At least ${APP_CONFIG.MIN_INGREDIENTS} ingredients are required` },
-        { status: 400 }
-      );
+    // 验证必要参数
+    if (!ingredients || ingredients.length < 2) {
+      return NextResponse.json({ error: '至少需要2种食材' }, { status: 400 });
     }
 
-    const validRecipeCount = Math.min(Math.max(1, recipeCount), APP_CONFIG.MAX_RECIPE_COUNT);
-    const selectedModelConfig = modelConfig[languageModel as keyof typeof modelConfig] || modelConfig.deepseek;
-    const apiKey = apiKeys[languageModel as keyof typeof apiKeys];
+    if (!userId) {
+      return NextResponse.json({ error: '用户ID是必需的' }, { status: 400 });
+    }
+
+    // 选择语言模型配置
+    const selectedModelConfig = languageModel ? API_CONFIG[languageModel] : API_CONFIG.DEEPSEEK;
+    const apiKey = selectedModelConfig.API_KEY;
 
     if (!apiKey) {
-      return NextResponse.json({ error: `API key for model ${languageModel} is not configured` }, { status: 500 });
+      return NextResponse.json({ error: 'API密钥未配置' }, { status: 500 });
     }
 
-    const systemPrompt = language === 'zh' ? SYSTEM_PROMPTS.CHINESE : SYSTEM_PROMPTS.DEFAULT;
-    const ingredientNames = ingredients.map((ing: any) => ing.englishName || ing.name);
-    const userPrompt = language === 'zh'
-      ? USER_PROMPT_TEMPLATES.CHINESE(ingredientNames, servings, cookingTime, difficulty, cuisine, validRecipeCount)
-      : USER_PROMPT_TEMPLATES.ENGLISH(ingredientNames, servings, cookingTime, difficulty, cuisine, validRecipeCount);
+    // 构建系统提示词
+    const systemPrompt = `你是一个专业的AI厨师助手，专门为用户生成美味的食谱。请根据用户提供的食材，生成${recipeCount}个详细的食谱。
 
-    // gpt-4o mini 用 Replicate API
-    if (languageModel === 'gpt4o-mini') {
-      const gpt4oConfig = API_CONFIG.GPT4O_MINI;
-      const submitRes = await fetch(`${gpt4oConfig.BASE_URL}/predictions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Token ${apiKey}`,
-        },
-        body: JSON.stringify({
-          version: gpt4oConfig.VERSION,
-          input: {
-            system_prompt: systemPrompt,
-            prompt: userPrompt,
-            max_tokens: gpt4oConfig.MAX_TOKENS,
-            temperature: gpt4oConfig.TEMPERATURE,
-          },
-        }),
-      });
-      if (!submitRes.ok) {
-        const err = await submitRes.json();
-        return NextResponse.json({ error: err.detail || 'Failed to submit Replicate task' }, { status: 500 });
-      }
-      const submitData = await submitRes.json();
-      const predictionId = submitData.id;
-      // 2. 轮询获取结果
-      let output = null;
-      let status = submitData.status;
-      let pollCount = 0;
-      while (status !== 'succeeded' && status !== 'failed' && pollCount < 30) {
-        await new Promise(res => setTimeout(res, 2000));
-        const pollRes = await fetch(`${gpt4oConfig.BASE_URL}/predictions/${predictionId}`, {
-          headers: { 'Authorization': `Token ${apiKey}` },
-        });
-        const pollData = await pollRes.json();
-        status = pollData.status;
-        if (status === 'succeeded') {
-          output = pollData.output;
-          break;
+要求：
+1. 每个食谱必须包含：标题、食材清单、详细步骤、烹饪时间、难度等级、营养信息、厨师小贴士、标签
+2. 食材用量要精确，步骤要详细易懂
+3. 烹饪时间：${cookingTime}
+4. 难度等级：${difficulty}
+5. 菜系风格：${cuisine}
+6. 份数：${servings}人份
+7. 只使用用户提供的食材，不要添加其他食材
+8. 返回格式必须是有效的JSON
+
+请返回以下JSON格式：
+{
+  "recipes": [
+    {
+      "title": "食谱标题",
+      "ingredients": [
+        {
+          "name": "食材名称",
+          "amount": "用量",
+          "unit": "单位"
         }
-        pollCount++;
-      }
+      ],
+      "instructions": [
+        "步骤1",
+        "步骤2"
+      ],
+      "cookingTime": "烹饪时间",
+      "difficulty": "难度等级",
+      "servings": "份数",
+      "cuisine": "菜系",
+      "nutrition": {
+        "calories": "卡路里",
+        "protein": "蛋白质",
+        "carbs": "碳水化合物",
+        "fat": "脂肪"
+      },
+      "chefTips": [
+        "厨师小贴士1",
+        "厨师小贴士2"
+      ],
+      "tags": ["标签1", "标签2"]
+    }
+  ]
+}`;
+
+    // 构建用户提示词
+    const userPrompt = `请根据以下食材生成${recipeCount}个美味的食谱：
+
+食材清单：
+${ingredients.map((ingredient: any) => `- ${ingredient.name} ${ingredient.amount}${ingredient.unit}`).join('\n')}
+
+要求：
+- 烹饪时间：${cookingTime}
+- 难度等级：${difficulty}
+- 菜系风格：${cuisine}
+- 份数：${servings}人份
+- 只使用上述食材，不要添加其他食材
+- 确保每个食谱都是完整且可执行的`;
+
+    // GPT-4o mini 特殊处理
+    if (languageModel === 'gpt4o_mini') {
+      const client = new OpenAI({
+        apiKey: apiKey,
+        baseURL: selectedModelConfig.BASE_URL
+      });
+
+      const response = await client.chat.completions.create({
+        model: selectedModelConfig.MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        max_tokens: selectedModelConfig.MAX_TOKENS,
+        temperature: selectedModelConfig.TEMPERATURE,
+        stream: false
+      });
+
+      const output = response.choices[0].message.content;
       if (!output) {
-        return NextResponse.json({ error: 'Replicate GPT-4o mini 生成超时或失败' }, { status: 500 });
+        throw new Error('Empty response from GPT-4o mini');
       }
-      // 3. 解析 output
+
+      // 解析 output
       let recipes = [];
       try {
-        console.log('GPT-4o mini 原始输出:', output);
-        
         let content = Array.isArray(output) ? output.join('') : output;
         
         // 如果内容不是 JSON 格式，尝试提取 JSON 部分
         if (typeof content === 'string') {
-          // 查找 JSON 开始和结束位置
           const jsonStart = content.indexOf('{');
           const jsonEnd = content.lastIndexOf('}');
           if (jsonStart !== -1 && jsonEnd !== -1) {
@@ -116,10 +143,10 @@ export async function POST(request: NextRequest) {
         const result = JSON.parse(content);
         recipes = result.recipes || [];
       } catch (e) {
-        console.error('解析错误:', e);
-        console.error('原始输出:', output);
+        console.error('GPT-4o mini 返回内容解析失败:', e);
         return NextResponse.json({ error: 'GPT-4o mini 返回内容解析失败' }, { status: 500 });
       }
+
       const recipesWithDefaults = recipes.map((recipe: Recipe) => ({
         ...recipe,
         tags: recipe.tags || [],
@@ -127,6 +154,37 @@ export async function POST(request: NextRequest) {
         ingredients: recipe.ingredients || [],
         instructions: recipe.instructions || []
       }));
+      
+      // 扣减积分（仅非管理员用户）
+      let transactionId = null;
+      if (!isAdmin) {
+        const workerUrl = process.env.WORKER_URL || 'https://recipe-easy.annnb016.workers.dev';
+        const spendResponse = await fetch(`${workerUrl}/api/user-usage`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId,
+            action: 'spend',
+            amount: 1,
+            description: 'Generated recipe with GPT-4o mini'
+          }),
+        });
+
+        if (spendResponse.ok) {
+          const spendResult = await spendResponse.json();
+          
+          if (spendResult.success && spendResult.data?.transactionId) {
+            transactionId = spendResult.data.transactionId;
+          } else {
+            console.error('GPT-4o mini扣减积分失败:', spendResult);
+          }
+        } else {
+          console.error('GPT-4o mini扣减积分请求失败:', spendResponse.status);
+        }
+      }
+      
       return NextResponse.json({ recipes: recipesWithDefaults });
     }
 
@@ -136,6 +194,7 @@ export async function POST(request: NextRequest) {
       baseURL: selectedModelConfig.BASE_URL
     });
     const model = (selectedModelConfig as typeof API_CONFIG.DEEPSEEK | typeof API_CONFIG.QWENPLUS).MODEL;
+
     const response = await client.chat.completions.create({
       model: model,
       messages: [
@@ -147,10 +206,12 @@ export async function POST(request: NextRequest) {
       temperature: selectedModelConfig.TEMPERATURE,
       stream: false
     });
+
     const content = response.choices[0].message.content;
     if (!content) {
       throw new Error('Empty response from API');
     }
+
     const result = JSON.parse(content);
     const recipesWithDefaults = result.recipes.map((recipe: Recipe) => ({
       ...recipe,
@@ -159,12 +220,40 @@ export async function POST(request: NextRequest) {
       ingredients: recipe.ingredients || [],
       instructions: recipe.instructions || []
     }));
+
+    // 扣减积分（仅非管理员用户）
+    let transactionId = null;
+    if (!isAdmin) {
+      const workerUrl = process.env.WORKER_URL || 'https://recipe-easy.annnb016.workers.dev';
+      const spendResponse = await fetch(`${workerUrl}/api/user-usage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          action: 'spend',
+          amount: 1,
+          description: 'Generated recipe'
+        }),
+      });
+
+      if (spendResponse.ok) {
+        const spendResult = await spendResponse.json();
+        
+        if (spendResult.success && spendResult.data?.transactionId) {
+          transactionId = spendResult.data.transactionId;
+        } else {
+          console.error('扣减积分失败:', spendResult);
+        }
+      } else {
+        console.error('扣减积分请求失败:', spendResponse.status);
+      }
+    }
+
     return NextResponse.json({ recipes: recipesWithDefaults });
   } catch (error) {
     console.error('Recipe generation error:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate recipes' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Recipe generation failed' }, { status: 500 });
   }
 }

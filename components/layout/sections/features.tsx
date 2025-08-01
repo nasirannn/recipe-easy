@@ -1,53 +1,80 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { useTranslations } from 'next-intl';
 import { GridBackground } from "@/components/ui/grid-background";
+import { Globe, Sparkles, Image, Utensils, Pizza, Smartphone } from "lucide-react";
 
 export const FeaturesSection = () => {
   const t = useTranslations('features');
 
-  const handleScrollToHero = () => {
-    const heroSection = document.getElementById("hero");
-    if (heroSection) {
-      heroSection.scrollIntoView({ behavior: "smooth" });
+  const features = [
+    { 
+      id: 1, 
+      title: 'imageModels', 
+      description: 'imageModelsDesc',
+      icon: <Image className="h-5 w-5 text-primary" />
+    },
+    { 
+      id: 2, 
+      title: 'aiGeneration', 
+      description: 'aiGenerationDesc',
+      icon: <Sparkles className="h-5 w-5 text-primary" />
+    },
+    { 
+      id: 3, 
+      title: 'customIngredients', 
+      description: 'customIngredientsDesc',
+      icon: <Utensils className="h-5 w-5 text-primary" />
+    },
+    { 
+      id: 4, 
+      title: 'multipleCuisine', 
+      description: 'multipleCuisineDesc',
+      icon: <Pizza className="h-5 w-5 text-primary" />
+    },
+    { 
+      id: 5, 
+      title: 'multiLanguage', 
+      description: 'multiLanguageDesc',
+      icon: <Globe className="h-5 w-5 text-primary" />
+    },
+    { 
+      id: 6, 
+      title: 'responsive', 
+      description: 'responsiveDesc',
+      icon: <Smartphone className="h-5 w-5 text-primary" />
     }
-  };
+  ];
 
   return (
     <section
       id="features"
-      className="w-full bg-primary/5 pt-32 pb-24 sm:pt-40 sm:pb-32 relative"
+      className="w-full py-24 bg-background relative"
     >
-      <GridBackground className="absolute inset-0 z-[-1]" />
-      <div className="container grid lg:grid-cols-2 gap-8 place-items-center">
-        <div className="lg:text-left text-center">
-          <h2 className="text-lg text-base mb-2 tracking-wider">
-            {t('subtitle')}
-          </h2>
-
-          <h2 className="text-3xl text-primary md:text-4xl font-bold mb-4">
+      <GridBackground className="absolute inset-0 z-[-1] opacity-50" />
+      
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
             {t('title')}
           </h2>
-
-          <p className="text-lg text-muted-foreground mb-8">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {t('description')}
           </p>
-
-          <Button className="rounded-full px-6" onClick={handleScrollToHero}>
-            {t('tryNow')} &rarr;
-          </Button>
         </div>
-
-        <div className="w-full aspect-video rounded-lg overflow-hidden">
-          <iframe
-            className="w-full h-full"
-            title="vimeo-player"
-            src="https://player.vimeo.com/video/1103051913?h=e71848409d&byline=0&portrait=0&title=0"
-            
-            referrerPolicy="strict-origin-when-cross-origin"
-            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-            allowFullScreen
-          ></iframe>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {features.map((feature) => (
+            <div 
+              key={feature.id} 
+              className="bg-primary/5 dark:bg-primary/10 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                {feature.icon}
+              </div>
+              <h3 className="text-xl font-medium mb-2">{t(feature.title)}</h3>
+              <p className="text-muted-foreground">{t(feature.description)}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

@@ -2,6 +2,7 @@
 
 import { useLocale } from 'next-intl';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -20,10 +21,10 @@ const languages = [
 export function LanguageSwitcher() {
   const locale = useLocale();
   const pathname = usePathname();
+  const [hoveredCode, setHoveredCode] = useState<string | null>(null);
 
   const switchLanguage = (newLocale: string) => {
     // Remove the current locale from the pathname
-    // Handle case where locale might be undefined or not in path
     let pathWithoutLocale = pathname;
     if (locale && pathname.startsWith(`/${locale}`)) {
       pathWithoutLocale = pathname.replace(`/${locale}`, '');
@@ -37,6 +38,10 @@ export function LanguageSwitcher() {
   };
 
   const currentLanguage = languages.find(lang => lang.code === locale);
+  
+  // 直接指定颜色变量，而不是依赖Tailwind类名
+  const primaryColor = "hsl(var(--primary))";
+  const foregroundColor = "hsl(var(--foreground))";
 
   return (
     <DropdownMenu>
@@ -44,7 +49,8 @@ export function LanguageSwitcher() {
         <Button
           variant="ghost"
           size="sm"
-          className="gap-2 hover:bg-accent/50 transition-colors duration-200 rounded-full px-3 py-2"
+          className="gap-2 hover:bg-accent/50 px-3 py-2"
+          style={{ transform: 'translateZ(0)', willChange: 'transform' }}
         >
           <Globe className="h-4 w-4 text-muted-foreground" />
           <span className="hidden sm:inline font-medium">
@@ -56,19 +62,26 @@ export function LanguageSwitcher() {
         align="end"
         className="w-40 p-2 bg-background/95 backdrop-blur-md border shadow-xl rounded-xl"
         sideOffset={8}
+        onMouseLeave={() => setHoveredCode(null)}
       >
         {languages.map((language) => (
           <DropdownMenuItem
             key={language.code}
             onClick={() => switchLanguage(language.code)}
-            className={cn(
-              "flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200 font-medium",
-              locale === language.code
-                ? "bg-primary/10 text-primary shadow-sm"
-                : "hover:bg-accent text-foreground"
-            )}
+            onMouseOver={() => setHoveredCode(language.code)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200 font-medium hover:bg-accent"
           >
-            <span className="text-sm">{language.name}</span>
+            <span 
+              className="text-sm"
+              style={{ 
+                color: hoveredCode === language.code ? primaryColor : 
+                       (hoveredCode === null && locale === language.code) ? primaryColor : 
+                       foregroundColor,
+                transition: 'color 0.15s ease'
+              }}
+            >
+              {language.name}
+            </span>
             {locale === language.code && (
               <Check className="h-4 w-4 text-primary" />
             )}

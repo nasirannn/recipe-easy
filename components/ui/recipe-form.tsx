@@ -3,8 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { IngredientSelector } from "./ingredients-selector";
-import { Sliders, Clock, Users, Gauge, Globe, Sparkles, Image as ImageIcon } from "lucide-react";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Sliders, Clock, Users, Gauge, Globe, Sparkles, Image as ImageIcon, X } from "lucide-react";
+import { Popover, PopoverTrigger, PopoverContent, PopoverClose } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,35 +12,12 @@ import { useAuth } from "@/contexts/auth-context";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { cn } from "@/lib/utils";
 import { IMAGE_GEN_CONFIG, APP_CONFIG } from "@/lib/config";
-import { ImageModel } from "@/lib/services/image-service";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCuisines } from "@/hooks/use-cuisines";
 import { useTranslations } from 'next-intl';
-
-// 食材接口定义
-interface Ingredient {
-  id: string;
-  slug?: string;
-  name: string;
-  englishName: string;
-  category?: {
-    id: number;
-    slug: string;
-    name: string;
-  };
-  isCustom?: boolean; // 仅用于前端临时标识自定义食材
-}
-
-export interface RecipeFormData {
-  ingredients: Ingredient[];
-  servings: number;
-  recipeCount: number;
-  cookingTime: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  cuisine: string;
-  imageModel?: ImageModel; // 添加图片模型选项
-  languageModel?: 'deepseek' | 'qwenplus' | 'gpt4o-mini'; // 添加语言模型选项
-}
+import { useUserUsage } from "@/hooks/use-user-usage";
+import { Ingredient, RecipeFormData } from "@/lib/types";
+import { ImageModel } from "@/lib/services/image-service";
 
 interface RecipeFormProps {
   formData: RecipeFormData;
@@ -59,11 +36,13 @@ export const RecipeForm = ({
   // showRecipe,
   setShowRecipe,
 }: RecipeFormProps) => {
-  const { user, isAdmin } = useAuth();
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const { isAdmin } = useAuth();
+  const [ showAuthModal, setShowAuthModal] = useState(false);
+  const [ isMobile, setIsMobile] = useState(false);
   const { cuisines, loading: cuisinesLoading } = useCuisines();
+  const { canGenerate, isLoggedIn } = useUserUsage();
   const t = useTranslations('recipeForm');
+  const tCredits = useTranslations('credits');
   
   // 检测屏幕尺寸
   useEffect(() => {
@@ -81,9 +60,15 @@ export const RecipeForm = ({
 
   // 处理生成按钮点击
   const handleGenerateClick = () => {
-    if (!user && process.env.NEXT_PUBLIC_REQUIRE_AUTH === 'true') {
+    // 检查是否登录
+    if (!isLoggedIn) {
       setShowAuthModal(true);
       return;
+    }
+
+    // 检查使用次数（管理员无限制）
+    if (!isAdmin && !canGenerate) {
+      return; // 不能生成，按钮应该已经被禁用
     }
 
     if (formData.ingredients.length >= 2) {
@@ -127,7 +112,6 @@ export const RecipeForm = ({
             onFormChange({ ...formData, ingredients: [] });
           }}
         />
-
         {/* 生成按钮和高级设置 */}
         <div className="flex items-center justify-between mt-3 sm:mt-4 pt-3 border-t border-muted/20">
           <div className="flex items-center gap-2">
@@ -138,7 +122,25 @@ export const RecipeForm = ({
                   <span className="hidden sm:inline-block">{t('moreOptions')}</span>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[280px] sm:w-80">
+              <PopoverContent 
+                className="w-[240px] sm:w-[260px]"
+                onInteractOutside={(e) => {
+                  // 阻止交互外部事件关闭弹窗
+                  e.preventDefault();
+                }}
+                onPointerDownOutside={(e) => {
+                  // 阻止点击外部事件关闭弹窗
+                  e.preventDefault();
+                }}
+                align="start"
+                sideOffset={8}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium">{t('moreOptions')}</h3>
+                  <PopoverClose className="rounded-full h-5 w-5 inline-flex items-center justify-center text-muted-foreground hover:text-foreground">
+                    <X className="h-3 w-3" />
+                  </PopoverClose>
+                </div>
                 <div className="space-y-3 sm:space-y-4">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -192,7 +194,7 @@ export const RecipeForm = ({
                       <SelectTrigger id="cookingTime" className="h-8 sm:h-9 text-xs sm:text-sm">
                         <SelectValue placeholder={t('selectCookingTime')} />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()}>
                         <SelectItem value="quick">{t('quick')}</SelectItem>
                         <SelectItem value="medium">{t('medium')}</SelectItem>
                         <SelectItem value="long">{t('long')}</SelectItem>
@@ -212,7 +214,7 @@ export const RecipeForm = ({
                       <SelectTrigger id="difficulty" className="h-8 sm:h-9 text-xs sm:text-sm">
                         <SelectValue placeholder={t('selectDifficulty')} />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()}>
                         <SelectItem value="easy">{t('easy')}</SelectItem>
                         <SelectItem value="medium">{t('mediumDifficulty')}</SelectItem>
                         <SelectItem value="hard">{t('hard')}</SelectItem>
@@ -232,7 +234,7 @@ export const RecipeForm = ({
                       <SelectTrigger id="cuisine" className="h-8 sm:h-9 text-xs sm:text-sm">
                         <SelectValue placeholder={t('selectCuisine')} />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()}>
                         <SelectItem value="any">{t('anyCuisine')}</SelectItem>
                         {cuisinesLoading ? (
                           <SelectItem value="" disabled>{t('loadingCuisines')}</SelectItem>
@@ -259,12 +261,29 @@ export const RecipeForm = ({
                     <span className="hidden sm:inline-block">Language Model</span>
                   </Button>
                 </PopoverTrigger>
-              <PopoverContent className="w-[280px]">
-                <div className="space-y-3">
+              <PopoverContent 
+                className="w-[240px] sm:w-[260px]"
+                onInteractOutside={(e) => {
+                  // 阻止交互外部事件关闭弹窗
+                  e.preventDefault();
+                }}
+                onPointerDownOutside={(e) => {
+                  // 阻止点击外部事件关闭弹窗
+                  e.preventDefault();
+                }}
+                align="start"
+                sideOffset={8}
+              >
+                <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-medium">Language Model</h3>
+                  <PopoverClose className="rounded-full h-5 w-5 inline-flex items-center justify-center text-muted-foreground hover:text-foreground">
+                    <X className="h-3 w-3" />
+                  </PopoverClose>
+                </div>
+                <div className="space-y-3">
                   <RadioGroup
                     value={formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL}
-                    onValueChange={value => onFormChange({ ...formData, languageModel: value as 'deepseek' | 'qwenplus' | 'gpt4o-mini' })}
+                    onValueChange={value => onFormChange({ ...formData, languageModel: value as 'deepseek' | 'qwenplus' | 'gpt4o_mini' })}
                     className="grid grid-cols-1 gap-3"
                   >
                     <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL) === 'deepseek' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
@@ -293,10 +312,10 @@ export const RecipeForm = ({
                         </ul>
                       </div>
                     </div>
-                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL) === 'gpt4o-mini' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL) === 'gpt4o_mini' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
                       <div className="flex items-center gap-2">
-                        <RadioGroupItem value="gpt4o-mini" id="lm-gpt4o-mini" />
-                        <Label htmlFor="lm-gpt4o-mini" className="font-medium cursor-pointer">GPT-4o Mini</Label>
+                        <RadioGroupItem value="gpt4o_mini" id="lm-gpt4o_mini" />
+                        <Label htmlFor="lm-gpt4o_mini" className="font-medium cursor-pointer">GPT-4o Mini</Label>
                       </div>
                       <div className="text-xs text-muted-foreground pl-6">
                         <ul className="list-disc pl-4 space-y-1">
@@ -321,9 +340,26 @@ export const RecipeForm = ({
                   <span className="hidden sm:inline-block">Image Model</span>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[280px]">
-                <div className="space-y-3">
+              <PopoverContent 
+                className="w-[240px] sm:w-[260px]"
+                onInteractOutside={(e) => {
+                  // 阻止交互外部事件关闭弹窗
+                  e.preventDefault();
+                }}
+                onPointerDownOutside={(e) => {
+                  // 阻止点击外部事件关闭弹窗
+                  e.preventDefault();
+                }}
+                align="start"
+                sideOffset={8}
+              >
+                <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-medium">Image Generation Model</h3>
+                  <PopoverClose className="rounded-full h-5 w-5 inline-flex items-center justify-center text-muted-foreground hover:text-foreground">
+                    <X className="h-3 w-3" />
+                  </PopoverClose>
+                </div>
+                <div className="space-y-3">
                   <RadioGroup 
                     value={formData.imageModel || APP_CONFIG.DEFAULT_IMAGE_MODEL}
                     onValueChange={value => handleModelChange(value as ImageModel)}
@@ -362,25 +398,51 @@ export const RecipeForm = ({
             </Popover>
             )}
           </div>
-
-          <Button
-            onClick={handleGenerateClick}
+          <div
             className={cn(
-              "font-medium",
-              isMobile 
-                ? "w-full max-w-[160px] mx-auto px-6"
-                : "px-3 sm:px-6"
+              isMobile ? "flex justify-center w-full" : "",
+              "mt-4"
             )}
-            size="sm"
-            disabled={loading || formData.ingredients.length < 2}
           >
-            <Sparkles className="h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">{loading ? t('generating') : t('generate')}</span>
-            <span className="sm:hidden">{loading ? t('wait') : t('go')}</span>
-          </Button>
+            <Button
+              onClick={handleGenerateClick}
+              className={cn(
+                "font-medium",
+                isMobile
+                  ? "w-full text-center max-w-[200px] px-6"
+                  : "px-3 sm:px-6"
+              )}
+              size="sm"
+              disabled={!isLoggedIn ? loading : (loading || formData.ingredients.length < 2 || (!isAdmin && !canGenerate))}
+            >
+              <Sparkles className="h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
+              {!isLoggedIn ? (
+                <>
+                  <span className="hidden sm:inline">Sign in to Generate</span>
+                  <span className="sm:hidden">Sign in</span>
+                </>
+              ) : loading ? (
+                <>
+                  <span className="hidden sm:inline">{t('generating')}</span>
+                  <span className="sm:hidden">{t('wait')}</span>
+                </>
+              ) : !isAdmin && !canGenerate ? (
+                <>
+                  <span className="hidden sm:inline">{tCredits('noCreditsLeft')}</span>
+                  <span className="sm:hidden">{tCredits('insufficientCredits')}</span>
+                </>
+              ) : (
+                <>
+                  <span className="hidden sm:inline">{t('generate')}</span>
+                  <span className="sm:hidden">{t('go')}</span>
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
       {/* 登录模态框 */}
+      <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
     </div>
   );
 }; 

@@ -60,7 +60,7 @@ async function checkWanxTaskStatus(taskId: string) {
   });
 
   const taskData = response.data;
-  console.log(`万象任务 ${taskId} 状态检查响应:`, JSON.stringify(taskData, null, 2));
+  
 
   const { task_status, results } = taskData.output;
   
@@ -106,7 +106,7 @@ async function checkReplicateTaskStatus(taskId: string) {
   });
 
   const taskData = response.data;
-  console.log(`Replicate任务 ${taskId} 状态检查响应:`, JSON.stringify(taskData, null, 2));
+  
 
   if (taskData.status === 'succeeded') {
     // Replicate返回的是output数组，包含图像URL

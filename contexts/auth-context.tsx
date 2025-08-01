@@ -1,59 +1,147 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { User } from '@supabase/supabase-js'
 import { createSupabaseClient } from '@/lib/supabase'
+import { getSuggestedDisplayName, updateUserDisplayName } from '@/lib/utils/user-display'
 
 interface AuthContextType {
   user: User | null
-  userRole: string
-  isAdmin: boolean
   loading: boolean
+  signUp: (email: string, password: string) => Promise<any>
+  signIn: (email: string, password: string) => Promise<any>
   signOut: () => Promise<void>
   signInWithGoogle: () => Promise<void>
   signInWithEmail: (email: string, password: string) => Promise<void>
   signUpWithEmail: (email: string, password: string) => Promise<void>
   resetPassword: (email: string) => Promise<void>
+  isAdmin: boolean
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider')
-  }
-  return context
-}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createSupabaseClient()
 
-  // 从用户元数据获取角色，默认为 'user'
-  const userRole = user?.user_metadata?.role || 'user'
-  const isAdmin = userRole === 'admin'
-  
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      setLoading(false)
-    }
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null)
-        setLoading(false)
+  const saveUserDisplayName = async (user: User) => {
+    try {
+      // If user doesn't have a custom display_name, save the beautified email prefix
+      if (!user.user_metadata?.display_name) {
+        const suggestedName = getSuggestedDisplayName(user)
+        await updateUserDisplayName(user, suggestedName)
       }
-    )
+    } catch (error) {
+      console.error('Failed to save user display name:', error)
+    }
+  }
 
-    return () => subscription.unsubscribe()
+  const refreshUser = useCallback(async () => {
+    try {
+      const { data: { user: refreshedUser }, error } = await supabase.auth.getUser()
+      if (error) {
+        console.error('Error refreshing user:', error)
+        return
+      }
+      
+      setUser(refreshedUser)
+    } catch (error) {
+      console.error('Failed to refresh user:', error)
+    }
   }, [supabase.auth])
 
+  const handleAuthStateChange = useCallback(async (event: string, session: any) => {
+    
+    
+    if (session?.user) {
+      // 先设置用户
+      setUser(session.user)
+      // 然后保存显示名称
+      await saveUserDisplayName(session.user)
+      // 保存后重新获取最新用户数据
+      setTimeout(async () => {
+        const { data: { user: latestUser } } = await supabase.auth.getUser()
+        if (latestUser) {
+  
+          setUser(latestUser)
+        }
+      }, 500)
+    } else {
+      setUser(null)
+    }
+    
+    setLoading(false)
+  }, [supabase.auth])
+
+  useEffect(() => {
+    let mounted = true
+    
+    const initializeAuth = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        if (error) {
+          console.error('Error getting user:', error)
+          setUser(null)
+          setLoading(false)
+          return
+        }
+        
+        if (mounted) {
+          if (user) {
+            setUser(user)
+            await saveUserDisplayName(user)
+            // 保存后获取最新数据
+            const { data: { user: latestUser } } = await supabase.auth.getUser()
+            if (latestUser && mounted) {
+              setUser(latestUser)
+            }
+          }
+          setLoading(false)
+        }
+      } catch (error) {
+        console.error('Failed to initialize auth:', error)
+        if (mounted) {
+          setUser(null)
+          setLoading(false)
+        }
+      }
+    }
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange)
+    initializeAuth()
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [supabase.auth, handleAuthStateChange])
+
+  const signUp = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          role: 'user'
+        }
+      }
+    })
+    return { data, error }
+  }
+
+  const signIn = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
+    return { data, error }
+  }
+
   const signOut = async () => {
-    await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
   }
 
   const signInWithGoogle = async () => {
@@ -87,7 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
         data: {
-          role: 'user' // 默认角色为普通用户
+          role: 'user'
         }
       },
     })
@@ -107,19 +195,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  return (
-    <AuthContext.Provider value={{
-      user,
-      userRole,
-      isAdmin,
-      loading,
-      signOut,
-      signInWithGoogle,
-      signInWithEmail,
-      signUpWithEmail,
-      resetPassword
-    }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  const isAdmin = user?.user_metadata?.role === 'admin'
+
+  const value = {
+    user,
+    loading,
+    signUp,
+    signIn,
+    signOut,
+    signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
+    resetPassword,
+    isAdmin,
+    refreshUser
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
 }

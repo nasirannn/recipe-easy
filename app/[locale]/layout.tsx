@@ -2,8 +2,24 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { ThemeProvider } from '@/components/layout/theme-provider';
 import { AuthProvider } from '@/contexts/auth-context';
-import { LanguageProvider } from '@/contexts/language-context';
 import { Navbar } from '@/components/layout/navbar';
+import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
+import { PageViewTracker } from '@/components/analytics/page-view-tracker';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const { locale } = params;
+  
+  return generateSeoMetadata({
+    title: "RecipeEasy - AI Recipe Generator, Random Recipes, Meal Ideas",
+    description: "Stuck on what to cook? Enter your ingredients and get random, AI-generated recipes based on what you have — with easy cooking steps.",
+    path: "",
+    locale,
+  });
+}
 
 export default async function LocaleLayout({
   children,
@@ -16,19 +32,18 @@ export default async function LocaleLayout({
 
   return (
     <AuthProvider>
-      <LanguageProvider>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <NextIntlClientProvider locale={params.locale} messages={messages}>
-            <Navbar />
-            {children}
-          </NextIntlClientProvider>
-        </ThemeProvider>
-      </LanguageProvider>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <NextIntlClientProvider locale={params.locale} messages={messages}>
+          <PageViewTracker />
+          <Navbar />
+          {children}
+        </NextIntlClientProvider>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

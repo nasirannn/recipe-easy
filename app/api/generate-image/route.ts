@@ -3,6 +3,9 @@ import axios from 'axios';
 import { IMAGE_GEN_CONFIG, APP_CONFIG } from '@/lib/config';
 import type { ImageModel } from '@/lib/services/image-service';
 
+// 强制动态渲染
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const { 
@@ -58,8 +61,7 @@ async function generateWithWanx(
 ) {
   const count = Math.min(Math.max(1, n), IMAGE_GEN_CONFIG.WANX.MAX_IMAGES);
     
-  console.log('正在请求通义千问API:', IMAGE_GEN_CONFIG.WANX.BASE_URL);
-  console.log('使用的提示词:', prompt);
+  
   
   if (!process.env.DASHSCOPE_API_KEY) {
     console.error('DASHSCOPE_API_KEY 环境变量未设置');
@@ -83,7 +85,7 @@ async function generateWithWanx(
     }
   };
   
-  console.log('API请求体:', JSON.stringify(requestBody, null, 2));
+  
   
   const response = await axios.post(
     IMAGE_GEN_CONFIG.WANX.BASE_URL,
@@ -98,7 +100,7 @@ async function generateWithWanx(
     }
   );
 
-  console.log('API异步任务提交响应:', JSON.stringify(response.data, null, 2));
+  
 
   const taskId = response.data.output.task_id;
 
@@ -114,9 +116,7 @@ async function generateWithWanx(
 
 // 使用Replicate Flux Schnell模型生成图像
 async function generateWithReplicate(prompt: string, negativePrompt: string) {
-  console.log('正在请求Replicate API:', IMAGE_GEN_CONFIG.REPLICATE.BASE_URL);
-  console.log('使用的提示词:', prompt);
-  console.log('使用模型:', IMAGE_GEN_CONFIG.REPLICATE.MODEL_ID);
+  
   
   if (!process.env.REPLICATE_API_TOKEN) {
     console.error('REPLICATE_API_TOKEN 环境变量未设置');
@@ -145,7 +145,7 @@ async function generateWithReplicate(prompt: string, negativePrompt: string) {
     }
   );
 
-  console.log('Replicate API响应:', JSON.stringify(response.data, null, 2));
+  
 
   const taskId = response.data.id;
 

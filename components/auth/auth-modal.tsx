@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import { GoogleIcon } from "@/components/icons/google-icon";
 import { useTranslations } from 'next-intl';
+import { trackUserSignup, trackUserLogin } from "@/lib/gtag";
 
 
 
@@ -29,6 +30,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSignUp, setIsSignUp] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
@@ -37,7 +39,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [signupEmailError, setSignupEmailError] = useState<string | null>(null);
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true);
+    setIsGoogleLoading(true);
     setError(null);
     
     try {
@@ -46,13 +48,15 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
       }
 
       await signInWithGoogle();
+      // 跟踪 Google 登录事件
+      trackUserLogin('google');
       // 成功时不重置 loading 状态，因为页面会跳转
       // 保持加载状态直到页面跳转完成
     } catch (error) {
       console.error("Google sign in error:", error);
       setError(error instanceof Error ? error.message : t('generalError'));
       toast.error(t('signInFailed'));
-      setIsLoading(false); // 只在出错时重置加载状态
+      setIsGoogleLoading(false); // 只在出错时重置加载状态
     }
   };
 
@@ -64,6 +68,8 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     
     try {
       await signInWithEmail(email, password);
+      // 跟踪邮箱登录事件
+      trackUserLogin('email');
       toast.success(t('signInSuccess'));
       onOpenChange(false);
     } catch (error) {
@@ -83,6 +89,8 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     
     try {
       await signUpWithEmail(email, password);
+      // 跟踪邮箱注册事件
+      trackUserSignup('email');
       toast.success(t('signUpSuccess'));
       onOpenChange(false);
     } catch (error) {
@@ -242,7 +250,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
             
             <Button
               onClick={isSignUp ? handleEmailSignUp : handleEmailSignIn}
-              disabled={isLoading || !email || !password || (isSignUp && !!signupEmailError)}
+              disabled={isGoogleLoading || !email || !password || (isSignUp && !!signupEmailError)}
               className="w-full h-12"
             >
               {isLoading ? (
@@ -280,12 +288,12 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               className="w-full h-12 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-white dark:border-gray-600"
               variant="outline"
             >
-              {isLoading ? (
+              {isGoogleLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin mr-2" />
               ) : (
                 <GoogleIcon className="h-5 w-5 mr-2" />
               )}
-              {isLoading ? t('signingIn') : t('continueWithGoogle')}
+              {isGoogleLoading ? t('signingIn') : t('continueWithGoogle')}
             </Button>
             
             <div className="text-center mt-4">

@@ -1,5 +1,5 @@
 import { ChefHat, Users, Clock, Copy, Check, X } from "lucide-react";
-import { Recipe } from "@/lib/types";
+import { Recipe, Ingredient } from "@/lib/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useEffect } from "react";
 import { Button } from "./button";
@@ -10,13 +10,6 @@ import { Spinner } from "./spinner";
 import { Dialog, DialogContent } from "./dialog";
 import { useTranslations } from 'next-intl';
 import { cn } from "@/lib/utils";
-
-interface Ingredient {
-  id: string;
-  name: string;
-  englishName: string;
-  isCustom?: boolean;
-}
 
 interface RecipeDisplayProps {
   recipes: Recipe[];

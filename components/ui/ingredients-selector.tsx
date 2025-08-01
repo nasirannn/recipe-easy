@@ -15,7 +15,7 @@ import {
   ChevronDown,
   Trash2
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Badge } from "./badge";
 import { Input } from "./input";
 import { Button } from "./button";
@@ -31,32 +31,26 @@ import {
   DialogClose
 } from "./dialog";
 import { useLocale, useTranslations } from 'next-intl';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { Ingredient } from "@/lib/types";
 
-// 食材接口定义
-interface Ingredient {
-  id: string;
-  slug?: string;
-  name: string;
-  englishName: string;
-  category?: {
-    id: number;
-    slug: string;
-    name: string;
-  };
-  isCustom?: boolean; // 仅用于前端临时标识自定义食材
-}
-
-// 分类图标映射
+// 分类图标映射 - 与数据库slug对应
 const CATEGORIES = {
   meat: { icon: Beef, color: 'text-red-600' },
   seafood: { icon: Fish, color: 'text-blue-600' },
-  vegetable: { icon: Carrot, color: 'text-green-600' },
-  fruit: { icon: Apple, color: 'text-yellow-600' },
-  dairy: { icon: Milk, color: 'text-purple-600' },
-  grains: { icon: Sandwich, color: 'text-amber-600' },
-  nuts: { icon: Nut, color: 'text-orange-600' },
-  herbs: { icon: Flower, color: 'text-emerald-600' },
-  condiments: { icon: Cookie, color: 'text-indigo-600' }
+  vegetables: { icon: Carrot, color: 'text-green-600' },
+  fruits: { icon: Apple, color: 'text-yellow-600' },
+  'dairy-eggs': { icon: Milk, color: 'text-purple-600' },
+  'grains-bread': { icon: Sandwich, color: 'text-amber-600' },
+  'nuts-seeds': { icon: Nut, color: 'text-orange-600' },
+  'herbs-spices': { icon: Flower, color: 'text-emerald-600' },
+  'oils-condiments': { icon: Cookie, color: 'text-indigo-600' }
 } as const;
 
 interface IngredientSelectorProps {
@@ -66,12 +60,6 @@ interface IngredientSelectorProps {
   onClearAll?: () => void;
 }
 
-// 自定义食材类型
-interface CustomIngredient extends Ingredient {
-  isCustom: boolean;
-}
-
-// 自定义食材类型
 interface CustomIngredient extends Ingredient {
   isCustom: boolean;
 }
@@ -86,10 +74,9 @@ export const IngredientSelector = ({
   const t = useTranslations('ingredientSelector');
   const [searchValue, setSearchValue] = useState("");
   const [activeCategory, setActiveCategory] = React.useState<keyof typeof CATEGORIES>('meat');
-  const [filteredIngredients, setFilteredIngredients] = useState<Ingredient[]>([]);
   const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
   const [categorizedIngredients, setCategorizedIngredients] = useState<Record<string, Ingredient[]>>({});
-  const [dynamicCategories, setDynamicCategories] = useState<Record<string, {name: string, icon: any, color: string}>>({});
+  const [dynamicCategories, setDynamicCategories] = useState<Record<string, { name: string; icon?: any; color?: string }>>({});
   const [loading, setLoading] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -98,100 +85,97 @@ export const IngredientSelector = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // 获取分类数据
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
+    setLoading(true);
     try {
-      const response = await fetch('/api/ingredients', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'getCategories',
-          language: locale
-        })
-      });
-
+      // 获取分类列表
+      const response = await fetch(`/api/categories?lang=${locale}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
 
-      if (data.success) {
-        const categories: Record<string, {name: string, icon: any, color: string}> = {};
-
+      if (data.success && data.data) {
+        // 使用API返回的数据
+        const categoriesMap: Record<string, { name: string; icon?: any; color?: string }> = {};
         data.data.forEach((category: any) => {
-          // 映射数据库分类到UI分类
-          const uiCategoryKey = categoryMapping[category.slug] || 'condiments';
-          if (CATEGORIES[uiCategoryKey]) {
-            categories[uiCategoryKey] = {
+          const categoryKey = category.slug as keyof typeof CATEGORIES;
+          if (CATEGORIES[categoryKey]) {
+            categoriesMap[categoryKey] = {
               name: category.name,
-              icon: CATEGORIES[uiCategoryKey].icon,
-              color: CATEGORIES[uiCategoryKey].color
+              icon: CATEGORIES[categoryKey].icon,
+              color: CATEGORIES[categoryKey].color
             };
           }
         });
-
-        setDynamicCategories(categories);
+        setDynamicCategories(categoriesMap);
+      } else {
+        throw new Error('Invalid API response');
       }
     } catch (error) {
-      console.error('Failed to fetch categories:', error);
-      // 如果获取失败，使用静态翻译作为备用
-    }
-  };
-
-  // 映射数据库分类到UI分类的函数
-  const categoryMapping: Record<string, keyof typeof CATEGORIES> = {
-    'meat': 'meat',
-    'seafood': 'seafood',
-    'vegetables': 'vegetable',
-    'fruits': 'fruit',
-    'dairy-eggs': 'dairy',
-    'grains-bread': 'grains',
-    'nuts-seeds': 'nuts',
-    'herbs-spices': 'herbs',
-    'oils-condiments': 'condiments'
-  };
-
-  // 获取所有食材数据并按分类组织
-  const fetchAllIngredients = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/ingredients?lang=${locale}&limit=200`);
-      const data = await response.json();
-
-      if (data.success) {
-        const ingredients = data.data.map((item: any) => ({
-          id: item.slug || item.id.toString(),
-          slug: item.slug,
-          name: item.name,
-          englishName: item.name,
-          category: item.category,
-          isCustom: false // 数据库中的食材都是系统预置的
-        }));
-
-        setAllIngredients(ingredients);
-
-        // 按分类组织食材
-        const categorized: Record<string, Ingredient[]> = {};
-
-        ingredients.forEach((ingredient: Ingredient) => {
-          const dbCategory = ingredient.category?.slug;
-          const uiCategory = dbCategory ? categoryMapping[dbCategory] : 'condiments';
-
-          if (uiCategory && !categorized[uiCategory]) {
-            categorized[uiCategory] = [];
-          }
-          if (uiCategory) {
-            categorized[uiCategory].push(ingredient);
-          }
-        });
-
-        setCategorizedIngredients(categorized);
-      }
-    } catch (error) {
-      console.error('Failed to fetch ingredients:', error);
-      setCategorizedIngredients({});
+      console.error("获取分类失败", error);
+      // 显示错误状态，不提供回退数据
     } finally {
       setLoading(false);
     }
-  };
+  }, [locale]);
+
+  // 获取所有食材
+  const fetchAllIngredients = useCallback(async () => {
+    setLoading(true);
+    try {
+      // 获取所有食材
+      const response = await fetch(`/api/ingredients?lang=${locale}`);
+      const data = await response.json();
+
+      if (!data.success || !data.results) {
+        throw new Error('Invalid API response');
+      }
+
+      const ingredientsData = data.results;
+      // 准备所有食材列表
+      setAllIngredients(ingredientsData);
+
+      // 按分类分组食材
+      const groupedByCategory: Record<string, Ingredient[]> = {
+        all: ingredientsData,
+        meat: [],
+        seafood: [],
+        vegetables: [],
+        fruits: [],
+        'dairy-eggs': [],
+        'grains-bread': [],
+        'nuts-seeds': [],
+        'herbs-spices': [],
+        'oils-condiments': [],
+        other: [],
+      };
+
+      // 将食材按分类分组
+      ingredientsData.forEach((ingredient: Ingredient) => {
+        const category = ingredient.category?.slug;
+        if (category && groupedByCategory[category]) {
+          groupedByCategory[category].push(ingredient);
+        } else {
+          // 如果没有分类或分类未知，放入其他分类
+          groupedByCategory.other.push(ingredient);
+        }
+      });
+
+      setCategorizedIngredients(groupedByCategory);
+
+      // 设置初始过滤的食材
+      // setFilteredIngredients(
+      //   groupedByCategory[activeCategory].filter(
+      //     ingredient => !selectedIngredients.some(selected => selected.id === ingredient.id)
+      //   )
+      // );
+    } catch (error) {
+      console.error("获取食材失败", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [locale]);
 
   // 检测屏幕尺寸
   useEffect(() => {
@@ -224,28 +208,26 @@ export const IngredientSelector = ({
   useEffect(() => {
     fetchAllIngredients();
     fetchCategories();
-  }, [locale]);
+  }, [locale, fetchAllIngredients, fetchCategories]);
 
-  // 处理搜索输入
-  useEffect(() => {
+  // 使用 useMemo 派生过滤后的食材列表，从根源上解决闪动问题
+  const filteredIngredients = useMemo(() => {
     if (searchValue.trim()) {
-      const filtered = allIngredients.filter(
+      // 搜索模式：在所有食材中搜索
+      return allIngredients.filter(
         ingredient =>
           !selectedIngredients.some(selected => selected.id === ingredient.id) &&
           (ingredient.englishName.toLowerCase().includes(searchValue.toLowerCase()) ||
            ingredient.name.toLowerCase().includes(searchValue.toLowerCase()))
       );
-      setFilteredIngredients(filtered);
     } else {
-      // 当搜索为空时，显示当前分类的食材
+      // 分类模式：显示当前分类的食材
       const categoryIngredients = categorizedIngredients[activeCategory] || [];
-      setFilteredIngredients(
-        categoryIngredients.filter(
-          ingredient => !selectedIngredients.some(selected => selected.id === ingredient.id)
-        )
+      return categoryIngredients.filter(
+        ingredient => !selectedIngredients.some(selected => selected.id === ingredient.id)
       );
     }
-  }, [searchValue, selectedIngredients, activeCategory, allIngredients, categorizedIngredients]);
+  }, [searchValue, activeCategory, allIngredients, categorizedIngredients, selectedIngredients]);
 
   // 处理标签的删除
   const handleRemoveIngredient = (ingredient: Ingredient) => {
@@ -322,7 +304,7 @@ export const IngredientSelector = ({
     <div className="w-full space-y-4 relative">
       {/* 输入框和已选食材标签区 */}
       <div className="relative w-full">
-        <div className="flex flex-wrap items-center border rounded-lg p-3 gap-2 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary bg-background">
+        <div className="flex flex-wrap items-center border rounded-lg p-3 gap-2 bg-background">
 
           {/* 已选的食材标签 */}
           {selectedIngredients.map((ingredient) => (
@@ -349,10 +331,11 @@ export const IngredientSelector = ({
               ref={inputRef}
               type="text"
               placeholder={selectedIngredients.length > 0 ? t('addMoreIngredients') : t('selectOrEnterIngredients')}
-              className="border-none shadow-none focus-visible:ring-0 p-0 h-7 text-sm"
+              className="border-0 shadow-none outline-none ring-0 p-0 h-7 text-sm focus:outline-none focus:ring-0 focus:shadow-none focus:border-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-0"
               value={searchValue}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
+              style={{ boxShadow: 'none' }}
             />
 
             {/* 清空按钮 - 仅在有选中食材时显示 */}
@@ -431,50 +414,37 @@ export const IngredientSelector = ({
 
       {/* 移动端分类选择器 */}
       {isMobile && (
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowCategories(!showCategories)}
-            className="flex items-center gap-2"
-          >
-            {CATEGORIES[activeCategory] && (
-              <>
-                {React.createElement(CATEGORIES[activeCategory].icon, {
+        <Select
+          value={activeCategory}
+          onValueChange={(value) => handleCategoryChange(value as keyof typeof CATEGORIES)}
+        >
+          <SelectTrigger className="w-full sm:w-[180px] h-9">
+            <SelectValue>
+              <div className="flex items-center gap-2">
+                {CATEGORIES[activeCategory] && React.createElement(CATEGORIES[activeCategory].icon, {
                   className: cn("h-4 w-4", CATEGORIES[activeCategory].color)
                 })}
-                {dynamicCategories[activeCategory]?.name || t(`categories.${activeCategory}`)}
-              </>
-            )}
-            <ChevronDown className={cn("h-4 w-4 transition-transform", showCategories && "rotate-180")} />
-          </Button>
-        </div>
-      )}
+                <span>
+                  {dynamicCategories[activeCategory]?.name || t(`categories.${activeCategory}`)}
+                </span>
+              </div>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(CATEGORIES).map(([categoryId, category]) => {
+              const Icon = category.icon;
 
-      {/* 移动端分类下拉菜单 */}
-      {isMobile && showCategories && (
-        <div className="bg-background border rounded-lg shadow-lg p-2 space-y-1">
-          {Object.entries(CATEGORIES).map(([categoryId, category]) => {
-            const Icon = category.icon;
-            const isActive = activeCategory === categoryId;
-
-            return (
-              <button
-                key={categoryId}
-                onClick={() => handleCategoryChange(categoryId as keyof typeof CATEGORIES)}
-                className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors text-left",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <Icon className={cn("h-4 w-4", isActive ? "text-primary-foreground" : category.color)} />
-                {dynamicCategories[categoryId]?.name || t(`categories.${categoryId}`)}
-              </button>
-            );
-          })}
-        </div>
+              return (
+                <SelectItem key={categoryId} value={categoryId} className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <Icon className={cn("h-4 w-4", category.color)} />
+                    <span>{dynamicCategories[categoryId]?.name || t(`categories.${categoryId}`)}</span>
+                  </div>
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
       )}
 
       {/* 食材网格 */}
@@ -512,7 +482,7 @@ export const IngredientSelector = ({
         {!loading && filteredIngredients.length === 0 && searchValue.trim() && (
           <div className="text-center py-8 space-y-2">
             <div className="text-muted-foreground">
-              {t('noIngredientsFound')} "{searchValue}"
+              {t('noIngredientsFound')} &quot;{searchValue}&quot;
             </div>
             <div className="text-sm text-muted-foreground">
               Press <kbd className="px-2 py-1 bg-muted rounded text-xs">Enter</kbd> {t('pressEnterToAdd')}

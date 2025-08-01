@@ -3,11 +3,23 @@ import fs from 'fs';
 import path from 'path';
 import { remark } from 'remark';
 import html from 'remark-html';
+import { SimpleLayout } from '@/components/layout/simple-layout';
+import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Terms of Service - Recipe Easy',
-  description: 'Terms of Service for Recipe Easy AI-powered recipe generation platform',
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  const { locale } = params;
+  
+  return generateSeoMetadata({
+    title: 'Terms of Service - Recipe Easy',
+    description: 'Terms of Service for Recipe Easy AI-powered recipe generation platform',
+    path: 'terms',
+    locale,
+  });
+}
 
 async function getTermsOfService(locale: string) {
   const fileName = locale === 'zh' ? 'terms-of-service-zh.md' : 'terms-of-service.md';
@@ -25,11 +37,8 @@ export default async function TermsPage({ params }: { params: { locale: string }
   const content = await getTermsOfService(params.locale);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div
-        className="prose prose-lg max-w-none dark:prose-invert"
-        dangerouslySetInnerHTML={{ __html: content }}
-      />
-    </div>
+    <SimpleLayout title="Terms of Service">
+      <div dangerouslySetInnerHTML={{ __html: content }} />
+    </SimpleLayout>
   );
 }

@@ -85,7 +85,7 @@ Please create authentic, innovative, and appropriately portioned dishes based on
 - time: 烹饪时间（分钟数，整数）
 - servings: 份量（整数，取决于用户选择的份量）
 - difficulty: 难度等级（"easy"、"medium"或"hard"）
-- ingredients: 食材列表（中文字符串数组，每项包含食材名称和用量以及预处理方法，如整块、切块、切片、切条、切丁、切碎、滚刀块等, 注意：不要包含任何调味料）
+- ingredients: 食材列表（中文字符串数组，每项包含食材名称和用量以及预处理方法，如整块、切块、切片、切条、切丁、切碎、滚刀块等, 注意：不要包含任何调味料；不要包含任何非食物的食材）
 - seasoning: 调味料列表（中文字符串数组，每项包含调味料名称和用量）
 - instructions: 烹饪步骤（中文字符串数组，每步清晰简洁）
 - tags: 标签列表（字符串数组，包含菜系、特点、成本等）
@@ -124,7 +124,16 @@ Please create authentic, innovative, and appropriately portioned dishes based on
 };
 
 export const DIFFICULTY_LEVELS = APP_CONFIG.DIFFICULTY_LEVELS;
-export const CUISINE_TYPES = APP_CONFIG.CUISINE_TYPES;
+// 定义自己的CUISINE_TYPES，不从APP_CONFIG中导入
+export const CUISINE_TYPES = {
+  CHINESE: 'chinese',
+  ITALIAN: 'italian',
+  FRENCH: 'french',
+  JAPANESE: 'japanese',
+  INDIAN: 'indian',
+  MEXICAN: 'mexican',
+  ANY: 'any'
+} as const;
 
 export const USER_PROMPT_TEMPLATES = {
   ENGLISH: (ingredients: string[], servings: number, cookingTime: string, difficulty: string, cuisine: string, recipeCount: number = 3) => 

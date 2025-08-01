@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     try {
       const supabase = createRouteHandlerClient({ cookies })
       await supabase.auth.exchangeCodeForSession(code)
-      console.log('User authentication successful, session exchanged')
+
     } catch (error) {
       console.error('Error exchanging session code:', error)
       return NextResponse.redirect(`${requestUrl.origin}?auth_error=session_exchange_failed`)

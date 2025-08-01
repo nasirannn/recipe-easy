@@ -1,3 +1,29 @@
+// 配置管理
+export const config = {
+  // Worker URL - 支持环境变量配置
+  workerUrl: process.env.WORKER_URL || 'https://recipe-easy.annnb016.workers.dev',
+  
+  // 其他配置
+  apiTimeout: 10000, // 10秒超时
+  maxRetries: 3,
+};
+
+// 获取完整的API URL
+export function getWorkerApiUrl(path: string): string {
+  return `${config.workerUrl}${path}`;
+}
+
+// 验证配置
+export function validateConfig() {
+  if (!config.workerUrl) {
+    throw new Error('WORKER_URL environment variable is required');
+  }
+  
+  if (!config.workerUrl.startsWith('http')) {
+    throw new Error('WORKER_URL must be a valid HTTP URL');
+  }
+}
+
 export const API_CONFIG = {
   DEEPSEEK: {
     BASE_URL: 'https://api.deepseek.com',
@@ -11,7 +37,7 @@ export const API_CONFIG = {
     MAX_TOKENS: 4000,
     TEMPERATURE: 0.7
   },
-  GPT4O_MINI: {
+  GPT4o_MINI: {
     BASE_URL: 'https://api.replicate.com/v1',
     VERSION: 'openai/gpt-4o-mini:2c0a6a34916017ceafaaf5fdf63f9370cf9491866a9611f37d86138c8ef53fc6',
     TEMPERATURE: 0.7,
@@ -67,17 +93,4 @@ export const APP_CONFIG = {
     MEDIUM: 'medium',
     HARD: 'hard'
   } as const,
-  CUISINE_TYPES: [
-    'Chinese',
-    'Italian', 
-    'Japanese',
-    'Korean',
-    'Thai',
-    'Indian',
-    'Mexican',
-    'French',
-    'American',
-    'British',
-    'Mediterranean'
-  ] as const
 } as const;

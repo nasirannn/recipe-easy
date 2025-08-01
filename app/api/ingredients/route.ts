@@ -1,122 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getWorkerApiUrl } from '@/lib/config';
 
-// 食材类型定义
-interface Ingredient {
-  id: number;
-  slug: string;
-  name: string;
-  category: {
-    id: number;
-    slug: string;
-    name: string;
-  };
-}
-
-interface IngredientCategory {
-  id: number;
-  slug: string;
-  name: string;
-  sort_order: number;
-}
+// 强制动态渲染
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const language = searchParams.get('lang') || 'en'; // 默认英文
-    const category = searchParams.get('category'); // 可选的分类过滤
-    const limit = parseInt(searchParams.get('limit') || '100');
-    const offset = parseInt(searchParams.get('offset') || '0');
+    const language = searchParams.get('lang') || 'en';
+    const category = searchParams.get('category');
+    const limit = searchParams.get('limit') || '100';
+    const offset = searchParams.get('offset') || '0';
 
-    // 尝试从 Cloudflare Workers API 获取数据
-    try {
-      const workerUrl = new URL('https://recipe-easy.annnb016.workers.dev/api/ingredients');
-      workerUrl.searchParams.set('lang', language);
-      workerUrl.searchParams.set('limit', limit.toString());
-      workerUrl.searchParams.set('offset', offset.toString());
-      if (category) workerUrl.searchParams.set('category', category);
+    // 构建查询参数
+    const params = new URLSearchParams();
+    if (language) params.append('lang', language);
+    if (category) params.append('category', category);
+    if (limit) params.append('limit', limit);
+    if (offset) params.append('offset', offset);
 
-      const response = await fetch(workerUrl.toString(), {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        cache: 'no-store', // 禁用缓存
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          return NextResponse.json(data);
-        }
-      }
-
-      console.log('Workers API failed, falling back to static data');
-    } catch (workerError) {
-      console.error('Workers API error, falling back to static data:', workerError);
-    }
-
-    // 备用：使用静态数据（从 ingredients.ts 导入的简化版本）
-    const staticIngredients: Ingredient[] = [
-      {
-        id: 1,
-        slug: 'apple',
-        name: language === 'zh' ? '苹果' : 'Apple',
-        category: {
-          id: 4,
-          slug: 'fruits',
-          name: language === 'zh' ? '水果' : 'Fruits'
-        }
+    // 直接调用云端数据库
+    const response = await fetch(getWorkerApiUrl(`/api/ingredients?${params}`), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
       },
-      {
-        id: 2,
-        slug: 'chicken_breast',
-        name: language === 'zh' ? '鸡胸' : 'Chicken Breast',
-        category: {
-          id: 1,
-          slug: 'meat',
-          name: language === 'zh' ? '肉类' : 'Meat'
-        }
-      },
-      {
-        id: 3,
-        slug: 'tomato',
-        name: language === 'zh' ? '番茄' : 'Tomato',
-        category: {
-          id: 3,
-          slug: 'vegetables',
-          name: language === 'zh' ? '蔬菜' : 'Vegetables'
-        }
-      }
-    ];
-
-    // 应用分类过滤
-    let filteredIngredients = staticIngredients;
-    if (category) {
-      filteredIngredients = staticIngredients.filter(ingredient => 
-        ingredient.category.slug === category
-      );
-    }
-
-    // 应用分页
-    const paginatedIngredients = filteredIngredients.slice(offset, offset + limit);
-
-    return NextResponse.json({
-      success: true,
-      data: paginatedIngredients,
-      total: filteredIngredients.length,
-      limit,
-      offset,
-      language,
-      source: 'static'
     });
 
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+
   } catch (error) {
-    console.error('Error fetching ingredients:', error);
+    console.error('❌ 获取食材数据失败:', error);
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Failed to fetch ingredients',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: '获取食材数据失败',
+        details: error instanceof Error ? error.message : '未知错误'
       },
       { status: 500 }
     );
@@ -130,62 +54,25 @@ export async function POST(request: NextRequest) {
     const { action, language = 'en' } = body;
 
     if (action === 'getCategories') {
-      // 尝试从 Workers API 获取分类数据
-      try {
-        const workerUrl = `https://recipe-easy.annnb016.workers.dev/api/ingredients/categories?lang=${language}`;
-        
-        const response = await fetch(workerUrl, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          cache: 'no-store',
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            return NextResponse.json(data);
-          }
-        }
-      } catch (workerError) {
-        console.error('Workers API error for categories:', workerError);
-      }
-
-      // 备用静态分类数据
-      const staticCategories: IngredientCategory[] = [
-        { id: 1, slug: 'meat', name: language === 'zh' ? '肉类' : 'Meat', sort_order: 1 },
-        { id: 2, slug: 'seafood', name: language === 'zh' ? '海鲜' : 'Seafood', sort_order: 2 },
-        { id: 3, slug: 'vegetables', name: language === 'zh' ? '蔬菜' : 'Vegetables', sort_order: 3 },
-        { id: 4, slug: 'fruits', name: language === 'zh' ? '水果' : 'Fruits', sort_order: 4 },
-        { id: 5, slug: 'dairy-eggs', name: language === 'zh' ? '乳品和蛋类' : 'Dairy & Eggs', sort_order: 5 },
-        { id: 6, slug: 'grains-bread', name: language === 'zh' ? '谷物和面包' : 'Grains & Bread', sort_order: 6 },
-        { id: 7, slug: 'nuts-seeds', name: language === 'zh' ? '坚果和种子' : 'Nuts & Seeds', sort_order: 7 },
-        { id: 8, slug: 'herbs-spices', name: language === 'zh' ? '香草和香料' : 'Herbs & Spices', sort_order: 8 },
-        { id: 9, slug: 'oils-condiments', name: language === 'zh' ? '油类和调料' : 'Oils & Condiments', sort_order: 9 }
-      ];
-
-      return NextResponse.json({
-        success: true,
-        data: staticCategories,
-        total: staticCategories.length,
-        language,
-        source: 'static'
-      });
+      // 使用categories API而不是在这里处理
+      return NextResponse.json(
+        { success: false, error: '请使用 /api/categories 端点获取分类数据' },
+        { status: 400 }
+      );
     }
 
     return NextResponse.json(
-      { success: false, error: 'Invalid action' },
+      { success: false, error: '无效的操作' },
       { status: 400 }
     );
 
   } catch (error) {
-    console.error('Error in POST /api/ingredients:', error);
+    console.error('❌ POST /api/ingredients 错误:', error);
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Failed to process request',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: '处理请求失败',
+        details: error instanceof Error ? error.message : '未知错误'
       },
       { status: 500 }
     );

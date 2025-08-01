@@ -11,11 +11,6 @@ const nextConfig = {
         hostname: "**.aliyuncs.com",
       },
       {
-        protocol: "http",
-        hostname: "localhost",
-        port: "8787",
-      },
-      {
         protocol: "https",
         hostname: "replicate.delivery",
       },

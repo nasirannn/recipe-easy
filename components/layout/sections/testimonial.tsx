@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Star } from "lucide-react";
 import { useTranslations } from 'next-intl';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 interface ReviewProps {
   image: string;
@@ -29,42 +30,42 @@ interface ReviewData {
 
 const reviewData: ReviewData[] = [
   {
-    image: "https://i.pravatar.cc/150?img=35",
+    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face&auto=format",
     nameKey: "review1.name",
     userNameKey: "review1.userName",
     commentKey: "review1.comment",
     rating: 5.0,
   },
   {
-    image: "https://randomuser.me/api/portraits/men/2.jpg",
+    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face&auto=format",
     nameKey: "review2.name",
     userNameKey: "review2.userName",
     commentKey: "review2.comment",
     rating: 4.8,
   },
   {
-    image: "https://randomuser.me/api/portraits/women/3.jpg",
+    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face&auto=format",
     nameKey: "review3.name",
     userNameKey: "review3.userName",
     commentKey: "review3.comment",
     rating: 4.9,
   },
   {
-    image: "https://randomuser.me/api/portraits/men/4.jpg",
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format",
     nameKey: "review4.name",
     userNameKey: "review4.userName",
     commentKey: "review4.comment",
     rating: 5.0,
   },
   {
-    image: "https://randomuser.me/api/portraits/women/5.jpg",
+    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face&auto=format",
     nameKey: "review5.name",
     userNameKey: "review5.userName",
     commentKey: "review5.comment",
     rating: 5.0,
   },
   {
-    image: "https://randomuser.me/api/portraits/men/6.jpg",
+    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face&auto=format",
     nameKey: "review6.name",
     userNameKey: "review6.userName",
     commentKey: "review6.comment",
@@ -74,6 +75,72 @@ const reviewData: ReviewData[] = [
 
 export const TestimonialSection = () => {
   const t = useTranslations('testimonials');
+  const [isPaused, setIsPaused] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<number>();
+  const translateXRef = useRef(0);
+  const [cardWidth, setCardWidth] = useState(350);
+
+  // 创建重复的评价数据以实现无缝循环
+  const duplicatedReviews = [...reviewData, ...reviewData];
+
+  // 计算卡片宽度（响应式）
+  useEffect(() => {
+    const updateCardWidth = () => {
+      if (typeof window !== 'undefined') {
+        if (window.innerWidth < 640) {
+          setCardWidth(300); // 小屏幕
+        } else if (window.innerWidth < 1024) {
+          setCardWidth(320); // 中等屏幕
+        } else {
+          setCardWidth(350); // 大屏幕
+        }
+      }
+    };
+
+    updateCardWidth();
+    window.addEventListener('resize', updateCardWidth);
+    
+    return () => window.removeEventListener('resize', updateCardWidth);
+  }, []);
+
+  const animate = useCallback(() => {
+    const container = containerRef.current;
+    if (!container || isPaused) {
+      animationRef.current = requestAnimationFrame(animate);
+      return;
+    }
+
+    // 计算单个评价卡片的宽度（包括间距）
+    const gap = 32; // gap-8 = 2rem = 32px
+    const cardTotalWidth = cardWidth + gap;
+    
+    // 计算一组评价的总宽度
+    const singleGroupWidth = reviewData.length * cardTotalWidth;
+    
+    // 移动速度（像素/帧）- 根据屏幕尺寸调整，让动画更平滑
+    const speed = window.innerWidth < 640 ? 0.6 : 0.8;
+    
+    translateXRef.current -= speed;
+    
+    // 当移动到第一组评价的末尾时，重置到开始位置
+    if (translateXRef.current <= -singleGroupWidth) {
+      translateXRef.current = 0;
+    }
+    
+    container.style.transform = `translateX(${translateXRef.current}px)`;
+    animationRef.current = requestAnimationFrame(animate);
+  }, [isPaused, cardWidth]);
+
+  useEffect(() => {
+    animationRef.current = requestAnimationFrame(animate);
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [animate]);
 
   return (
     <section id="testimonials" className="container py-4 sm:py-12">
@@ -87,49 +154,85 @@ export const TestimonialSection = () => {
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {reviewData.map((review, index) => {
-          const name = t(review.nameKey);
-          const userName = t(review.userNameKey);
-          const comment = t(review.commentKey);
+      <div className="relative overflow-hidden">
+        {/* 渐变遮罩 - 左侧 */}
+        <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+        
+        {/* 渐变遮罩 - 右侧 */}
+        <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
 
-          return (
-            <Card
-              key={index}
-              className="bg-muted/50 dark:bg-card flex flex-col"
-            >
-              <CardHeader>
-                <div className="flex gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="size-4 fill-primary text-primary"
-                    />
-                  ))}
-                </div>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-muted-foreground">{`"${comment}"`}</p>
-              </CardContent>
-              <CardFooter>
-                <div className="flex flex-row items-center gap-4">
-                  <Avatar>
-                    <AvatarImage
-                      src={review.image}
-                      alt={userName}
-                    />
-                    <AvatarFallback>{name.substring(0, 2)}</AvatarFallback>
-                  </Avatar>
+        {/* 轮播容器 */}
+        <div 
+          ref={containerRef}
+          className="flex gap-8"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          {duplicatedReviews.map((review, index) => {
+            const name = t(review.nameKey);
+            const userName = t(review.userNameKey);
+            const comment = t(review.commentKey);
 
-                  <div className="flex flex-col">
-                    <CardTitle className="text-lg">{name}</CardTitle>
-                    <CardDescription>{userName}</CardDescription>
+            return (
+              <Card
+                key={index}
+                className="bg-muted/50 dark:bg-card flex flex-col h-full flex-shrink-0"
+                style={{ 
+                  minWidth: `${cardWidth}px`, 
+                  maxWidth: `${cardWidth}px` 
+                }}
+              >
+                <CardHeader>
+                  <div className="flex gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="size-4 fill-primary text-primary"
+                      />
+                    ))}
                   </div>
-                </div>
-              </CardFooter>
-            </Card>
-          );
-        })}
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p className="text-muted-foreground text-sm sm:text-base">{`"${comment}"`}</p>
+                </CardContent>
+                <CardFooter>
+                  <div className="flex flex-row items-center gap-4">
+                    <Avatar>
+                      <AvatarImage
+                        src={review.image}
+                        alt={userName}
+                        onError={(e) => {
+                          // 尝试备用头像
+                          const fallbackImages = [
+                            "https://ui-avatars.com/api/?name=" + encodeURIComponent(name) + "&background=0f172a&color=fff&size=150",
+                            "https://api.dicebear.com/7.x/avataaars/svg?seed=" + encodeURIComponent(name) + "&size=150"
+                          ];
+                          
+                          const currentSrc = e.currentTarget.src;
+                          const currentIndex = fallbackImages.findIndex(url => currentSrc.includes(url.split('?')[0]));
+                          
+                          if (currentIndex < fallbackImages.length - 1) {
+                            e.currentTarget.src = fallbackImages[currentIndex + 1];
+                          } else {
+                            e.currentTarget.style.display = 'none';
+                          }
+                        }}
+                      />
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                        {name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="flex flex-col">
+                      <CardTitle className="text-base sm:text-lg">{name}</CardTitle>
+                      <CardDescription className="text-sm">{userName}</CardDescription>
+                    </div>
+                  </div>
+                </CardFooter>
+              </Card>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

@@ -126,10 +126,10 @@ export async function pollTaskStatus(taskId: string, model: ImageModel): Promise
     await new Promise(resolve => setTimeout(resolve, interval));
     const statusResult = await checkImageStatus(taskId, model);
     
-    console.log(`任务 ${taskId} 状态: ${statusResult.status}`);
+    
 
     if (statusResult.status === 'SUCCEEDED') {
-      console.log('图片生成成功:', statusResult);
+      
       return statusResult.imageUrl || null;
     }
     
@@ -161,7 +161,7 @@ export async function generateImageForRecipe(recipe: {
 }, style: ImageStyle = 'photographic', model: ImageModel = APP_CONFIG.DEFAULT_IMAGE_MODEL, n: number = 1): Promise<string | null> {
   try {
     const prompt = generateRecipeImagePrompt(recipe, model);
-    console.log(`使用${model}模型生成图片，提示词:`, prompt);
+
     
     // 使用配置中定义的负面提示词
     const negativePrompt = model === 'wanx' 
@@ -182,7 +182,7 @@ export async function generateImageForRecipe(recipe: {
     }
 
     const taskId = submitResult.taskId;
-    console.log('图片生成任务已提交，任务ID:', taskId);
+    
 
     // 使用轮询工具函数检查任务状态
     return await pollTaskStatus(taskId, model);

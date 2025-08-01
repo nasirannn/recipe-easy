@@ -32,4 +32,6 @@ export const Typography = React.forwardRef<HTMLElement, TypographyProps>(
       children
     );
   }
-); 
+);
+
+Typography.displayName = "Typography"; 

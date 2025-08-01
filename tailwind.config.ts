@@ -75,20 +75,28 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: 0 },
         },
-        "collapsible-down": {
-          from: { height: 0 },
-          to: { height: "var(--radix-collapsible-content-height)" },
+
+        "float": {
+          "0%": { transform: "translate3d(0, 0, 0)", opacity: "1" },
+          "70%": { transform: "translate3d(0, -16px, 0)", opacity: "0.8" },
+          "100%": { transform: "translate3d(0, -24px, 0)", opacity: "0" }
         },
-        "collapsible-up": {
-          from: { height: "var(--radix-collapsible-content-height)" },
-          to: { height: 0 },
+        "pulse-subtle": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.85" }
         },
+        "badge-bounce": {
+          "0%": { transform: "scale3d(1, 1, 1)" },
+          "50%": { transform: "scale3d(1.15, 1.15, 1)" },
+          "100%": { transform: "scale3d(1, 1, 1)" }
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "collapsible-down": "collapsible-down 0.2s ease-in-out",
-        "collapsible-up": "collapsible-up 0.2s ease-in-out",
+        "float": "float 2.5s cubic-bezier(0.2, 0, 0.2, 1) forwards",
+        "pulse-subtle": "pulse-subtle 2s ease-in-out infinite",
+        "badge-bounce": "badge-bounce 0.45s cubic-bezier(0.25, 0.1, 0.25, 1) 1"
       },
     },
   },

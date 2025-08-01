@@ -35,35 +35,37 @@ type Recipe = {
 
 // 获取 cuisine 的 CSS 类名
 const getCuisineClassName = (cuisineName: string): string => {
+  if (!cuisineName) return 'cuisine-other';
+  
+  // 支持中英文菜系名称映射
   const cuisineClassMap: { [key: string]: string } = {
-    'Chinese': 'chinese',
-    'Italian': 'italian',
-    'French': 'french',
-    'Indian': 'indian',
-    'Japanese': 'japanese',
-    'Mediterranean': 'mediterranean',
-    'Thai': 'thai',
-    'Mexican': 'mexican'
+    // 英文名称
+    'Chinese': 'cuisine-chinese',
+    'Italian': 'cuisine-italian',
+    'French': 'cuisine-french',
+    'Indian': 'cuisine-indian',
+    'Japanese': 'cuisine-japanese',
+    'Mediterranean': 'cuisine-mediterranean',
+    'Thai': 'cuisine-thai',
+    'Mexican': 'cuisine-mexican',
+    // 中文名称
+    '中式': 'cuisine-chinese',
+    '意式': 'cuisine-italian',
+    '法式': 'cuisine-french',
+    '印式': 'cuisine-indian',
+    '日式': 'cuisine-japanese',
+    '地中海': 'cuisine-mediterranean',
+    '地中海式': 'cuisine-mediterranean',
+    '泰式': 'cuisine-thai',
+    '墨西哥': 'cuisine-mexican'
   };
-  return cuisineClassMap[cuisineName] || 'other';
+  return cuisineClassMap[cuisineName] || 'cuisine-other';
 };
 
 // 获取 cuisine 的本地化显示名称
 const getLocalizedCuisineName = (cuisineName: string, locale: string): string => {
-  if (locale === 'zh') {
-    const chineseCuisineMap: { [key: string]: string } = {
-      'Chinese': '中式',
-      'Italian': '意式',
-      'French': '法式',
-      'Indian': '印式',
-      'Japanese': '日式',
-      'Mediterranean': '地中海',
-      'Thai': '泰式',
-      'Mexican': '墨西哥'
-    };
-    return chineseCuisineMap[cuisineName] || cuisineName;
-  }
-  return cuisineName;
+  if (!cuisineName) return locale === 'zh' ? '其他' : 'Other';
+  return cuisineName; // 现在直接从数据库获取本地化名称
 };
 
 export const RecipesSection = () => {
@@ -83,7 +85,26 @@ export const RecipesSection = () => {
         const data = await response.json();
 
         if (data.success) {
-          setRecipes(data.data);
+          // 转换API返回的数据格式以匹配前端期望的格式
+          const transformedRecipes = data.data.map((recipe: any) => ({
+            id: recipe.id,
+            title: recipe.localized_title || recipe.title,
+            image_url: recipe.image_url,
+            description: recipe.localized_description || recipe.description,
+            tags: recipe.localized_tags ? JSON.parse(recipe.localized_tags) : (recipe.tags ? JSON.parse(recipe.tags) : []),
+            cookTime: recipe.cook_time,
+            servings: recipe.servings,
+            difficulty: recipe.localized_difficulty || recipe.difficulty,
+            ingredients: recipe.localized_ingredients ? JSON.parse(recipe.localized_ingredients) : (recipe.ingredients ? JSON.parse(recipe.ingredients) : []),
+            seasoning: recipe.localized_seasoning ? JSON.parse(recipe.localized_seasoning) : (recipe.seasoning ? JSON.parse(recipe.seasoning) : []),
+            instructions: recipe.localized_instructions ? JSON.parse(recipe.localized_instructions) : (recipe.instructions ? JSON.parse(recipe.instructions) : []),
+            chefTips: recipe.localized_chef_tips ? JSON.parse(recipe.localized_chef_tips) : (recipe.chef_tips ? JSON.parse(recipe.chef_tips) : []),
+            cuisine: recipe.cuisine_id ? {
+              id: recipe.cuisine_id,
+              name: recipe.localized_cuisine_name || recipe.cuisine_name || 'Other'
+            } : undefined
+          }));
+          setRecipes(transformedRecipes);
         } else {
           console.error('Failed to fetch recipes:', data.error);
         }
@@ -102,7 +123,7 @@ export const RecipesSection = () => {
   };
 
   return (
-    <section id="recipes" className="py-12 md:py-20 bg-gray-50 dark:bg-gray-900">
+    <section id="recipes" className="py-12 md:py-20">
       <div className="container mx-auto px-4 md:px-6">
         <h2 className="text-3xl text-primary font-bold text-center mb-2 md:mb-4">
           {t('title')}
@@ -122,7 +143,7 @@ export const RecipesSection = () => {
               }
             }}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {recipes.map((recipe) => {
                 const cuisineName = recipe.cuisine?.name || 'Other';
                 const cuisineClass = getCuisineClassName(cuisineName);
@@ -131,7 +152,7 @@ export const RecipesSection = () => {
                 return (
                   <DialogTrigger key={recipe.id} asChild>
                     <div
-                      className="cursor-pointer group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                      className="cursor-pointer group border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                       onClick={() => handleOpenDialog(recipe)}
                     >
                       {/* 图片区域 */}
@@ -142,6 +163,12 @@ export const RecipesSection = () => {
                           fill
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            // 图片加载失败时，替换为占位图
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null; // 防止无限循环
+                            target.src = '/placeholder.svg';
+                          }}
                         />
                       </div>
 
@@ -155,7 +182,7 @@ export const RecipesSection = () => {
                         {/* 标签区域 */}
                         <div className="flex items-center justify-between">
                           {/* Cuisine 标签 */}
-                          <span className={`cuisine-${cuisineClass} px-3 py-1 rounded-full text-sm font-medium uppercase tracking-wide`}>
+                          <span className={`${cuisineClass} px-3 py-1 rounded-full text-sm font-medium uppercase tracking-wide`}>
                             {localizedCuisineName}
                           </span>
 
@@ -185,12 +212,18 @@ export const RecipesSection = () => {
                       sizes="100vw"
                       className="object-cover"
                       priority
+                      onError={(e) => {
+                        // 图片加载失败时，替换为占位图
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null; // 防止无限循环
+                        target.src = '/placeholder.svg';
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
                       <div className="p-6 text-white">
                         <h2 className="text-2xl md:text-3xl font-bold mb-2">{selectedRecipe.title}</h2>
                         <div className="flex flex-wrap gap-1 mb-2">
-                          {selectedRecipe.tags.map((tag, i) => (
+                          {Array.isArray(selectedRecipe.tags) && selectedRecipe.tags.map((tag, i) => (
                             <Badge key={i} className="bg-primary/80 text-white border-none">
                               {tag}
                             </Badge>
@@ -222,14 +255,14 @@ export const RecipesSection = () => {
                         {selectedRecipe.difficulty && (
                           <div className="flex items-center gap-2">
                             <ChefHat className="h-5 w-5 text-primary" />
-                            <span>{tRecipe('difficulty')}: {tRecipe(selectedRecipe.difficulty?.toLowerCase() || 'medium')}</span>
+                            <span>{tRecipe('difficulty')}: {selectedRecipe.difficulty}</span>
                           </div>
                         )}
                       </div>
                     </div>
                     
                     {/* 食材 */}
-                    {selectedRecipe.ingredients && (
+                    {selectedRecipe.ingredients && Array.isArray(selectedRecipe.ingredients) && (
                       <div>
                         <h3 className="text-xl font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
                           <span>🥬</span>{tRecipe('ingredients')}
@@ -243,7 +276,7 @@ export const RecipesSection = () => {
                     )}
 
                     {/* 调料 */}
-                    {selectedRecipe.seasoning && (
+                    {selectedRecipe.seasoning && Array.isArray(selectedRecipe.seasoning) && (
                       <div>
                         <h3 className="text-xl font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
                           <span>🧂</span>{tRecipe('seasoning')}
@@ -257,7 +290,7 @@ export const RecipesSection = () => {
                     )}
 
                     {/* 步骤 */}
-                    {selectedRecipe.instructions && (
+                    {selectedRecipe.instructions && Array.isArray(selectedRecipe.instructions) && (
                       <div>
                         <h3 className="text-xl font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
                           <span>📝</span>{tRecipe('instructions')}
@@ -276,7 +309,7 @@ export const RecipesSection = () => {
                     )}
                     
                     {/* 厨师小贴士 */}
-                    {selectedRecipe.chefTips && selectedRecipe.chefTips.length > 0 && (
+                    {selectedRecipe.chefTips && Array.isArray(selectedRecipe.chefTips) && selectedRecipe.chefTips.length > 0 && (
                       <div className="bg-primary/10 rounded-lg p-4">
                         <div className="flex items-center gap-2 mb-3">
                           <span>👩‍🍳</span>
