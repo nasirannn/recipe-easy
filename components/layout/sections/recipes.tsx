@@ -285,7 +285,7 @@ export const RecipesSection = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0 hover:bg-gray-100 focus:ring-0 focus:ring-offset-0 focus:outline-none"
+                            className="h-8 w-8 p-0 hover:bg-gray-100 focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                             onClick={() => {
                               const recipeName = `${selectedRecipe.title}`;
                               const sectionTitle = `${tRecipe('ingredients')}:`;
@@ -329,7 +329,7 @@ export const RecipesSection = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0 hover:bg-gray-100 focus:ring-0 focus:ring-offset-0 focus:outline-none"
+                            className="h-8 w-8 p-0 hover:bg-gray-100 focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                             onClick={() => {
                               const recipeName = `${selectedRecipe.title}`;
                               const sectionTitle = `${tRecipe('seasoning')}:`;
@@ -373,7 +373,7 @@ export const RecipesSection = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0 hover:bg-gray-100 focus:ring-0 focus:ring-offset-0 focus:outline-none"
+                            className="h-8 w-8 p-0 hover:bg-gray-100 focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                             onClick={() => {
                               const recipeName = `${selectedRecipe.title}`;
                               const sectionTitle = `${tRecipe('instructions')}:`;
