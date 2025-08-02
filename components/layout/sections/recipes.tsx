@@ -10,7 +10,7 @@ import {
 import Image from 'next/image';
 import { Spinner } from '@/components/ui/spinner';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Users, ChefHat } from 'lucide-react';
+import { Clock, Users, ChefHat, Copy, Check } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 
 // Recipe 类型定义
@@ -75,6 +75,7 @@ export const RecipesSection = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [copiedSection, setCopiedSection] = useState<'ingredients' | 'seasoning' | 'instructions' | null>(null);
 
   // 从本地 API 获取食谱数据
   useEffect(() => {
@@ -92,9 +93,9 @@ export const RecipesSection = () => {
             image_url: recipe.image_url,
             description: recipe.description,
             tags: recipe.tags ? JSON.parse(recipe.tags) : [],
-            cookTime: recipe.cook_time,
-            servings: recipe.servings,
-            difficulty: recipe.difficulty,
+            cookTime: recipe.cook_time || 30,
+            servings: recipe.servings || 4,
+            difficulty: recipe.difficulty || 'easy',
             ingredients: recipe.ingredients ? JSON.parse(recipe.ingredients) : [],
             seasoning: recipe.seasoning ? JSON.parse(recipe.seasoning) : [],
             instructions: recipe.instructions ? JSON.parse(recipe.instructions) : [],
@@ -117,6 +118,21 @@ export const RecipesSection = () => {
 
   const handleOpenDialog = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
+  };
+
+  // 复制文本到剪贴板
+  const copyToClipboard = async (text: string, type: 'ingredients' | 'seasoning' | 'instructions') => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedSection(type);
+      
+      // 3秒后重置复制状态
+      setTimeout(() => {
+        setCopiedSection(null);
+      }, 3000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
   };
 
   return (
@@ -261,9 +277,27 @@ export const RecipesSection = () => {
                     {/* 食材 */}
                     {selectedRecipe.ingredients && Array.isArray(selectedRecipe.ingredients) && (
                       <div>
-                        <h3 className="text-xl font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
-                          <span>🥬</span>{tRecipe('ingredients')}
-                        </h3>
+                        <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-xl font-semibold">
+                            <span>🥬</span>{tRecipe('ingredients')}
+                          </h3>
+                          <button
+                            onClick={() => copyToClipboard(selectedRecipe.ingredients.join('\n'), 'ingredients')}
+                            className="flex items-center gap-2 px-3 py-1 text-sm bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
+                          >
+                            {copiedSection === 'ingredients' ? (
+                              <>
+                                <Check className="h-4 w-4" />
+                                {tRecipe('copyIngredients')}
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-4 w-4" />
+                                {tRecipe('copyIngredients')}
+                              </>
+                            )}
+                          </button>
+                        </div>
                         <ul className="list-disc pl-5 space-y-2">
                           {selectedRecipe.ingredients.map((ingredient, i) => (
                             <li key={i} className="text-gray-700 dark:text-gray-300">{ingredient}</li>
@@ -275,9 +309,27 @@ export const RecipesSection = () => {
                     {/* 调料 */}
                     {selectedRecipe.seasoning && Array.isArray(selectedRecipe.seasoning) && (
                       <div>
-                        <h3 className="text-xl font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
-                          <span>🧂</span>{tRecipe('seasoning')}
-                        </h3>
+                        <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-xl font-semibold">
+                            <span>🧂</span>{tRecipe('seasoning')}
+                          </h3>
+                          <button
+                            onClick={() => copyToClipboard(selectedRecipe.seasoning.join('\n'), 'seasoning')}
+                            className="flex items-center gap-2 px-3 py-1 text-sm bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
+                          >
+                            {copiedSection === 'seasoning' ? (
+                              <>
+                                <Check className="h-4 w-4" />
+                                {tRecipe('copySeasoning')}
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-4 w-4" />
+                                {tRecipe('copySeasoning')}
+                              </>
+                            )}
+                          </button>
+                        </div>
                         <ul className="list-disc pl-5 space-y-2">
                           {selectedRecipe.seasoning.map((season, i) => (
                             <li key={i} className="text-gray-700 dark:text-gray-300">{season}</li>
@@ -289,9 +341,27 @@ export const RecipesSection = () => {
                     {/* 步骤 */}
                     {selectedRecipe.instructions && Array.isArray(selectedRecipe.instructions) && (
                       <div>
-                        <h3 className="text-xl font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
-                          <span>📝</span>{tRecipe('instructions')}
-                        </h3>
+                        <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-xl font-semibold">
+                            <span>📝</span>{tRecipe('instructions')}
+                          </h3>
+                          <button
+                            onClick={() => copyToClipboard(selectedRecipe.instructions.map((step, i) => `${i + 1}. ${step}`).join('\n'), 'instructions')}
+                            className="flex items-center gap-2 px-3 py-1 text-sm bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
+                          >
+                            {copiedSection === 'instructions' ? (
+                              <>
+                                <Check className="h-4 w-4" />
+                                {tRecipe('copyInstructions')}
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-4 w-4" />
+                                {tRecipe('copyInstructions')}
+                              </>
+                            )}
+                          </button>
+                        </div>
                         <ol className="space-y-4">
                           {selectedRecipe.instructions.map((step, i) => (
                             <li key={i} className="flex gap-3">

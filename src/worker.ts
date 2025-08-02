@@ -660,6 +660,8 @@ async function handleRecipes(request: Request, db: D1Database, corsHeaders: Reco
         chef_tips: recipe.localized_chef_tips || recipe.chef_tips || [],
         tags: recipe.localized_tags || recipe.tags || [],
         difficulty: recipe.localized_difficulty || recipe.difficulty || 'easy',
+        cook_time: recipe.cook_time || 30,
+        servings: recipe.servings || 4,
         cuisine: {
           id: recipe.cuisine_id || 1,
           slug: slugMap[recipe.cuisine_id] || 'other',
