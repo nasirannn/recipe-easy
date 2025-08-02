@@ -11,6 +11,8 @@ import Image from 'next/image';
 import { Spinner } from '@/components/ui/spinner';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Users, ChefHat, Copy, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTranslations, useLocale } from 'next-intl';
 
 // Recipe 类型定义
@@ -277,26 +279,47 @@ export const RecipesSection = () => {
                     {/* 食材 */}
                     {selectedRecipe.ingredients && Array.isArray(selectedRecipe.ingredients) && (
                       <div>
-                        <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center mb-8">
                           <h3 className="text-xl font-semibold">
-                            <span>🥬</span>{tRecipe('ingredients')}
+                            <span>🥬</span> {tRecipe('ingredients')}
                           </h3>
-                          <button
-                            onClick={() => copyToClipboard(selectedRecipe.ingredients.join('\n'), 'ingredients')}
-                            className="flex items-center gap-2 px-3 py-1 text-sm bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
-                          >
-                            {copiedSection === 'ingredients' ? (
-                              <>
-                                <Check className="h-4 w-4" />
-                                {tRecipe('copyIngredients')}
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="h-4 w-4" />
-                                {tRecipe('copyIngredients')}
-                              </>
-                            )}
-                          </button>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 hover:bg-gray-100"
+                                  onClick={() => {
+                                    const recipeName = `${selectedRecipe.title}`;
+                                    const sectionTitle = `${tRecipe('ingredients')}:`;
+                                    const steps = selectedRecipe.ingredients
+                                      ?.map((ingredient) => `• ${ingredient}`)
+                                      .join('\n')
+                                      || '';
+
+                                    const contentToCopy = [
+                                      recipeName,
+                                      '',
+                                      sectionTitle,
+                                      steps
+                                    ].join('\n');
+
+                                    copyToClipboard(contentToCopy, 'ingredients');
+                                  }}
+                                >
+                                  {copiedSection === 'ingredients' ? (
+                                    <Check className="h-4 w-4 text-green-600" />
+                                  ) : (
+                                    <Copy className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{tRecipe('copyIngredients')}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
                         <ul className="list-disc pl-5 space-y-2">
                           {selectedRecipe.ingredients.map((ingredient, i) => (
@@ -309,26 +332,47 @@ export const RecipesSection = () => {
                     {/* 调料 */}
                     {selectedRecipe.seasoning && Array.isArray(selectedRecipe.seasoning) && (
                       <div>
-                        <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center mb-8">
                           <h3 className="text-xl font-semibold">
-                            <span>🧂</span>{tRecipe('seasoning')}
+                            <span>🧂</span> {tRecipe('seasoning')}
                           </h3>
-                          <button
-                            onClick={() => copyToClipboard(selectedRecipe.seasoning.join('\n'), 'seasoning')}
-                            className="flex items-center gap-2 px-3 py-1 text-sm bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
-                          >
-                            {copiedSection === 'seasoning' ? (
-                              <>
-                                <Check className="h-4 w-4" />
-                                {tRecipe('copySeasoning')}
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="h-4 w-4" />
-                                {tRecipe('copySeasoning')}
-                              </>
-                            )}
-                          </button>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 hover:bg-gray-100"
+                                  onClick={() => {
+                                    const recipeName = `${selectedRecipe.title}`;
+                                    const sectionTitle = `${tRecipe('seasoning')}:`;
+                                    const steps = selectedRecipe.seasoning
+                                      ?.map((season) => `• ${season}`)
+                                      .join('\n')
+                                      || '';
+
+                                    const contentToCopy = [
+                                      recipeName,
+                                      '',
+                                      sectionTitle,
+                                      steps
+                                    ].join('\n');
+
+                                    copyToClipboard(contentToCopy, 'seasoning');
+                                  }}
+                                >
+                                  {copiedSection === 'seasoning' ? (
+                                    <Check className="h-4 w-4 text-green-600" />
+                                  ) : (
+                                    <Copy className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{tRecipe('copySeasoning')}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
                         <ul className="list-disc pl-5 space-y-2">
                           {selectedRecipe.seasoning.map((season, i) => (
@@ -341,26 +385,47 @@ export const RecipesSection = () => {
                     {/* 步骤 */}
                     {selectedRecipe.instructions && Array.isArray(selectedRecipe.instructions) && (
                       <div>
-                        <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center mb-8">
                           <h3 className="text-xl font-semibold">
-                            <span>📝</span>{tRecipe('instructions')}
+                            <span>📝</span> {tRecipe('instructions')}
                           </h3>
-                          <button
-                            onClick={() => copyToClipboard(selectedRecipe.instructions.map((step, i) => `${i + 1}. ${step}`).join('\n'), 'instructions')}
-                            className="flex items-center gap-2 px-3 py-1 text-sm bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
-                          >
-                            {copiedSection === 'instructions' ? (
-                              <>
-                                <Check className="h-4 w-4" />
-                                {tRecipe('copyInstructions')}
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="h-4 w-4" />
-                                {tRecipe('copyInstructions')}
-                              </>
-                            )}
-                          </button>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 hover:bg-gray-100"
+                                  onClick={() => {
+                                    const recipeName = `${selectedRecipe.title}`;
+                                    const sectionTitle = `${tRecipe('instructions')}:`;
+                                    const steps = selectedRecipe.instructions
+                                      ?.map((instr, idx) => `${idx + 1}. ${instr}`)
+                                      .join('\n')
+                                      || '';
+
+                                    const contentToCopy = [
+                                      recipeName,
+                                      '',
+                                      sectionTitle,
+                                      steps
+                                    ].join('\n');
+
+                                    copyToClipboard(contentToCopy, 'instructions');
+                                  }}
+                                >
+                                  {copiedSection === 'instructions' ? (
+                                    <Check className="h-4 w-4 text-green-600" />
+                                  ) : (
+                                    <Copy className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{tRecipe('copyInstructions')}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
                         <ol className="space-y-4">
                           {selectedRecipe.instructions.map((step, i) => (
