@@ -24,8 +24,9 @@ async function getPrivacyPolicy(locale: string) {
     // 根据语言选择对应的文件
     const fileName = locale === 'zh' ? 'privacy-policy-zh.md' : 'privacy-policy.md';
     
-    // 从public目录获取文件内容
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/${fileName}`);
+    // 使用相对路径从public目录获取文件
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://recipe-easy.com';
+    const response = await fetch(`${baseUrl}/${fileName}`);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch privacy policy: ${response.status}`);
