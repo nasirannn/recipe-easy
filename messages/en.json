@@ -2,7 +2,7 @@
   "navigation": {
     "home": "Home",
     "features": "Features",
-    "services": "Services",
+    "tutorial": "Tutorial",
     "testimonials": "Testimonials",
     "faq": "FAQ",
     "signin": "Sign In",
@@ -33,7 +33,8 @@
   "hero": {
     "title": "Free Online AI Recipe Generator",
     "description": "Simply select or enter ingredients, and our AI will create random, creative, and easy-to-follow recipes for you. No more \"What's for dinner?\" stress.",
-    "tryNow": "Try Now"
+    "tryNow": "Try Now",
+    "newUserWelcome": "🎉 Welcome! You have {credits} credits available to generate beautiful images!"
   },
   "features": {
     "title": "Smart AI-Powered Culinary Features",
@@ -138,22 +139,22 @@
     "noCreditsLeft": "No credits left",
     "consumeOneCredit": "1 recipe = 1 credit"
   },
-  "services": {
-    "title": "Services",
-    "subtitle": "Powerful Recipe Features",
-    "description": "From ingredient selection to recipe generation, we provide everything you need to create amazing meals.",
-    "aiGeneration": "AI Recipe Generation",
-    "aiGenerationDesc": "Transform your selected ingredients into creative and delicious recipes using advanced AI technology.",
-    "customIngredients": "Custom Ingredient Input",
-    "customIngredientsDesc": "Add ingredients not in our database - AI will intelligently recognize and generate recipes accordingly.",
-    "recipeImage": "AI Image Generation",
-    "recipeImageDesc": "Automatically generate beautiful food images based on the recipe name using AI technology.",
-    "multipleCuisine": "Multiple Cuisine Styles",
-    "multipleCuisineDesc": "Support for various international cuisines including Chinese, Italian, French, and more.",
-    "multiLanguage": "Bilingual Support",
-    "multiLanguageDesc": "Complete Chinese and English interface to meet different users' language preferences.",
-    "weeklyLimit": "Weekly Free Quota",
-    "weeklyLimitDesc": "7 free uses per week to fully experience the magic of AI recipe generation."
+  "tutorial": {
+    "title": "How to Use AI Recipe Generator?",
+    "subtitle": "Quick Tutorial",
+    "description": "Follow these simple steps to create delicious recipes from your ingredients in just minutes.",
+    "step1": {
+      "title": "Select or Enter Ingredients",
+      "description": "Choose from our extensive ingredient database or input custom ingredients(press Enter). Simply search, select, and build your ingredient list. Our AI generator will work with whatever ingredients you have available."
+    },
+    "step2": {
+      "title": "Generate Your Recipe",
+      "description": "Click 'Generate' button and watch our AI create a personalized recipe just for you. Choose your preferred cuisine style, cooking time, and difficulty level. The AI will analyze your ingredients and create the perfect recipe."
+    },
+          "step3": {
+        "title": "Get Your Recipe & Image",
+        "description": "Based on your selected ingredients, get your recipe first and then the image. You can copy ingredients, seasoning, instructions and the beautiful AI-generated image. You can also share your recipe with friends or save for later."
+      }
   },
   "testimonials": {
     "title": "Testimonials",
@@ -176,7 +177,7 @@
     "review4": {
       "name": "David Harris",
       "userName": "Health Enthusiast",
-      "comment": "Need healthy recipes fast? This AI generator creates nutritious, diet-friendly meals in seconds. No guesswork – just clean eating that fits my wellness goals. Game-changer for busy health nuts!"
+      "comment": "Need healthy recipes fast? This AI generator creates nutritious meals in seconds. No guesswork – just clean eating that fits my wellness goals. Game-changer!"
     },
     "review5": {
       "name": "Emily Rodriguez",
@@ -192,13 +193,13 @@
   "faq": {
     "title": "Frequently Asked Questions",
     "q1": "Is this service completely free?",
-    "a1": "New users receive 100 credits upon registration, and each recipe generation consumes 1 credit. We will soon launch service packages and reward systems to provide more ways to earn credits.",
+    "a1": "New users receive 100 credits upon registration. Recipe generation is free, but image generation consumes 1 credit per image. We will soon launch service packages and reward systems to provide more ways to earn credits.",
     "q2": "Can I add ingredients that aren't listed?",
     "a2": "Yes! Simply type any ingredient into the search box and press Enter. Custom ingredients show up with a white background and yellow text, so you can easily spot them. Our AI will create recipes with whatever ingredients you add!",
     "q3": "How are recipe images generated?",
     "a3": "We first use AI to generate recipes based on the ingredients you select and input. Once the recipe is created, we use AI again to generate corresponding images based on the recipe name.",
     "q4": "How long does the transformation process take?",
-    "a4": "Most recipes are generated in 20-60 seconds. The exact time depends on the AI model selected and current server load. During peak hours, you may experience slightly longer wait times due to high demand.",
+    "a4": "Most recipes are generated in 20-120 seconds. The exact time depends on the number of ingredients selected, recipe count, AI model chosen, and current server load. More ingredients or multiple recipes may require additional processing time. During peak hours, you may experience slightly longer wait times due to high demand.",
     "q5": "How can I provide feedback or report issues?",
     "a5": "We'd love to hear from you! Please share your feedback or report any problems by contacting our support team at annnb016@gmail.com. Your input helps us continuously improve our service.",
     "q6": "Can I use the generated images commercially?",
@@ -267,5 +268,13 @@
   },
   "Language": {
     "toggle": "Toggle language"
+  },
+  "imagePlaceholder": {
+    "signInTitle": "✨ Sign in to generate image",
+    "generateTitle": "✨ Generate Picture",
+    "signInSubtitle": "Sign in to generate images",
+    "generateSubtitle": "Click to generate image (1 credit)",
+    "signInAction": "Click to sign in",
+    "generateAction": "Click to generate"
   }
 }

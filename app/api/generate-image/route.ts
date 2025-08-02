@@ -4,7 +4,8 @@ import { IMAGE_GEN_CONFIG, APP_CONFIG } from '@/lib/config';
 import type { ImageModel } from '@/lib/services/image-service';
 
 // 强制动态渲染
-export const dynamic = 'force-dynamic';
+// 强制动态渲染
+export const runtime = 'edge';
 
 export async function POST(request: Request) {
   try {
@@ -14,11 +15,44 @@ export async function POST(request: Request) {
       negativePrompt, // 允许覆盖默认的负面提示词
       size = '1024*1024', 
       n = 1,
-      model = APP_CONFIG.DEFAULT_IMAGE_MODEL // 使用配置文件中的默认图片模型
+      model = APP_CONFIG.DEFAULT_IMAGE_MODEL, // 使用配置文件中的默认图片模型
+      userId, // 添加用户ID参数
+      isAdmin // 添加管理员标识
     } = await request.json();
     
     if (!prompt) {
       return NextResponse.json({ success: false, error: 'Prompt is required' }, { status: 400 });
+    }
+
+    // 检查用户是否登录
+    if (!userId) {
+      return NextResponse.json({ success: false, error: 'User must be logged in to generate images' }, { status: 401 });
+    }
+    
+    // 扣减积分（仅非管理员用户）
+    if (!isAdmin) {
+      const workerUrl = process.env.WORKER_URL || 'https://recipe-easy.annnb016.workers.dev';
+      const spendResponse = await fetch(`${workerUrl}/api/user-usage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          action: 'spend',
+          amount: n, // 根据生成的图片数量扣减积分
+          description: `Generated ${n} image(s)`
+        }),
+      });
+
+      if (!spendResponse.ok) {
+        const spendResult = await spendResponse.json();
+        if (spendResult.message === 'Insufficient credits.') {
+          return NextResponse.json({ success: false, error: 'Insufficient credits for image generation' }, { status: 402 });
+        }
+        console.error('扣减积分失败:', spendResult);
+        return NextResponse.json({ success: false, error: 'Failed to process credits' }, { status: 500 });
+      }
     }
     
     // 如果没有提供负面提示词，使用默认配置

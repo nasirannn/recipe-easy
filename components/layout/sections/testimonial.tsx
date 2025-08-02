@@ -65,7 +65,7 @@ const reviewData: ReviewData[] = [
     rating: 5.0,
   },
   {
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face&auto=format",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format",
     nameKey: "review6.name",
     userNameKey: "review6.userName",
     commentKey: "review6.comment",

@@ -42,33 +42,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data: { user: refreshedUser }, error } = await supabase.auth.getUser()
       if (error) {
-        console.error('Error refreshing user:', error)
+        // 对于AuthSessionMissingError，这是正常的，不需要记录错误
+        if (error.message !== 'Auth session missing!') {
+          console.error('Error refreshing user:', error)
+        }
         return
       }
       
       setUser(refreshedUser)
     } catch (error) {
-      console.error('Failed to refresh user:', error)
+      // 对于AuthSessionMissingError，这是正常的，不需要记录错误
+      if (error instanceof Error && error.message !== 'Auth session missing!') {
+        console.error('Failed to refresh user:', error)
+      }
     }
   }, [supabase.auth])
 
   const handleAuthStateChange = useCallback(async (event: string, session: any) => {
-    
-    
-    if (session?.user) {
-      // 先设置用户
-      setUser(session.user)
-      // 然后保存显示名称
-      await saveUserDisplayName(session.user)
-      // 保存后重新获取最新用户数据
-      setTimeout(async () => {
-        const { data: { user: latestUser } } = await supabase.auth.getUser()
-        if (latestUser) {
-  
-          setUser(latestUser)
-        }
-      }, 500)
-    } else {
+    try {
+      if (session?.user) {
+        // 先设置用户
+        setUser(session.user)
+        // 然后保存显示名称
+        await saveUserDisplayName(session.user)
+        // 保存后重新获取最新用户数据
+        setTimeout(async () => {
+          try {
+            const { data: { user: latestUser } } = await supabase.auth.getUser()
+            if (latestUser) {
+              setUser(latestUser)
+            }
+          } catch (error) {
+            console.error('Error getting latest user:', error)
+          }
+        }, 500)
+      } else {
+        setUser(null)
+      }
+    } catch (error) {
+      console.error('Error in auth state change:', error)
       setUser(null)
     }
     
@@ -82,7 +94,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data: { user }, error } = await supabase.auth.getUser()
         if (error) {
-          console.error('Error getting user:', error)
+          // 对于AuthSessionMissingError，这是正常的，不需要记录错误
+          if (error.message !== 'Auth session missing!') {
+            console.error('Error getting user:', error)
+          }
           setUser(null)
           setLoading(false)
           return
@@ -101,7 +116,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(false)
         }
       } catch (error) {
-        console.error('Failed to initialize auth:', error)
+        // 对于AuthSessionMissingError，这是正常的，不需要记录错误
+        if (error instanceof Error && error.message !== 'Auth session missing!') {
+          console.error('Failed to initialize auth:', error)
+        }
         if (mounted) {
           setUser(null)
           setLoading(false)

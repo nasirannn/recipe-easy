@@ -5,7 +5,8 @@ import { API_CONFIG, APP_CONFIG } from '@/lib/config';
 import { Recipe } from '@/lib/types';
 
 // 强制动态渲染
-export const dynamic = 'force-dynamic';
+// 强制动态渲染
+export const runtime = 'edge';
 
 const modelConfig = {
   deepseek: API_CONFIG.DEEPSEEK,
@@ -22,16 +23,17 @@ const apiKeys = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, languageModel, userId, isAdmin } = body;
+    const { ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel, userId, isAdmin } = body;
 
     // 验证必要参数
     if (!ingredients || ingredients.length < 2) {
       return NextResponse.json({ error: '至少需要2种食材' }, { status: 400 });
     }
 
-    if (!userId) {
-      return NextResponse.json({ error: '用户ID是必需的' }, { status: 400 });
-    }
+    // 移除userId必需验证，允许未登录用户生成菜谱
+    // if (!userId) {
+    //   return NextResponse.json({ error: '用户ID是必需的' }, { status: 400 });
+    // }
 
     // 选择语言模型配置
     const selectedModelConfig = languageModel ? API_CONFIG[languageModel] : API_CONFIG.DEEPSEEK;
@@ -41,67 +43,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'API密钥未配置' }, { status: 500 });
     }
 
-    // 构建系统提示词
-    const systemPrompt = `你是一个专业的AI厨师助手，专门为用户生成美味的食谱。请根据用户提供的食材，生成${recipeCount}个详细的食谱。
-
-要求：
-1. 每个食谱必须包含：标题、食材清单、详细步骤、烹饪时间、难度等级、营养信息、厨师小贴士、标签
-2. 食材用量要精确，步骤要详细易懂
-3. 烹饪时间：${cookingTime}
-4. 难度等级：${difficulty}
-5. 菜系风格：${cuisine}
-6. 份数：${servings}人份
-7. 只使用用户提供的食材，不要添加其他食材
-8. 返回格式必须是有效的JSON
-
-请返回以下JSON格式：
-{
-  "recipes": [
-    {
-      "title": "食谱标题",
-      "ingredients": [
-        {
-          "name": "食材名称",
-          "amount": "用量",
-          "unit": "单位"
-        }
-      ],
-      "instructions": [
-        "步骤1",
-        "步骤2"
-      ],
-      "cookingTime": "烹饪时间",
-      "difficulty": "难度等级",
-      "servings": "份数",
-      "cuisine": "菜系",
-      "nutrition": {
-        "calories": "卡路里",
-        "protein": "蛋白质",
-        "carbs": "碳水化合物",
-        "fat": "脂肪"
-      },
-      "chefTips": [
-        "厨师小贴士1",
-        "厨师小贴士2"
-      ],
-      "tags": ["标签1", "标签2"]
-    }
-  ]
-}`;
+    // 根据语言选择系统提示词
+    const isChinese = language === 'zh' || language === 'zh-CN';
+    const systemPrompt = isChinese ? SYSTEM_PROMPTS.CHINESE : SYSTEM_PROMPTS.DEFAULT;
 
     // 构建用户提示词
-    const userPrompt = `请根据以下食材生成${recipeCount}个美味的食谱：
-
-食材清单：
-${ingredients.map((ingredient: any) => `- ${ingredient.name} ${ingredient.amount}${ingredient.unit}`).join('\n')}
-
-要求：
-- 烹饪时间：${cookingTime}
-- 难度等级：${difficulty}
-- 菜系风格：${cuisine}
-- 份数：${servings}人份
-- 只使用上述食材，不要添加其他食材
-- 确保每个食谱都是完整且可执行的`;
+    const ingredientNames = ingredients.map((ingredient: any) => ingredient.name);
+    const userPrompt = isChinese ? 
+      USER_PROMPT_TEMPLATES.CHINESE(ingredientNames, servings, cookingTime, difficulty, cuisine, recipeCount) :
+      USER_PROMPT_TEMPLATES.ENGLISH(ingredientNames, servings, cookingTime, difficulty, cuisine, recipeCount);
 
     // GPT-4o mini 特殊处理
     if (languageModel === 'gpt4o_mini') {
@@ -155,35 +105,36 @@ ${ingredients.map((ingredient: any) => `- ${ingredient.name} ${ingredient.amount
         instructions: recipe.instructions || []
       }));
       
+      // 移除积分扣减逻辑 - 现在只在生成图片时扣减
       // 扣减积分（仅非管理员用户）
-      let transactionId = null;
-      if (!isAdmin) {
-        const workerUrl = process.env.WORKER_URL || 'https://recipe-easy.annnb016.workers.dev';
-        const spendResponse = await fetch(`${workerUrl}/api/user-usage`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId,
-            action: 'spend',
-            amount: 1,
-            description: 'Generated recipe with GPT-4o mini'
-          }),
-        });
+      // let transactionId = null;
+      // if (!isAdmin) {
+      //   const workerUrl = process.env.WORKER_URL || 'https://recipe-easy.annnb016.workers.dev';
+      //   const spendResponse = await fetch(`${workerUrl}/api/user-usage`, {
+      //     method: 'POST',
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //     },
+      //     body: JSON.stringify({
+      //       userId,
+      //       action: 'spend',
+      //       amount: 1,
+      //       description: 'Generated recipe with GPT-4o mini'
+      //     }),
+      //   });
 
-        if (spendResponse.ok) {
-          const spendResult = await spendResponse.json();
+      //   if (spendResponse.ok) {
+      //     const spendResult = await spendResponse.json();
           
-          if (spendResult.success && spendResult.data?.transactionId) {
-            transactionId = spendResult.data.transactionId;
-          } else {
-            console.error('GPT-4o mini扣减积分失败:', spendResult);
-          }
-        } else {
-          console.error('GPT-4o mini扣减积分请求失败:', spendResponse.status);
-        }
-      }
+      //     if (spendResult.success && spendResult.data?.transactionId) {
+      //       transactionId = spendResult.data.transactionId;
+      //     } else {
+      //       console.error('GPT-4o mini扣减积分失败:', spendResult);
+      //     }
+      //   } else {
+      //     console.error('GPT-4o mini扣减积分请求失败:', spendResponse.status);
+      //   }
+      // }
       
       return NextResponse.json({ recipes: recipesWithDefaults });
     }
@@ -221,35 +172,36 @@ ${ingredients.map((ingredient: any) => `- ${ingredient.name} ${ingredient.amount
       instructions: recipe.instructions || []
     }));
 
+    // 移除积分扣减逻辑 - 现在只在生成图片时扣减
     // 扣减积分（仅非管理员用户）
-    let transactionId = null;
-    if (!isAdmin) {
-      const workerUrl = process.env.WORKER_URL || 'https://recipe-easy.annnb016.workers.dev';
-      const spendResponse = await fetch(`${workerUrl}/api/user-usage`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          action: 'spend',
-          amount: 1,
-          description: 'Generated recipe'
-        }),
-      });
+    // let transactionId = null;
+    // if (!isAdmin) {
+    //   const workerUrl = process.env.WORKER_URL || 'https://recipe-easy.annnb016.workers.dev';
+    //   const spendResponse = await fetch(`${workerUrl}/api/user-usage`, {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({
+    //       userId,
+    //       action: 'spend',
+    //       amount: 1,
+    //       description: 'Generated recipe'
+    //     }),
+    //   });
 
-      if (spendResponse.ok) {
-        const spendResult = await spendResponse.json();
+    //   if (spendResponse.ok) {
+    //     const spendResult = await spendResponse.json();
         
-        if (spendResult.success && spendResult.data?.transactionId) {
-          transactionId = spendResult.data.transactionId;
-        } else {
-          console.error('扣减积分失败:', spendResult);
-        }
-      } else {
-        console.error('扣减积分请求失败:', spendResponse.status);
-      }
-    }
+    //     if (spendResult.success && spendResult.data?.transactionId) {
+    //       transactionId = spendResult.data.transactionId;
+    //     } else {
+    //       console.error('扣减积分失败:', spendResult);
+    //     }
+    //   } else {
+    //     console.error('扣减积分请求失败:', spendResponse.status);
+    //   }
+    // }
 
     return NextResponse.json({ recipes: recipesWithDefaults });
   } catch (error) {

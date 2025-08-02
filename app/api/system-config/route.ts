@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerRouteClient } from '../../../lib/supabase-server';
 
 // 强制动态渲染
-export const dynamic = 'force-dynamic';
+// 强制动态渲染
+export const runtime = 'edge';
 
 // 检查用户是否为管理员
 async function isAdmin(request: NextRequest): Promise<boolean> {

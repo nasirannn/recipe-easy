@@ -1,5 +1,8 @@
+"use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslations } from 'next-intl';
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 
 interface FAQProps {
   questionKey: string;
@@ -42,10 +45,16 @@ const FAQList: FAQProps[] = [
 
 export const FAQSection = () => {
   const t = useTranslations('faq');
+  const [openItem, setOpenItem] = useState<string>("item-1"); // 默认展开第一项
+
+  const toggleItem = (value: string) => {
+    setOpenItem(openItem === value ? "" : value);
+  };
 
   return (
-    <section id="faq" className="container py-4 sm:py-12">
-      <div className="text-center mb-16 ">
+    <section id="faq" className="w-full bg-primary/5 py-4 sm:py-12">
+      <div className="container">
+        <div className="text-center mb-16 ">
          <h2 className="text-lg text-primary text-center mb-2 tracking-wider">
           FAQ
         </h2>
@@ -54,26 +63,48 @@ export const FAQSection = () => {
         </h2>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-[90%] lg:max-w-[95%] mx-auto">
-        {FAQList.map(({ questionKey, answerKey }, index) => (
-          <div key={questionKey} className="flex gap-4">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center">
-                <span className="text-secondary-foreground font-semibold text-sm">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-              </div>
+      <div className="max-w-4xl mx-auto space-y-4">
+        {FAQList.map(({ questionKey, answerKey, value }, index) => {
+          const isOpen = openItem === value;
+          return (
+            <div key={value} className="bg-background/50 rounded-lg">
+              <button
+                onClick={() => toggleItem(value)}
+                className="w-full px-6 py-4 text-left hover:no-underline flex items-center gap-4"
+              >
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <span className="text-primary font-semibold text-sm">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className={`text-lg font-semibold ${isOpen ? 'text-primary' : 'text-foreground'}`}>
+                    {t(questionKey)}
+                  </h3>
+                </div>
+                <div className="flex-shrink-0">
+                  {isOpen ? (
+                    <ChevronUp className={`h-5 w-5 ${isOpen ? 'text-primary' : 'text-muted-foreground'}`} />
+                  ) : (
+                    <ChevronDown className={`h-5 w-5 ${isOpen ? 'text-primary' : 'text-muted-foreground'}`} />
+                  )}
+                </div>
+              </button>
+              {isOpen && (
+                <div className="px-6 pb-4">
+                  <div className="ml-12">
+                    <p className="text-muted-foreground leading-relaxed">
+                      {t(answerKey)}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-foreground mb-3">
-                {t(questionKey)}
-              </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {t(answerKey)}
-              </p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
+      </div>
       </div>
     </section>
   );

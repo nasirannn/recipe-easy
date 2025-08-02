@@ -1,6 +1,6 @@
 "use client";
 import { GridBackground } from "@/components/ui/grid-background";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Recipe, RecipeFormData } from "@/lib/types";
 import { RecipeForm } from "@/components/ui/recipe-form";
 import { RecipeDisplay } from "@/components/ui/recipe-display";
@@ -13,13 +13,14 @@ import { useUserUsage } from "@/hooks/use-user-usage";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import { trackRecipeGeneration, trackFeatureUsage } from "@/lib/gtag";
+import { toast } from "sonner";
 
 export const HeroSection = () => {
   const t = useTranslations('hero');
   const locale = useLocale();
   const { user, isAdmin } = useAuth();
-  const { updateCreditsLocally } = useUserUsage();
-
+  const { credits, updateCreditsLocally } = useUserUsage();
+  
   //Recipe Form
   const [formData, setFormData] = useState<RecipeFormData>({
     ingredients: [],
@@ -30,13 +31,14 @@ export const HeroSection = () => {
     cuisine: "any",
     imageModel: "wanx" // 默认使用万象模型
   });
-
+  
   const [loading, setLoading] = useState(false);
-  const [showRecipe, setShowRecipe] = useState(false);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [searchedIngredients, setSearchedIngredients] = useState<RecipeFormData['ingredients']>([]);
+  const [showRecipe, setShowRecipe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageGenerating, setImageGenerating] = useState(false);
-  const [searchedIngredients, setSearchedIngredients] = useState<RecipeFormData['ingredients']>([]);
+  const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({}); // 为每个菜谱跟踪loading状态
 
   const handleFormChange = (data: RecipeFormData) => {
     setFormData(data);
@@ -58,7 +60,10 @@ export const HeroSection = () => {
             ingredients: recipe.ingredients // recipe.ingredients已经是string[]类型
           }, 
           'photographic', // 固定使用真实照片风格
-          formData.imageModel || 'wanx' // 使用表单中选择的模型，默认为万象
+          formData.imageModel || 'wanx', // 使用表单中选择的模型，默认为万象
+          1, // 生成1张图片
+          user?.id, // 传递用户ID
+          isAdmin // 传递管理员标识
         ).then(imageUrl => {
           if (imageUrl) {
             updatedRecipes[index] = { ...updatedRecipes[index], image: imageUrl };
@@ -83,6 +88,169 @@ export const HeroSection = () => {
       setImageGenerating(false);
     }
   };
+
+  // 登录成功后生成图片的处理函数
+  const handleLoginSuccess = async () => {
+    // 如果当前有菜谱但没有图片，开始生成图片
+    if (recipes.length > 0 && recipes.some(r => !r.image)) {
+      console.log('Login successful, starting image generation...');
+      await generateRecipeImages(recipes);
+    }
+  };
+
+  // 监听登录模态窗口事件
+  useEffect(() => {
+    const handleShowLoginModal = () => {
+      // 这里可以触发登录模态窗口显示
+      // 由于登录模态窗口在RecipeForm组件中，我们需要通过其他方式触发
+      console.log('Show login modal requested');
+    };
+
+    const handleLoginSuccess = () => {
+      // 登录成功后生成图片
+      setTimeout(() => {
+        handleLoginSuccess();
+      }, 1000); // 给一点时间让登录状态更新
+    };
+
+    const handleGenerateImage = (event: CustomEvent) => {
+      console.log('handleGenerateImage triggered', event.detail);
+      const { recipeId, recipe } = event.detail;
+      
+      // 检查用户是否登录
+      if (!user?.id) {
+        console.log('User not logged in, showing login modal');
+        // 未登录用户，显示登录模态窗口
+        const showLoginEvent = new CustomEvent('showLoginModal');
+        window.dispatchEvent(showLoginEvent);
+        return;
+      }
+
+      console.log('User logged in, checking credits...');
+      // 检查积分余额
+      const availableCredits = credits?.credits || 0;
+      if (!isAdmin && availableCredits < 1) {
+        console.log('Insufficient credits:', availableCredits);
+        toast.error(locale === 'zh' ? '积分不足，无法生成图片' : 'Insufficient credits to generate image');
+        return;
+      }
+
+      console.log('Starting image generation for recipe:', recipe.title);
+      
+      // 设置该菜谱的loading状态
+      setImageLoadingStates(prev => ({ ...prev, [recipeId]: true }));
+      
+      // 已登录用户，生成图片
+      generateImageForRecipe(
+        { 
+          name: recipe.title, 
+          description: recipe.description,
+          ingredients: recipe.ingredients
+        }, 
+        'photographic',
+        formData.imageModel || 'wanx',
+        1,
+        user?.id,
+        isAdmin
+      ).then(imageUrl => {
+        console.log('Image generated successfully:', imageUrl);
+        if (imageUrl) {
+          // 更新对应菜谱的图片
+          setRecipes(prevRecipes => 
+            prevRecipes.map(r => 
+              r.id === recipeId ? { ...r, image: imageUrl } : r
+            )
+          );
+          
+          // 扣减积分
+          if (!isAdmin) {
+            updateCreditsLocally(1);
+          }
+          
+          toast.success(locale === 'zh' ? '图片生成成功！' : 'Image generated successfully!');
+        }
+      }).catch(error => {
+        console.error('Error generating image:', error);
+        
+        // 处理402错误（积分不足）
+        if (error.response?.status === 402) {
+          toast.error(locale === 'zh' ? '积分不足，无法生成图片' : 'Insufficient credits to generate image');
+        } else {
+          toast.error(locale === 'zh' ? '图片生成失败，请重试' : 'Image generation failed, please try again');
+        }
+      }).finally(() => {
+        // 清除该菜谱的loading状态
+        setImageLoadingStates(prev => ({ ...prev, [recipeId]: false }));
+      });
+    };
+
+    window.addEventListener('showLoginModal', handleShowLoginModal);
+    window.addEventListener('loginSuccess', handleLoginSuccess);
+    window.addEventListener('generateImage', handleGenerateImage as EventListener);
+
+    return () => {
+      window.removeEventListener('showLoginModal', handleShowLoginModal);
+      window.removeEventListener('loginSuccess', handleLoginSuccess);
+      window.removeEventListener('generateImage', handleGenerateImage as EventListener);
+    };
+  }, [recipes, user?.id, isAdmin, formData.imageModel, updateCreditsLocally, locale, credits]);
+
+  // 监听用户状态变化，当用户登出时重置状态
+  useEffect(() => {
+    if (!user) {
+      // 用户登出，重置所有状态到初始值
+      setRecipes([]);
+      setSearchedIngredients([]);
+      setShowRecipe(false);
+      setError(null);
+      setImageGenerating(false);
+      setImageLoadingStates({});
+      
+      // 重置表单数据到初始状态
+      setFormData({
+        ingredients: [],
+        servings: 2,
+        recipeCount: APP_CONFIG.DEFAULT_RECIPE_COUNT,
+        cookingTime: "medium",
+        difficulty: "medium",
+        cuisine: "any",
+        imageModel: "wanx"
+      });
+    }
+  }, [user]);
+
+  // 监听用户状态变化，当用户登录后自动生成图片
+  // useEffect(() => {
+  //   if (user?.id && recipes.length > 0 && recipes.some(r => !r.image)) {
+  //     // 用户已登录且有菜谱但没有图片，开始生成图片
+  //     console.log('User logged in, starting image generation...');
+  //     generateRecipeImages(recipes);
+  //   }
+  // }, [user?.id, recipes, generateRecipeImages]);
+
+  // 监听新用户登录，显示积分提醒
+  useEffect(() => {
+    if (user?.id) {
+      // 检查是否是新用户（通过检查用户创建时间或积分记录）
+      const checkNewUser = async () => {
+        try {
+          const response = await fetch(`/api/user-usage?userId=${user.id}&isAdmin=${isAdmin}`);
+          const data = await response.json();
+          
+          if (data.success && data.data?.credits?.total_earned === data.data?.credits?.credits) {
+            // 新用户，显示积分提醒
+            toast.success(
+              t('newUserWelcome', { credits: data.data.credits.credits })
+            );
+          }
+        } catch (error) {
+          console.error('Error checking new user:', error);
+        }
+      };
+      
+      checkNewUser();
+    }
+  }, [user?.id, isAdmin, locale, t]);
   
   const handleSubmit = async () => {
     setLoading(true);
@@ -105,7 +273,7 @@ export const HeroSection = () => {
           language: locale, // 传递当前用户选择的语言
           imageModel: formData.imageModel, // 传递选择的图片生成模型
           languageModel: formData.languageModel, // 传递选择的语言模型
-          userId: user?.id, // 传递用户ID
+          userId: user?.id, // 传递用户ID（可选）
           isAdmin: isAdmin // 传递管理员标识
         }),
       });
@@ -124,15 +292,20 @@ export const HeroSection = () => {
       trackRecipeGeneration(formData.cuisine, formData.ingredients.length);
       trackFeatureUsage('recipe_generation');
       
+      // 移除菜谱生成时的积分扣减 - 现在只在生成图片时扣减
       // 立即在本地更新积分（非管理员用户）
-      if (user?.id && !isAdmin) {
-        updateCreditsLocally(1);
-      }
+      // if (user?.id && !isAdmin) {
+      //   updateCreditsLocally(1);
+      // }
       
-      // 在获取菜谱后自动生成图片
+      // 在获取菜谱后自动生成图片（仅登录用户）
       if (generatedRecipes.length > 0) {
         setShowRecipe(true);
-        generateRecipeImages(generatedRecipes);
+        // 移除自动生成图片逻辑，改为手动触发
+        // 只有登录用户才生成图片
+        // if (user?.id) {
+        //   generateRecipeImages(generatedRecipes);
+        // }
       }
 
     } catch (error) {
@@ -219,9 +392,10 @@ export const HeroSection = () => {
                 <LoadingAnimation language={locale as 'en' | 'zh'} />
               ) : (
                 recipes.length > 0 && (
-                  <RecipeDisplay
-                    recipes={recipes}
+                  <RecipeDisplay 
+                    recipes={recipes} 
                     selectedIngredients={searchedIngredients}
+                    imageLoadingStates={imageLoadingStates}
                   />
                 )
               )}

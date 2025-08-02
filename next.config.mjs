@@ -20,6 +20,24 @@ const nextConfig = {
       },
     ],
   },
+  // 优化webpack配置
+  webpack: (config, { isServer }) => {
+    // 减少包大小
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    
+    return config;
+  },
+  // 实验性功能
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
 };
 
 export default withNextIntl(nextConfig);

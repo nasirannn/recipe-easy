@@ -7,7 +7,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // 强制动态渲染
-export const dynamic = 'force-dynamic';
+// 强制动态渲染
+export const runtime = 'edge';
 
 // 菜谱类型定义
 interface Recipe {

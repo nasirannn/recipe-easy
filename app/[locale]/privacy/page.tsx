@@ -1,6 +1,4 @@
 import { Metadata } from 'next';
-import fs from 'fs';
-import path from 'path';
 import { remark } from 'remark';
 import html from 'remark-html';
 import { SimpleLayout } from '@/components/layout/simple-layout';
@@ -22,15 +20,35 @@ export async function generateMetadata({
 }
 
 async function getPrivacyPolicy(locale: string) {
-  const fileName = locale === 'zh' ? 'privacy-policy-zh.md' : 'privacy-policy.md';
-  const filePath = path.join(process.cwd(), 'public', fileName);
-  const fileContents = fs.readFileSync(filePath, 'utf8');
+  try {
+    // 根据语言选择对应的文件
+    const fileName = locale === 'zh' ? 'privacy-policy-zh.md' : 'privacy-policy.md';
+    
+    // 从public目录获取文件内容
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/${fileName}`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch privacy policy: ${response.status}`);
+    }
+    
+    const content = await response.text();
 
-  const processedContent = await remark()
-    .use(html)
-    .process(fileContents);
+    // 使用remark渲染Markdown
+    const processedContent = await remark()
+      .use(html)
+      .process(content);
 
-  return processedContent.toString();
+    return processedContent.toString();
+  } catch (error) {
+    console.error('Error loading privacy policy:', error);
+    
+    // 如果加载失败，返回默认内容
+    const defaultContent = locale === 'zh' ? 
+      '<h1>隐私政策</h1><p>隐私政策加载失败，请稍后重试。</p>' :
+      '<h1>Privacy Policy</h1><p>Privacy policy failed to load, please try again later.</p>';
+    
+    return defaultContent;
+  }
 }
 
 export default async function PrivacyPage({ params }: { params: { locale: string } }) {
@@ -42,3 +60,5 @@ export default async function PrivacyPage({ params }: { params: { locale: string
     </SimpleLayout>
   );
 }
+
+export const runtime = 'edge';

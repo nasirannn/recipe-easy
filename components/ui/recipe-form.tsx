@@ -33,12 +33,11 @@ export const RecipeForm = ({
   onFormChange,
   onSubmit,
   loading,
-  // showRecipe,
   setShowRecipe,
 }: RecipeFormProps) => {
   const { isAdmin } = useAuth();
-  const [ showAuthModal, setShowAuthModal] = useState(false);
-  const [ isMobile, setIsMobile] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { cuisines, loading: cuisinesLoading } = useCuisines();
   const { canGenerate, isLoggedIn } = useUserUsage();
   const t = useTranslations('recipeForm');
@@ -58,19 +57,19 @@ export const RecipeForm = ({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // 监听showLoginModal事件
+  useEffect(() => {
+    const handleShowLoginModal = () => {
+      setShowAuthModal(true);
+    };
+
+    window.addEventListener('showLoginModal', handleShowLoginModal);
+    return () => window.removeEventListener('showLoginModal', handleShowLoginModal);
+  }, []);
+
   // 处理生成按钮点击
   const handleGenerateClick = () => {
-    // 检查是否登录
-    if (!isLoggedIn) {
-      setShowAuthModal(true);
-      return;
-    }
-
-    // 检查使用次数（管理员无限制）
-    if (!isAdmin && !canGenerate) {
-      return; // 不能生成，按钮应该已经被禁用
-    }
-
+    // 允许未登录用户生成菜谱，移除所有积分检查
     if (formData.ingredients.length >= 2) {
       onSubmit();
       setShowRecipe(true); // 设置显示菜谱结果
@@ -261,141 +260,141 @@ export const RecipeForm = ({
                     <span className="hidden sm:inline-block">Language Model</span>
                   </Button>
                 </PopoverTrigger>
-              <PopoverContent 
-                className="w-[240px] sm:w-[260px]"
-                onInteractOutside={(e) => {
-                  // 阻止交互外部事件关闭弹窗
-                  e.preventDefault();
-                }}
-                onPointerDownOutside={(e) => {
-                  // 阻止点击外部事件关闭弹窗
-                  e.preventDefault();
-                }}
-                align="start"
-                sideOffset={8}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium">Language Model</h3>
-                  <PopoverClose className="rounded-full h-5 w-5 inline-flex items-center justify-center text-muted-foreground hover:text-foreground">
-                    <X className="h-3 w-3" />
-                  </PopoverClose>
-                </div>
-                <div className="space-y-3">
-                  <RadioGroup
-                    value={formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL}
-                    onValueChange={value => onFormChange({ ...formData, languageModel: value as 'deepseek' | 'qwenplus' | 'gpt4o_mini' })}
-                    className="grid grid-cols-1 gap-3"
-                  >
-                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL) === 'deepseek' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
-                      <div className="flex items-center gap-2">
-                        <RadioGroupItem value="deepseek" id="lm-deepseek" />
-                        <Label htmlFor="lm-deepseek" className="font-medium cursor-pointer">Deepseek</Label>
+                <PopoverContent 
+                  className="w-[240px] sm:w-[260px]"
+                  onInteractOutside={(e) => {
+                    // 阻止交互外部事件关闭弹窗
+                    e.preventDefault();
+                  }}
+                  onPointerDownOutside={(e) => {
+                    // 阻止点击外部事件关闭弹窗
+                    e.preventDefault();
+                  }}
+                  align="start"
+                  sideOffset={8}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium">Language Model</h3>
+                    <PopoverClose className="rounded-full h-5 w-5 inline-flex items-center justify-center text-muted-foreground hover:text-foreground">
+                      <X className="h-3 w-3" />
+                    </PopoverClose>
+                  </div>
+                  <div className="space-y-3">
+                    <RadioGroup
+                      value={formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL}
+                      onValueChange={value => onFormChange({ ...formData, languageModel: value as 'deepseek' | 'qwenplus' | 'gpt4o_mini' })}
+                      className="grid grid-cols-1 gap-3"
+                    >
+                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL) === 'deepseek' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="deepseek" id="lm-deepseek" />
+                          <Label htmlFor="lm-deepseek" className="font-medium cursor-pointer">Deepseek</Label>
+                        </div>
+                        <div className="text-xs text-muted-foreground pl-6">
+                          <ul className="list-disc pl-4 space-y-1">
+                            <li>Cost-effective</li>
+                            <li>Supports Chinese & English</li>
+                            <li>Fast response</li>
+                          </ul>
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground pl-6">
-                        <ul className="list-disc pl-4 space-y-1">
-                          <li>Cost-effective</li>
-                          <li>Supports Chinese & English</li>
-                          <li>Fast response</li>
-                        </ul>
+                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL) === 'qwenplus' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="qwenplus" id="lm-qwenplus" />
+                          <Label htmlFor="lm-qwenplus" className="font-medium cursor-pointer">Qwen Plus</Label>
+                        </div>
+                        <div className="text-xs text-muted-foreground pl-6">
+                          <ul className="list-disc pl-4 space-y-1">
+                            <li>Alibaba Qwen</li>
+                            <li>OpenAI compatible</li>
+                            <li>Good for Chinese</li>
+                          </ul>
+                        </div>
                       </div>
-                    </div>
-                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL) === 'qwenplus' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
-                      <div className="flex items-center gap-2">
-                        <RadioGroupItem value="qwenplus" id="lm-qwenplus" />
-                        <Label htmlFor="lm-qwenplus" className="font-medium cursor-pointer">Qwen Plus</Label>
+                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL) === 'gpt4o_mini' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="gpt4o_mini" id="lm-gpt4o_mini" />
+                          <Label htmlFor="lm-gpt4o_mini" className="font-medium cursor-pointer">GPT-4o Mini</Label>
+                        </div>
+                        <div className="text-xs text-muted-foreground pl-6">
+                          <ul className="list-disc pl-4 space-y-1">
+                            <li>Latest OpenAI</li>
+                            <li>Low latency & cost</li>
+                            <li>Best for English</li>
+                          </ul>
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground pl-6">
-                        <ul className="list-disc pl-4 space-y-1">
-                          <li>Alibaba Qwen</li>
-                          <li>OpenAI compatible</li>
-                          <li>Good for Chinese</li>
-                        </ul>
-                      </div>
-                    </div>
-                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL) === 'gpt4o_mini' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
-                      <div className="flex items-center gap-2">
-                        <RadioGroupItem value="gpt4o_mini" id="lm-gpt4o_mini" />
-                        <Label htmlFor="lm-gpt4o_mini" className="font-medium cursor-pointer">GPT-4o Mini</Label>
-                      </div>
-                      <div className="text-xs text-muted-foreground pl-6">
-                        <ul className="list-disc pl-4 space-y-1">
-                          <li>Latest OpenAI</li>
-                          <li>Low latency & cost</li>
-                          <li>Best for English</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </RadioGroup>
-                </div>
-              </PopoverContent>
-            </Popover>
+                    </RadioGroup>
+                  </div>
+                </PopoverContent>
+              </Popover>
             )} 
 
             {/* 图片生成模型选择器 - 仅管理员可见 */}
-          {isAdmin && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="text-xs flex gap-1.5 h-7 px-2 sm:px-3">
-                  <ImageIcon className="h-3 w-3" />
-                  <span className="hidden sm:inline-block">Image Model</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent 
-                className="w-[240px] sm:w-[260px]"
-                onInteractOutside={(e) => {
-                  // 阻止交互外部事件关闭弹窗
-                  e.preventDefault();
-                }}
-                onPointerDownOutside={(e) => {
-                  // 阻止点击外部事件关闭弹窗
-                  e.preventDefault();
-                }}
-                align="start"
-                sideOffset={8}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium">Image Generation Model</h3>
-                  <PopoverClose className="rounded-full h-5 w-5 inline-flex items-center justify-center text-muted-foreground hover:text-foreground">
-                    <X className="h-3 w-3" />
-                  </PopoverClose>
-                </div>
-                <div className="space-y-3">
-                  <RadioGroup 
-                    value={formData.imageModel || APP_CONFIG.DEFAULT_IMAGE_MODEL}
-                    onValueChange={value => handleModelChange(value as ImageModel)}
-                    className="grid grid-cols-1 gap-3"
-                  >
-                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.imageModel || APP_CONFIG.DEFAULT_IMAGE_MODEL) === 'wanx' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
-                      <div className="flex items-center gap-2">
-                        <RadioGroupItem value="wanx" id="model-wanx" />
-                        <Label htmlFor="model-wanx" className="font-medium cursor-pointer">Wanx Model</Label>
+            {isAdmin && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-xs flex gap-1.5 h-7 px-2 sm:px-3">
+                    <ImageIcon className="h-3 w-3" />
+                    <span className="hidden sm:inline-block">Image Model</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent 
+                  className="w-[240px] sm:w-[260px]"
+                  onInteractOutside={(e) => {
+                    // 阻止交互外部事件关闭弹窗
+                    e.preventDefault();
+                  }}
+                  onPointerDownOutside={(e) => {
+                    // 阻止点击外部事件关闭弹窗
+                    e.preventDefault();
+                  }}
+                  align="start"
+                  sideOffset={8}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium">Image Generation Model</h3>
+                    <PopoverClose className="rounded-full h-5 w-5 inline-flex items-center justify-center text-muted-foreground hover:text-foreground">
+                      <X className="h-3 w-3" />
+                    </PopoverClose>
+                  </div>
+                  <div className="space-y-3">
+                    <RadioGroup 
+                      value={formData.imageModel || APP_CONFIG.DEFAULT_IMAGE_MODEL}
+                      onValueChange={value => handleModelChange(value as ImageModel)}
+                      className="grid grid-cols-1 gap-3"
+                    >
+                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.imageModel || APP_CONFIG.DEFAULT_IMAGE_MODEL) === 'wanx' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="wanx" id="model-wanx" />
+                          <Label htmlFor="model-wanx" className="font-medium cursor-pointer">Wanx Model</Label>
+                        </div>
+                        <div className="text-xs text-muted-foreground pl-6">
+                          <ul className="list-disc pl-4 space-y-1">
+                            <li>Free</li>
+                            <li>Good for Chinese prompts</li>
+                            <li>Faster generation (10-15s)</li>
+                          </ul>
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground pl-6">
-                        <ul className="list-disc pl-4 space-y-1">
-                          <li>Free</li>
-                          <li>Good for Chinese prompts</li>
-                          <li>Faster generation (10-15s)</li>
-                        </ul>
+                      
+                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.imageModel || APP_CONFIG.DEFAULT_IMAGE_MODEL) === 'flux' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="flux" id="model-flux" />
+                          <Label htmlFor="model-flux" className="font-medium cursor-pointer">Flux Schnell</Label>
+                        </div>
+                        <div className="text-xs text-muted-foreground pl-6">
+                          <ul className="list-disc pl-4 space-y-1">
+                            <li>High quality</li>
+                            <li>Better realism and details</li>
+                            <li>Faster generation (8-15s)</li>
+                          </ul>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.imageModel || APP_CONFIG.DEFAULT_IMAGE_MODEL) === 'flux' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
-                      <div className="flex items-center gap-2">
-                        <RadioGroupItem value="flux" id="model-flux" />
-                        <Label htmlFor="model-flux" className="font-medium cursor-pointer">Flux Schnell</Label>
-                      </div>
-                      <div className="text-xs text-muted-foreground pl-6">
-                        <ul className="list-disc pl-4 space-y-1">
-                          <li>High quality</li>
-                          <li>Better realism and details</li>
-                          <li>Faster generation (8-15s)</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </RadioGroup>
-                </div>
-              </PopoverContent>
-            </Popover>
+                    </RadioGroup>
+                  </div>
+                </PopoverContent>
+              </Popover>
             )}
           </div>
           <div
@@ -413,23 +412,13 @@ export const RecipeForm = ({
                   : "px-3 sm:px-6"
               )}
               size="sm"
-              disabled={!isLoggedIn ? loading : (loading || formData.ingredients.length < 2 || (!isAdmin && !canGenerate))}
+              disabled={loading || formData.ingredients.length < 2}
             >
               <Sparkles className="h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
-              {!isLoggedIn ? (
-                <>
-                  <span className="hidden sm:inline">Sign in to Generate</span>
-                  <span className="sm:hidden">Sign in</span>
-                </>
-              ) : loading ? (
+              {loading ? (
                 <>
                   <span className="hidden sm:inline">{t('generating')}</span>
                   <span className="sm:hidden">{t('wait')}</span>
-                </>
-              ) : !isAdmin && !canGenerate ? (
-                <>
-                  <span className="hidden sm:inline">{tCredits('noCreditsLeft')}</span>
-                  <span className="sm:hidden">{tCredits('insufficientCredits')}</span>
                 </>
               ) : (
                 <>

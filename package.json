@@ -6,12 +6,14 @@
     "dev": "next dev -p 3000",
     "dev:cf": "wrangler dev --local --compatibility-date=2024-03-20 --port 8787",
     "build": "next build",
+    "build:cf": "next build && npx @cloudflare/next-on-pages",
     "start": "next start",
     "lint": "next lint",
     "db:query": "wrangler d1 execute recipe-easy-db --remote --command",
     "db:backup": "wrangler d1 export recipe-easy-db --remote --output=db-backup/remote.sql",
     "db:migrate": "wrangler d1 migrations apply recipe-easy-db --remote",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "deploy:cf": "npm run build:cf && wrangler pages deploy .vercel/output/static --project-name=recipe-easy-frontend"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -34,7 +36,6 @@
     "axios": "^1.11.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
-    "itty-router": "^5.0.20",
     "lucide-react": "^0.383.0",
     "next": "^14.2.3",
     "next-intl": "^4.3.4",
@@ -45,23 +46,20 @@
     "react-hook-form": "^7.52.2",
     "remark": "^15.0.1",
     "remark-html": "^16.0.1",
-    "replicate": "^1.0.1",
     "sonner": "^2.0.6",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
-    "uuid": "^11.1.0",
     "zod": "^3.23.8",
     "zustand": "^5.0.7"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.13",
     "@cloudflare/workers-types": "^4.20250730.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@types/uuid": "^9.0.8",
     "eslint": "^8",
     "eslint-config-next": "14.2.3",
-    "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
     "wrangler": "^4.26.1"

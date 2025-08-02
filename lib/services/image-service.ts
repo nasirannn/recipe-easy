@@ -5,14 +5,16 @@ export type ImageStyle = typeof IMAGE_GEN_CONFIG.WANX.STYLES[number];
 export type ImageSize = typeof IMAGE_GEN_CONFIG.WANX.SIZES[number];
 export type ImageModel = 'wanx' | 'flux'; // 添加flux模型类型
 
-export type ImageGenParams = {
+export interface ImageGenParams {
   prompt: string;
-  negativePrompt?: string;
   style?: ImageStyle;
-  size?: ImageSize;
-  n?: number; // 生成图片数量
-  model?: ImageModel; // 使用的模型
-};
+  negativePrompt?: string;
+  size?: string;
+  n?: number;
+  model?: ImageModel;
+  userId?: string; // 添加用户ID参数
+  isAdmin?: boolean; // 添加管理员标识
+}
 
 export type ImageGenResponse = {
   success: boolean;
@@ -42,7 +44,9 @@ export async function generateImage(params: ImageGenParams): Promise<ImageGenRes
       ...params,
       negativePrompt,
       model,
-      n
+      n,
+      userId: params.userId,
+      isAdmin: params.isAdmin
     });
     
     return response.data;
@@ -84,7 +88,7 @@ export async function checkImageStatus(taskId: string, model: ImageModel = 'wanx
 export function generateRecipeImagePrompt(recipe: { 
   name: string; 
   description?: string; 
-  ingredients?: string[];
+  ingredients?: (string | { name: string; amount?: string; unit?: string })[];
 }, model: ImageModel = APP_CONFIG.DEFAULT_IMAGE_MODEL): string {
   const { name, ingredients } = recipe;
   
@@ -94,8 +98,20 @@ export function generateRecipeImagePrompt(recipe: {
     : `Professional food photograph of ${name}`; // 英文提示词更适合其他模型
   
   if (ingredients && ingredients.length > 0) {
-    // 提取核心食材名称，避免量词等其他词语干扰
-    const mainIngredients = ingredients.map(ing => ing.split(' ')[0].split('(')[0]); 
+    // 处理不同格式的食材数据
+    const mainIngredients = ingredients.map(ing => {
+      if (typeof ing === 'string') {
+        // 如果是字符串，直接处理
+        return ing.split(' ')[0].split('(')[0];
+      } else if (ing && typeof ing === 'object' && 'name' in ing) {
+        // 如果是对象，提取name字段
+        return ing.name;
+      } else {
+        // 其他情况，转换为字符串
+        return String(ing);
+      }
+    });
+    
     prompt += model === 'wanx'
       ? `。主要原料：${mainIngredients.slice(0, 3).join('、')}`
       : ` with ${mainIngredients.slice(0, 3).join(', ')}`;
@@ -157,12 +173,11 @@ export async function pollTaskStatus(taskId: string, model: ImageModel): Promise
 export async function generateImageForRecipe(recipe: { 
   name: string; 
   description?: string; 
-  ingredients?: string[];
-}, style: ImageStyle = 'photographic', model: ImageModel = APP_CONFIG.DEFAULT_IMAGE_MODEL, n: number = 1): Promise<string | null> {
+  ingredients?: (string | { name: string; amount?: string; unit?: string })[];
+}, style: ImageStyle = 'photographic', model: ImageModel = APP_CONFIG.DEFAULT_IMAGE_MODEL, n: number = 1, userId?: string, isAdmin?: boolean): Promise<string | null> {
   try {
     const prompt = generateRecipeImagePrompt(recipe, model);
 
-    
     // 使用配置中定义的负面提示词
     const negativePrompt = model === 'wanx' 
       ? IMAGE_GEN_CONFIG.NEGATIVE_PROMPTS.WANX
@@ -173,7 +188,9 @@ export async function generateImageForRecipe(recipe: {
       style: model === 'wanx' ? style : undefined, // style仅对万象模型有效
       model,
       n: Math.min(n, model === 'flux' ? IMAGE_GEN_CONFIG.REPLICATE.MAX_IMAGES : IMAGE_GEN_CONFIG.WANX.MAX_IMAGES),
-      negativePrompt
+      negativePrompt,
+      userId,
+      isAdmin
     });
     
     if (!submitResult.success || !submitResult.taskId) {
@@ -182,13 +199,11 @@ export async function generateImageForRecipe(recipe: {
     }
 
     const taskId = submitResult.taskId;
+    const imageUrl = await pollTaskStatus(taskId, model);
     
-
-    // 使用轮询工具函数检查任务状态
-    return await pollTaskStatus(taskId, model);
-
+    return imageUrl;
   } catch (error) {
-    console.error('Error generating recipe image:', error);
+    console.error('Error generating image for recipe:', error);
     return null;
   }
 }

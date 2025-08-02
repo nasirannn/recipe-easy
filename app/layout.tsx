@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { generateMetadata, websiteStructuredData, organizationStructuredData, SITE_URL } from "@/lib/seo";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -55,13 +56,7 @@ export default function RootLayout({
           `}
         </Script>
         
-        {/* Google AdSense */}
-        <Script
-          async
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || 'ca-google'}`}
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
+
         
         {/* Microsoft Clarity */}
         <Script
@@ -95,7 +90,9 @@ export default function RootLayout({
         />
         
         {children}
+        <Toaster />
       </body>
     </html>
   );
 }
+export const runtime = 'edge';

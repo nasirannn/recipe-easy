@@ -23,7 +23,7 @@ export function generateMetadata({
   description,
   path = '',
   locale,
-  image = '/recipe-easy-og.png',
+  image = 'images/recipe-easy-og.png',
   type = 'website'
 }: {
   title: string

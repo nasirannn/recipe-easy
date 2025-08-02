@@ -86,23 +86,20 @@ export const RecipesSection = () => {
 
         if (data.success) {
           // 转换API返回的数据格式以匹配前端期望的格式
-          const transformedRecipes = data.data.map((recipe: any) => ({
+          const transformedRecipes = (data.results || []).map((recipe: any) => ({
             id: recipe.id,
-            title: recipe.localized_title || recipe.title,
+            title: recipe.title,
             image_url: recipe.image_url,
-            description: recipe.localized_description || recipe.description,
-            tags: recipe.localized_tags ? JSON.parse(recipe.localized_tags) : (recipe.tags ? JSON.parse(recipe.tags) : []),
+            description: recipe.description,
+            tags: recipe.tags ? JSON.parse(recipe.tags) : [],
             cookTime: recipe.cook_time,
             servings: recipe.servings,
-            difficulty: recipe.localized_difficulty || recipe.difficulty,
-            ingredients: recipe.localized_ingredients ? JSON.parse(recipe.localized_ingredients) : (recipe.ingredients ? JSON.parse(recipe.ingredients) : []),
-            seasoning: recipe.localized_seasoning ? JSON.parse(recipe.localized_seasoning) : (recipe.seasoning ? JSON.parse(recipe.seasoning) : []),
-            instructions: recipe.localized_instructions ? JSON.parse(recipe.localized_instructions) : (recipe.instructions ? JSON.parse(recipe.instructions) : []),
-            chefTips: recipe.localized_chef_tips ? JSON.parse(recipe.localized_chef_tips) : (recipe.chef_tips ? JSON.parse(recipe.chef_tips) : []),
-            cuisine: recipe.cuisine_id ? {
-              id: recipe.cuisine_id,
-              name: recipe.localized_cuisine_name || recipe.cuisine_name || 'Other'
-            } : undefined
+            difficulty: recipe.difficulty,
+            ingredients: recipe.ingredients ? JSON.parse(recipe.ingredients) : [],
+            seasoning: recipe.seasoning ? JSON.parse(recipe.seasoning) : [],
+            instructions: recipe.instructions ? JSON.parse(recipe.instructions) : [],
+            chefTips: recipe.chef_tips ? JSON.parse(recipe.chef_tips) : [],
+            cuisine: recipe.cuisine
           }));
           setRecipes(transformedRecipes);
         } else {

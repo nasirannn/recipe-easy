@@ -50,6 +50,11 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
       await signInWithGoogle();
       // 跟踪 Google 登录事件
       trackUserLogin('google');
+      
+      // 触发登录成功事件（Google登录会跳转页面，所以这里可能不会立即执行）
+      const event = new CustomEvent('loginSuccess');
+      window.dispatchEvent(event);
+      
       // 成功时不重置 loading 状态，因为页面会跳转
       // 保持加载状态直到页面跳转完成
     } catch (error) {
@@ -72,6 +77,10 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
       trackUserLogin('email');
       toast.success(t('signInSuccess'));
       onOpenChange(false);
+      
+      // 触发登录成功事件
+      const event = new CustomEvent('loginSuccess');
+      window.dispatchEvent(event);
     } catch (error) {
       console.error("Email sign in error:", error);
       setError(error instanceof Error ? error.message : t('signInError'));
@@ -93,6 +102,10 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
       trackUserSignup('email');
       toast.success(t('signUpSuccess'));
       onOpenChange(false);
+      
+      // 触发登录成功事件
+      const event = new CustomEvent('loginSuccess');
+      window.dispatchEvent(event);
     } catch (error) {
       console.error("Email sign up error:", error);
       setError(error instanceof Error ? error.message : t('signUpError'));

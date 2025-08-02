@@ -1,7 +1,7 @@
 // 配置管理
 export const config = {
   // Worker URL - 支持环境变量配置
-  workerUrl: process.env.WORKER_URL || 'https://recipe-easy.annnb016.workers.dev',
+  workerUrl: process.env.WORKER_URL || 'https://api.recipe-easy.com',
   
   // 其他配置
   apiTimeout: 10000, // 10秒超时
@@ -29,19 +29,22 @@ export const API_CONFIG = {
     BASE_URL: 'https://api.deepseek.com',
     MODEL: 'deepseek-chat',
     MAX_TOKENS: 4000,
-    TEMPERATURE: 0.7
+    TEMPERATURE: 0.7,
+    API_KEY: process.env.DEEPSEEK_API_KEY
   },
   QWENPLUS: {
     BASE_URL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
     MODEL: 'qwen-plus',
     MAX_TOKENS: 4000,
-    TEMPERATURE: 0.7
+    TEMPERATURE: 0.7,
+    API_KEY: process.env.QWENPLUS_API_KEY
   },
   GPT4o_MINI: {
     BASE_URL: 'https://api.replicate.com/v1',
     VERSION: 'openai/gpt-4o-mini:2c0a6a34916017ceafaaf5fdf63f9370cf9491866a9611f37d86138c8ef53fc6',
     TEMPERATURE: 0.7,
-    MAX_TOKENS: 4000
+    MAX_TOKENS: 4000,
+    API_KEY: process.env.REPLICATE_API_TOKEN
   }
 } as const;
 

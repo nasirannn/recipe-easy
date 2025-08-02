@@ -4,8 +4,9 @@ import { FooterSection } from "@/components/layout/sections/footer";
 import { HeroSection } from "@/components/layout/sections/hero";
 import { RecipesSection } from "@/components/layout/sections/recipes";
 import { TestimonialSection } from "@/components/layout/sections/testimonial";
-import { PageWithAds } from "@/components/adsense/ad-layout";
+import { TutorialSection } from "@/components/layout/sections/tutorial";
 import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
+
 
 export async function generateMetadata({
   params,
@@ -24,20 +25,15 @@ export async function generateMetadata({
 
 export default function Home() {
   return (
-    <PageWithAds 
-      adConfig={{
-        showBanner: true,
-        showContent: true,
-        showFooter: true,
-        showSidebar: false
-      }}
-    >
+    <>
       <HeroSection />
-      <FeaturesSection />
+      <TutorialSection />
       <RecipesSection />
-      <TestimonialSection />
+      <FeaturesSection />
       <FAQSection />
+      <TestimonialSection />
       <FooterSection />
-    </PageWithAds>
+    </>
   );
 }
+export const runtime = 'edge';

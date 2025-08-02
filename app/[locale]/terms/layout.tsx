@@ -26,4 +26,4 @@ export default async function TermsLayout({
       </ThemeProvider>
     </AuthProvider>
   );
-} 
+} export const runtime = 'edge';

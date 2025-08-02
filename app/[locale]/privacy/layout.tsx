@@ -26,4 +26,4 @@ export default async function PrivacyLayout({
       </ThemeProvider>
     </AuthProvider>
   );
-} 
+} export const runtime = 'edge';

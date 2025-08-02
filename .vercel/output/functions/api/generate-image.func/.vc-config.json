@@ -1,0 +1,18 @@
+{
+  "runtime": "edge",
+  "name": "api/generate-image",
+  "deploymentTarget": "v8-worker",
+  "entrypoint": "index.js",
+  "assets": [],
+  "framework": {
+    "slug": "nextjs",
+    "version": "14.2.30"
+  },
+  "environment": {
+    "__NEXT_BUILD_ID": "RvvkQfoEN049lBFf6Ghwf",
+    "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "Ux7nn/6eHw28Xwb3s5uIQ7Ndxp+YH09GOfxEEZmdtFQ=",
+    "__NEXT_PREVIEW_MODE_ID": "0e79f95dbd09b91423c5c9427172579c",
+    "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "6ecc9ddbce1c4644c41221db7d45a92fbbd5117b2aea51d3ebb67efcdd46cab4",
+    "__NEXT_PREVIEW_MODE_SIGNING_KEY": "1313e3a80e41ce9f235de9ab11552d57089fae8d0ce2d5119d5aaf729d654a38"
+  }
+}

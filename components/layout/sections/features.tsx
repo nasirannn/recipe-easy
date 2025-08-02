@@ -11,37 +11,37 @@ export const FeaturesSection = () => {
       id: 1, 
       title: 'imageModels', 
       description: 'imageModelsDesc',
-      icon: <Image className="h-5 w-5 text-primary" />
+      icon: <Image className="h-6 w-6 text-primary" />
     },
     { 
       id: 2, 
       title: 'aiGeneration', 
       description: 'aiGenerationDesc',
-      icon: <Sparkles className="h-5 w-5 text-primary" />
+      icon: <Sparkles className="h-6 w-6 text-primary" />
     },
     { 
       id: 3, 
       title: 'customIngredients', 
       description: 'customIngredientsDesc',
-      icon: <Utensils className="h-5 w-5 text-primary" />
+      icon: <Utensils className="h-6 w-6 text-primary" />
     },
     { 
       id: 4, 
       title: 'multipleCuisine', 
       description: 'multipleCuisineDesc',
-      icon: <Pizza className="h-5 w-5 text-primary" />
+      icon: <Pizza className="h-6 w-6 text-primary" />
     },
     { 
       id: 5, 
       title: 'multiLanguage', 
       description: 'multiLanguageDesc',
-      icon: <Globe className="h-5 w-5 text-primary" />
+      icon: <Globe className="h-6 w-6 text-primary" />
     },
     { 
       id: 6, 
       title: 'responsive', 
       description: 'responsiveDesc',
-      icon: <Smartphone className="h-5 w-5 text-primary" />
+      icon: <Smartphone className="h-6 w-6 text-primary" />
     }
   ];
 
@@ -62,17 +62,25 @@ export const FeaturesSection = () => {
           </p>
         </div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {features.map((feature) => (
             <div 
               key={feature.id} 
-              className="bg-primary/5 dark:bg-primary/10 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
+              className="flex gap-4 p-6 rounded-xl hover:bg-muted/50 transition-colors"
             >
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                {feature.icon}
+              <div className="flex-shrink-0">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  {feature.icon}
+                </div>
               </div>
-              <h3 className="text-xl font-medium mb-2">{t(feature.title)}</h3>
-              <p className="text-muted-foreground">{t(feature.description)}</p>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-foreground mb-3">
+                  {t(feature.title)}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {t(feature.description)}
+                </p>
+              </div>
             </div>
           ))}
         </div>

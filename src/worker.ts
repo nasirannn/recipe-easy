@@ -457,14 +457,64 @@ async function handleUserUsage(request: Request, db: D1Database, corsHeaders: Re
 
         // 记录交易
         const transaction = await db.prepare(`
-          INSERT INTO credit_transactions (user_id, type, amount, reason, description)
-          VALUES (?, 'spend', ?, 'generation', ?)
+          INSERT INTO credit_transactions (user_id, type, amount, reason, description, created_at)
+          VALUES (?, 'spend', ?, 'generation', ?, DATETIME('now'))
           RETURNING *
         `).bind(userId, generationCost, description || `Generated a recipe for ${generationCost} credits.`).first();
 
         return new Response(JSON.stringify({
           success: true,
           message: `Successfully spent ${generationCost} credits.`,
+          data: { credits: updatedCredits, transactionId: transaction.id }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      } else if (action === 'earn') {
+        // 增加积分
+        const earnAmount = amount || 0;
+        
+        if (earnAmount <= 0) {
+          return new Response(JSON.stringify({ 
+            success: false, 
+            message: 'Invalid earn amount.' 
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        // 获取用户积分记录
+        const userCredits = await db.prepare(`
+          SELECT * FROM user_credits WHERE user_id = ?
+        `).bind(userId).first();
+
+        if (!userCredits) {
+          return new Response(JSON.stringify({ 
+            success: false, 
+            message: 'User credits record not found.' 
+          }), {
+            status: 404,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const updatedCredits = await db.prepare(`
+          UPDATE user_credits 
+          SET credits = credits + ?, total_earned = total_earned + ?, updated_at = DATETIME('now')
+          WHERE user_id = ?
+          RETURNING *
+        `).bind(earnAmount, earnAmount, userId).first();
+
+        // 记录交易
+        const transaction = await db.prepare(`
+          INSERT INTO credit_transactions (user_id, type, amount, reason, description, created_at)
+          VALUES (?, 'earn', ?, 'manual', ?, DATETIME('now'))
+          RETURNING *
+        `).bind(userId, earnAmount, description || `Manually earned ${earnAmount} credits.`).first();
+
+        return new Response(JSON.stringify({
+          success: true,
+          message: `Successfully earned ${earnAmount} credits.`,
           data: { credits: updatedCredits, transactionId: transaction.id }
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -563,56 +613,67 @@ async function handleRecipes(request: Request, db: D1Database, corsHeaders: Reco
     }
 
     if (cuisineId) {
-      conditions.push('r.cuisine_id = ?');
-      params.push(parseInt(cuisineId));
+      const cuisineIdInt = parseInt(cuisineId);
+      if (!isNaN(cuisineIdInt)) {
+        conditions.push('r.cuisine_id = ?');
+        params.push(cuisineIdInt);
+      }
     }
 
     if (conditions.length > 0) {
       sql += ' WHERE ' + conditions.join(' AND ');
     }
 
-    sql += ' ORDER BY r.created_at DESC LIMIT ? OFFSET ?';
+    sql += ' ORDER BY r.id DESC LIMIT ? OFFSET ?';
     params.push(limit, offset);
 
     const { results } = await db.prepare(sql).bind(...params).all();
     const recipes = results || [];
 
-    // 获取总数
-    let countSql = 'SELECT COUNT(*) as total FROM recipes r';
-    const countConditions: string[] = [];
-    const countParams: any[] = [];
-    
-    if (search) {
-      if (hasI18nTable) {
-        countSql += ` LEFT JOIN recipes_i18n r18n ON r.id = r18n.recipe_id AND r18n.language_code = ?`;
-        countConditions.push('(COALESCE(r18n.title, r.title) LIKE ? OR COALESCE(r18n.description, r.description) LIKE ?)');
-        countParams.push(language, `%${search}%`, `%${search}%`);
-      } else {
-        countConditions.push('(r.title LIKE ? OR r.description LIKE ?)');
-        countParams.push(`%${search}%`, `%${search}%`);
-      }
-    }
-
-    if (cuisineId) {
-      countConditions.push('r.cuisine_id = ?');
-      countParams.push(parseInt(cuisineId));
-    }
-
-    if (countConditions.length > 0) {
-      countSql += ' WHERE ' + countConditions.join(' AND ');
-    }
-    
-    const countResult = await db.prepare(countSql).bind(...countParams).first<{ total: number }>();
-    const total = countResult?.total || 0;
+    const formattedRecipes = recipes.map((recipe: any) => {
+      // 根据菜谱ID映射到正确的slug
+      const slugMap: Record<number, string> = {
+        1: 'meat',
+        2: 'seafood', 
+        3: 'vegetables',
+        4: 'fruits',
+        5: 'dairy-eggs',
+        6: 'grains-bread',
+        7: 'nuts-seeds',
+        8: 'herbs-spices',
+        9: 'oils-condiments'
+      };
+      
+      return {
+        id: recipe.id,
+        slug: recipe.slug || `recipe-${recipe.id}`,
+        title: recipe.localized_title || recipe.title || `Recipe ${recipe.id}`,
+        description: recipe.localized_description || recipe.description || `Description for Recipe ${recipe.id}`,
+        image_url: recipe.image_url || `https://recipe-easy.annnb016.workers.dev/images/recipe-${recipe.id}.jpg`,
+        ingredients: recipe.localized_ingredients || recipe.ingredients || [],
+        seasoning: recipe.localized_seasoning || recipe.seasoning || [],
+        instructions: recipe.localized_instructions || recipe.instructions || [],
+        chef_tips: recipe.localized_chef_tips || recipe.chef_tips || [],
+        tags: recipe.localized_tags || recipe.tags || [],
+        difficulty: recipe.localized_difficulty || recipe.difficulty || 'easy',
+        cuisine: {
+          id: recipe.cuisine_id || 1,
+          slug: slugMap[recipe.cuisine_id] || 'other',
+          name: recipe.localized_cuisine_name || recipe.cuisine_name || 'Other'
+        },
+        created_at: recipe.created_at,
+        updated_at: recipe.updated_at
+      };
+    });
 
     return new Response(JSON.stringify({
       success: true,
-      data: recipes,
-      total,
+      results: formattedRecipes,
+      total: formattedRecipes.length,
       limit,
       offset,
-      totalPages: Math.ceil(total / limit),
-      hasI18nTable
+      language,
+      source: 'database'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
@@ -628,34 +689,55 @@ async function handleRecipes(request: Request, db: D1Database, corsHeaders: Reco
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
-} 
+}
 
-// 处理添加数据库列
+// 处理添加列API
 async function handleAddColumns(request: Request, db: D1Database, corsHeaders: Record<string, string>): Promise<Response> {
   try {
-    if (request.method !== 'POST') {
-      return new Response('Method not allowed', {
-        status: 405,
-        headers: corsHeaders
+    const body = await request.json();
+    const { tableName, columnName, columnType } = body;
+
+    if (!tableName || !columnName || !columnType) {
+      return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // 添加缺失的列
-    await db.prepare('ALTER TABLE recipes_i18n ADD COLUMN tags TEXT').run();
-    await db.prepare('ALTER TABLE recipes_i18n ADD COLUMN difficulty TEXT').run();
+    const existingColumns = await db.prepare(`
+      PRAGMA table_info(${tableName})
+    `).all();
+
+    const existingColumnNames = (existingColumns.results || []).map((col: any) => col.name);
+
+    if (existingColumnNames.includes(columnName)) {
+      return new Response(JSON.stringify({ error: `Column ${columnName} already exists in table ${tableName}` }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const sql = `
+      ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${columnType}
+    `;
+
+    await db.prepare(sql).run();
 
     return new Response(JSON.stringify({
       success: true,
-      message: 'Columns added successfully'
+      message: `Column ${columnName} added to table ${tableName}`,
+      tableName,
+      columnName,
+      columnType
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
-    console.error('Add columns error:', error);
+    console.error('Add Columns API error:', error);
     return new Response(JSON.stringify({
       success: false,
-      error: 'Failed to add columns',
+      error: 'Failed to add column',
       details: error instanceof Error ? error.message : 'Unknown error'
     }), {
       status: 500,
@@ -667,71 +749,89 @@ async function handleAddColumns(request: Request, db: D1Database, corsHeaders: R
 // 处理系统配置API
 async function handleSystemConfigs(request: Request, db: D1Database, corsHeaders: Record<string, string>): Promise<Response> {
   try {
+    const { searchParams } = new URL(request.url);
+    const key = searchParams.get('key');
+    const value = searchParams.get('value');
+
+    if (!key) {
+      return new Response(JSON.stringify({ error: 'Key is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     if (request.method === 'GET') {
-      // 获取所有系统配置
-      const { results } = await db.prepare(`
-        SELECT key, value, description, updated_at FROM system_configs
-        ORDER BY key ASC
-      `).all();
+      const config = await db.prepare(`
+        SELECT * FROM system_configs WHERE key = ?
+      `).bind(key).first();
+
+      if (!config) {
+        return new Response(JSON.stringify({ error: 'Config not found' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
 
       return new Response(JSON.stringify({
         success: true,
-        data: results || []
+        data: config
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
 
     } else if (request.method === 'POST') {
-      // 更新系统配置
-      const { key, value, description } = await request.json();
-
-      if (!key || value === undefined) {
-        return new Response(JSON.stringify({
-          success: false,
-          error: '参数错误: 必须提供 key 和 value'
-        }), {
+      if (!value) {
+        return new Response(JSON.stringify({ error: 'Value is required' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
 
-      // 更新或插入配置
-      const result = await db.prepare(`
-        INSERT INTO system_configs (key, value, description, updated_at)
-        VALUES (?, ?, ?, DATETIME('now'))
-        ON CONFLICT(key) DO UPDATE SET
-          value = excluded.value,
-          description = COALESCE(excluded.description, description),
-          updated_at = DATETIME('now')
-        RETURNING *
-      `).bind(key, String(value), description || '').first();
+      const existingConfig = await db.prepare(`
+        SELECT * FROM system_configs WHERE key = ?
+      `).bind(key).first();
 
-      return new Response(JSON.stringify({
-        success: true,
-        data: result
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+      if (existingConfig) {
+        const updatedConfig = await db.prepare(`
+          UPDATE system_configs SET value = ?, updated_at = DATETIME('now') WHERE key = ?
+        `).bind(value, key).first();
 
-    } else {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Method not allowed'
-      }), {
-        status: 405,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+        return new Response(JSON.stringify({
+          success: true,
+          message: `Config updated: ${key}`,
+          data: updatedConfig
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      } else {
+        const newConfig = await db.prepare(`
+          INSERT INTO system_configs (key, value, created_at, updated_at) VALUES (?, ?, DATETIME('now'), DATETIME('now'))
+        `).bind(key, value).first();
+
+        return new Response(JSON.stringify({
+          success: true,
+          message: `Config added: ${key}`,
+          data: newConfig
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
     }
 
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+
   } catch (error) {
-    console.error('System configs error:', error);
+    console.error('System Configs API error:', error);
     return new Response(JSON.stringify({
       success: false,
-      error: 'Failed to handle system configs',
+      error: 'Failed to process system configs request',
       details: error instanceof Error ? error.message : 'Unknown error'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
-} 
+}

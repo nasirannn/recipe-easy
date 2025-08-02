@@ -8,16 +8,25 @@ import { Badge } from "./badge";
 import Image from "next/image";
 import { Spinner } from "./spinner";
 import { Dialog, DialogContent } from "./dialog";
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/auth-context";
+import { useUserUsage } from "@/hooks/use-user-usage";
+import { toast } from "sonner";
 
 interface RecipeDisplayProps {
   recipes: Recipe[];
   selectedIngredients: Ingredient[];
+  imageLoadingStates?: Record<string, boolean>;
 }
 
-export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayProps) => {
+export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates = {} }: RecipeDisplayProps) => {
   const t = useTranslations('recipeDisplay');
+  const tImagePlaceholder = useTranslations('imagePlaceholder');
+  const locale = useLocale();
+  const { user, isAdmin } = useAuth();
+  const { credits } = useUserUsage();
+  
   const [activeItemId, setActiveItemId] = useState<string | undefined>(
     recipes.find(r => r.recommended)?.id || (recipes.length > 0 ? recipes[0].id : undefined)
   );
@@ -82,7 +91,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
           <div className="flex flex-wrap justify-center gap-1.5">
             {selectedIngredients.map((ingredient, index) => (
               <Badge
-                key={ingredient.id}
+                key={ingredient.id || `${ingredient.name}-${index}`}
                 variant="secondary"
                 className={cn(
                   "gap-1 py-0.5 text-xs animate-in fade-in slide-in-from-bottom-2",
@@ -106,17 +115,20 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
       {/* Recipes Section */}
       <div className="w-full bg-gradient-to-br from-gray-50/30 via-white to-orange-50/20">
         <div className="w-full mx-auto">
-          <Accordion type="single" collapsible defaultValue={recipes[0]?.id}>
-          {recipes.map((recipe) => (
+          <Accordion type="single" collapsible defaultValue={recipes[0]?.id || `recipe-0`}>
+          {recipes.map((recipe, index) => (
             <AccordionItem
-              key={recipe.id}
-              value={recipe.id}
+              key={recipe.id || `recipe-${index}`}
+              value={recipe.id || `recipe-${index}`}
               className="bg-transparent my-0 px-0 rounded-none border-0"
             >
               <div className="w-full py-6 px-8 relative">
                 {/* Custom divider line */}
                 {recipes.indexOf(recipe) < recipes.length - 1 && (
-                  <div className="absolute bottom-0 left-8 right-72 h-px bg-gray-300 dark:bg-gray-600"></div>
+                  <div 
+                    key={`${recipe.id}-divider`}
+                    className="absolute bottom-0 left-8 right-72 h-px bg-gray-300 dark:bg-gray-600"
+                  />
                 )}
                 {/* Header Section - Always Visible */}
                 <div className="flex justify-between items-start">
@@ -164,9 +176,79 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                           className="w-full h-full object-cover rounded-xl shadow-md"
                         />
                       </div>
+                    ) : imageLoadingStates[recipe.id] ? (
+                      // Loading状态
+                      <div className="w-72 h-72 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border-2 border-dashed border-blue-200 dark:border-gray-600 flex items-center justify-center">
+                        <div className="text-center p-6">
+                          <div className="text-blue-500 dark:text-blue-400 mb-3">
+                            <Spinner className="w-16 h-16 mx-auto" />
+                          </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {locale === 'zh' ? '正在生成图片...' : 'Generating image...'}
+                          </p>
+                        </div>
+                      </div>
                     ) : (
-                      <div className="w-72 h-72 bg-gray-100 dark:bg-gray-200 rounded-lg flex items-center justify-center">
-                        <Spinner />
+                      <div 
+                        className="w-72 h-72 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border-2 border-dashed border-blue-200 dark:border-gray-600 flex items-center justify-center cursor-pointer hover:bg-gradient-to-br hover:from-blue-100 hover:to-purple-100 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-300 group"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log('Image placeholder clicked, user:', user?.id, 'isAdmin:', isAdmin);
+                          
+                          // 检查用户是否登录
+                          if (!user?.id) {
+                            console.log('User not logged in, showing login modal');
+                            // 未登录用户，显示登录模态窗口
+                            const event = new CustomEvent('showLoginModal');
+                            window.dispatchEvent(event);
+                            return;
+                          }
+                          
+                          console.log('User logged in, checking credits. Available credits:', credits?.credits);
+                          // 已登录用户，检查积分余额
+                          const availableCredits = credits?.credits || 0;
+                          if (!isAdmin && availableCredits < 1) {
+                            console.log('Insufficient credits, showing error');
+                            // 积分不足，显示提示
+                            toast.error(
+                              locale === 'zh' 
+                                ? '积分不足，无法生成图片' 
+                                : 'Insufficient credits to generate image'
+                            );
+                            return;
+                          }
+                          
+                          console.log('Credits sufficient, dispatching generateImage event for recipe:', recipe.title);
+                          // 积分充足，触发生成图片事件
+                          const event = new CustomEvent('generateImage', { 
+                            detail: { recipeId: recipe.id, recipe: recipe } 
+                          });
+                          window.dispatchEvent(event);
+                        }}
+                      >
+                        <div className="text-center p-6">
+                          <div className="text-blue-500 dark:text-blue-400 mb-3 group-hover:scale-110 transition-transform duration-300">
+                            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                          </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+                            {!user?.id 
+                              ? tImagePlaceholder('signInSubtitle')
+                              : tImagePlaceholder('generateSubtitle')
+                            }
+                          </p>
+                          <div className="mt-3 flex items-center justify-center text-xs text-blue-500 dark:text-blue-400">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                            {!user?.id 
+                              ? tImagePlaceholder('signInAction')
+                              : tImagePlaceholder('generateAction')
+                            }
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -195,7 +277,14 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                                 const recipeName = `${recipe.title}`;
                                 const sectionTitle = `${t('ingredients')}:`;
                                 const steps = recipe.ingredients
-                                  ?.map((instr) => `• ${instr}`)
+                                  ?.map((instr) => {
+                                    const ingredientText = typeof instr === 'string' 
+                                      ? instr 
+                                      : (instr as { name: string; amount?: string; unit?: string }).name + 
+                                        ((instr as { name: string; amount?: string; unit?: string }).amount ? ` ${(instr as { name: string; amount?: string; unit?: string }).amount}` : '') + 
+                                        ((instr as { name: string; amount?: string; unit?: string }).unit ? ` ${(instr as { name: string; amount?: string; unit?: string }).unit}` : '');
+                                    return `• ${ingredientText}`;
+                                  })
                                   .join('\n')
                                   || '';
 
@@ -224,22 +313,34 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                     </div>
 
                     <ul className="space-y-3">
-                      {recipe.ingredients?.map((ingredient, index) => (
-                        <li key={index} className="text-gray-700 dark:text-gray-800 text-base leading-relaxed">
-                          <div className="flex items-start">
-                            <span className="mr-3 text-green-500 font-bold text-lg leading-none">•</span>
-                            <span>{ingredient}</span>
-                          </div>
-                          {index < recipe.ingredients!.length - 1 && (
-                            <div className="w-3/4 h-px bg-gray-200/60 mt-2 ml-6"></div>
-                          )}
-                        </li>
-                      ))}
+                      {recipe.ingredients?.map((ingredient, index) => {
+                        // 处理不同格式的食材数据
+                        const ingredientText = typeof ingredient === 'string' 
+                          ? ingredient 
+                          : (ingredient as { name: string; amount?: string; unit?: string }).name + 
+                            ((ingredient as { name: string; amount?: string; unit?: string }).amount ? ` ${(ingredient as { name: string; amount?: string; unit?: string }).amount}` : '') + 
+                            ((ingredient as { name: string; amount?: string; unit?: string }).unit ? ` ${(ingredient as { name: string; amount?: string; unit?: string }).unit}` : '');
+                        
+                        return (
+                          <li key={`${recipe.id}-ingredient-${index}`} className="text-gray-700 dark:text-gray-800 text-base leading-relaxed">
+                            <div className="flex items-start">
+                              <span className="mr-3 text-green-500 font-bold text-lg leading-none">•</span>
+                              <span>{ingredientText}</span>
+                            </div>
+                            {index < recipe.ingredients!.length - 1 && (
+                              <div 
+                                key={`${recipe.id}-ingredient-divider-${index}`}
+                                className="w-3/4 h-px bg-gray-200/60 mt-2 ml-6"
+                              />
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
 
                   {/* Seasoning */}
-                  {recipe.seasoning && recipe.seasoning.length > 0 && (
+                  {recipe.seasoning && Array.isArray(recipe.seasoning) && recipe.seasoning.length > 0 && (
                     <div className="bg-yellow-50/30 p-6 rounded-xl border border-yellow-100/50">
                       <div className="flex items-center mb-8">
                         <h2 className="text-xl font-medium text-gray-900 dark:text-gray-800 tracking-wide">
@@ -286,13 +387,16 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
 
                       <ul className="space-y-3">
                         {recipe.seasoning.map((seasoning, index) => (
-                          <li key={index} className="text-gray-700 dark:text-gray-800 text-base leading-relaxed">
+                          <li key={`${recipe.id}-seasoning-${index}`} className="text-gray-700 dark:text-gray-800 text-base leading-relaxed">
                             <div className="flex items-start">
                               <span className="mr-3 text-yellow-500 font-bold text-lg leading-none">•</span>
                               <span>{seasoning}</span>
                             </div>
                             {index < recipe.seasoning.length - 1 && (
-                              <div className="w-3/4 h-px bg-gray-200/60 mt-2 ml-6"></div>
+                              <div 
+                                key={`${recipe.id}-seasoning-divider-${index}`}
+                                className="w-3/4 h-px bg-gray-200/60 mt-2 ml-6"
+                              />
                             )}
                           </li>
                         ))}
@@ -350,7 +454,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
 
                     <div className="space-y-6 max-w-6xl">
                       {recipe.instructions?.map((instruction, index) => (
-                        <div key={index} className="pb-4">
+                        <div key={`${recipe.id}-instruction-${index}`} className="pb-4">
                           <div className="flex items-start gap-4">
                             <div className="flex-shrink-0 w-7 h-7 bg-gradient-to-br from-orange-400 to-orange-500 text-white rounded-full flex items-center justify-center text-xs font-semibold shadow-sm">
                               {index + 1}
@@ -360,7 +464,10 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                             </p>
                           </div>
                           {index < recipe.instructions!.length - 1 && (
-                            <div className="w-4/5 h-px bg-gray-200/60 mt-3 ml-12"></div>
+                            <div 
+                              key={`${recipe.id}-instruction-divider-${index}`}
+                              className="w-4/5 h-px bg-gray-200/60 mt-3 ml-12"
+                            />
                           )}
                         </div>
                       ))}
@@ -378,7 +485,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                       <div className="space-y-4 max-w-4xl">
                         {Array.isArray(recipe.chefTips)
                           ? recipe.chefTips.map((tip, i) => (
-                              <p key={i} className="text-gray-700 dark:text-gray-800 text-base leading-relaxed italic">
+                              <p key={`${recipe.id}-tip-${i}`} className="text-gray-700 dark:text-gray-800 text-base leading-relaxed italic">
                                 {tip}
                               </p>
                             ))
@@ -394,12 +501,12 @@ export const RecipeDisplay = ({ recipes, selectedIngredients }: RecipeDisplayPro
                 )}
 
                 {/* All Tags */}
-                {recipe.tags && recipe.tags.length > 3 && (
+                {recipe.tags && Array.isArray(recipe.tags) && recipe.tags.length > 0 && (
                   <div className="mt-12">
                     <div className="flex flex-wrap gap-3">
                       {recipe.tags.map((tag, index) => (
                         <span
-                          key={index}
+                          key={`${recipe.id}-tag-${index}`}
                           className="px-3 py-1 text-xs uppercase tracking-wide text-gray-600 dark:text-gray-700 border border-gray-300 dark:border-gray-400 rounded-full"
                         >
                           {tag}
