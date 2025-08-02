@@ -276,5 +276,13 @@
     "generateSubtitle": "Click to generate image (1 credit)",
     "signInAction": "Click to sign in",
     "generateAction": "Click to generate"
+  },
+  "introduce": {
+    "title": "Introduction",
+    "heading": "Make Cooking Simple and Fun",
+    "description1": "Do you often find yourself lying in bed wondering \"what to cook tomorrow\"? RecipeEasy AI Recipe Generator is designed to solve this daily dilemma. As the leading AI tool for cooking, our platform generates personalized AI recipes in seconds. Whether you're a busy professional, a budget-conscious homemaker, or an environmentally conscious person looking to reduce food waste, our AI recipe generator provides the perfect solution.",
+    "description2": "With RecipeEasy's advanced AI technology, you can quickly and effectively solve ingredient pairing challenges. Simply input the ingredients you have in your fridge, and our AI tool for cooking will generate personalized delicious AI recipes in seconds, greatly saving your thinking time and shopping time. At the same time, by making full use of existing ingredients, you can effectively reduce food waste and make every ingredient count.",
+    "description3": "Best of all, this powerful AI recipe generator is completely free to use, making it an ideal choice for both beginners and experienced chefs. By using RecipeEasy, you'll significantly improve the convenience of cooking and the diversity of dishes—ensuring your family and friends praise your culinary skills. Don't miss this opportunity to make cooking simple and precise with the best AI tool for cooking!",
+    "imageAlt": "AI Recipe Generator Introduction"
   }
 }

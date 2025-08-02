@@ -39,6 +39,23 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // 动态设置lang属性
+              (function() {
+                var path = window.location.pathname;
+                var lang = 'en'; // 默认语言
+                if (path.includes('/zh')) {
+                  lang = 'zh';
+                }
+                document.documentElement.lang = lang;
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={inter.className}>
         {/* Google Analytics 4 */}
         <Script

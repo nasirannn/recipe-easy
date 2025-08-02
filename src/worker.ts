@@ -5,7 +5,7 @@ export interface Env {
   RECIPE_IMAGES: R2Bucket;
 }
 
-export default {
+const worker = {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname;
@@ -297,23 +297,27 @@ async function handleCuisines(request: Request, db: D1Database, corsHeaders: Rec
     const { results } = await db.prepare(`
       SELECT 
         c.id,
-        c.name,
-        COALESCE(c18n.name, c.name) as localized_name,
-        COALESCE(c18n.description, c.description) as localized_description,
-        c.created_at,
-        c.updated_at
+        c.slug,
+        c18n.name as cuisine_name
       FROM cuisines c
       LEFT JOIN cuisines_i18n c18n ON c.id = c18n.cuisine_id AND c18n.language_code = ?
-      ORDER BY c.name ASC
+      ORDER BY c.id ASC
     `).bind(language).all();
 
     const cuisines = results || [];
+    const formattedCuisines = cuisines.map((cuisine: any) => {
+      return {
+        id: cuisine.id,
+        slug: cuisine.slug || `cuisine-${cuisine.id}`,
+        name: cuisine.cuisine_name || `Cuisine ${cuisine.id}`
+      };
+    });
 
     return new Response(JSON.stringify({
       success: true,
-      data: cuisines,
-      total: cuisines.length,
-      language: language,
+      data: formattedCuisines,
+      total: formattedCuisines.length,
+      language,
       source: 'database'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -835,3 +839,5 @@ async function handleSystemConfigs(request: Request, db: D1Database, corsHeaders
     });
   }
 }
+
+export default worker;

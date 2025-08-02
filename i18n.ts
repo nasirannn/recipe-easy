@@ -8,8 +8,8 @@ export const defaultLocale: Locale = 'en';
 
 // 可选：语言友好名称
 export const localeNames: Record<Locale, string> = {
-  en: 'English',
-  zh: '中文',
+  'en': 'English',
+  'zh': '中文',
 };
 
 export default getRequestConfig(async ({ requestLocale }) => {

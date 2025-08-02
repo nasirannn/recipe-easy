@@ -6,6 +6,7 @@ import { RecipesSection } from "@/components/layout/sections/recipes";
 import { TestimonialSection } from "@/components/layout/sections/testimonial";
 import { TutorialSection } from "@/components/layout/sections/tutorial";
 import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
+import { IntroduceSection } from "@/components/layout/sections/introduce";  
 
 
 export async function generateMetadata({
@@ -28,6 +29,7 @@ export default function Home() {
     <>
       <HeroSection />
       <TutorialSection />
+      <IntroduceSection />
       <RecipesSection />
       <FeaturesSection />
       <FAQSection />

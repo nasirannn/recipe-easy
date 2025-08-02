@@ -1,7 +1,7 @@
 "use client";
 import { useTranslations } from 'next-intl';
 import { GridBackground } from "@/components/ui/grid-background";
-import { Globe, Sparkles, Image, Utensils, Pizza, Smartphone } from "lucide-react";
+import { Globe, Sparkles, Image as ImageIcon, Utensils, Pizza, Smartphone } from "lucide-react";
 
 export const FeaturesSection = () => {
   const t = useTranslations('features');
@@ -11,7 +11,7 @@ export const FeaturesSection = () => {
       id: 1, 
       title: 'imageModels', 
       description: 'imageModelsDesc',
-      icon: <Image className="h-6 w-6 text-primary" />
+      icon: <ImageIcon className="h-6 w-6 text-primary" />
     },
     { 
       id: 2, 
