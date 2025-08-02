@@ -297,8 +297,8 @@ async function handleCuisines(request: Request, db: D1Database, corsHeaders: Rec
     const { results } = await db.prepare(`
       SELECT 
         c.id,
-        c.slug,
-        c18n.name as cuisine_name
+        c.name as cuisine_name,
+        COALESCE(c18n.name, c.name) as localized_cuisine_name
       FROM cuisines c
       LEFT JOIN cuisines_i18n c18n ON c.id = c18n.cuisine_id AND c18n.language_code = ?
       ORDER BY c.id ASC
@@ -308,8 +308,7 @@ async function handleCuisines(request: Request, db: D1Database, corsHeaders: Rec
     const formattedCuisines = cuisines.map((cuisine: any) => {
       return {
         id: cuisine.id,
-        slug: cuisine.slug || `cuisine-${cuisine.id}`,
-        name: cuisine.cuisine_name || `Cuisine ${cuisine.id}`
+        name: cuisine.localized_cuisine_name || cuisine.cuisine_name || `Cuisine ${cuisine.id}`
       };
     });
 

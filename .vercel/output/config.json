@@ -32,7 +32,7 @@
       "continue": true
     },
     {
-      "src": "^/_next/data/hNM3BNuaSgBdTz9oi70Kq/(.*).json",
+      "src": "^/_next/data/BpuWLeOEEi_d4YQ\\-ipc4f/(.*).json",
       "dest": "/$1",
       "override": true,
       "continue": true,
@@ -62,7 +62,7 @@
         {
           "type": "header",
           "key": "x-prerender-revalidate",
-          "value": "8ef32c73daf4cf51cb0bc98bbf9a80f9"
+          "value": "5c8d3025a69d88cfeb5519f4b784c3a3"
         }
       ],
       "middlewarePath": "middleware",
@@ -78,7 +78,7 @@
         {
           "type": "header",
           "key": "x-prerender-revalidate",
-          "value": "8ef32c73daf4cf51cb0bc98bbf9a80f9"
+          "value": "5c8d3025a69d88cfeb5519f4b784c3a3"
         }
       ],
       "middlewarePath": "middleware",
@@ -95,7 +95,7 @@
           "key": "x-nextjs-data"
         }
       ],
-      "dest": "/_next/data/hNM3BNuaSgBdTz9oi70Kq/index.json",
+      "dest": "/_next/data/BpuWLeOEEi_d4YQ-ipc4f/index.json",
       "continue": true,
       "override": true
     },
@@ -107,7 +107,7 @@
           "key": "x-nextjs-data"
         }
       ],
-      "dest": "/_next/data/hNM3BNuaSgBdTz9oi70Kq/$1.json",
+      "dest": "/_next/data/BpuWLeOEEi_d4YQ-ipc4f/$1.json",
       "continue": true,
       "override": true
     },
@@ -147,7 +147,7 @@
       "handle": "filesystem"
     },
     {
-      "src": "^/_next/data/hNM3BNuaSgBdTz9oi70Kq/(.*).json",
+      "src": "^/_next/data/BpuWLeOEEi_d4YQ\\-ipc4f/(.*).json",
       "dest": "/$1",
       "continue": true,
       "has": [
@@ -220,7 +220,7 @@
           "key": "x-nextjs-data"
         }
       ],
-      "dest": "/_next/data/hNM3BNuaSgBdTz9oi70Kq/index.json",
+      "dest": "/_next/data/BpuWLeOEEi_d4YQ-ipc4f/index.json",
       "continue": true
     },
     {
@@ -231,27 +231,27 @@
           "key": "x-nextjs-data"
         }
       ],
-      "dest": "/_next/data/hNM3BNuaSgBdTz9oi70Kq/$1.json",
+      "dest": "/_next/data/BpuWLeOEEi_d4YQ-ipc4f/$1.json",
       "continue": true
     },
     {
-      "src": "^/_next/data/hNM3BNuaSgBdTz9oi70Kq/api/generate\\-image/status/(?<nxtPtaskId>[^/]+?)(?:/)?.json$",
+      "src": "^/_next/data/BpuWLeOEEi_d4YQ\\-ipc4f/api/generate\\-image/status/(?<nxtPtaskId>[^/]+?)(?:/)?.json$",
       "dest": "/api/generate-image/status/[taskId]?nxtPtaskId=$nxtPtaskId"
     },
     {
-      "src": "^/_next/data/hNM3BNuaSgBdTz9oi70Kq/api/recipes/(?<nxtPid>[^/]+?)(?:/)?.json$",
+      "src": "^/_next/data/BpuWLeOEEi_d4YQ\\-ipc4f/api/recipes/(?<nxtPid>[^/]+?)(?:/)?.json$",
       "dest": "/api/recipes/[id]?nxtPid=$nxtPid"
     },
     {
-      "src": "^/_next/data/hNM3BNuaSgBdTz9oi70Kq/(?<nxtPlocale>[^/]+?)(?:/)?.json$",
+      "src": "^/_next/data/BpuWLeOEEi_d4YQ\\-ipc4f/(?<nxtPlocale>[^/]+?)(?:/)?.json$",
       "dest": "/[locale]?nxtPlocale=$nxtPlocale"
     },
     {
-      "src": "^/_next/data/hNM3BNuaSgBdTz9oi70Kq/(?<nxtPlocale>[^/]+?)/privacy(?:/)?.json$",
+      "src": "^/_next/data/BpuWLeOEEi_d4YQ\\-ipc4f/(?<nxtPlocale>[^/]+?)/privacy(?:/)?.json$",
       "dest": "/[locale]/privacy?nxtPlocale=$nxtPlocale"
     },
     {
-      "src": "^/_next/data/hNM3BNuaSgBdTz9oi70Kq/(?<nxtPlocale>[^/]+?)/terms(?:/)?.json$",
+      "src": "^/_next/data/BpuWLeOEEi_d4YQ\\-ipc4f/(?<nxtPlocale>[^/]+?)/terms(?:/)?.json$",
       "dest": "/[locale]/terms?nxtPlocale=$nxtPlocale"
     },
     {
@@ -295,7 +295,7 @@
       "dest": "/[locale]/terms?nxtPlocale=$nxtPlocale"
     },
     {
-      "src": "^/_next/data/hNM3BNuaSgBdTz9oi70Kq/(.*).json",
+      "src": "^/_next/data/BpuWLeOEEi_d4YQ\\-ipc4f/(.*).json",
       "headers": {
         "x-nextjs-matched-path": "/$1"
       },
@@ -303,14 +303,14 @@
       "override": true
     },
     {
-      "src": "^/_next/data/hNM3BNuaSgBdTz9oi70Kq/(.*).json",
+      "src": "^/_next/data/BpuWLeOEEi_d4YQ\\-ipc4f/(.*).json",
       "dest": "__next_data_catchall"
     },
     {
       "handle": "hit"
     },
     {
-      "src": "/_next/static/(?:[^/]+/pages|pages|chunks|runtime|css|image|media|hNM3BNuaSgBdTz9oi70Kq)/.+",
+      "src": "/_next/static/(?:[^/]+/pages|pages|chunks|runtime|css|image|media|BpuWLeOEEi_d4YQ\\-ipc4f)/.+",
       "headers": {
         "cache-control": "public,max-age=31536000,immutable"
       },
