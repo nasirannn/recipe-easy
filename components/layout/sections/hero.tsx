@@ -351,7 +351,7 @@ export const HeroSection = () => {
     <GridBackground className="absolute inset-0 z-[-1] opacity-50" />
       {/* 上半部分：左侧标题和描述，右侧视频 */}
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col lg:flex-row items-center gap-8">
+        <div className="flex flex-col lg:flex-row items-start gap-8">
           {/* 左侧标题和描述 */}
           <div className="w-full lg:w-3/5 space-y-6 text-center lg:text-left">
             <h1 className="text-3xl md:text-5xl font-bold">
@@ -387,15 +387,18 @@ export const HeroSection = () => {
           </div>
           
           {/* 右侧视频 */}
-          <div className="w-full lg:w-2/5 aspect-video rounded-lg overflow-hidden shadow-lg">
-            <iframe
-              className="w-full h-full"
-              title="vimeo-player"
-              src="https://player.vimeo.com/video/1103051913?h=e71848409d&byline=0&portrait=0&title=0"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-              allowFullScreen
-            ></iframe>
+          <div className="w-full lg:w-2/5 -ml-4">
+            <div style={{ position: 'relative', paddingBottom: 'calc(52.31292517006803% + 41px)', height: 0, width: '100%' }}>
+              <iframe
+                src="https://demo.arcade.software/JZ1IjhMuHDzejiJKWn2w?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
+                title="Welcome to Recipe Easy - AI Recipe Generator"
+                frameBorder="0"
+                loading="lazy"
+                allowFullScreen
+                allow="clipboard-write"
+                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', colorScheme: 'light' }}
+              />
+            </div>
           </div>
         </div>
       </div>
