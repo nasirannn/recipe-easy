@@ -66,6 +66,13 @@ export const HeroSection = () => {
     try {
       const updatedRecipes = [...recipes];
       
+      console.log('generateRecipeImages - Current formData:', {
+        imageModel: formData.imageModel,
+        languageModel: formData.languageModel,
+        locale: locale,
+        recommendedModels: recommendedModels
+      });
+      
       // 同时开始所有图片生成任务，但处理结果时按照顺序
       const imagePromises = recipes.map((recipe, index) => 
         generateImageForRecipe(
@@ -75,7 +82,7 @@ export const HeroSection = () => {
             ingredients: recipe.ingredients // recipe.ingredients已经是string[]类型
           }, 
           'photographic', // 固定使用真实照片风格
-          formData.imageModel || 'wanx', // 使用表单中选择的模型，默认为万象
+          recommendedModels.imageModel, // 直接使用推荐的模型，而不是表单中的模型
           1, // 生成1张图片
           user?.id, // 传递用户ID
           isAdmin, // 传递管理员标识
@@ -86,10 +93,13 @@ export const HeroSection = () => {
             // 实时更新UI
             setRecipes([...updatedRecipes]);
             
-            // 每生成一张图片消耗一个积分（非管理员用户）
+            // 积分已在API中扣减，这里只需要更新本地状态
             if (user?.id && !isAdmin) {
               updateCreditsLocally(1);
             }
+          } else {
+            // 图片生成失败，不扣减积分
+            console.log('Image generation failed, not deducting credits');
           }
           return imageUrl;
         })
@@ -164,10 +174,11 @@ export const HeroSection = () => {
           ingredients: recipe.ingredients
         }, 
         'photographic',
-        formData.imageModel || 'wanx',
+        recommendedModels.imageModel, // 直接使用推荐的模型
         1,
         user?.id,
-        isAdmin
+        isAdmin,
+        locale // 传递语言参数
       ).then(imageUrl => {
         console.log('Image generated successfully:', imageUrl);
         if (imageUrl) {
@@ -178,7 +189,7 @@ export const HeroSection = () => {
             )
           );
           
-          // 扣减积分
+          // 积分已在API中扣减，这里只需要更新本地状态
           if (!isAdmin) {
             updateCreditsLocally(1);
           }

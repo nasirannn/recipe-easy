@@ -91,13 +91,16 @@ export function generateRecipeImagePrompt(recipe: {
   name: string; 
   description?: string; 
   ingredients?: (string | { name: string; amount?: string; unit?: string })[];
-}, model: ImageModel = APP_CONFIG.DEFAULT_IMAGE_MODEL): string {
+}, model: ImageModel = APP_CONFIG.DEFAULT_IMAGE_MODEL, language?: string): string {
   const { name, ingredients } = recipe;
   
+  // 根据模型和语言确定是否使用英文
+  const useEnglish = model === 'flux' || language === 'en' || language?.startsWith('en');
+  
   // 基础提示词
-  let prompt = model === 'wanx' 
-    ? `美食照片：${name}` // 中文提示词更适合万象模型
-    : `Professional food photograph of ${name}`; // 英文提示词更适合其他模型
+  let prompt = useEnglish
+    ? `Professional food photograph of ${name}` // 英文提示词
+    : `美食照片：${name}`; // 中文提示词
   
   if (ingredients && ingredients.length > 0) {
     // 处理不同格式的食材数据
@@ -112,20 +115,21 @@ export function generateRecipeImagePrompt(recipe: {
         // 其他情况，转换为字符串
         return String(ing);
       }
-    });
+    }).filter(ing => ing && ing.trim() && !/^\d+$/.test(ing.trim())); // 过滤掉空值和纯数字
     
-    prompt += model === 'wanx'
-      ? `。主要原料：${mainIngredients.slice(0, 3).join('、')}`
-      : ` with ${mainIngredients.slice(0, 3).join(', ')}`;
+    prompt += useEnglish
+      ? ` with ${mainIngredients.slice(0, 3).join(', ')}`
+      : `。主要原料：${mainIngredients.slice(0, 3).join('、')}`;
   }
   
   // 添加一些通用的描述，提高图片质量和合规性
-  if (model === 'wanx') {
-    prompt += '。背景干净简约，突出主体，高清晰度特写镜头，柔和自然光线下拍摄，展现食材的质感与色彩层次，营造温暖诱人的食欲氛围。';
-  } else {
+  if (useEnglish) {
     prompt += '. Clean and minimalist background, highlighting the subject, high-definition close-up shot, captured under soft natural lighting to showcase the texture and color layers of the ingredients, creating a warm and appetizing atmosphere.';
+  } else {
+    prompt += '。背景干净简约，突出主体，高清晰度特写镜头，柔和自然光线下拍摄，展现食材的质感与色彩层次，营造温暖诱人的食欲氛围。';
   }
   
+  console.log(`Generated prompt for model ${model}, language ${language}: ${prompt}`);
   return prompt;
 }
 
@@ -137,22 +141,26 @@ export function generateRecipeImagePrompt(recipe: {
  */
 export async function pollTaskStatus(taskId: string, model: ImageModel): Promise<string | null> {
   let attempts = 0;
-  const maxAttempts = IMAGE_GEN_CONFIG.POLLING.MAX_ATTEMPTS;
+  // 根据模型选择不同的超时配置
+  const modelConfig = model === 'flux' ? IMAGE_GEN_CONFIG.MODEL_TIMEOUTS.FLUX : IMAGE_GEN_CONFIG.MODEL_TIMEOUTS.WANX;
+  const maxAttempts = modelConfig.MAX_ATTEMPTS;
   const interval = IMAGE_GEN_CONFIG.POLLING.INTERVAL_MS;
+  
+  console.log(`开始轮询任务 ${taskId}，模型: ${model}，最大尝试次数: ${maxAttempts}，总超时时间: ${modelConfig.TIMEOUT_MS/1000}秒`);
 
   while (attempts < maxAttempts) {
     await new Promise(resolve => setTimeout(resolve, interval));
     const statusResult = await checkImageStatus(taskId, model);
     
-    
+    console.log(`轮询尝试 ${attempts + 1}/${maxAttempts}，任务状态: ${statusResult.status}`);
 
     if (statusResult.status === 'SUCCEEDED') {
-      
+      console.log(`图片生成成功: ${taskId}`);
       return statusResult.imageUrl || null;
     }
     
     if (statusResult.status === 'FAILED') {
-      console.error(`图片生成任务失败: ${statusResult.error}`);
+      console.error(`图片生成任务失败: ${taskId}，错误: ${statusResult.error}`);
       return null;
     }
     
@@ -160,7 +168,7 @@ export async function pollTaskStatus(taskId: string, model: ImageModel): Promise
     attempts++;
   }
 
-  console.error(`图片生成任务超时: ${taskId}`);
+  console.error(`图片生成任务超时: ${taskId}，模型: ${model}，尝试次数: ${maxAttempts}`);
   return null;
 }
 
@@ -178,7 +186,7 @@ export async function generateImageForRecipe(recipe: {
   ingredients?: (string | { name: string; amount?: string; unit?: string })[];
 }, style: ImageStyle = 'photographic', model: ImageModel = APP_CONFIG.DEFAULT_IMAGE_MODEL, n: number = 1, userId?: string, isAdmin?: boolean, language?: string): Promise<string | null> {
   try {
-    const prompt = generateRecipeImagePrompt(recipe, model);
+    const prompt = generateRecipeImagePrompt(recipe, model, language);
 
     // 使用配置中定义的负面提示词
     const negativePrompt = model === 'wanx' 

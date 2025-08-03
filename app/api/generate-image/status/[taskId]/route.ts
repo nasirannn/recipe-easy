@@ -12,6 +12,8 @@ export async function GET(
   const url = new URL(request.url);
   const model = (url.searchParams.get('model') || 'wanx') as ImageModel;
 
+  console.log(`Status check request for taskId: ${taskId}, model: ${model}`);
+
   if (!taskId) {
     return NextResponse.json({ success: false, error: 'Task ID is required' }, { status: 400 });
   }
@@ -98,6 +100,8 @@ async function checkReplicateTaskStatus(taskId: string) {
   }
 
   const url = `https://api.replicate.com/v1/predictions/${taskId}`;
+  console.log(`Checking Replicate task status: ${url}`);
+  
   const response = await axios.get(url, {
     headers: {
       'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}`,
@@ -106,11 +110,17 @@ async function checkReplicateTaskStatus(taskId: string) {
   });
 
   const taskData = response.data;
-  
+  console.log(`Replicate task data:`, {
+    id: taskData.id,
+    status: taskData.status,
+    output: taskData.output,
+    error: taskData.error
+  });
 
   if (taskData.status === 'succeeded') {
     // Replicate返回的是output数组，包含图像URL
     const images = Array.isArray(taskData.output) ? taskData.output : [];
+    console.log(`Replicate task succeeded, images:`, images);
     return NextResponse.json({
       success: true,
       status: 'SUCCEEDED', // 统一使用同样的状态名称
@@ -118,6 +128,7 @@ async function checkReplicateTaskStatus(taskId: string) {
       images: images,
     });
   } else if (taskData.status === 'failed') {
+    console.error(`Replicate task failed:`, taskData.error);
     return NextResponse.json({
       success: false,
       status: 'FAILED',
@@ -127,6 +138,7 @@ async function checkReplicateTaskStatus(taskId: string) {
     // 其他状态: starting, processing
     // 映射到统一的状态名称
     const mappedStatus = taskData.status === 'processing' ? 'RUNNING' : 'PENDING';
+    console.log(`Replicate task status: ${taskData.status} -> ${mappedStatus}`);
     return NextResponse.json({
       success: true,
       status: mappedStatus

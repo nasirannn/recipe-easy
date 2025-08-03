@@ -66,8 +66,7 @@ export const IMAGE_GEN_CONFIG = {
   REPLICATE: {
     BASE_URL: 'https://api.replicate.com/v1',
     MODEL_ID: 'black-forest-labs/flux-schnell',
-    VERSION: '8f650a20e68cf347b2b193ac1cbdfb7c0d173aaa27b584012112fd5cdfcebed4',
-    MAX_IMAGES: 4 // Replicate API免费账户限制
+    MAX_IMAGES: 1 // Replicate API免费账户限制
   },
   // 统一定义负面提示词
   NEGATIVE_PROMPTS: {
@@ -77,8 +76,19 @@ export const IMAGE_GEN_CONFIG = {
   // 统一定义轮询配置
   POLLING: {
     INTERVAL_MS: 2000, // 轮询间隔时间（毫秒）
-    MAX_ATTEMPTS: 30,  // 最大尝试次数
-    TIMEOUT_MS: 60000  // 总超时时间（毫秒）
+    MAX_ATTEMPTS: 90,  // 最大尝试次数（增加到90次，总共3分钟）
+    TIMEOUT_MS: 180000  // 总超时时间（毫秒）- 增加到3分钟
+  },
+  // 针对不同模型的超时配置
+  MODEL_TIMEOUTS: {
+    WANX: {
+      MAX_ATTEMPTS: 30,  // 万象模型：60秒
+      TIMEOUT_MS: 60000
+    },
+    FLUX: {
+      MAX_ATTEMPTS: 90,  // Flux模型：3分钟
+      TIMEOUT_MS: 180000
+    }
   }
 } as const;
 
