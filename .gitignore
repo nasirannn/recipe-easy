@@ -158,6 +158,7 @@ Desktop.ini
 
 # Cloudflare Wrangler
 .wrangler/
+wrangler.toml
 .vercel/
 
 # Temporary files
