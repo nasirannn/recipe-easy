@@ -1,6 +1,6 @@
-# 🍳 RecipeEasy - AI智能菜谱生成器
+# 🍳 RecipeEasy - AI Recipe Generator
 
-> 基于AI的智能菜谱生成平台，让烹饪变得简单有趣。输入食材，AI为您创造美味菜谱！
+> AI-powered intelligent recipe generation platform that makes cooking simple and fun. Input ingredients, and AI creates delicious recipes for you!
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
@@ -8,239 +8,264 @@
 [![Supabase](https://img.shields.io/badge/Supabase-Auth-3ECF8E?style=flat-square&logo=supabase)](https://supabase.com/)
 [![Cloudflare](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=flat-square&logo=cloudflare)](https://workers.cloudflare.com/)
 
-🌐 **在线体验**: [https://recipe-easy.com](https://recipe-easy.com)
+🌐 **Live Demo**: [https://recipe-easy.com](https://recipe-easy.com)
 
-## ✨ 核心功能
+## 🎯 Product Highlights
 
-### 🎯 智能菜谱生成
-- **🤖 多AI模型支持**: DeepSeek、通义千问、GPT-4o Mini
-- **📝 个性化菜谱**: 基于您选择的食材智能生成
-- **🌍 多语言支持**: 中文和英文双语界面
-- **🎨 AI图片生成**: 支持Wanx和Flux Schnell模型生成菜品图片
-- **⚡ 快速生成**: 20-120秒内完成菜谱生成
+- **🆓 Completely Free Recipe Generation** - No credits required, start using immediately
+- **🧠 Smart Model Selection** - Automatically selects the best AI model based on language
+- **🌍 Multi-language Optimization** - Chinese users automatically use Qwen Plus, English users automatically use GPT-4o Mini
+- **🎨 Beautiful Image Generation** - Smart image model selection, only 1 credit per image
+- **📱 Perfect Mobile Experience** - Responsive design, supports all devices
 
-### 🛠️ 用户友好功能
-- **🔍 智能食材选择**: 预设分类 + 自定义输入
-- **📱 响应式设计**: 完美适配桌面端和移动端
-- **🌙 主题切换**: 明暗主题自由切换
-- **🔐 便捷登录**: Google OAuth + 邮箱登录
-- **💎 积分系统**: 新用户免费获得100积分
+## ✨ Core Features
 
-### 🍽️ 菜谱特性
-- **📊 详细步骤**: 清晰的烹饪步骤和技巧
-- **⏱️ 时间控制**: 支持快速、中等、长时间烹饪
-- **🎯 难度分级**: 简单、中等、困难三个等级
-- **🌏 全球菜系**: 支持多种菜系选择
-- **👨‍🍳 厨师技巧**: 每个菜谱都包含专业烹饪技巧
+### 🎯 Intelligent Recipe Generation
+- **🤖 Smart Model Selection**: Automatically selects the best AI model based on language (Chinese users use Qwen Plus, English users use GPT-4o Mini)
+- **📝 Personalized Recipes**: Intelligently generates recipes based on your selected ingredients
+- **🌍 Multi-language Support**: Chinese and English bilingual interface with automatic model optimization
+- **🎨 AI Image Generation**: Smart image model selection (Chinese users use Wanx, English users use Flux Schnell)
+- **⚡ Fast Generation**: Complete recipe generation in 20-120 seconds
+- **🆓 Free Recipes**: Recipe generation is completely free, no credits required
 
-## 🚀 快速开始
+### 🛠️ User-Friendly Features
+- **🔍 Smart Ingredient Selection**: Preset categories + custom input with Chinese and English search support
+- **📱 Responsive Design**: Perfectly adapted for desktop and mobile devices
+- **🌙 Theme Switching**: Free switching between light and dark themes
+- **🔐 Easy Login**: Google OAuth + email login
+- **💎 Credit System**: New users receive 100 free credits (only for image generation)
+- **🎛️ Admin Privileges**: Administrators can manually select AI models with unlimited credits
 
-### 无需注册，立即体验
-1. 访问 [https://recipe-easy.com](https://recipe-easy.com)
-2. 选择或输入您拥有的食材
-3. 设置烹饪偏好（时间、难度、菜系）
-4. 点击生成，等待AI创造美味菜谱
+### 🍽️ Recipe Features
+- **📊 Detailed Steps**: Clear cooking steps and techniques
+- **⏱️ Time Control**: Supports quick, medium, and long cooking times
+- **🎯 Difficulty Levels**: Simple, medium, and hard difficulty levels
+- **🌏 Global Cuisines**: Supports various cuisine styles
+- **👨‍🍳 Chef Tips**: Each recipe includes professional cooking tips
 
-### 注册账户，解锁更多功能
-- 🎨 **AI图片生成**: 为菜谱生成精美配图（消耗积分）
-- 📊 **使用统计**: 查看您的积分和使用情况
-- 🔐 **个人账户**: 管理您的个人信息和设置
+### 🧠 Smart Optimization Features
+- **🌐 Language Adaptation**: Automatically selects the best AI model based on user language
+- **🎯 Model Optimization**: Chinese users automatically use Qwen Plus, English users automatically use GPT-4o Mini
+- **🖼️ Smart Images**: Automatically selects the most suitable image generation model based on language
+- **⚡ Performance Optimization**: Ensures optimal generation results for each language
 
-## 🏗️ 技术架构
+## 🚀 Quick Start
+
+### Try Without Registration
+1. Visit [https://recipe-easy.com](https://recipe-easy.com)
+2. Select or input your available ingredients
+3. Set cooking preferences (time, difficulty, cuisine)
+4. Click generate and wait for AI to create delicious recipes
+
+### Register Account for More Features
+- 🎨 **AI Image Generation**: Generate beautiful images for recipes (1 credit per image)
+- 📊 **Usage Statistics**: View your credits and usage information
+- 🔐 **Personal Account**: Manage your personal information and settings
+- 🎯 **Smart Optimization**: Automatically selects the best AI model based on language
+
+## 🏗️ Technical Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Next.js 14    │    │   Supabase      │    │  Cloudflare     │
-│   (前端应用)     │◄──►│   (认证+数据库)  │    │  (Worker+D1+R2) │
+│   (Frontend)    │◄──►│   (Auth+DB)     │    │  (Worker+D1+R2) │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │
          ▼                       ▼                       ▼
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   AI 服务       │    │   用户管理      │    │   文件存储      │
-│ • DeepSeek      │    │ • 积分系统      │    │ • 图片存储      │
-│ • 通义千问      │    │ • 使用统计      │    │ • 数据备份      │
-│ • GPT-4o Mini   │    │ • 权限控制      │    │ • CDN 加速      │
-│ • Wanx (图片)   │    │ • 个人资料      │    │ • 全球分发      │
-│ • Flux Schnell  │    │ • 积分管理      │    │ • 高可用性      │
+│   AI Services   │    │   User Mgmt     │    │   File Storage  │
+│ • Smart Model   │    │ • Credit System │    │ • Image Storage │
+│   Selection     │    │ • Usage Stats   │    │ • Data Backup   │
+│ • Qwen Plus     │    │ • Access Control│    │ • CDN Delivery  │
+│ • GPT-4o Mini   │    │ • User Profiles │    │ • Global Dist.  │
+│ • Wanx (Images) │    │ • Credit Mgmt   │    │ • High Avail.   │
+│ • Flux Schnell  │    │ • Admin Tools   │    │ • Performance   │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
 recipe-easy/
 ├── app/                          # Next.js 14 App Router
-│   ├── [locale]/                 # 国际化路由 (en/zh)
-│   │   ├── layout.tsx           # 布局组件
-│   │   ├── page.tsx             # 首页
-│   │   ├── privacy/             # 隐私政策
-│   │   └── terms/               # 服务条款
-│   ├── api/                     # API 路由
-│   │   ├── auth/                # 认证相关
-│   │   ├── generate-recipe/     # 菜谱生成
-│   │   ├── generate-image/      # 图片生成
-│   │   ├── ingredients/         # 食材管理
-│   │   ├── recipes/             # 菜谱管理
-│   │   └── user-usage/          # 用户使用统计
-│   ├── layout.tsx               # 根布局
+│   ├── [locale]/                 # Internationalization routes (en/zh)
+│   │   ├── layout.tsx           # Layout components
+│   │   ├── page.tsx             # Homepage
+│   │   ├── privacy/             # Privacy Policy
+│   │   └── terms/               # Terms of Service
+│   ├── api/                     # API routes
+│   │   ├── auth/                # Authentication
+│   │   ├── generate-recipe/     # Recipe generation
+│   │   ├── generate-image/      # Image generation
+│   │   ├── ingredients/         # Ingredient management
+│   │   ├── recipes/             # Recipe management
+│   │   └── user-usage/          # User usage statistics
+│   ├── layout.tsx               # Root layout
 │   ├── robots.ts                # SEO robots.txt
 │   └── sitemap.ts               # SEO sitemap
-├── components/                   # React 组件
-│   ├── auth/                    # 认证组件
-│   ├── layout/                  # 布局组件
-│   │   └── sections/            # 页面区块
-│   │       ├── hero.tsx         # 主页横幅
-│   │       ├── tutorial.tsx     # 使用教程
-│   │       ├── recipes.tsx      # 菜谱展示
-│   │       ├── features.tsx     # 功能特性
-│   │       ├── faq.tsx          # 常见问题
-│   │       ├── testimonial.tsx  # 用户评价
-│   │       └── footer.tsx       # 页脚
-│   └── ui/                      # UI 基础组件
+├── components/                   # React components
+│   ├── auth/                    # Authentication components
+│   ├── layout/                  # Layout components
+│   │   └── sections/            # Page sections
+│   │       ├── hero.tsx         # Hero section
+│   │       ├── tutorial.tsx     # Tutorial section
+│   │       ├── recipes.tsx      # Recipe showcase
+│   │       ├── features.tsx     # Feature highlights
+│   │       ├── faq.tsx          # FAQ section
+│   │       ├── testimonial.tsx  # User testimonials
+│   │       └── footer.tsx       # Footer
+│   └── ui/                      # UI base components
 ├── contexts/                    # React Context
-├── lib/                         # 工具库
-│   ├── services/                # 服务层
-│   └── utils/                   # 工具函数
-├── messages/                    # 国际化文件
-│   ├── en.json                  # 英文翻译
-│   └── zh.json                  # 中文翻译
-├── public/                      # 静态资源
+├── hooks/                       # Custom Hooks
+├── lib/                         # Utilities
+│   ├── services/                # Service layer
+│   ├── utils/                   # Utility functions
+│   ├── config.ts                # Configuration management
+│   ├── prompts.ts               # AI prompts
+│   └── types/                   # Type definitions
+├── messages/                    # Internationalization files
+│   ├── en.json                  # English translations
+│   └── zh.json                  # Chinese translations
+├── public/                      # Static assets
 └── src/                         # Cloudflare Worker
-    └── worker.ts                # 后端API逻辑
+    └── worker.ts                # Backend API logic
 ```
 
-## 🛠️ 开发指南
+## 🛠️ Development Guide
 
-### 环境要求
+### Requirements
 - Node.js 18+
-- npm 或 yarn
+- npm or yarn
 - Git
 
-### 本地开发
+### Local Development
 ```bash
-# 克隆项目
+# Clone the project
 git clone https://github.com/nasirannn/recipe-easy.git
 cd recipe-easy
 
-# 安装依赖
+# Install dependencies
 npm install
 
-# 配置环境变量
+# Configure environment variables
 cp .env.example .env.local
-# 编辑 .env.local 文件，填入必要的API密钥
+# Edit .env.local file and add necessary API keys
 
-# 启动开发服务器
+# Start development server
 npm run dev
 
-# 访问 http://localhost:3000
+# Visit http://localhost:3000
 ```
 
-### 环境变量配置
+### Environment Variables Configuration
 ```bash
-# Supabase 配置
+# Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # Cloudflare Worker URL
 WORKER_URL=https://your-worker.your-subdomain.workers.dev
 
-# AI 服务 API Keys
-OPENAI_API_KEY=your_openai_api_key
+# AI Service API Keys
+DEEPSEEK_API_KEY=your_deepseek_api_key
+QWENPLUS_API_KEY=your_qwenplus_api_key
 DASHSCOPE_API_KEY=your_dashscope_api_key
+REPLICATE_API_TOKEN=your_replicate_api_token
 
-# 可选配置
+# Optional Configuration
 NEXT_PUBLIC_GA_ID=your_ga_id
 NEXT_PUBLIC_CLARITY_ID=your_clarity_id
 NEXT_PUBLIC_APP_URL=https://your-domain.com
 ```
 
-### 部署
+### Deployment
 ```bash
-# 部署 Cloudflare Worker
+# Deploy Cloudflare Worker
 npm run deploy
 
-# 部署 Cloudflare Pages
+# Deploy Cloudflare Pages
 npm run deploy:cf
 ```
 
-## 📊 性能优化
+## 📊 Performance Optimization
 
-### 前端优化
-- ✅ **图片懒加载**: 提升页面加载速度
-- ✅ **代码分割**: 按需加载组件
-- ✅ **服务端渲染**: 更好的SEO和首屏加载
-- ✅ **静态生成**: 预渲染静态页面
-- ✅ **缓存策略**: 智能缓存管理
+### Frontend Optimization
+- ✅ **Image Lazy Loading**: Improves page loading speed
+- ✅ **Code Splitting**: On-demand component loading
+- ✅ **Server-Side Rendering**: Better SEO and first-screen loading
+- ✅ **Static Generation**: Pre-rendered static pages
+- ✅ **Cache Strategy**: Intelligent cache management
 
-### 后端优化
-- ✅ **API缓存**: 减少重复计算
-- ✅ **数据库优化**: 高效查询和索引
-- ✅ **CDN加速**: 全球内容分发
-- ✅ **图片优化**: 自动压缩和格式转换
+### Backend Optimization
+- ✅ **API Caching**: Reduces redundant calculations
+- ✅ **Database Optimization**: Efficient queries and indexing
+- ✅ **CDN Acceleration**: Global content delivery
+- ✅ **Image Optimization**: Automatic compression and format conversion
 
-## 🔒 安全措施
+## 🔒 Security Measures
 
-- ✅ **输入验证**: 防止恶意输入
-- ✅ **SQL注入防护**: 参数化查询
-- ✅ **XSS防护**: 内容安全策略
-- ✅ **CSRF防护**: 跨站请求伪造防护
-- ✅ **API密钥保护**: 环境变量管理
-- ✅ **用户认证**: 安全的登录系统
+- ✅ **Input Validation**: Prevents malicious input
+- ✅ **SQL Injection Protection**: Parameterized queries
+- ✅ **XSS Protection**: Content Security Policy
+- ✅ **CSRF Protection**: Cross-Site Request Forgery protection
+- ✅ **API Key Protection**: Environment variable management
+- ✅ **User Authentication**: Secure login system
 
-## 📈 监控和分析
+## 📈 Monitoring and Analytics
 
-### 用户分析
-- **Google Analytics 4**: 用户行为分析
-- **Microsoft Clarity**: 用户会话录制
-- **Cloudflare Analytics**: 性能监控
+### User Analytics
+- **Google Analytics 4**: User behavior analysis
+- **Microsoft Clarity**: User session recording
+- **Cloudflare Analytics**: Performance monitoring
 
-### 性能指标
-- 页面加载时间优化
-- API响应时间优化
-- 图片加载优化
-- 移动端体验优化
+### Performance Metrics
+- Page loading time optimization
+- API response time optimization
+- Image loading optimization
+- Mobile experience optimization
 
-## 🤝 贡献指南
+## 🤝 Contributing
 
-我们欢迎所有形式的贡献！
+We welcome all forms of contributions!
 
-### 如何贡献
-1. Fork 项目
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 创建 Pull Request
+### How to Contribute
+1. Fork the project
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Create a Pull Request
 
-### 开发规范
-- 使用 TypeScript 进行类型检查
-- 遵循 ESLint 规则
-- 使用 Prettier 格式化代码
-- 编写清晰的提交信息
-- 添加必要的测试
+### Development Standards
+- Use TypeScript for type checking
+- Follow ESLint rules
+- Use Prettier for code formatting
+- Write clear commit messages
+- Add necessary tests
 
-## 📄 许可证
+## 📄 License
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 致谢
+## 🙏 Acknowledgments
 
-- [Next.js](https://nextjs.org/) - React 框架
-- [Supabase](https://supabase.com/) - 后端服务
-- [Cloudflare](https://cloudflare.com/) - 云服务
-- [Tailwind CSS](https://tailwindcss.com/) - CSS 框架
-- [Radix UI](https://www.radix-ui.com/) - UI 组件库
-- [OpenAI](https://openai.com/) - AI 服务
-- [阿里云](https://www.aliyun.com/) - 通义千问AI服务
-- [Replicate](https://replicate.com/) - AI模型部署
+- [Next.js](https://nextjs.org/) - React framework
+- [Supabase](https://supabase.com/) - Backend services
+- [Cloudflare](https://cloudflare.com/) - Cloud services
+- [Tailwind CSS](https://tailwindcss.com/) - CSS framework
+- [Radix UI](https://www.radix-ui.com/) - UI component library
+- [DeepSeek](https://deepseek.com/) - AI language model service
+- [Alibaba Cloud](https://www.aliyun.com/) - Qwen AI service
+- [OpenAI](https://openai.com/) - GPT-4o Mini model service
+- [Replicate](https://replicate.com/) - AI model deployment platform
 
-## 📞 联系我们
+## 📞 Contact Us
 
-- 🌐 网站: [https://recipe-easy.com](https://recipe-easy.com)
-- 📧 邮箱: [annnb016@gmail.com](mailto:annnb016@gmail.com)
-- 🐛 问题反馈: [GitHub Issues](https://github.com/nasirannn/recipe-easy/issues)
+- 🌐 Website: [https://recipe-easy.com](https://recipe-easy.com)
+- 📧 Email: [annnb016@gmail.com](mailto:annnb016@gmail.com)
+- 🐛 Issue Report: [GitHub Issues](https://github.com/nasirannn/recipe-easy/issues)
 
 ---
 
-⭐ 如果这个项目对你有帮助，请给我们一个星标！
+⭐ If this project helps you, please give us a star!
 
-**让AI为您的烹饪之旅增添无限可能！** 🍳✨
+**Let AI add infinite possibilities to your cooking journey!** 🍳✨ 
