@@ -172,7 +172,7 @@ export const RecipeForm = ({
                     <Slider
                       id="recipeCount"
                       min={1}
-                      max={IMAGE_GEN_CONFIG.WANX.MAX_IMAGES}
+                      max={APP_CONFIG.MAX_RECIPE_COUNT}
                       step={1}
                       value={[formData.recipeCount]}
                       onValueChange={(value: number[]) => {

@@ -136,7 +136,7 @@ export const CUISINE_TYPES = {
 } as const;
 
 export const USER_PROMPT_TEMPLATES = {
-  ENGLISH: (ingredients: string[], servings: number, cookingTime: string, difficulty: string, cuisine: string, recipeCount: number = 3) => 
+  ENGLISH: (ingredients: string[], servings: number, cookingTime: string, difficulty: string, cuisine: string, recipeCount: number = 1) => 
     `Please generate EXACTLY ${recipeCount} different style recipes based on the following information:
 
 Ingredients: ${ingredients.join(', ')}
@@ -153,7 +153,7 @@ CRITICAL REQUIREMENTS:
 Please output in JSON format with recipes array containing EXACTLY ${recipeCount} recipes.
 Each recipe must include: id, title, description, time, servings, difficulty, ingredients, instructions, tags, chefTips, and recommended (boolean, only true for the recommended recipe).`,
 
-  CHINESE: (ingredients: string[], servings: number, cookingTime: string, difficulty: string, cuisine: string, recipeCount: number = 3) =>
+  CHINESE: (ingredients: string[], servings: number, cookingTime: string, difficulty: string, cuisine: string, recipeCount: number = 1) =>
     `请根据以下信息生成恰好${recipeCount}个不同风格的菜谱：
 
 食材：${ingredients.join('、')}
