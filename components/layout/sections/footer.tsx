@@ -1,10 +1,16 @@
+"use client";
+
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { ContactDialog } from '@/components/ui/contact-dialog';
 
 export const FooterSection = () => {
   const t = useTranslations('footer');
+  const tContact = useTranslations('contactDialog');
+  const [showContactDialog, setShowContactDialog] = useState(false);
 
   return (
     <footer id="footer" className="container py-24 sm:py-32">
@@ -39,7 +45,7 @@ export const FooterSection = () => {
           <div className="flex flex-col gap-2">
             <h3 className="font-bold text-lg">{t('about')}</h3>
             <div>
-              <Link href="#" className="opacity-60 hover:opacity-100">
+              <Link href="#features" className="opacity-60 hover:opacity-100">
                 {t('features')}
               </Link>
             </div>
@@ -57,13 +63,16 @@ export const FooterSection = () => {
           <div className="flex flex-col gap-2">
             <h3 className="font-bold text-lg">{t('help')}</h3>
             <div>
-              <Link href="#" className="opacity-60 hover:opacity-100">
+              <button 
+                onClick={() => setShowContactDialog(true)}
+                className="opacity-60 hover:opacity-100 text-left bg-transparent border-none p-0 cursor-pointer"
+              >
                 {t('contact')}
-              </Link>
+              </button>
             </div>
 
             <div>
-              <Link href="#" className="opacity-60 hover:opacity-100">
+              <Link href="#faq" className="opacity-60 hover:opacity-100">
                 {t('faq')}
               </Link>
             </div>
@@ -85,6 +94,14 @@ export const FooterSection = () => {
           </div>
         </section>
       </div>
+      
+      <ContactDialog
+        open={showContactDialog}
+        onOpenChange={setShowContactDialog}
+        email="annnb016@gmail.com"
+        subject={tContact('defaultSubject')}
+        body={tContact('defaultBody')}
+      />
     </footer>
   );
 };

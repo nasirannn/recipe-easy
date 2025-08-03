@@ -8,6 +8,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Check } from "lucide-react";
+import { useState } from "react";
+import { ContactDialog } from "@/components/ui/contact-dialog";
+import { useTranslations } from "next-intl";
 
 enum PopularPlan {
   NO = 0,
@@ -72,6 +75,9 @@ const plans: PlanProps[] = [
 ];
 
 export const PricingSection = () => {
+  const [showContactDialog, setShowContactDialog] = useState(false);
+  const t = useTranslations('contactDialog');
+  
   return (
     <section className="container py-24 sm:py-32">
       <h2 className="text-lg text-primary text-center mb-2 tracking-wider">
@@ -127,6 +133,7 @@ export const PricingSection = () => {
                     popular === PopularPlan?.YES ? "default" : "secondary"
                   }
                   className="w-full"
+                  onClick={buttonText === "Contact US" ? () => setShowContactDialog(true) : undefined}
                 >
                   {buttonText}
                 </Button>
@@ -135,6 +142,14 @@ export const PricingSection = () => {
           )
         )}
       </div>
+      
+      <ContactDialog
+        open={showContactDialog}
+        onOpenChange={setShowContactDialog}
+        email="annnb016@gmail.com"
+        subject={t('enterpriseSubject')}
+        body={t('enterpriseBody')}
+      />
     </section>
   );
 };

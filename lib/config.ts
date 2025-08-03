@@ -41,7 +41,7 @@ export const API_CONFIG = {
   },
   GPT4o_MINI: {
     BASE_URL: 'https://api.replicate.com/v1',
-    VERSION: 'openai/gpt-4o-mini:2c0a6a34916017ceafaaf5fdf63f9370cf9491866a9611f37d86138c8ef53fc6',
+    MODEL: 'openai/gpt-4o-mini:2c0a6a34916017ceafaaf5fdf63f9370cf9491866a9611f37d86138c8ef53fc6',
     TEMPERATURE: 0.7,
     MAX_TOKENS: 4000,
     API_KEY: process.env.REPLICATE_API_TOKEN
@@ -53,7 +53,7 @@ export const IMAGE_GEN_CONFIG = {
     // 修正API URL，去掉多余路径
     BASE_URL: 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis',
     MODEL: 'wanx2.1-t2i-turbo',
-    STYLES: ['photographic', 'anime', 'oil_painting'] as const,
+    STYLES: ['photographic'] as const,
     SIZES: [
       '1024*1024', 
       '720*1280', 
@@ -61,7 +61,7 @@ export const IMAGE_GEN_CONFIG = {
       '576*1024', 
       '1024*576'
     ] as const,
-    MAX_IMAGES: 4 // 单次生成最多4张图片
+    MAX_IMAGES: 1 // 单次生成最多4张图片
   },
   REPLICATE: {
     BASE_URL: 'https://api.replicate.com/v1',
@@ -97,3 +97,21 @@ export const APP_CONFIG = {
     HARD: 'hard'
   } as const,
 } as const;
+
+// 新增：基于语言的自动模型选择
+export const LANGUAGE_MODEL_MAPPING = {
+  zh: {
+    languageModel: 'qwenplus' as const,
+    imageModel: 'wanx' as const
+  },
+  en: {
+    languageModel: 'gpt4o_mini' as const,
+    imageModel: 'flux' as const
+  }
+} as const;
+
+// 获取基于语言的推荐模型
+export function getRecommendedModels(locale: string) {
+  const language = locale.startsWith('zh') ? 'zh' : 'en';
+  return LANGUAGE_MODEL_MAPPING[language] || LANGUAGE_MODEL_MAPPING.en;
+}

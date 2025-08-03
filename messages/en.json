@@ -39,10 +39,10 @@
   "features": {
     "title": "Smart AI-Powered Culinary Features",
     "description": "Transform your cooking journey with cutting-edge AI technology, multi-language support, stunning visual generation, and seamless cross-platform experience designed for food lovers worldwide.",
-    "aiGeneration": "Multi-Language Model Support",
-    "aiGenerationDesc": "Supports multiple AI language models: Deepseek, Qwen Plus, and GPT-4o Mini for optimal recipe generation",
-    "imageModels": "Multi-Image Model Support",
-    "imageModelsDesc": "Utilizes advanced image models including Wanx and Flux Schnell to create beautiful dish visualizations",
+    "aiGeneration": "Smart Model Selection",
+    "aiGenerationDesc": "Automatically selects the best AI model based on language: Qwen Plus for Chinese, GPT-4o Mini for English, ensuring optimal generation results",
+    "imageModels": "Smart Image Generation",
+    "imageModelsDesc": "Automatically selects image models based on language: Wanx for Chinese, Flux Schnell for English, generating high-quality dish images",
     "customIngredients": "Custom Ingredients",
     "customIngredientsDesc": "Input any ingredients you have in your refrigerator for AI to craft delicious meals",
     "multipleCuisine": "Multiple Cuisine Styles",
@@ -217,6 +217,19 @@
     "copyright": "© 2025 Recipe Easy. Not affiliated with recipeeasy.com.",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service"
+  },
+  "contactDialog": {
+    "title": "Contact Us",
+    "description": "Are you sure you want to open your email client to send an email?",
+    "cancel": "Cancel",
+    "sendEmail": "Send Email",
+    "sending": "Sending...",
+    "defaultSubject": "RecipeEasy Inquiry",
+    "defaultBody": "Hello, I would like to inquire about RecipeEasy.",
+    "enterpriseSubject": "RecipeEasy Enterprise Inquiry",
+    "enterpriseBody": "Hello, I would like to inquire about RecipeEasy Enterprise.",
+    "confirmSendTitle": "Confirm Send Email",
+    "confirmSendDescription": "Are you sure you want to open your email client to send an email?"
   },
   "ingredients": {
     "loading": "Loading ingredients...",

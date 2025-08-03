@@ -27,6 +27,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { ContactDialog } from "@/components/ui/contact-dialog";
+import { useTranslations } from "next-intl";
 
 const formSchema = z.object({
   firstName: z.string().min(2).max(255),
@@ -37,6 +40,10 @@ const formSchema = z.object({
 });
 
 export const ContactSection = () => {
+  const [showContactDialog, setShowContactDialog] = useState(false);
+  const [formData, setFormData] = useState<z.infer<typeof formSchema> | null>(null);
+  const t = useTranslations('contactDialog');
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -49,13 +56,19 @@ export const ContactSection = () => {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const { firstName, lastName, email, subject, message } = values;
-
-
-    const mailToLink = `mailto:leomirandadev@gmail.com?subject=${subject}&body=Hello I am ${firstName} ${lastName}, my Email is ${email}. %0D%0A${message}`;
-
-    window.location.href = mailToLink;
+    setFormData(values);
+    setShowContactDialog(true);
   }
+
+  const handleConfirmSend = () => {
+    if (formData) {
+      const { firstName, lastName, email, subject, message } = formData;
+      const mailToLink = `mailto:annnb016@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Hello I am ${firstName} ${lastName}, my Email is ${email}. \n\n${message}`)}`;
+      window.location.href = mailToLink;
+    }
+    setShowContactDialog(false);
+    setFormData(null);
+  };
 
   return (
     <section id="contact" className="container py-24 sm:py-32">
@@ -98,7 +111,7 @@ export const ContactSection = () => {
                 <div className="font-bold">Mail US</div>
               </div>
 
-              <div>leomirandadev@gmail.com</div>
+              <div>annnb016@gmail.com</div>
             </div>
 
             <div>
@@ -162,7 +175,7 @@ export const ContactSection = () => {
                         <FormControl>
                           <Input
                             type="email"
-                            placeholder="leomirandadev@gmail.com"
+                            placeholder="annnb016@gmail.com"
                             {...field}
                           />
                         </FormControl>
@@ -240,6 +253,17 @@ export const ContactSection = () => {
           <CardFooter></CardFooter>
         </Card>
       </section>
+      
+      <ContactDialog
+        open={showContactDialog}
+        onOpenChange={setShowContactDialog}
+        title={t('confirmSendTitle')}
+        description={t('confirmSendDescription')}
+        email="annnb016@gmail.com"
+        subject={formData?.subject || "Web Development"}
+        body={formData ? `Hello I am ${formData.firstName} ${formData.lastName}, my Email is ${formData.email}. \n\n${formData.message}` : ""}
+        onConfirm={handleConfirmSend}
+      />
     </section>
   );
 };

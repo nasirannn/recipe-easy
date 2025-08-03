@@ -6,7 +6,7 @@ import { RecipeForm } from "@/components/ui/recipe-form";
 import { RecipeDisplay } from "@/components/ui/recipe-display";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { generateImageForRecipe } from "@/lib/services/image-service";
-import { IMAGE_GEN_CONFIG, APP_CONFIG } from "@/lib/config";
+import { IMAGE_GEN_CONFIG, APP_CONFIG, getRecommendedModels } from "@/lib/config";
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from "@/contexts/auth-context";
 import { useUserUsage } from "@/hooks/use-user-usage";
@@ -21,6 +21,9 @@ export const HeroSection = () => {
   const { user, isAdmin } = useAuth();
   const { credits, updateCreditsLocally } = useUserUsage();
   
+  // 根据语言获取推荐的模型
+  const recommendedModels = getRecommendedModels(locale);
+  
   //Recipe Form
   const [formData, setFormData] = useState<RecipeFormData>({
     ingredients: [],
@@ -29,8 +32,20 @@ export const HeroSection = () => {
     cookingTime: "medium",
     difficulty: "medium",
     cuisine: "any",
-    imageModel: "wanx" // 默认使用万象模型
+    languageModel: recommendedModels.languageModel, // 根据语言自动选择语言模型
+    imageModel: recommendedModels.imageModel // 根据语言自动选择图片模型
   });
+
+  // 当语言改变时，自动更新模型选择（仅对非管理员用户）
+  useEffect(() => {
+    if (!isAdmin) {
+      setFormData(prev => ({
+        ...prev,
+        languageModel: recommendedModels.languageModel,
+        imageModel: recommendedModels.imageModel
+      }));
+    }
+  }, [locale, recommendedModels.languageModel, recommendedModels.imageModel, isAdmin]);
   
   const [loading, setLoading] = useState(false);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -63,7 +78,8 @@ export const HeroSection = () => {
           formData.imageModel || 'wanx', // 使用表单中选择的模型，默认为万象
           1, // 生成1张图片
           user?.id, // 传递用户ID
-          isAdmin // 传递管理员标识
+          isAdmin, // 传递管理员标识
+          locale // 传递语言参数
         ).then(imageUrl => {
           if (imageUrl) {
             updatedRecipes[index] = { ...updatedRecipes[index], image: imageUrl };

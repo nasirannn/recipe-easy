@@ -39,10 +39,10 @@
   "features": {
     "title": "智能AI烹饪功能",
     "description": "融合前沿AI技术、多语言模型、精美图像生成和跨平台无缝体验，为全球美食爱好者打造的智能烹饪革命，让每一次下厨都成为创意探索之旅。",
-    "aiGeneration": "多语言模型支持",
-    "aiGenerationDesc": "支持多种AI语言模型：Deepseek、千问Plus和GPT-4o Mini，实现最佳食谱生成",
-    "imageModels": "多图像模型支持",
-    "imageModelsDesc": "使用先进的图像模型，包括万象和Flux Schnell，创建精美菜品可视化效果",
+    "aiGeneration": "智能模型选择",
+    "aiGenerationDesc": "根据语言自动选择最佳AI模型：中文使用千问Plus，英文使用GPT-4o Mini，确保最佳生成效果",
+    "imageModels": "智能图像生成",
+    "imageModelsDesc": "根据语言自动选择图像模型：中文使用万象，英文使用Flux Schnell，生成高质量菜品图片",
     "customIngredients": "自定义食材",
     "customIngredientsDesc": "输入您冰箱中已有的任何食材，让AI帮您制作美味佳肴",
     "multipleCuisine": "多种菜系风格",
@@ -216,6 +216,19 @@
     "copyright": "© 2025 Recipe Easy. 与 recipeeasy.com 无关联。",
     "privacy": "隐私政策",
     "terms": "服务条款"
+  },
+  "contactDialog": {
+    "title": "联系我们",
+    "description": "您确定要打开邮件客户端发送邮件吗？",
+    "cancel": "取消",
+    "sendEmail": "发送邮件",
+    "sending": "发送中...",
+    "defaultSubject": "RecipeEasy 咨询",
+    "defaultBody": "您好，我想咨询关于 RecipeEasy 的问题。",
+    "enterpriseSubject": "RecipeEasy 企业版咨询",
+    "enterpriseBody": "您好，我想咨询关于 RecipeEasy 企业版的问题。",
+    "confirmSendTitle": "确认发送邮件",
+    "confirmSendDescription": "您确定要打开邮件客户端发送邮件吗？"
   },
   "ingredients": {
     "loading": "正在加载食材...",

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
-import { IMAGE_GEN_CONFIG, APP_CONFIG } from '@/lib/config';
+import { IMAGE_GEN_CONFIG, APP_CONFIG, getRecommendedModels } from '@/lib/config';
 import type { ImageModel } from '@/lib/services/image-service';
 
 // 强制动态渲染
@@ -17,7 +17,8 @@ export async function POST(request: Request) {
       n = 1,
       model = APP_CONFIG.DEFAULT_IMAGE_MODEL, // 使用配置文件中的默认图片模型
       userId, // 添加用户ID参数
-      isAdmin // 添加管理员标识
+      isAdmin, // 添加管理员标识
+      language = 'en' // 添加语言参数
     } = await request.json();
     
     if (!prompt) {
@@ -59,15 +60,22 @@ export async function POST(request: Request) {
     const finalNegativePrompt = negativePrompt || 
       (model === 'wanx' ? IMAGE_GEN_CONFIG.NEGATIVE_PROMPTS.WANX : IMAGE_GEN_CONFIG.NEGATIVE_PROMPTS.FLUX);
     
+    // 根据语言自动选择模型（非管理员用户）
+    let finalModel = model;
+    if (!isAdmin) {
+      const recommendedModels = getRecommendedModels(language);
+      finalModel = recommendedModels.imageModel;
+    }
+
     // 根据所选模型调用不同的API
-    if (model === 'wanx') {
+    if (finalModel === 'wanx') {
       return await generateWithWanx(prompt, style, finalNegativePrompt, size, n);
-    } else if (model === 'flux') {
+    } else if (finalModel === 'flux') {
       // 使用Replicate API处理flux模型
       return await generateWithReplicate(prompt, finalNegativePrompt);
     } else {
       return NextResponse.json(
-        { success: false, error: `Unsupported model: ${model}` }, 
+        { success: false, error: `Unsupported model: ${finalModel}` }, 
         { status: 400 }
       );
     }

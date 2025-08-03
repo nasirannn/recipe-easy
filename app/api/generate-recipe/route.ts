@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { SYSTEM_PROMPTS, USER_PROMPT_TEMPLATES } from '@/lib/prompts';
-import { API_CONFIG, APP_CONFIG } from '@/lib/config';
+import { API_CONFIG, APP_CONFIG, getRecommendedModels } from '@/lib/config';
 import { Recipe } from '@/lib/types';
 
 // 强制动态渲染
@@ -21,9 +21,11 @@ const apiKeys = {
 };
 
 export async function POST(request: NextRequest) {
+  let ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel, userId, isAdmin, finalLanguageModel;
+  
   try {
     const body = await request.json();
-    const { ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel, userId, isAdmin } = body;
+    ({ ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel, userId, isAdmin } = body);
 
     // 验证必要参数
     if (!ingredients || ingredients.length < 2) {
@@ -35,8 +37,15 @@ export async function POST(request: NextRequest) {
     //   return NextResponse.json({ error: '用户ID是必需的' }, { status: 400 });
     // }
 
+    // 根据语言自动选择模型（非管理员用户）
+    let finalLanguageModel = languageModel;
+    if (!isAdmin) {
+      const recommendedModels = getRecommendedModels(language || 'en');
+      finalLanguageModel = recommendedModels.languageModel;
+    }
+
     // 选择语言模型配置
-    const selectedModelConfig = languageModel ? API_CONFIG[languageModel] : API_CONFIG.DEEPSEEK;
+    const selectedModelConfig = finalLanguageModel && API_CONFIG[finalLanguageModel] ? API_CONFIG[finalLanguageModel] : API_CONFIG.DEEPSEEK;
     const apiKey = selectedModelConfig.API_KEY;
 
     if (!apiKey) {
@@ -54,14 +63,14 @@ export async function POST(request: NextRequest) {
       USER_PROMPT_TEMPLATES.ENGLISH(ingredientNames, servings, cookingTime, difficulty, cuisine, recipeCount);
 
     // GPT-4o mini 特殊处理
-    if (languageModel === 'gpt4o_mini') {
+    if (finalLanguageModel === 'gpt4o_mini') {
       const client = new OpenAI({
         apiKey: apiKey,
         baseURL: selectedModelConfig.BASE_URL
       });
 
       const response = await client.chat.completions.create({
-        model: selectedModelConfig.MODEL,
+        model: selectedModelConfig.MODEL, // 现在所有模型都使用MODEL字段
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -144,7 +153,7 @@ export async function POST(request: NextRequest) {
       apiKey: apiKey,
       baseURL: selectedModelConfig.BASE_URL
     });
-    const model = (selectedModelConfig as typeof API_CONFIG.DEEPSEEK | typeof API_CONFIG.QWENPLUS).MODEL;
+    const model = selectedModelConfig.MODEL;
 
     const response = await client.chat.completions.create({
       model: model,
@@ -206,6 +215,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ recipes: recipesWithDefaults });
   } catch (error) {
     console.error('Recipe generation error:', error);
-    return NextResponse.json({ error: 'Recipe generation failed' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Recipe generation failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }

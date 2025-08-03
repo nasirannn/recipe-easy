@@ -14,6 +14,7 @@ export interface ImageGenParams {
   model?: ImageModel;
   userId?: string; // 添加用户ID参数
   isAdmin?: boolean; // 添加管理员标识
+  language?: string; // 添加语言参数
 }
 
 export type ImageGenResponse = {
@@ -46,7 +47,8 @@ export async function generateImage(params: ImageGenParams): Promise<ImageGenRes
       model,
       n,
       userId: params.userId,
-      isAdmin: params.isAdmin
+      isAdmin: params.isAdmin,
+      language: params.language || 'en'
     });
     
     return response.data;
@@ -174,7 +176,7 @@ export async function generateImageForRecipe(recipe: {
   name: string; 
   description?: string; 
   ingredients?: (string | { name: string; amount?: string; unit?: string })[];
-}, style: ImageStyle = 'photographic', model: ImageModel = APP_CONFIG.DEFAULT_IMAGE_MODEL, n: number = 1, userId?: string, isAdmin?: boolean): Promise<string | null> {
+}, style: ImageStyle = 'photographic', model: ImageModel = APP_CONFIG.DEFAULT_IMAGE_MODEL, n: number = 1, userId?: string, isAdmin?: boolean, language?: string): Promise<string | null> {
   try {
     const prompt = generateRecipeImagePrompt(recipe, model);
 
@@ -190,7 +192,8 @@ export async function generateImageForRecipe(recipe: {
       n: Math.min(n, model === 'flux' ? IMAGE_GEN_CONFIG.REPLICATE.MAX_IMAGES : IMAGE_GEN_CONFIG.WANX.MAX_IMAGES),
       negativePrompt,
       userId,
-      isAdmin
+      isAdmin,
+      language
     });
     
     if (!submitResult.success || !submitResult.taskId) {
