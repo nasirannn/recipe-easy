@@ -51,9 +51,9 @@ export const Navbar = () => {
 
   const routeList: RouteProps[] = [
     { href: `/${locale}`, label: t('home') },
+    { href: `/${locale}/recipes`, label: t('explore') },
     { href: `/${locale}#features`, label: t('features') },
     { href: `/${locale}#faq`, label: t('faq') },
-    { href: `/${locale}#testimonials`, label: t('testimonials') },
   ];
 
   const handleLogout = async () => {

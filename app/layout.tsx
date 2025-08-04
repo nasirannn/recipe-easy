@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   ...generateMetadata({
     title: "RecipeEasy - AI Recipe Generator, Random Recipes, Meal Ideas",
     description: "Stuck on what to cook? Enter your ingredients and get random, AI-generated recipes based on what you have — with easy cooking steps.",
-    path: "",
+    path: "/",
   }),
   icons: {
     icon: "/recipe-easy-logo.svg",

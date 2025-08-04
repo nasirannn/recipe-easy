@@ -1,9 +1,9 @@
 {
   "navigation": {
     "home": "Home",
+    "explore": "Explore",
     "features": "Features",
     "tutorial": "Tutorial",
-    "testimonials": "Testimonials",
     "faq": "FAQ",
     "signin": "Sign In",
     "signup": "Sign Up",
@@ -125,7 +125,14 @@
   },
   "recipes": {
     "title": "Get Inspired",
-    "subtitle": "Get inspired by our collection of delicious recipes from around the world."
+    "subtitle": "Get inspired by our collection of delicious recipes from around the world.",
+    "exploreMore": "Explore More",
+    "allRecipes": "All Recipes",
+    "allRecipesSubtitle": "Discover delicious recipes from around the world",
+    "loadingRecipes": "Loading recipes...",
+    "loadMore": "Load More",
+    "loading": "Loading...",
+    "allRecipesDisplayed": "All recipes displayed"
   },
 
   "credits": {
@@ -162,32 +169,32 @@
     "review1": {
       "name": "Jane Doe",
       "userName": "Foodie Jane",
-      "comment": "As a foodie, I crave new flavors daily. This AI recipe generator gives me creative, gourmet ideas using random ingredients. Seriously, it's like a flavor adventure – no more boring dinners!"
+      "comment": "Finally found something that actually works! No more staring at my fridge wondering what to cook. This thing gives me real ideas, not just basic recipes. My dinner game has seriously leveled up since I started using this amazing tool."
     },
     "review2": {
       "name": "Mike Thompson",
       "userName": "College Student",
-      "comment": "Broke college student here! This app saves me with cheap, 10-minute meals using pantry scraps. No more ramen – just real food that's actually tasty. Total lifesaver on a budget."
+      "comment": "Broke student lifesaver! This AI tool for cooking creates delicious meals from my pantry scraps. Solves my 'what to make with ingredients I have' problem, saves money and tastes great, much better than ramen. My roommates are jealous!"
     },
     "review3": {
       "name": "Jessica Parker",
       "userName": "Foodie on a Budget",
-      "comment": "I love fancy food but hate spending cash. This AI tool finds budget-friendly recipes that still feel gourmet. My wallet's happy, and dinner's delicious – win-win for frugal foodies!"
+      "comment": "Love fancy food but hate the price tag. This app actually delivers - gourmet taste without the restaurant bill. My friends think I'm a cooking genius now. The recipe maker feature is gold! Never going back to expensive restaurants."
     },
     "review4": {
       "name": "David Harris",
       "userName": "Health Enthusiast",
-      "comment": "Need healthy recipes fast? This AI generator creates nutritious meals in seconds. No guesswork – just clean eating that fits my wellness goals. Game-changer!"
+      "comment": "This AI recipe generator for free is fantastic! Can make healthy meals with ingredients I have. Nutrition combinations are scientific, essential tool for health enthusiasts who want clean eating. My fitness goals are finally achievable!"
     },
     "review5": {
       "name": "Emily Rodriguez",
       "userName": "Kitchen Novice",
-      "comment": "Total kitchen newbie here – I burned toast once! But the step-by-step instructions are foolproof. Now I cook confidently. Seriously, this app makes beginners feel like pros."
+      "comment": "Used to burn water, now I'm actually cooking! The step-by-step instructions are so clear even I can follow them. My roommate is shocked. The recipe creator feature is thoughtful, freeing me from the confusion of 'what to make with ingredients I have'."
     },
     "review6": {
       "name": "Chris Garcia",
       "userName": "Remote Worker",
-      "comment": "Working from home? This AI recipe app gives quick lunches between Zoom calls. Saves time, uses fridge leftovers, and keeps me energized. Essential for remote workers avoiding takeout!"
+      "comment": "Working from home was killing my lunch game. This AI tool for cooking helps me quickly solve lunch problems. Using random ingredients from my fridge, saves time and stays healthy, much better than takeout. My productivity has improved!"
     }
   },
   "faq": {
@@ -290,7 +297,7 @@
     "signInAction": "Click to sign in",
     "generateAction": "Click to generate"
   },
-  "introduce": {
+  "introduction": {
     "title": "Introduction",
     "heading": "Make Cooking Simple and Fun",
     "description1": "Do you often find yourself lying in bed wondering \"what to cook tomorrow\"? RecipeEasy AI Recipe Generator is designed to solve this daily dilemma. As the leading AI tool for cooking, our platform generates personalized AI recipes in seconds. Whether you're a busy professional, a budget-conscious homemaker, or an environmentally conscious person looking to reduce food waste, our AI recipe generator provides the perfect solution.",

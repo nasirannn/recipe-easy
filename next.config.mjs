@@ -4,6 +4,8 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 控制末尾斜杠行为 - false表示不添加末尾斜杠
+  trailingSlash: false,
   images: {
     remotePatterns: [
       {

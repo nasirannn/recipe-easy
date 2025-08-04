@@ -49,6 +49,11 @@ const worker = {
         return await handleRecipes(request, env.RECIPE_EASY_DB, corsHeaders);
       }
 
+      // 处理单个菜谱的API路由 /api/recipes/[id]
+      if (path.startsWith('/api/recipes/') && path !== '/api/recipes') {
+        return await handleSingleRecipe(request, env.RECIPE_EASY_DB, corsHeaders);
+      }
+
       if (path === '/api/admin/add-columns') {
         return await handleAddColumns(request, env.RECIPE_EASY_DB, corsHeaders);
       }
@@ -661,11 +666,11 @@ async function handleRecipes(request: Request, db: D1Database, corsHeaders: Reco
         difficulty: recipe.localized_difficulty || recipe.difficulty || 'easy',
         cook_time: recipe.cook_time || 30,
         servings: recipe.servings || 4,
-        cuisine: {
-          id: recipe.cuisine_id || 1,
-          slug: slugMap[recipe.cuisine_id] || 'other',
-          name: recipe.localized_cuisine_name || recipe.cuisine_name || 'Other'
-        },
+              cuisine: {
+        id: recipe.cuisine_id || 1,
+        slug: slugMap[Number(recipe.cuisine_id)] || 'other',
+        name: recipe.localized_cuisine_name || recipe.cuisine_name || 'Other'
+      },
         created_at: recipe.created_at,
         updated_at: recipe.updated_at
       };
@@ -744,6 +749,142 @@ async function handleAddColumns(request: Request, db: D1Database, corsHeaders: R
       success: false,
       error: 'Failed to add column',
       details: error instanceof Error ? error.message : 'Unknown error'
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+// 处理单个菜谱API
+async function handleSingleRecipe(request: Request, db: D1Database, corsHeaders: Record<string, string>): Promise<Response> {
+  try {
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const recipeId = pathParts[pathParts.length - 1]; // 获取最后一个部分作为ID
+    const { searchParams } = url;
+    const language = searchParams.get('lang') || 'en';
+
+    if (!recipeId || isNaN(parseInt(recipeId))) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Invalid recipe ID'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 检查是否存在 recipes_i18n 表
+    let hasI18nTable = false;
+    try {
+      const tableCheck = await db.prepare(`
+        SELECT name FROM sqlite_master WHERE type='table' AND name='recipes_i18n'
+      `).first();
+      hasI18nTable = !!tableCheck;
+    } catch (e) {
+      hasI18nTable = false;
+    }
+
+    let sql = `
+      SELECT 
+        r.*,
+        c.name as cuisine_name,
+        COALESCE(c18n.name, c.name) as localized_cuisine_name
+    `;
+
+    // 如果有国际化表，添加菜谱的本地化字段
+    if (hasI18nTable) {
+      sql += `,
+        COALESCE(r18n.title, r.title) as localized_title,
+        COALESCE(r18n.description, r.description) as localized_description,
+        COALESCE(r18n.ingredients, r.ingredients) as localized_ingredients,
+        COALESCE(r18n.seasoning, r.seasoning) as localized_seasoning,
+        COALESCE(r18n.instructions, r.instructions) as localized_instructions,
+        COALESCE(r18n.chef_tips, r.chef_tips) as localized_chef_tips,
+        COALESCE(r18n.tags, r.tags) as localized_tags,
+        COALESCE(r18n.difficulty, r.difficulty) as localized_difficulty
+      `;
+    }
+
+    sql += `
+      FROM recipes r
+      LEFT JOIN cuisines c ON r.cuisine_id = c.id
+      LEFT JOIN cuisines_i18n c18n ON c.id = c18n.cuisine_id AND c18n.language_code = ?
+      WHERE r.id = ?
+    `;
+
+    const params: any[] = [language, parseInt(recipeId)];
+
+    // 如果有国际化表，添加菜谱国际化关联
+    if (hasI18nTable) {
+      sql = sql.replace('FROM recipes r', 'FROM recipes r LEFT JOIN recipes_i18n r18n ON r.id = r18n.recipe_id AND r18n.language_code = ?');
+      params.splice(1, 0, language); // 在language和recipeId之间插入language
+    }
+
+    const recipe = await db.prepare(sql).bind(...params).first();
+
+    if (!recipe) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Recipe not found'
+      }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 根据菜谱ID映射到正确的slug
+    const slugMap: Record<number, string> = {
+      1: 'meat',
+      2: 'seafood', 
+      3: 'vegetables',
+      4: 'fruits',
+      5: 'dairy-eggs',
+      6: 'grains-bread',
+      7: 'nuts-seeds',
+      8: 'herbs-spices',
+      9: 'oils-condiments'
+    };
+
+    const formattedRecipe = {
+      id: recipe.id,
+      slug: recipe.slug || `recipe-${recipe.id}`,
+      title: recipe.localized_title || recipe.title || `Recipe ${recipe.id}`,
+      description: recipe.localized_description || recipe.description || `Description for Recipe ${recipe.id}`,
+      image_url: recipe.image_url || `https://recipe-easy.annnb016.workers.dev/images/recipe-${recipe.id}.jpg`,
+      ingredients: recipe.localized_ingredients || recipe.ingredients || [],
+      seasoning: recipe.localized_seasoning || recipe.seasoning || [],
+      instructions: recipe.localized_instructions || recipe.instructions || [],
+      chef_tips: recipe.localized_chef_tips || recipe.chef_tips || [],
+      tags: recipe.localized_tags || recipe.tags || [],
+      difficulty: recipe.localized_difficulty || recipe.difficulty || 'easy',
+      cook_time: recipe.cook_time || 30,
+      servings: recipe.servings || 4,
+      cuisine: {
+        id: recipe.cuisine_id || 1,
+        slug: slugMap[Number(recipe.cuisine_id)] || 'other',
+        name: recipe.localized_cuisine_name || recipe.cuisine_name || 'Other'
+      },
+      created_at: recipe.created_at,
+      updated_at: recipe.updated_at
+    };
+
+    return new Response(JSON.stringify({
+      success: true,
+      recipe: formattedRecipe,
+      language,
+      source: 'database'
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+
+  } catch (error) {
+    console.error('Single Recipe API error:', error);
+    return new Response(JSON.stringify({
+      success: false,
+      error: '获取菜谱数据失败',
+      details: error instanceof Error ? error.message : '未知错误'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

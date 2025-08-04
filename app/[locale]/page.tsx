@@ -6,7 +6,7 @@ import { RecipesSection } from "@/components/layout/sections/recipes";
 import { TestimonialSection } from "@/components/layout/sections/testimonial";
 import { TutorialSection } from "@/components/layout/sections/tutorial";
 import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
-import { IntroduceSection } from "@/components/layout/sections/introduce";  
+import { IntroductionSection } from "@/components/layout/sections/introduction";  
 
 
 export async function generateMetadata({
@@ -19,7 +19,7 @@ export async function generateMetadata({
   return generateSeoMetadata({
     title: "RecipeEasy - AI Recipe Generator, Random Recipes, Meal Ideas",
     description: "Stuck on what to cook? Enter your ingredients and get random, AI-generated recipes based on what you have — with easy cooking steps.",
-    path: "",
+    path: "/",
     locale,
   });
 }
@@ -29,7 +29,7 @@ export default function Home() {
     <>
       <HeroSection />
       <TutorialSection />
-      <IntroduceSection />
+      <IntroductionSection />
       <RecipesSection />
       <FeaturesSection />
       <FAQSection />

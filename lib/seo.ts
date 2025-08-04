@@ -5,16 +5,23 @@ export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://recipe-easy.
 
 // 生成 canonical URL
 export function generateCanonicalUrl(path: string = '', locale?: string): string {
-  // 移除开头的斜杠
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path
+  // 标准化路径：移除开头和结尾的斜杠
+  const cleanPath = path.replace(/^\/+|\/+$/g, '')
   
   // 如果是默认语言 (en)，不添加语言前缀
   if (locale === 'en' || !locale) {
-    return `${SITE_URL}/${cleanPath}`.replace(/\/+$/, '')
+    // 如果路径为空，返回网站URL（添加末尾斜杠）
+    if (!cleanPath) {
+      return `${SITE_URL}/`
+    }
+    return `${SITE_URL}/${cleanPath}/`
   }
   
   // 其他语言添加语言前缀
-  return `${SITE_URL}/${locale}/${cleanPath}`.replace(/\/+$/, '')
+  if (!cleanPath) {
+    return `${SITE_URL}/${locale}/`
+  }
+  return `${SITE_URL}/${locale}/${cleanPath}/`
 }
 
 // 生成页面元数据

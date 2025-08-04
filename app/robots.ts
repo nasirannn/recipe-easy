@@ -2,6 +2,9 @@ import { MetadataRoute } from 'next'
 import { SITE_URL } from '@/lib/seo'
 
 export default function robots(): MetadataRoute.Robots {
+  // 确保使用HTTPS
+  const baseUrl = SITE_URL.replace(/^http:/, 'https:')
+  
   return {
     rules: {
       userAgent: '*',
@@ -13,6 +16,6 @@ export default function robots(): MetadataRoute.Robots {
         '/admin/',
       ],
     },
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    sitemap: `${baseUrl}/sitemap.xml`,
   }
 } 

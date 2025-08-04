@@ -1,11 +1,11 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 
-export const IntroduceSection = () => {
-  const t = useTranslations("introduce");
+export const IntroductionSection = () => {
+  const t = useTranslations("introduction");
 
   return (
-    <section id="introduce" className="container py-24 sm:py-32">
+    <section id="introduction" className="container py-24 sm:py-32">
       <div className="grid lg:grid-cols-2 place-items-center lg:gap-24">
         <div>
           <h2 className="text-lg text-primary mb-2 tracking-wider">
@@ -28,7 +28,7 @@ export const IntroduceSection = () => {
 
         <div className="w-full">
           <Image
-            src="/images/introduce_fridge.jpg"
+            src="/images/introduction_fridge.jpg"
             alt={t("imageAlt")}
             width={600}
             height={400}

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Spinner } from '@/components/ui/spinner';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Users, ChefHat } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 // Recipe 类型定义
@@ -31,9 +31,7 @@ type Recipe = {
 const getCuisineClassName = (cuisineName: string): string => {
   if (!cuisineName) return 'cuisine-other';
   
-  // 支持中英文菜系名称映射
   const cuisineClassMap: { [key: string]: string } = {
-    // 英文名称
     'Chinese': 'cuisine-chinese',
     'Italian': 'cuisine-italian',
     'French': 'cuisine-french',
@@ -42,7 +40,6 @@ const getCuisineClassName = (cuisineName: string): string => {
     'Mediterranean': 'cuisine-mediterranean',
     'Thai': 'cuisine-thai',
     'Mexican': 'cuisine-mexican',
-    // 中文名称
     '中式': 'cuisine-chinese',
     '意式': 'cuisine-italian',
     '法式': 'cuisine-french',
@@ -59,22 +56,27 @@ const getCuisineClassName = (cuisineName: string): string => {
 // 获取 cuisine 的本地化显示名称
 const getLocalizedCuisineName = (cuisineName: string, locale: string): string => {
   if (!cuisineName) return locale === 'zh' ? '其他' : 'Other';
-  return cuisineName; // 现在直接从数据库获取本地化名称
+  return cuisineName;
 };
 
-export const RecipesSection = () => {
+interface RecipesListProps {
+  locale: string;
+}
+
+export const RecipesList = ({ locale }: RecipesListProps) => {
   const t = useTranslations('recipes');
   const tRecipe = useTranslations('recipeDisplay');
-  const locale = useLocale();
   const [isLoading, setIsLoading] = useState(true);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   // 从本地 API 获取食谱数据
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/recipes?limit=8&lang=${locale}`);
+        const response = await fetch(`/api/recipes?limit=20&offset=${(page - 1) * 20}&lang=${locale}`);
         const data = await response.json();
 
         if (data.success) {
@@ -97,7 +99,14 @@ export const RecipesSection = () => {
               name: recipe.cuisine.name
             } : undefined
           }));
-          setRecipes(transformedRecipes);
+          
+          if (page === 1) {
+            setRecipes(transformedRecipes);
+          } else {
+            setRecipes(prev => [...prev, ...transformedRecipes]);
+          }
+          
+          setHasMore(transformedRecipes.length === 20);
         } else {
           console.error('Failed to fetch recipes:', data.error);
         }
@@ -109,40 +118,44 @@ export const RecipesSection = () => {
     };
 
     fetchRecipes();
-  }, [locale]);
+  }, [locale, page]);
 
-  if (isLoading) {
+  const loadMore = () => {
+    setPage(prev => prev + 1);
+  };
+
+  if (isLoading && page === 1) {
     return (
-      <section id="recipes" className="py-16 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              {t('title')}
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 mb-12">
-              {t('subtitle')}
+            <Spinner className="h-8 w-8 mx-auto" />
+            <p className="mt-4 text-gray-600 dark:text-gray-300">
+              {t('loadingRecipes')}
             </p>
-            <div className="flex justify-center">
-              <Spinner className="h-8 w-8" />
-            </div>
           </div>
         </div>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section id="recipes" className="py-16 bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            {t('title')}
-          </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            {t('subtitle')}
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
+      {/* 页面标题 */}
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              {t('allRecipes')}
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              {t('allRecipesSubtitle')}
+            </p>
+          </div>
         </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {recipes.map((recipe) => {
             const localizedCuisineName = getLocalizedCuisineName(recipe.cuisine?.name || '', locale);
@@ -214,7 +227,36 @@ export const RecipesSection = () => {
             );
           })}
         </div>
+
+        {/* 加载更多按钮 */}
+        {hasMore && (
+          <div className="text-center mt-12">
+            <button
+              onClick={loadMore}
+              disabled={isLoading}
+              className="inline-flex items-center px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <>
+                  <Spinner className="h-4 w-4 mr-2" />
+                  {t('loading')}
+                </>
+              ) : (
+                t('loadMore')
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* 没有更多数据 */}
+        {!hasMore && recipes.length > 0 && (
+          <div className="text-center mt-12">
+            <p className="text-gray-600 dark:text-gray-400">
+              {t('allRecipesDisplayed')}
+            </p>
+          </div>
+        )}
       </div>
-    </section>
+    </div>
   );
-};
+}; 
