@@ -567,7 +567,7 @@ export const HeroSection = () => {
           <div className="w-full lg:w-2/5 -ml-4">
             <div style={{ position: 'relative', paddingBottom: 'calc(52.31292517006803% + 41px)', height: 0, width: '100%' }}>
               <iframe
-                src="https://demo.arcade.software/JZ1IjhMuHDzejiJKWn2w?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
+                src="https://demo.arcade.software/S6h2tXiDTTN888NDMfSG?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
                 title="Welcome to Recipe Easy - AI Recipe Generator"
                 frameBorder="0"
                 loading="lazy"
