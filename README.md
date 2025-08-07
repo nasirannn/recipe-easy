@@ -1,6 +1,6 @@
 # 🍳 RecipeEasy - AI Recipe Generator
 
-> AI-powered intelligent recipe generation platform that makes cooking simple and fun. Input ingredients, and AI creates delicious recipes for you!
+> AI-powered intelligent recipe generation platform that makes cooking simple and fun! Input ingredients, and AI creates delicious recipes for you!
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
@@ -10,13 +10,21 @@
 
 🌐 **Live Demo**: [https://recipe-easy.com](https://recipe-easy.com)
 
-## 🎯 Product Highlights
+## 📋 Table of Contents
 
-- **🆓 Completely Free Recipe Generation** - No credits required, start using immediately
-- **🧠 Smart Model Selection** - Automatically selects the best AI model based on language
-- **🌍 Multi-language Optimization** - Chinese users automatically use Qwen Plus, English users automatically use GPT-4o Mini
-- **🎨 Beautiful Image Generation** - Smart image model selection, only 1 credit per image
-- **📱 Perfect Mobile Experience** - Responsive design, supports all devices
+- [✨ Core Features](#-core-features)
+- [🚀 Quick Start](#-quick-start)
+- [🎯 Product Highlights](#-product-highlights)
+- [🏗️ Technical Architecture](#️-technical-architecture)
+- [📁 Project Structure](#-project-structure)
+- [🛠️ Development Guide](#️-development-guide)
+- [📊 Performance Optimization](#-performance-optimization)
+- [🔒 Security Measures](#-security-measures)
+- [📈 Monitoring & Analytics](#-monitoring--analytics)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+- [🙏 Acknowledgments](#-acknowledgments)
+- [📞 Contact Us](#-contact-us)
 
 ## ✨ Core Features
 
@@ -25,7 +33,7 @@
 - **📝 Personalized Recipes**: Intelligently generates recipes based on your selected ingredients
 - **🌍 Multi-language Support**: Chinese and English bilingual interface with automatic model optimization
 - **🎨 AI Image Generation**: Smart image model selection (Chinese users use Wanx, English users use Flux Schnell)
-- **⚡ Fast Generation**: Complete recipe generation in 20-120 seconds
+- **⚡ Fast Generation**: Complete recipe generation in 20-60 seconds
 - **🆓 Free Recipes**: Recipe generation is completely free, no credits required
 
 ### 🛠️ User-Friendly Features
@@ -51,17 +59,25 @@
 
 ## 🚀 Quick Start
 
-### Try Without Registration
+### 🆓 Try Without Registration
 1. Visit [https://recipe-easy.com](https://recipe-easy.com)
 2. Select or input your available ingredients
 3. Set cooking preferences (time, difficulty, cuisine)
 4. Click generate and wait for AI to create delicious recipes
 
-### Register Account for More Features
+### 📝 Register Account for More Features
 - 🎨 **AI Image Generation**: Generate beautiful images for recipes (1 credit per image)
 - 📊 **Usage Statistics**: View your credits and usage information
 - 🔐 **Personal Account**: Manage your personal information and settings
 - 🎯 **Smart Optimization**: Automatically selects the best AI model based on language
+
+## 🎯 Product Highlights
+
+- **🆓 Completely Free Recipe Generation** - No credits required, start using immediately
+- **🧠 Smart Model Selection** - Automatically selects the best AI model based on language
+- **🌍 Multi-language Optimization** - Chinese users automatically use Qwen Plus, English users automatically use GPT-4o Mini
+- **🎨 Beautiful Image Generation** - Smart image model selection, only 1 credit per image
+- **📱 Perfect Mobile Experience** - Responsive design, supports all devices
 
 ## 🏗️ Technical Architecture
 
@@ -133,12 +149,12 @@ recipe-easy/
 
 ## 🛠️ Development Guide
 
-### Requirements
+### 📋 Requirements
 - Node.js 18+
 - npm or yarn
 - Git
 
-### Local Development
+### 🚀 Local Development
 ```bash
 # Clone the project
 git clone https://github.com/nasirannn/recipe-easy.git
@@ -157,7 +173,7 @@ npm run dev
 # Visit http://localhost:3000
 ```
 
-### Environment Variables Configuration
+### 🔧 Environment Variables Configuration
 ```bash
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
@@ -178,7 +194,7 @@ NEXT_PUBLIC_CLARITY_ID=your_clarity_id
 NEXT_PUBLIC_APP_URL=https://your-domain.com
 ```
 
-### Deployment
+### 🚀 Deployment
 ```bash
 # Deploy Cloudflare Worker
 npm run deploy
@@ -189,14 +205,14 @@ npm run deploy:cf
 
 ## 📊 Performance Optimization
 
-### Frontend Optimization
+### 🎯 Frontend Optimization
 - ✅ **Image Lazy Loading**: Improves page loading speed
 - ✅ **Code Splitting**: On-demand component loading
 - ✅ **Server-Side Rendering**: Better SEO and first-screen loading
 - ✅ **Static Generation**: Pre-rendered static pages
 - ✅ **Cache Strategy**: Intelligent cache management
 
-### Backend Optimization
+### 🔧 Backend Optimization
 - ✅ **API Caching**: Reduces redundant calculations
 - ✅ **Database Optimization**: Efficient queries and indexing
 - ✅ **CDN Acceleration**: Global content delivery
@@ -211,14 +227,14 @@ npm run deploy:cf
 - ✅ **API Key Protection**: Environment variable management
 - ✅ **User Authentication**: Secure login system
 
-## 📈 Monitoring and Analytics
+## 📈 Monitoring & Analytics
 
-### User Analytics
+### 📊 User Analytics
 - **Google Analytics 4**: User behavior analysis
 - **Microsoft Clarity**: User session recording
 - **Cloudflare Analytics**: Performance monitoring
 
-### Performance Metrics
+### ⚡ Performance Metrics
 - Page loading time optimization
 - API response time optimization
 - Image loading optimization
@@ -228,14 +244,14 @@ npm run deploy:cf
 
 We welcome all forms of contributions!
 
-### How to Contribute
+### 📝 How to Contribute
 1. Fork the project
 2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Create a Pull Request
 
-### Development Standards
+### 📋 Development Standards
 - Use TypeScript for type checking
 - Follow ESLint rules
 - Use Prettier for code formatting

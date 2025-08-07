@@ -14,11 +14,19 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "dashscope-result-wlcb-acdr-1.oss-cn-wulanchabu-acdr-1.aliyuncs.com",
+      },
+      {
+        protocol: "https",
         hostname: "replicate.delivery",
       },
       {
         protocol: "https",
         hostname: "recipe-easy.annnb016.workers.dev",
+      },
+      {
+        protocol: "https",
+        hostname: "api.recipe-easy.com",
       },
     ],
   },

@@ -6,7 +6,8 @@ import { RecipesSection } from "@/components/layout/sections/recipes";
 import { TestimonialSection } from "@/components/layout/sections/testimonial";
 import { TutorialSection } from "@/components/layout/sections/tutorial";
 import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
-import { IntroductionSection } from "@/components/layout/sections/introduction";  
+import { IntroductionSection } from "@/components/layout/sections/introduction";
+import { AnchorHandler } from "@/components/layout/anchor-handler";  
 
 
 export async function generateMetadata({
@@ -27,6 +28,7 @@ export async function generateMetadata({
 export default function Home() {
   return (
     <>
+      <AnchorHandler />
       <HeroSection />
       <TutorialSection />
       <IntroductionSection />

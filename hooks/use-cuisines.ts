@@ -41,7 +41,9 @@ export function useCuisines(): UseCuisinesReturn {
       const data: CuisinesResponse = await response.json();
       
       if (data.success) {
-        setCuisines(data.data);
+        // 过滤掉"Others"菜系，不在前端显示
+        const filteredCuisines = data.data.filter(cuisine => cuisine.id !== 9);
+        setCuisines(filteredCuisines);
       } else {
         throw new Error('Failed to fetch cuisines');
       }
@@ -50,7 +52,7 @@ export function useCuisines(): UseCuisinesReturn {
       setError(errorMessage);
       console.error('Error fetching cuisines:', err);
       
-      // 设置备用数据
+      // 设置备用数据（不包含Others菜系）
       setCuisines([
         { id: 1, name: 'Chinese' },
         { id: 2, name: 'Italian' },

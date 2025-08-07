@@ -2,30 +2,12 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Spinner } from '@/components/ui/spinner';
-import { Badge } from '@/components/ui/badge';
 import { Clock, Users, ChefHat } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/auth-context';
 
-// Recipe 类型定义
-type Recipe = {
-  id: number;
-  title: string;
-  image_url: string;
-  description: string;
-  tags: string[];
-  cookTime?: number;
-  servings?: number;
-  difficulty?: string;
-  ingredients?: string[];
-  seasoning?: string[];
-  instructions?: string[];
-  chefTips?: string[];
-  cuisine?: {
-    id: number;
-    name: string;
-  };
-};
+import { Recipe } from '@/lib/types';
 
 // 获取 cuisine 的 CSS 类名
 const getCuisineClassName = (cuisineName: string): string => {
@@ -42,6 +24,7 @@ const getCuisineClassName = (cuisineName: string): string => {
     'Mediterranean': 'cuisine-mediterranean',
     'Thai': 'cuisine-thai',
     'Mexican': 'cuisine-mexican',
+    'Others': 'cuisine-other',
     // 中文名称
     '中式': 'cuisine-chinese',
     '意式': 'cuisine-italian',
@@ -51,7 +34,8 @@ const getCuisineClassName = (cuisineName: string): string => {
     '地中海': 'cuisine-mediterranean',
     '地中海式': 'cuisine-mediterranean',
     '泰式': 'cuisine-thai',
-    '墨西哥': 'cuisine-mexican'
+    '墨西哥': 'cuisine-mexican',
+    '其他': 'cuisine-other'
   };
   return cuisineClassMap[cuisineName] || 'cuisine-other';
 };
@@ -66,15 +50,17 @@ export const RecipesSection = () => {
   const t = useTranslations('recipes');
   const tRecipe = useTranslations('recipeDisplay');
   const locale = useLocale();
+  const { isAdmin } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
 
-  // 从本地 API 获取食谱数据
+  // 从本地 API 获取食谱数据 - 只获取管理员添加的菜谱
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/recipes?limit=8&lang=${locale}`);
+        // 获取管理员菜谱
+        const response = await fetch(`/api/recipes?limit=8&lang=${locale}&adminOnly=true`);
         const data = await response.json();
 
         if (data.success) {
@@ -82,21 +68,23 @@ export const RecipesSection = () => {
           const transformedRecipes = (data.results || []).map((recipe: any) => ({
             id: recipe.id,
             title: recipe.title,
-            image_url: recipe.image_url,
+            imagePath: recipe.imagePath,
             description: recipe.description,
             tags: recipe.tags ? JSON.parse(recipe.tags) : [],
-            cookTime: recipe.cook_time || 30,
+            cookingTime: recipe.cookingTime || 30,
             servings: recipe.servings || 4,
             difficulty: recipe.difficulty || 'easy',
             ingredients: recipe.ingredients ? JSON.parse(recipe.ingredients) : [],
             seasoning: recipe.seasoning ? JSON.parse(recipe.seasoning) : [],
             instructions: recipe.instructions ? JSON.parse(recipe.instructions) : [],
-            chefTips: recipe.chef_tips ? JSON.parse(recipe.chef_tips) : [],
+            chefTips: recipe.chefTips ? JSON.parse(recipe.chefTips) : [],
             cuisine: recipe.cuisine ? {
               id: recipe.cuisine.id,
               name: recipe.cuisine.name
-            } : undefined
+            } : undefined,
+            userId: recipe.user_id // 添加用户ID用于过滤
           }));
+
           setRecipes(transformedRecipes);
         } else {
           console.error('Failed to fetch recipes:', data.error);
@@ -145,7 +133,8 @@ export const RecipesSection = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {recipes.map((recipe) => {
-            const localizedCuisineName = getLocalizedCuisineName(recipe.cuisine?.name || '', locale);
+            // 由于 Recipe 接口现在使用 cuisineId，这里暂时显示默认值
+            const localizedCuisineName = getLocalizedCuisineName('', locale);
             
             return (
               <Link
@@ -155,7 +144,7 @@ export const RecipesSection = () => {
               >
                 <div className="relative aspect-[3/2] overflow-hidden">
                   <Image
-                    src={recipe.image_url || '/placeholder.svg'}
+                    src={recipe.imagePath || '/placeholder.svg'}
                     alt={recipe.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
@@ -168,20 +157,20 @@ export const RecipesSection = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   
-                  {/* 菜系标签 */}
-                  {recipe.cuisine?.name && (
+                  {/* 菜系标签 - 暂时隐藏，因为 Recipe 接口现在使用 cuisineId */}
+                  {/* {recipe.cuisineId && (
                     <div className="absolute top-3 left-3">
-                      <span className={`inline-block px-2 py-1 text-xs font-medium text-white rounded-full ${getCuisineClassName(recipe.cuisine.name)}`}>
+                      <span className={`inline-block px-2 py-1 text-xs font-medium text-white rounded-full ${getCuisineClassName('')}`}>
                         {localizedCuisineName}
                       </span>
                     </div>
-                  )}
+                  )} */}
 
                   {/* 烹饪时间 */}
-                  {recipe.cookTime && (
+                  {recipe.cookingTime && (
                     <div className="absolute bottom-3 left-3 flex items-center gap-1 text-white bg-black/50 rounded-full px-2 py-1">
                       <Clock className="h-3 w-3" />
-                      <span className="text-xs">{recipe.cookTime} {tRecipe('mins')}</span>
+                      <span className="text-xs">{recipe.cookingTime} {tRecipe('mins')}</span>
                     </div>
                   )}
                 </div>
@@ -195,7 +184,7 @@ export const RecipesSection = () => {
                     {recipe.description}
                   </p>
 
-                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                     {recipe.servings && (
                       <div className="flex items-center gap-1">
                         <Users className="h-3 w-3" />

@@ -2,11 +2,12 @@
 import { GridBackground } from "@/components/ui/grid-background";
 import { useState, useEffect } from "react";
 import { Recipe, RecipeFormData } from "@/lib/types";
+import { LanguageModel, ImageModel } from "@/lib/config";
 import { RecipeForm } from "@/components/ui/recipe-form";
 import { RecipeDisplay } from "@/components/ui/recipe-display";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
-import { generateImageForRecipe } from "@/lib/services/image-service";
 import { IMAGE_GEN_CONFIG, APP_CONFIG, getRecommendedModels } from "@/lib/config";
+import { env } from "@/lib/env";
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from "@/contexts/auth-context";
 import { useUserUsage } from "@/hooks/use-user-usage";
@@ -17,6 +18,7 @@ import { toast } from "sonner";
 
 export const HeroSection = () => {
   const t = useTranslations('hero');
+  const tRecipe = useTranslations('recipeDisplay');
   const locale = useLocale();
   const { user, isAdmin } = useAuth();
   const { credits, updateCreditsLocally } = useUserUsage();
@@ -28,24 +30,22 @@ export const HeroSection = () => {
   const [formData, setFormData] = useState<RecipeFormData>({
     ingredients: [],
     servings: 2,
-    recipeCount: APP_CONFIG.DEFAULT_RECIPE_COUNT,
+    recipeCount: 1, // 固定为1个菜谱
     cookingTime: "medium",
     difficulty: "medium",
     cuisine: "any",
-    languageModel: recommendedModels.languageModel, // 根据语言自动选择语言模型
-    imageModel: recommendedModels.imageModel // 根据语言自动选择图片模型
+    languageModel: recommendedModels.languageModel.toUpperCase() as LanguageModel, // 根据语言自动选择语言模型
+    imageModel: recommendedModels.imageModel.toLowerCase() as ImageModel // 根据语言自动选择图片模型
   });
 
-  // 当语言改变时，自动更新模型选择（仅对非管理员用户）
+  // 当语言改变时，自动更新模型选择（对所有用户生效）
   useEffect(() => {
-    if (!isAdmin) {
-      setFormData(prev => ({
-        ...prev,
-        languageModel: recommendedModels.languageModel,
-        imageModel: recommendedModels.imageModel
-      }));
-    }
-  }, [locale, recommendedModels.languageModel, recommendedModels.imageModel, isAdmin]);
+    setFormData(prev => ({
+      ...prev,
+      languageModel: recommendedModels.languageModel.toUpperCase() as LanguageModel,
+      imageModel: recommendedModels.imageModel.toLowerCase() as ImageModel
+    }));
+  }, [locale, recommendedModels.languageModel, recommendedModels.imageModel]);
   
   const [loading, setLoading] = useState(false);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -54,6 +54,76 @@ export const HeroSection = () => {
   const [error, setError] = useState<string | null>(null);
   const [imageGenerating, setImageGenerating] = useState(false);
   const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({}); // 为每个菜谱跟踪loading状态
+
+  // 监听重新生成菜谱事件
+  useEffect(() => {
+    const handleRegenerateRecipe = async (event: CustomEvent) => {
+      const { ingredients, recipe } = event.detail;
+      
+      // 设置表单数据
+      setFormData(prev => ({
+        ...prev,
+        ingredients: ingredients
+      }));
+      
+      // 重新生成菜谱
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch('/api/generate-recipe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ingredients: ingredients,
+            servings: recipe.servings || 2,
+            recipeCount: 1,
+            cookingTime: recipe.cookingTime || "medium",
+            difficulty: recipe.difficulty || "medium",
+            cuisine: recipe.cuisine || "any",
+            language: locale,
+            imageModel: formData.imageModel,
+            languageModel: formData.languageModel,
+            userId: user?.id,
+            isAdmin: isAdmin
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to regenerate recipes');
+        }
+
+        const data = await response.json();
+        const generatedRecipes = data.recipes || [];
+        setRecipes(generatedRecipes);
+        setSearchedIngredients(ingredients);
+        
+        // 跟踪菜谱重新生成事件
+        trackRecipeGeneration(recipe.cuisine, ingredients.length);
+        trackFeatureUsage('recipe_regeneration');
+        
+        if (generatedRecipes.length > 0) {
+          setShowRecipe(true);
+        }
+      } catch (error) {
+        console.error('Regenerate recipe error:', error);
+        setError(error instanceof Error ? error.message : 'Failed to regenerate recipe');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    window.addEventListener('regenerateRecipe', handleRegenerateRecipe as EventListener);
+    
+    return () => {
+      window.removeEventListener('regenerateRecipe', handleRegenerateRecipe as EventListener);
+    };
+  }, [locale, user?.id, isAdmin, formData.imageModel, formData.languageModel]);
+
+
 
   const handleFormChange = (data: RecipeFormData) => {
     setFormData(data);
@@ -65,49 +135,6 @@ export const HeroSection = () => {
     
     try {
       const updatedRecipes = [...recipes];
-      
-      console.log('generateRecipeImages - Current formData:', {
-        imageModel: formData.imageModel,
-        languageModel: formData.languageModel,
-        locale: locale,
-        recommendedModels: recommendedModels
-      });
-      
-      // 同时开始所有图片生成任务，但处理结果时按照顺序
-      const imagePromises = recipes.map((recipe, index) => 
-        generateImageForRecipe(
-          { 
-            name: recipe.title, 
-            description: recipe.description,
-            ingredients: recipe.ingredients // recipe.ingredients已经是string[]类型
-          }, 
-          'photographic', // 固定使用真实照片风格
-          recommendedModels.imageModel, // 直接使用推荐的模型，而不是表单中的模型
-          1, // 生成1张图片
-          user?.id, // 传递用户ID
-          isAdmin, // 传递管理员标识
-          locale // 传递语言参数
-        ).then(imageUrl => {
-          if (imageUrl) {
-            updatedRecipes[index] = { ...updatedRecipes[index], image: imageUrl };
-            // 实时更新UI
-            setRecipes([...updatedRecipes]);
-            
-            // 积分已在API中扣减，这里只需要更新本地状态
-            if (user?.id && !isAdmin) {
-              updateCreditsLocally(1);
-            }
-          } else {
-            // 图片生成失败，不扣减积分
-            console.log('Image generation failed, not deducting credits');
-          }
-          return imageUrl;
-        })
-      );
-      
-      // 等待所有图片生成完成
-      await Promise.all(imagePromises);
-      
     } catch (error) {
       console.error('Error generating images:', error);
     } finally {
@@ -115,21 +142,194 @@ export const HeroSection = () => {
     }
   };
 
-  // 登录成功后生成图片的处理函数
-  const handleLoginSuccess = async () => {
-    // 如果当前有菜谱但没有图片，开始生成图片
-    if (recipes.length > 0 && recipes.some(r => !r.image)) {
-      console.log('Login successful, starting image generation...');
-      await generateRecipeImages(recipes);
+  // 保存菜谱到数据库
+  const handleSaveRecipe = async (recipe: Recipe) => {
+    console.log('Saving recipe to database:', recipe.title);
+    
+    if (!user?.id) {
+      throw new Error('User not logged in');
+    }
+    
+    try {
+      // 调用worker API保存菜谱
+      const workerUrl = env.WORKER_URL;
+      const response = await fetch(`${workerUrl}/api/recipes/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recipe: {
+            ...recipe,
+            imageModel: formData.imageModel || recommendedModels.imageModel // 添加图片模型信息
+          },
+          userId: user.id
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save recipe');
+      }
+
+      const result = await response.json();
+      console.log('Recipe saved successfully:', result);
+      
+      // 根据返回的状态显示不同的提示
+      if (result.alreadyExists) {
+        if (result.hasUpdatedImage) {
+          toast.success(locale === 'zh' ? '菜谱图片已更新！' : 'Recipe image updated successfully!');
+        } else {
+          toast.info(locale === 'zh' ? '菜谱已存在，无需重复保存' : 'Recipe already exists, no need to save again');
+        }
+      } else {
+        toast.success(locale === 'zh' ? '菜谱保存成功！' : 'Recipe saved successfully!');
+      }
+      
+    } catch (error) {
+      console.error('Error saving recipe:', error);
+      throw error;
     }
   };
 
+  // 重新生成单个菜谱的图片
+  const handleRegenerateImage = async (recipeId: string, recipe: Recipe) => {
+    console.log('Regenerating image for recipe:', recipe.title);
+    
+    // 检查用户是否登录
+    if (!user?.id) {
+      const event = new CustomEvent('showLoginModal');
+      window.dispatchEvent(event);
+      return;
+    }
+    
+    // 检查积分余额
+    const availableCredits = credits?.credits || 0;
+    if (!isAdmin && availableCredits < 1) {
+      toast.error(
+        locale === 'zh' 
+          ? '积分不足，无法重新生成图片' 
+          : 'Insufficient credits to regenerate image'
+      );
+      return;
+    }
+    
+    // 设置该菜谱的loading状态并清除现有图片
+    setImageLoadingStates(prev => ({ ...prev, [recipeId]: true }));
+    
+    // 清除现有图片路径，让组件显示loading状态
+    const updatedRecipes = recipes.map(r => 
+      r.id === recipeId 
+        ? { ...r, imagePath: undefined }
+        : r
+    );
+    setRecipes(updatedRecipes);
+    
+    try {
+      // 调用图片生成API
+      const response = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recipeTitle: recipe.title,
+          recipeDescription: recipe.description,
+          recipeIngredients: recipe.ingredients,
+          style: 'photographic',
+          size: '1024x1024',
+          n: 1,
+          model: formData.imageModel || recommendedModels.imageModel,
+          userId: user.id,
+          isAdmin: isAdmin,
+          language: locale
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success && result.imageUrl) {
+        
+        // 将AI生成的图片上传到R2存储
+        try {
+          
+          // 下载AI生成的图片
+          const imageResponse = await fetch(result.imageUrl);
+          if (!imageResponse.ok) {
+            throw new Error(`Failed to download image: ${imageResponse.status}`);
+          }
+          
+          const imageBlob = await imageResponse.blob();
+          const imageBuffer = await imageBlob.arrayBuffer();
+          
+          // 生成正确的图片路径：userId/recipeId/imageName
+          const timestamp = Date.now();
+          const randomString = Math.random().toString(36).substring(2, 15);
+          const path = `${user.id}/${recipeId}/${timestamp}-${randomString}.jpg`;
+          
+          // 上传到R2存储
+          const uploadResponse = await fetch(`${env.WORKER_URL}/api/upload-image`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              path: path,
+              imageData: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(imageBuffer)))), // 转换为base64
+              contentType: 'image/jpeg',
+              userId: user.id,
+              recipeId: recipeId,
+              imageModel: formData.imageModel || recommendedModels.imageModel
+            }),
+          });
+          
+          if (!uploadResponse.ok) {
+            throw new Error('Failed to upload image to R2');
+          }
+          
+          const uploadResult = await uploadResponse.json();
+          if (uploadResult.success && uploadResult.imageUrl) {
+            // 使用R2的URL更新菜谱
+            setRecipes(prevRecipes => prevRecipes.map(r => 
+              r.id === recipeId 
+                ? { ...r, imagePath: uploadResult.imageUrl }
+                : r
+            ));
+          } else {
+            throw new Error('Upload response indicates failure');
+          }
+        } catch (uploadError) {
+          console.error('Failed to upload regenerated image to R2:', uploadError);
+          
+          // 即使上传失败，也使用原始URL（临时方案）
+          setRecipes(prevRecipes => prevRecipes.map(r => 
+            r.id === recipeId 
+              ? { ...r, imagePath: result.imageUrl }
+              : r
+          ));
+        }
+        
+        // 更新积分
+        if (updateCreditsLocally) {
+          updateCreditsLocally();
+        }
+      } else {
+        console.error('Image regeneration failed:', result.error);
+        toast.error(result.error || (locale === 'zh' ? '图片重新生成失败' : 'Image regeneration failed'));
+      }
+    } catch (error) {
+      console.error('Error regenerating image:', error);
+      toast.error(locale === 'zh' ? '图片重新生成失败' : 'Image regeneration failed');
+    } finally {
+      // 清除该菜谱的loading状态
+      setImageLoadingStates(prev => ({ ...prev, [recipeId]: false }));
+    }
+  };
   // 监听登录模态窗口事件
   useEffect(() => {
     const handleShowLoginModal = () => {
       // 这里可以触发登录模态窗口显示
       // 由于登录模态窗口在RecipeForm组件中，我们需要通过其他方式触发
-      console.log('Show login modal requested');
     };
 
     const handleLoginSuccess = () => {
@@ -139,8 +339,7 @@ export const HeroSection = () => {
       }, 1000); // 给一点时间让登录状态更新
     };
 
-    const handleGenerateImage = (event: CustomEvent) => {
-      console.log('handleGenerateImage triggered', event.detail);
+    const handleGenerateImage = async (event: CustomEvent) => {
       const { recipeId, recipe } = event.detail;
       
       // 检查用户是否登录
@@ -156,8 +355,7 @@ export const HeroSection = () => {
       // 检查积分余额
       const availableCredits = credits?.credits || 0;
       if (!isAdmin && availableCredits < 1) {
-        console.log('Insufficient credits:', availableCredits);
-        toast.error(locale === 'zh' ? '积分不足，无法生成图片' : 'Insufficient credits to generate image');
+        toast.error(tRecipe('insufficientCredits'));
         return;
       }
 
@@ -166,49 +364,56 @@ export const HeroSection = () => {
       // 设置该菜谱的loading状态
       setImageLoadingStates(prev => ({ ...prev, [recipeId]: true }));
       
-      // 已登录用户，生成图片
-      generateImageForRecipe(
-        { 
-          name: recipe.title, 
-          description: recipe.description,
-          ingredients: recipe.ingredients
-        }, 
-        'photographic',
-        recommendedModels.imageModel, // 直接使用推荐的模型
-        1,
-        user?.id,
-        isAdmin,
-        locale // 传递语言参数
-      ).then(imageUrl => {
-        console.log('Image generated successfully:', imageUrl);
-        if (imageUrl) {
-          // 更新对应菜谱的图片
-          setRecipes(prevRecipes => 
-            prevRecipes.map(r => 
-              r.id === recipeId ? { ...r, image: imageUrl } : r
-            )
-          );
+      try {
+        // 调用图片生成API
+        const response = await fetch('/api/generate-image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            recipeTitle: recipe.title,
+            recipeDescription: recipe.description,
+            recipeIngredients: recipe.ingredients,
+            style: 'photographic',
+            size: '1024x1024',
+            n: 1,
+            model: formData.imageModel || recommendedModels.imageModel,
+            userId: user.id,
+            isAdmin: isAdmin,
+            language: locale
+          }),
+        });
+
+        const result = await response.json();
+        
+        if (result.success && result.imageUrl) {
           
-          // 积分已在API中扣减，这里只需要更新本地状态
+          // 直接使用后端返回的图片URL（已经上传到R2）
+          const updatedRecipes = recipes.map(r => 
+            r.id === recipeId 
+              ? { ...r, imagePath: result.imageUrl }
+              : r
+          );
+          setRecipes(updatedRecipes);
+          
+          // 积分已在后端扣除，只需要更新本地状态
           if (!isAdmin) {
-            updateCreditsLocally(1);
+            updateCreditsLocally(-1);
           }
           
-          toast.success(locale === 'zh' ? '图片生成成功！' : 'Image generated successfully!');
-        }
-      }).catch(error => {
-        console.error('Error generating image:', error);
-        
-        // 处理402错误（积分不足）
-        if (error.response?.status === 402) {
-          toast.error(locale === 'zh' ? '积分不足，无法生成图片' : 'Insufficient credits to generate image');
+          toast.success(locale === 'zh' ? '图片生成成功' : 'Image generated successfully');
         } else {
-          toast.error(locale === 'zh' ? '图片生成失败，请重试' : 'Image generation failed, please try again');
+          toast.error(result.error || (locale === 'zh' ? '图片生成失败' : 'Image generation failed'));
         }
-      }).finally(() => {
+      } catch (error) {
+        toast.error(locale === 'zh' ? '图片生成失败' : 'Image generation failed');
+        // 清除loading状态
+        setImageLoadingStates(prev => ({ ...prev, [recipeId]: false }));
+      } finally {
         // 清除该菜谱的loading状态
         setImageLoadingStates(prev => ({ ...prev, [recipeId]: false }));
-      });
+      }
     };
 
     window.addEventListener('showLoginModal', handleShowLoginModal);
@@ -220,7 +425,7 @@ export const HeroSection = () => {
       window.removeEventListener('loginSuccess', handleLoginSuccess);
       window.removeEventListener('generateImage', handleGenerateImage as EventListener);
     };
-  }, [recipes, user?.id, isAdmin, formData.imageModel, updateCreditsLocally, locale, credits]);
+  }, [recipes, user?.id, isAdmin, formData.imageModel, updateCreditsLocally, locale, credits, recommendedModels.imageModel]);
 
   // 监听用户状态变化，当用户登出时重置状态
   useEffect(() => {
@@ -241,43 +446,11 @@ export const HeroSection = () => {
         cookingTime: "medium",
         difficulty: "medium",
         cuisine: "any",
-        imageModel: "wanx"
+        imageModel: recommendedModels.imageModel as ImageModel
       });
     }
-  }, [user]);
+  }, [user, recommendedModels.imageModel]);
 
-  // 监听用户状态变化，当用户登录后自动生成图片
-  // useEffect(() => {
-  //   if (user?.id && recipes.length > 0 && recipes.some(r => !r.image)) {
-  //     // 用户已登录且有菜谱但没有图片，开始生成图片
-  //     console.log('User logged in, starting image generation...');
-  //     generateRecipeImages(recipes);
-  //   }
-  // }, [user?.id, recipes, generateRecipeImages]);
-
-  // 监听新用户登录，显示积分提醒
-  useEffect(() => {
-    if (user?.id) {
-      // 检查是否是新用户（通过检查用户创建时间或积分记录）
-      const checkNewUser = async () => {
-        try {
-          const response = await fetch(`/api/user-usage?userId=${user.id}&isAdmin=${isAdmin}`);
-          const data = await response.json();
-          
-          if (data.success && data.data?.credits?.total_earned === data.data?.credits?.credits) {
-            // 新用户，显示积分提醒
-            toast.success(
-              t('newUserWelcome', { credits: data.data.credits.credits })
-            );
-          }
-        } catch (error) {
-          console.error('Error checking new user:', error);
-        }
-      };
-      
-      checkNewUser();
-    }
-  }, [user?.id, isAdmin, locale, t]);
   
   const handleSubmit = async () => {
     setLoading(true);
@@ -292,8 +465,7 @@ export const HeroSection = () => {
         body: JSON.stringify({
           ingredients: formData.ingredients,
           servings: formData.servings,
-          // 确保生成的菜谱数量与图片生成能力相匹配
-          recipeCount: Math.min(formData.recipeCount, IMAGE_GEN_CONFIG.WANX.MAX_IMAGES),
+          recipeCount: 1, // 固定生成1个菜谱
           cookingTime: formData.cookingTime,
           difficulty: formData.difficulty,
           cuisine: formData.cuisine,
@@ -319,11 +491,8 @@ export const HeroSection = () => {
       trackRecipeGeneration(formData.cuisine, formData.ingredients.length);
       trackFeatureUsage('recipe_generation');
       
-      // 移除菜谱生成时的积分扣减 - 现在只在生成图片时扣减
-      // 立即在本地更新积分（非管理员用户）
-      // if (user?.id && !isAdmin) {
-      //   updateCreditsLocally(1);
-      // }
+      // 菜谱生成成功，不显示提示信息
+      // 用户需要手动保存菜谱
       
       // 在获取菜谱后自动生成图片（仅登录用户）
       if (generatedRecipes.length > 0) {
@@ -379,7 +548,15 @@ export const HeroSection = () => {
               className="rounded-full px-6 mt-4"
               onClick={() => {
                 const recipeFormElement = document.getElementById('recipe-form-section');
-                recipeFormElement?.scrollIntoView({ behavior: 'smooth' });
+                if (recipeFormElement) {
+                  const elementRect = recipeFormElement.getBoundingClientRect();
+                  const absoluteElementTop = elementRect.top + window.pageYOffset;
+                  
+                  window.scrollTo({
+                    top: absoluteElementTop - 100, // 留一些顶部空间
+                    behavior: 'smooth'
+                  });
+                }
               }}
             >
               {t('tryNow')} &rarr;
@@ -426,6 +603,8 @@ export const HeroSection = () => {
                     recipes={recipes} 
                     selectedIngredients={searchedIngredients}
                     imageLoadingStates={imageLoadingStates}
+                    onRegenerateImage={handleRegenerateImage}
+                    onSaveRecipe={handleSaveRecipe}
                   />
                 )
               )}

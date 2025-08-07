@@ -26,7 +26,7 @@ export function SimpleLayout({ children, title }: SimpleLayoutProps) {
       </header>
 
       {/* 主要内容区域 */}
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 pt-20 max-w-4xl">
         {title && (
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold tracking-tight text-foreground">

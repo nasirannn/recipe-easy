@@ -13,6 +13,7 @@
     "usage": "用量",
     "loading": "加载中...",
     "totalEarned": "累计获得",
+    "myRecipes": "我的菜谱",
     "admin": "管理",
     "dashboard": "控制台",
     "users": "用户管理",
@@ -57,8 +58,7 @@
   "recipeForm": {
     "servings": "份量",
     "servingsCount": "人份",
-    "recipeCount": "食谱数量",
-    "recipesCount": "个食谱",
+
     "cookingTime": "烹饪时间",
     "selectCookingTime": "选择烹饪时间",
     "quick": "快速",
@@ -121,7 +121,18 @@
     "copyIngredients": "复制食材",
     "copySeasoning": "复制调料",
     "copyInstructions": "复制制作步骤",
-    "generatedWithIngredients": "AI大厨的美味创作"
+    "generatedWithIngredients": "AI大厨的美味创作",
+    "generatingImage": "正在生成图片...",
+    "clickToGenerateImage": "点击生成图片",
+    "aiContentNotice": "内容由AI生成，可能包含不准确信息。制作AI菜谱时请谨慎判断。",
+    "quickInfo": "快速信息",
+    "saveRecipe": "保存菜谱",
+    "copyFullRecipe": "复制菜谱",
+
+    "regenerate": "重新生成",
+    "pleaseLoginFirst": "请先登录",
+    "saveFailed": "保存失败",
+    "insufficientCredits": "积分不足，无法生成图片"
   },
   "recipes": {
     "title": "获取灵感",
@@ -134,6 +145,43 @@
     "loading": "加载中...",
     "allRecipesDisplayed": "已显示所有菜谱"
   },
+
+  "myRecipes": {
+    "title": "我的菜谱",
+    "loading": "正在加载您的菜谱...",
+    "loadError": "加载菜谱失败",
+    "deleteSuccess": "菜谱删除成功",
+    "deleteError": "删除菜谱失败",
+    "loginRequired": {
+      "title": "请登录查看您的菜谱",
+      "description": "您需要登录才能访问已保存的菜谱。"
+    },
+    "imageNotice": {
+      "title": "图片存储提醒",
+      "description": "图片仅在服务器保存7天，请及时下载",
+      "action": "请及时下载并保存您喜欢的图片到本地，以便永久保存。"
+    },
+    "emptyState": {
+      "title": "还没有菜谱",
+      "description": "开始生成菜谱，您将在这里看到它们。所有菜谱都会自动保存。",
+      "action": "生成您的第一个菜谱"
+    },
+    "moreTags": "还有 {count} 个",
+    "createdOn": "创建于 {date}",
+    "delete": "删除",
+    "deleting": "删除中...",
+    "pagination": {
+      "previous": "上一页",
+      "next": "下一页"
+    },
+    "deleteDialog": {
+      "title": "删除菜谱",
+      "cancel": "取消",
+      "confirm": "删除菜谱",
+      "deleting": "删除中..."
+    },
+    "noMoreData": "没有更多菜谱数据了"
+  },
   "credits": {
     "credits": "积分",
     "remaining": "剩余",
@@ -143,7 +191,7 @@
     "spendError": "消耗积分失败",
     "loading": "加载中...",
     "noCreditsLeft": "积分已用完",
-    "consumeOneCredit": "1菜谱 = 1积分"
+    "consumeOneCredit": "1图片 = 1积分"
   },
   "tutorial": {
     "title": "如何使用AI食谱生成器？",
@@ -205,7 +253,7 @@
     "q3": "菜谱图片是如何生成的？",
     "a3": "我们首先会根据您选择和输入的食材让AI来完成菜谱的生成，当菜谱生成后，我们会根据菜谱的名称再次使用AI来生成相应的图片。",
     "q4": "转换过程需要多长时间？",
-    "a4": "大多数食谱在20-120秒内生成。确切时间取决于选择的食材数量、食谱数量、AI模型和当前服务器负载。食材越多或食谱数量越多，可能需要额外的处理时间。在高峰时段，由于需求量大，您可能会遇到稍长的等待时间。",
+    "a4": "大多数食谱在20-60秒内生成。确切时间取决于选择的食材数量、食谱数量、AI模型和当前服务器负载。食材越多或食谱数量越多，可能需要额外的处理时间。在高峰时段，由于需求量大，您可能会遇到稍长的等待时间。",
     "q5": "如何提供反馈或报告问题？",
     "a5": "我们很乐意听到您的声音！请通过联系我们的支持团队 annnb016@gmail.com 分享您的反馈或报告任何问题。您的意见帮助我们持续改进服务。",
     "q6": "我可以商业使用生成的图片吗？",

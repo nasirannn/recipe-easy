@@ -13,6 +13,7 @@
     "usage": "Usage",
     "loading": "Loading...",
     "totalEarned": "Total Earned",
+    "myRecipes": "My Recipes",
     "admin": "Admin",
     "dashboard": "Dashboard",
     "users": "Users",
@@ -57,8 +58,7 @@
   "recipeForm": {
     "servings": "Servings",
     "servingsCount": "servings",
-    "recipeCount": "Recipe Count",
-    "recipesCount": "recipes",
+
     "cookingTime": "Cooking Time",
     "selectCookingTime": "Select cooking time",
     "quick": "Quick",
@@ -121,7 +121,18 @@
     "copyIngredients": "Copy ingredients",
     "copySeasoning": "Copy seasoning",
     "copyInstructions": "Copy instructions",
-    "generatedWithIngredients": "AI Chef's Delicious Creations"
+    "generatedWithIngredients": "AI Chef's Delicious Creations",
+    "generatingImage": "Generating image...",
+    "clickToGenerateImage": "Click to generate image",
+    "aiContentNotice": "Content is AI-generated and may contain inaccuracies. Use your best judgement when making AI recipes.",
+    "quickInfo": "Quick Info",
+    "saveRecipe": "Save Recipe",
+    "copyFullRecipe": "Copy Full Recipe",
+
+    "regenerate": "Regenerate",
+    "pleaseLoginFirst": "Please login first",
+    "saveFailed": "Save failed",
+    "insufficientCredits": "Insufficient credits to generate image"
   },
   "recipes": {
     "title": "Get Inspired",
@@ -135,6 +146,43 @@
     "allRecipesDisplayed": "All recipes displayed"
   },
 
+  "myRecipes": {
+    "title": "My Recipes",
+    "loading": "Loading your recipes...",
+    "loadError": "Failed to load recipes",
+    "deleteSuccess": "Recipe deleted successfully",
+    "deleteError": "Failed to delete recipe",
+    "loginRequired": {
+      "title": "Please log in to view your recipes",
+      "description": "You need to be logged in to access your saved recipes."
+    },
+    "imageNotice": {
+      "title": "Image Storage Notice",
+      "description": "Images are stored on server for 7 days only, please download promptly",
+      "action": "Please download and save your favorite images locally to keep them permanently."
+    },
+    "emptyState": {
+      "title": "No recipes yet",
+      "description": "Start generating recipes to see them here. All your recipes will be automatically saved.",
+      "action": "Generate Your First Recipe"
+    },
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageInfo": "Page {current} of {total}"
+    },
+    "deleteDialog": {
+      "title": "Delete Recipe",
+      "description": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete Recipe",
+      "deleting": "Deleting..."
+    },
+    "noMoreData": "No more recipe data"
+  },
+
   "credits": {
     "credits": "Credits",
     "remaining": "remaining",
@@ -144,7 +192,7 @@
     "spendError": "Failed to spend credits",
     "loading": "Loading...",
     "noCreditsLeft": "No credits left",
-    "consumeOneCredit": "1 recipe = 1 credit"
+    "consumeOneCredit": "1 image = 1 credit"
   },
   "tutorial": {
     "title": "How to Use AI Recipe Generator?",
@@ -206,7 +254,7 @@
     "q3": "How are recipe images generated?",
     "a3": "We first use AI to generate recipes based on the ingredients you select and input. Once the recipe is created, we use AI again to generate corresponding images based on the recipe name.",
     "q4": "How long does the transformation process take?",
-    "a4": "Most recipes are generated in 20-120 seconds. The exact time depends on the number of ingredients selected, recipe count, AI model chosen, and current server load. More ingredients or multiple recipes may require additional processing time. During peak hours, you may experience slightly longer wait times due to high demand.",
+    "a4": "Most recipes are generated in 20-60 seconds. The exact time depends on the number of ingredients selected, recipe count, AI model chosen, and current server load. More ingredients or multiple recipes may require additional processing time. During peak hours, you may experience slightly longer wait times due to high demand.",
     "q5": "How can I provide feedback or report issues?",
     "a5": "We'd love to hear from you! Please share your feedback or report any problems by contacting our support team at annnb016@gmail.com. Your input helps us continuously improve our service.",
     "q6": "Can I use the generated images commercially?",

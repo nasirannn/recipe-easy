@@ -39,6 +39,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Ingredient } from "@/lib/types";
+import { generateNanoId } from '@/lib/utils/id-generator';
 
 // 分类图标映射 - 与数据库slug对应
 const CATEGORIES = {
@@ -79,7 +80,7 @@ export const IngredientSelector = ({
   const [dynamicCategories, setDynamicCategories] = useState<Record<string, { name: string; icon?: any; color?: string }>>({});
   const [loading, setLoading] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [showFloatingButton, setShowFloatingButton] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -191,16 +192,23 @@ export const IngredientSelector = ({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // 检测滚动位置，决定是否显示浮动按钮
+  // 检测滚动位置，决定是否显示浮动按钮 - 使用节流优化性能
   useEffect(() => {
-    if (!isMobile) return;
+    if (isMobile === null || !isMobile) return;
 
+    let ticking = false;
     const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      setShowFloatingButton(scrollTop > 200);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          setShowFloatingButton(scrollTop > 200);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isMobile]);
 
@@ -285,7 +293,7 @@ export const IngredientSelector = ({
       } else {
         // 如果没有精确匹配，创建一个带有搜索文本的自定义食材
         const customIngredient: CustomIngredient = {
-          id: `custom-${Date.now()}`,
+          id: `custom-${generateNanoId(8)}`,
           name: searchValue,
           englishName: searchValue,
           category: undefined,
@@ -505,8 +513,11 @@ export const IngredientSelector = ({
             size="lg"
             className="rounded-full shadow-lg h-14 w-14 p-0"
             onClick={() => {
-              // 滚动到顶部
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              // 滚动到顶部，使用更平滑的方式
+              window.scrollTo({ 
+                top: 0, 
+                behavior: 'smooth' 
+              });
             }}
           >
             <div className="flex flex-col items-center">

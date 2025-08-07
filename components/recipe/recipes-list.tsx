@@ -7,25 +7,7 @@ import { Clock, Users, ChefHat } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
-// Recipe 类型定义
-type Recipe = {
-  id: number;
-  title: string;
-  image_url: string;
-  description: string;
-  tags: string[];
-  cookTime?: number;
-  servings?: number;
-  difficulty?: string;
-  ingredients?: string[];
-  seasoning?: string[];
-  instructions?: string[];
-  chefTips?: string[];
-  cuisine?: {
-    id: number;
-    name: string;
-  };
-};
+import { Recipe } from '@/lib/types';
 
 // 获取 cuisine 的 CSS 类名
 const getCuisineClassName = (cuisineName: string): string => {
@@ -40,6 +22,7 @@ const getCuisineClassName = (cuisineName: string): string => {
     'Mediterranean': 'cuisine-mediterranean',
     'Thai': 'cuisine-thai',
     'Mexican': 'cuisine-mexican',
+    'Others': 'cuisine-other',
     '中式': 'cuisine-chinese',
     '意式': 'cuisine-italian',
     '法式': 'cuisine-french',
@@ -48,7 +31,8 @@ const getCuisineClassName = (cuisineName: string): string => {
     '地中海': 'cuisine-mediterranean',
     '地中海式': 'cuisine-mediterranean',
     '泰式': 'cuisine-thai',
-    '墨西哥': 'cuisine-mexican'
+    '墨西哥': 'cuisine-mexican',
+    '其他': 'cuisine-other'
   };
   return cuisineClassMap[cuisineName] || 'cuisine-other';
 };
@@ -84,16 +68,16 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
           const transformedRecipes = (data.results || []).map((recipe: any) => ({
             id: recipe.id,
             title: recipe.title,
-            image_url: recipe.image_url,
+            imagePath: recipe.imagePath,
             description: recipe.description,
             tags: recipe.tags ? JSON.parse(recipe.tags) : [],
-            cookTime: recipe.cook_time || 30,
+            cookingTime: recipe.cookingTime || 30,
             servings: recipe.servings || 4,
             difficulty: recipe.difficulty || 'easy',
             ingredients: recipe.ingredients ? JSON.parse(recipe.ingredients) : [],
             seasoning: recipe.seasoning ? JSON.parse(recipe.seasoning) : [],
             instructions: recipe.instructions ? JSON.parse(recipe.instructions) : [],
-            chefTips: recipe.chef_tips ? JSON.parse(recipe.chef_tips) : [],
+            chefTips: recipe.chefTips ? JSON.parse(recipe.chefTips) : [],
             cuisine: recipe.cuisine ? {
               id: recipe.cuisine.id,
               name: recipe.cuisine.name
@@ -142,7 +126,7 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
       {/* 页面标题 */}
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
@@ -158,7 +142,8 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {recipes.map((recipe) => {
-            const localizedCuisineName = getLocalizedCuisineName(recipe.cuisine?.name || '', locale);
+            // 由于 Recipe 接口现在使用 cuisineId，这里暂时显示默认值
+            const localizedCuisineName = getLocalizedCuisineName('', locale);
             
             return (
               <Link
@@ -168,7 +153,7 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
               >
                 <div className="relative aspect-[3/2] overflow-hidden">
                   <Image
-                    src={recipe.image_url || '/placeholder.svg'}
+                    src={recipe.imagePath || '/placeholder.svg'}
                     alt={recipe.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
@@ -181,20 +166,20 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   
-                  {/* 菜系标签 */}
-                  {recipe.cuisine?.name && (
+                  {/* 菜系标签 - 暂时隐藏，因为 Recipe 接口现在使用 cuisineId */}
+                  {/* {recipe.cuisineId && (
                     <div className="absolute top-3 left-3">
-                      <span className={`inline-block px-2 py-1 text-xs font-medium text-white rounded-full ${getCuisineClassName(recipe.cuisine.name)}`}>
+                      <span className={`inline-block px-2 py-1 text-xs font-medium text-white rounded-full ${getCuisineClassName('')}`}>
                         {localizedCuisineName}
                       </span>
                     </div>
-                  )}
+                  )} */}
 
                   {/* 烹饪时间 */}
-                  {recipe.cookTime && (
+                  {recipe.cookingTime && (
                     <div className="absolute bottom-3 left-3 flex items-center gap-1 text-white bg-black/50 rounded-full px-2 py-1">
                       <Clock className="h-3 w-3" />
-                      <span className="text-xs">{recipe.cookTime} {tRecipe('mins')}</span>
+                      <span className="text-xs">{recipe.cookingTime} {tRecipe('mins')}</span>
                     </div>
                   )}
                 </div>

@@ -11,13 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/auth-context";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { cn } from "@/lib/utils";
-import { IMAGE_GEN_CONFIG, APP_CONFIG } from "@/lib/config";
+import { IMAGE_GEN_CONFIG, APP_CONFIG, getRecommendedModels } from "@/lib/config";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCuisines } from "@/hooks/use-cuisines";
-import { useTranslations } from 'next-intl';
-import { useUserUsage } from "@/hooks/use-user-usage";
-import { Ingredient, RecipeFormData } from "@/lib/types";
-import { ImageModel } from "@/lib/services/image-service";
+import { useTranslations, useLocale } from 'next-intl';
+import { RecipeFormData } from "@/lib/types";
+import { ImageModel } from "@/lib/config";
 
 interface RecipeFormProps {
   formData: RecipeFormData;
@@ -37,11 +36,14 @@ export const RecipeForm = ({
 }: RecipeFormProps) => {
   const { isAdmin } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const { cuisines, loading: cuisinesLoading } = useCuisines();
-  const { canGenerate, isLoggedIn } = useUserUsage();
   const t = useTranslations('recipeForm');
   const tCredits = useTranslations('credits');
+  const locale = useLocale();
+  
+  // 获取推荐模型配置
+  const recommendedModels = getRecommendedModels(locale);
   
   // 检测屏幕尺寸
   useEffect(() => {
@@ -74,13 +76,20 @@ export const RecipeForm = ({
       onSubmit();
       setShowRecipe(true); // 设置显示菜谱结果
 
-      // 确保在DOM更新后执行滚动
+      // 确保在DOM更新后执行滚动，使用更平滑的方式
       setTimeout(() => {
         const loadingElement = document.getElementById('loading-animation-container');
         if (loadingElement) {
-          loadingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const elementRect = loadingElement.getBoundingClientRect();
+          const absoluteElementTop = elementRect.top + window.pageYOffset;
+          const middle = absoluteElementTop - (window.innerHeight / 2);
+          
+          window.scrollTo({
+            top: middle,
+            behavior: 'smooth'
+          });
         }
-      }, 100);
+      }, 150);
     }
   };
 
@@ -132,7 +141,9 @@ export const RecipeForm = ({
                   e.preventDefault();
                 }}
                 align="start"
-                sideOffset={8}
+                side="bottom"
+                sideOffset={4}
+                alignOffset={0}
               >
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-medium">{t('moreOptions')}</h3>
@@ -160,27 +171,7 @@ export const RecipeForm = ({
                       }}
                     />
                   </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="recipeCount" className="flex items-center gap-1 sm:gap-2 text-sm">
-                        <Sparkles className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
-                        <span>{t('recipeCount')}</span>
-                      </Label>
-                      <span className="text-xs sm:text-sm font-medium">{formData.recipeCount} {t('recipesCount')}</span>
-                    </div>
-                    <Slider
-                      id="recipeCount"
-                      min={1}
-                      max={APP_CONFIG.MAX_RECIPE_COUNT}
-                      step={1}
-                      value={[formData.recipeCount]}
-                      onValueChange={(value: number[]) => {
-                        onFormChange({ ...formData, recipeCount: value[0] })
-                      }}
-                    />
-                  </div>
-
+                  
                   <div className="space-y-1 sm:space-y-2">
                     <Label htmlFor="cookingTime" className="flex items-center gap-1 sm:gap-2 text-sm">
                       <Clock className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
@@ -271,7 +262,9 @@ export const RecipeForm = ({
                     e.preventDefault();
                   }}
                   align="start"
-                  sideOffset={8}
+                  side="bottom"
+                  sideOffset={4}
+                  alignOffset={0}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-sm font-medium">Language Model</h3>
@@ -281,13 +274,13 @@ export const RecipeForm = ({
                   </div>
                   <div className="space-y-3">
                     <RadioGroup
-                      value={formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL}
-                      onValueChange={value => onFormChange({ ...formData, languageModel: value as 'deepseek' | 'qwenplus' | 'gpt4o_mini' })}
+                      value={formData.languageModel || recommendedModels.languageModel}
+                      onValueChange={value => onFormChange({ ...formData, languageModel: value as 'DEEPSEEK' | 'QWENPLUS' | 'GPT4o_MINI' })}
                       className="grid grid-cols-1 gap-3"
                     >
-                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL) === 'deepseek' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || recommendedModels.languageModel) === 'DEEPSEEK' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
                         <div className="flex items-center gap-2">
-                          <RadioGroupItem value="deepseek" id="lm-deepseek" />
+                          <RadioGroupItem value="DEEPSEEK" id="lm-deepseek" />
                           <Label htmlFor="lm-deepseek" className="font-medium cursor-pointer">Deepseek</Label>
                         </div>
                         <div className="text-xs text-muted-foreground pl-6">
@@ -298,9 +291,9 @@ export const RecipeForm = ({
                           </ul>
                         </div>
                       </div>
-                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL) === 'qwenplus' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || recommendedModels.languageModel) === 'QWENPLUS' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
                         <div className="flex items-center gap-2">
-                          <RadioGroupItem value="qwenplus" id="lm-qwenplus" />
+                          <RadioGroupItem value="QWENPLUS" id="lm-qwenplus" />
                           <Label htmlFor="lm-qwenplus" className="font-medium cursor-pointer">Qwen Plus</Label>
                         </div>
                         <div className="text-xs text-muted-foreground pl-6">
@@ -311,9 +304,9 @@ export const RecipeForm = ({
                           </ul>
                         </div>
                       </div>
-                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || APP_CONFIG.DEFAULT_LANGUAGE_MODEL) === 'gpt4o_mini' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || recommendedModels.languageModel) === 'GPT4o_MINI' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
                         <div className="flex items-center gap-2">
-                          <RadioGroupItem value="gpt4o_mini" id="lm-gpt4o_mini" />
+                          <RadioGroupItem value="GPT4o_MINI" id="lm-gpt4o_mini" />
                           <Label htmlFor="lm-gpt4o_mini" className="font-medium cursor-pointer">GPT-4o Mini</Label>
                         </div>
                         <div className="text-xs text-muted-foreground pl-6">
@@ -360,11 +353,11 @@ export const RecipeForm = ({
                   </div>
                   <div className="space-y-3">
                     <RadioGroup 
-                      value={formData.imageModel || APP_CONFIG.DEFAULT_IMAGE_MODEL}
+                      value={formData.imageModel || recommendedModels.imageModel}
                       onValueChange={value => handleModelChange(value as ImageModel)}
                       className="grid grid-cols-1 gap-3"
                     >
-                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.imageModel || APP_CONFIG.DEFAULT_IMAGE_MODEL) === 'wanx' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.imageModel || recommendedModels.imageModel) === 'wanx' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
                         <div className="flex items-center gap-2">
                           <RadioGroupItem value="wanx" id="model-wanx" />
                           <Label htmlFor="model-wanx" className="font-medium cursor-pointer">Wanx Model</Label>
@@ -378,7 +371,7 @@ export const RecipeForm = ({
                         </div>
                       </div>
                       
-                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.imageModel || APP_CONFIG.DEFAULT_IMAGE_MODEL) === 'flux' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
+                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.imageModel || recommendedModels.imageModel) === 'flux' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
                         <div className="flex items-center gap-2">
                           <RadioGroupItem value="flux" id="model-flux" />
                           <Label htmlFor="model-flux" className="font-medium cursor-pointer">Flux Schnell</Label>

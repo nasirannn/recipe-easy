@@ -49,8 +49,6 @@ export function useUserUsage() {
   // 使用全局状态
   const { credits, canGenerate, setCredits, setCanGenerate, updateCredits } = useCreditsStore();
   
-  // 根据环境决定API基础URL
-  const apiBase = ''; // 使用本地 Next.js API
   // 获取用户积分情况
   const fetchCredits = useCallback(async () => {
     
@@ -59,7 +57,7 @@ export function useUserUsage() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${apiBase}/api/user-usage?userId=${user.id}&isAdmin=${isAdmin}`);
+      const response = await fetch(`/api/user-usage?userId=${user.id}&isAdmin=${isAdmin}`);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -85,14 +83,14 @@ export function useUserUsage() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, isAdmin, apiBase, setCredits, setCanGenerate]);
+  }, [user?.id, isAdmin, setCredits, setCanGenerate]);
 
   // 消费积分
   const spendCredits = useCallback(async (amount: number = 1) => {
     if (!user?.id) return false;
 
     try {
-      const response = await fetch(`${apiBase}/api/user-usage`, {
+      const response = await fetch(`/api/user-usage`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -119,7 +117,7 @@ export function useUserUsage() {
       console.error('Error spending credits:', err);
       return false;
     }
-  }, [user?.id, apiBase, setCredits, setCanGenerate]);
+  }, [user?.id, setCredits, setCanGenerate]);
   
   // 实时更新积分（无需等待API响应）
   const updateCreditsLocally = useCallback((amount: number = 1) => {

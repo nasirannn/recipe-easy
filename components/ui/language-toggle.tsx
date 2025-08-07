@@ -25,22 +25,28 @@ export function LanguageToggle() {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon">
           <Languages className="h-[1.2rem] w-[1.2rem]" />
           <span className="sr-only">Toggle language</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DropdownMenuItem 
-          onClick={() => switchLocale('en')}
+          onClick={(e) => {
+            e.preventDefault();
+            switchLocale('en');
+          }}
           className={locale === 'en' ? 'bg-accent' : ''}
         >
           English
         </DropdownMenuItem>
         <DropdownMenuItem 
-          onClick={() => switchLocale('zh')}
+          onClick={(e) => {
+            e.preventDefault();
+            switchLocale('zh');
+          }}
           className={locale === 'zh' ? 'bg-accent' : ''}
         >
           中文

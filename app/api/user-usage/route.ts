@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     if (isAdmin) params.append('isAdmin', 'true');
 
     // 直接调用云端数据库
-    const workerUrl = process.env.WORKER_URL || 'https://recipe-easy.annnb016.workers.dev';
+    const workerUrl = process.env.WORKER_URL || 'https://api.recipe-easy.com';
     const response = await fetch(`${workerUrl}/api/user-usage?${params}`, {
       method: 'GET',
       headers: {
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 直接调用云端数据库
-    const workerUrl = process.env.WORKER_URL || 'https://recipe-easy.annnb016.workers.dev';
+    const workerUrl = process.env.WORKER_URL || 'https://api.recipe-easy.com';
     const response = await fetch(`${workerUrl}/api/user-usage`, {
       method: 'POST',
       headers: {

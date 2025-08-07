@@ -6,45 +6,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getWorkerApiUrl } from '@/lib/config';
+import { Recipe, DatabaseRecipe, UpdateRecipeInput } from '@/lib/types';
 
 export const runtime = 'edge';
 
-// 菜谱类型定义 - 与route.ts中保持一致
-interface Recipe {
-  id: number;
-  title: string;
-  image_url: string | null;
-  description: string | null;
-  tags: string | null;
-  cook_time: number | null;
-  servings: number | null;
-  difficulty: string | null;
-  ingredients: string;
-  seasoning: string | null;
-  instructions: string;
-  chef_tips: string | null;
-  cuisine_id: number | null;
-  cuisine_name?: string | null;
-  user_id: string | null;
-  created_at: string;
-  updated_at: string;
-}
 
-// 更新菜谱输入类型
-interface UpdateRecipeInput {
-  title?: string;
-  image_url?: string | null;
-  description?: string | null;
-  tags?: string[];
-  cook_time?: number | null;
-  servings?: number | null;
-  difficulty?: string | null;
-  ingredients?: any[] | string;
-  seasoning?: any[] | string | null;
-  instructions?: any[] | string;
-  chef_tips?: string | null;
-  cuisine_id?: number | null;
-}
 
 // 注意：此API路由现在完全依赖Worker API获取数据
 // 不再使用本地静态数据
@@ -146,18 +112,24 @@ export async function DELETE(
 ) {
   try {
     const { id } = params;
+    const body = await req.json();
+    const { userId } = body;
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    }
     
     // 调用Worker API删除菜谱
     const response = await fetch(getWorkerApiUrl(`/api/recipes/${id}`), {
       method: 'DELETE',
       headers: {
-        'Authorization': req.headers.get('authorization') || '',
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ userId })
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      return NextResponse.json(errorData, { status: response.status });
+      throw new Error('Failed to delete recipe');
     }
 
     const data = await response.json();

@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, LogOut, Coins, ChevronDown, User, Settings, Edit } from "lucide-react";
+import { Menu, LogOut, Coins, ChevronDown, User, Settings, Edit, BookOpen, Home, Search, Star, HelpCircle, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
 import {
   DropdownMenu,
@@ -30,6 +30,7 @@ import Link from "next/link";
 interface RouteProps {
   href: string;
   label: string;
+  icon: React.ReactNode;
 }
 
 export const Navbar = () => {
@@ -50,10 +51,10 @@ export const Navbar = () => {
   }
 
   const routeList: RouteProps[] = [
-    { href: `/${locale}`, label: t('home') },
-    { href: `/${locale}/recipes`, label: t('explore') },
-    { href: `/${locale}#features`, label: t('features') },
-    { href: `/${locale}#faq`, label: t('faq') },
+    { href: `/${locale}`, label: t('home'), icon: <Home className="h-4 w-4" /> },
+    { href: `/${locale}/recipes`, label: t('explore'), icon: <Search className="h-4 w-4" /> },
+    { href: `/${locale}#features`, label: t('features'), icon: <Star className="h-4 w-4" /> },
+    { href: `/${locale}#faq`, label: t('faq'), icon: <HelpCircle className="h-4 w-4" /> },
   ];
 
   const handleLogout = async () => {
@@ -94,8 +95,9 @@ export const Navbar = () => {
               <Link
                 key={route.href}
                 href={route.href}
-                className="transition-colors hover:text-foreground/80 text-foreground/60"
+                className="flex items-center gap-2 transition-colors hover:text-foreground/80 text-foreground/60"
               >
+                {route.icon}
                 {route.label}
               </Link>
             ))}
@@ -132,18 +134,22 @@ export const Navbar = () => {
                       onCloseAutoFocus={(e) => e.preventDefault()}
                     >
                       {/* 用户信息 */}
-                      <div className="mb-3 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="font-medium text-base truncate">
-                            {getUserDisplayName(user)}
+                      <div className="mb-3">
+                        <div className="relative">
+                          {/* 用户名居中显示 */}
+                          <div className="text-center">
+                            <div className="font-medium text-base truncate">
+                              {getUserDisplayName(user)}
+                            </div>
                           </div>
+                          {/* 右箭头绝对定位到右侧 */}
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 w-6 p-0 hover:bg-accent"
+                            className="absolute right-0 top-0 h-6 w-6 p-0 hover:bg-accent"
                             onClick={() => setShowEditNameDialog(true)}
                           >
-                            <Edit className="h-3 w-3" />
+                            <ChevronRight className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
@@ -170,6 +176,18 @@ export const Navbar = () => {
                        <div className="text-sm text-muted-foreground truncate px-2">
                          {tCredits('consumeOneCredit')}
                        </div>
+                     </div>
+                     
+                     <DropdownMenuSeparator className="mb-3" />
+
+                     {/* 我的菜谱链接 */}
+                     <div className="mb-3">
+                       <DropdownMenuItem 
+                         onClick={() => router.push(`/${locale}/my-recipes`)}
+                         className="cursor-pointer w-full justify-center"
+                       >
+                         <span className="font-medium">{t('myRecipes')}</span>
+                       </DropdownMenuItem>
                      </div>
                      
                      <DropdownMenuSeparator className="mb-3" />
@@ -231,8 +249,8 @@ export const Navbar = () => {
                         <div className="mb-6 pt-2 pb-5 border-b border-border/20">
                           <div className="flex items-center gap-3 mb-4">
                             <UserAvatar user={user} size="md" />
-                            <div>
-                              <div className="flex items-center gap-2">
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
                                 <div className="font-semibold">
                                   {getUserDisplayName(user)}
                                 </div>
@@ -242,7 +260,7 @@ export const Navbar = () => {
                                   className="h-5 w-5 p-0 hover:bg-accent"
                                   onClick={() => setShowEditNameDialog(true)}
                                 >
-                                  <Edit className="h-3 w-3" />
+                                  <ChevronRight className="h-3 w-3" />
                                 </Button>
                               </div>
                               <div className="text-xs text-muted-foreground truncate max-w-[200px]">
@@ -283,9 +301,22 @@ export const Navbar = () => {
                             className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent transition-colors"
                             onClick={() => setIsOpen(false)}
                           >
-                            {route.label}
+                            {route.icon}
+                            <span className="ml-2">{route.label}</span>
                           </Link>
                         ))}
+                        
+                        {/* 我的菜谱链接 - 仅登录用户显示 */}
+                        {!loading && user && (
+                          <Link
+                            href={`/${locale}/my-recipes`}
+                            className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent transition-colors"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            <BookOpen className="mr-2 h-4 w-4" />
+                            {t('myRecipes')}
+                          </Link>
+                        )}
                         
                         {isAdmin && (
                           <>
@@ -297,14 +328,16 @@ export const Navbar = () => {
                               className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent transition-colors"
                               onClick={() => setIsOpen(false)}
                             >
-                              {t('dashboard')}
+                              <Settings className="h-4 w-4" />
+                              <span className="ml-2">{t('dashboard')}</span>
                             </Link>
                             <Link
                               href="/admin/users"
                               className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent transition-colors"
                               onClick={() => setIsOpen(false)}
                             >
-                              {t('users')}
+                              <User className="h-4 w-4" />
+                              <span className="ml-2">{t('users')}</span>
                             </Link>
                           </>
                         )}

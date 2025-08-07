@@ -8,46 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getWorkerApiUrl } from '@/lib/config';
 
 // 强制动态渲染
-// 强制动态渲染
 export const runtime = 'edge';
-
-// 菜谱类型定义
-interface Recipe {
-  id: number;
-  title: string;
-  image_url: string | null;
-  description: string | null;
-  tags: string | null;
-  cook_time: number | null;
-  servings: number | null;
-  difficulty: string | null;
-  ingredients: string;
-  seasoning: string | null;
-  instructions: string;
-  chef_tips: string | null;
-  cuisine_id: number | null;
-  cuisine_name?: string | null;
-  user_id: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-// 创建菜谱输入类型
-interface CreateRecipeInput {
-  title: string;
-  image_url?: string;
-  description?: string;
-  tags?: string[];
-  cook_time?: number;
-  servings?: number;
-  difficulty?: string;
-  ingredients: any[] | string;
-  seasoning?: any[] | string;
-  instructions: any[] | string;
-  chef_tips?: string;
-  cuisine_id?: number;
-  user_id?: string;
-}
 
 // 注意：此API路由现在完全依赖Worker API获取数据
 // 不再使用本地静态数据
@@ -64,6 +25,7 @@ export async function GET(req: NextRequest) {
     const lang = searchParams.get('lang') || 'en';
     const search = searchParams.get('search');
     const cuisineId = searchParams.get('cuisineId');
+    const adminOnly = searchParams.get('adminOnly');
 
     // 构建查询参数
     const params = new URLSearchParams();
@@ -72,6 +34,7 @@ export async function GET(req: NextRequest) {
     params.append('lang', lang);
     if (search) params.append('search', search);
     if (cuisineId) params.append('cuisineId', cuisineId);
+    if (adminOnly) params.append('adminOnly', adminOnly);
 
     // 直接调用云端数据库
     const response = await fetch(getWorkerApiUrl(`/api/recipes?${params}`), {
