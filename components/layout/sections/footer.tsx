@@ -20,7 +20,7 @@ export const FooterSection = () => {
           <Link href="/" className="font-bold text-base sm:text-lg flex items-center gap-1.5 sm:gap-2">
         <div className="relative w-7 h-7 sm:w-8 sm:h-8">
           <Image 
-          src="/recipe-easy-logo.svg"
+          src="/images/recipe-easy-logo.svg"
             alt="Logo"
             fill
             className="object-contain"

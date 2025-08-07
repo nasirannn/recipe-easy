@@ -255,9 +255,9 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
 
                   {/* 标题和描述 */}
                   <div className="space-y-4">
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white leading-tight">
+                    <h2 className="text-4xl font-bold text-gray-900 dark:text-white leading-tight">
                       {recipe.title}
-                    </h1>
+                    </h2>
                     <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
                       {recipe.description}
                     </p>

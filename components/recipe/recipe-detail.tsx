@@ -149,7 +149,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
             {/* 主图片 */}
             <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
               <Image
-                src={recipe.imagePath || '/placeholder.svg'}
+                src={recipe.imagePath || '/images/placeholder.svg'}
                 alt={recipe.title}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -158,7 +158,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.onerror = null;
-                  target.src = '/placeholder.svg';
+                  target.src = '/images/placeholder.svg';
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />

@@ -1,7 +1,10 @@
 # Cloudflare Pages 重定向规则
-# HTTP 到 HTTPS 重定向
+# HTTP 到 HTTPS 重定向 - 强制所有 HTTP 请求重定向到 HTTPS
 http://recipe-easy.com/* https://recipe-easy.com/:splat 301!
 http://www.recipe-easy.com/* https://recipe-easy.com/:splat 301!
+
+# 确保 www 和非 www 都重定向到主域名
+https://www.recipe-easy.com/* https://recipe-easy.com/:splat 301!
 
 # 保持末尾斜杠一致性
 # 确保所有URL都有末尾斜杠（可选配置） 

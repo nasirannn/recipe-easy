@@ -79,7 +79,7 @@ export const Navbar = () => {
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <div className="relative w-8 h-8">
               <Image
-                src="/recipe-easy-logo.svg"
+                src="/images/recipe-easy-logo.svg"
                 alt="RecipeEasy"
                 fill
                 className="object-contain"
@@ -231,7 +231,7 @@ export const Navbar = () => {
                         <Link href="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
                           <div className="relative w-8 h-8">
                             <Image
-                              src="/recipe-easy-logo.svg"
+                              src="/images/recipe-easy-logo.svg"
                               alt="RecipeEasy"
                               fill
                               className="object-contain"

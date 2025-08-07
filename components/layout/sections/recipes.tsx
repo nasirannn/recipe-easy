@@ -144,7 +144,7 @@ export const RecipesSection = () => {
               >
                 <div className="relative aspect-[3/2] overflow-hidden">
                   <Image
-                    src={recipe.imagePath || '/placeholder.svg'}
+                    src={recipe.imagePath || '/images/placeholder.svg'}
                     alt={recipe.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
@@ -152,7 +152,7 @@ export const RecipesSection = () => {
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.onerror = null;
-                      target.src = '/placeholder.svg';
+                      target.src = '/images/placeholder.svg';
                     }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

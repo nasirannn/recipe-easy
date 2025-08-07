@@ -6,6 +6,34 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 const nextConfig = {
   // 控制末尾斜杠行为 - false表示不添加末尾斜杠
   trailingSlash: false,
+  
+  // 添加安全头部
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains; preload'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY'
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block'
+          }
+        ]
+      }
+    ]
+  },
+  
   images: {
     remotePatterns: [
       {

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     path: "/",
   }),
   icons: {
-    icon: "/recipe-easy-logo.svg",
+            icon: "/images/recipe-easy-logo.svg",
   },
   robots: {
     index: true,
