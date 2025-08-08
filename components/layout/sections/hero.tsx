@@ -97,7 +97,7 @@ export const HeroSection = () => {
     return () => {
       window.removeEventListener('regenerateRecipe', handleRegenerateRecipe as EventListener);
     };
-  }, [regenerateRecipe, formData, setFormData, setSearchedIngredients, setShowRecipe]);
+  }, [regenerateRecipe, formData]);
 
   const handleFormChange = (data: RecipeFormData) => {
     setFormData(data);
@@ -148,7 +148,7 @@ export const HeroSection = () => {
       window.removeEventListener('loginSuccess', handleLoginSuccess);
       window.removeEventListener('generateImage', handleGenerateImage as EventListener);
     };
-  }, [generateImage, formData.imageModel, setRecipes]);
+  }, [generateImage, formData.imageModel]);
 
   // 监听用户状态变化，当用户登出时重置状态
   useEffect(() => {
@@ -171,7 +171,7 @@ export const HeroSection = () => {
         imageModel: recommendedModels.imageModel as ImageModel
       });
     }
-  }, [user, recommendedModels.imageModel, clearRecipes, clearImageLoadingStates, setSearchedIngredients, setShowRecipe, setFormData, recommendedModels.languageModel]);
+  }, [user, recommendedModels.imageModel, clearRecipes, clearImageLoadingStates, recommendedModels.languageModel]);
 
   const handleSubmit = async () => {
     try {
