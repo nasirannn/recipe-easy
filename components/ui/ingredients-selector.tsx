@@ -216,7 +216,7 @@ export const IngredientSelector = ({
   useEffect(() => {
     fetchAllIngredients();
     fetchCategories();
-  }, [locale, fetchAllIngredients, fetchCategories]);
+  }, [locale]);
 
   // 使用 useMemo 派生过滤后的食材列表，从根源上解决闪动问题
   const filteredIngredients = useMemo(() => {

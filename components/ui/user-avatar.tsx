@@ -46,13 +46,9 @@ export function UserAvatar({
     }
 
     const newAvatarUrl = getUserAvatarUrl(user)
-
-    // 只有当URL真正改变时才更新
-    if (newAvatarUrl !== avatarUrl) {
-      setAvatarUrl(newAvatarUrl)
-      setImageError(false)
-    }
-  }, [user, avatarUrl])
+    setAvatarUrl(newAvatarUrl)
+    setImageError(false)
+  }, [user])
 
   const handleImageError = () => {
     setImageError(true)

@@ -43,7 +43,7 @@ export default function MyRecipesPage() {
   
   const loadRecipes = useCallback(async (forceReload = false) => {
     // 如果已经加载过且不是强制重新加载，则跳过
-    if (hasLoaded && !forceReload && recipes.length > 0) {
+    if (hasLoaded && !forceReload) {
       return;
     }
     
@@ -69,7 +69,7 @@ export default function MyRecipesPage() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, page, t, hasLoaded, recipes.length]);
+  }, [user?.id, page, t, hasLoaded]);
   
   useEffect(() => {
     // 等待用户状态加载完成
