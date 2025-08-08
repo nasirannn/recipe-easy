@@ -24,13 +24,11 @@ async function getTermsOfService(locale: string) {
     // 根据语言选择对应的文件
     const fileName = locale === 'zh' ? 'terms-of-service-zh.md' : 'terms-of-service.md';
     
-    // 在构建时使用本地文件系统
-    const fs = require('fs');
-    const path = require('path');
-    const filePath = path.join(process.cwd(), 'public', fileName);
+    // 在Edge Runtime中使用fetch获取文件内容
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/${fileName}`);
     
-    if (fs.existsSync(filePath)) {
-      const content = fs.readFileSync(filePath, 'utf8');
+    if (response.ok) {
+      const content = await response.text();
       
       // 使用remark渲染Markdown
       const processedContent = await remark()
@@ -39,7 +37,7 @@ async function getTermsOfService(locale: string) {
 
       return processedContent.toString();
     } else {
-      throw new Error(`Terms file not found: ${filePath}`);
+      throw new Error(`Terms file not found: ${fileName}`);
     }
   } catch (error) {
     console.error('Error loading terms of service:', error);

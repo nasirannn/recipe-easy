@@ -180,7 +180,8 @@ export const IngredientSelector = ({
   // 检测屏幕尺寸
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640);
+      // 使用更合适的移动端断点，包括平板设备
+      setIsMobile(window.innerWidth < 768);
     };
 
     // 初始检查
@@ -402,7 +403,7 @@ export const IngredientSelector = ({
                             : "text-muted-foreground hover:text-foreground hover:scale-102"
                         )}
                       >
-                        <Icon className={cn("h-4 w-4 flex-shrink-0 transition-colors duration-300", isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
+                        <Icon className={cn("h-4 w-4 flex-shrink-0 transition-colors duration-300", isActive ? "text-primary-foreground" : category.color)} />
                         <span className="truncate">{categoryName}</span>
                       </button>
                     </TooltipTrigger>
@@ -419,37 +420,52 @@ export const IngredientSelector = ({
 
       {/* 移动端分类选择器 */}
       {isMobile && (
-        <Select
-          value={activeCategory}
-          onValueChange={(value) => handleCategoryChange(value as keyof typeof CATEGORIES)}
-        >
-          <SelectTrigger className="w-full sm:w-[180px] h-9">
-            <SelectValue>
-              <div className="flex items-center gap-2">
-                {CATEGORIES[activeCategory] && React.createElement(CATEGORIES[activeCategory].icon, {
-                  className: cn("h-4 w-4", CATEGORIES[activeCategory].color)
-                })}
-                <span>
-                  {dynamicCategories[activeCategory]?.name || t(`categories.${activeCategory}`)}
-                </span>
-              </div>
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(CATEGORIES).map(([categoryId, category]) => {
-              const Icon = category.icon;
+        <div className="w-full mb-4">
+          <Select
+            value={activeCategory}
+            onValueChange={(value) => handleCategoryChange(value as keyof typeof CATEGORIES)}
+          >
+            <SelectTrigger className="w-full h-12 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:border-primary/50 focus:border-primary transition-all duration-300">
+              <SelectValue>
+                <div className="flex items-center gap-3">
+                  {CATEGORIES[activeCategory] && React.createElement(CATEGORIES[activeCategory].icon, {
+                    className: cn("h-5 w-5 flex-shrink-0", CATEGORIES[activeCategory].color)
+                  })}
+                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                    {dynamicCategories[activeCategory]?.name || t(`categories.${activeCategory}`)}
+                  </span>
+                </div>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="max-h-[300px] overflow-y-auto bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-lg">
+              {Object.entries(CATEGORIES).map(([categoryId, category]) => {
+                const Icon = category.icon;
+                const isActive = activeCategory === categoryId;
 
-              return (
-                <SelectItem key={categoryId} value={categoryId} className="flex items-center gap-2">
-                  <div className="flex items-center gap-2">
-                    <Icon className={cn("h-4 w-4", category.color)} />
-                    <span>{dynamicCategories[categoryId]?.name || t(`categories.${categoryId}`)}</span>
-                  </div>
-                </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
+                return (
+                  <SelectItem 
+                    key={categoryId} 
+                    value={categoryId} 
+                    hideIndicator={true}
+                    className={cn(
+                      "flex items-center gap-3 py-3 px-4 cursor-pointer transition-all duration-200",
+                      isActive 
+                        ? "bg-primary/10 text-primary font-medium" 
+                        : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                    )}
+                  >
+                    <div className="flex items-center gap-3 w-full">
+                      <Icon className={cn("h-5 w-5 flex-shrink-0", category.color)} />
+                      <span className="font-medium">
+                        {dynamicCategories[categoryId]?.name || t(`categories.${categoryId}`)}
+                      </span>
+                    </div>
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
       )}
 
       {/* 食材网格 */}
@@ -466,40 +482,62 @@ export const IngredientSelector = ({
             </div>
           </div>
         ) : (
-          <ScrollArea className="h-64 w-full">
-            <div className="flex flex-wrap gap-3 p-2">
+          <ScrollArea className={cn("w-full", isMobile ? "h-80" : "h-64")}>
+            <div className={cn("flex flex-wrap gap-3 p-2", isMobile ? "gap-2" : "gap-3")}>
               {filteredIngredients.map((ingredient) => {
                 // 根据食材名称长度动态计算宽度
                 const nameLength = ingredient.englishName.length;
                 const chineseNameLength = locale === 'zh' && ingredient.name !== ingredient.englishName ? ingredient.name.length : 0;
                 const totalLength = Math.max(nameLength, chineseNameLength);
                 
-                // 动态宽度计算
-                let cardWidth = 'min-w-[100px] max-w-[180px]';
-                if (totalLength <= 8) {
-                  cardWidth = 'min-w-[100px] max-w-[140px]';
-                } else if (totalLength <= 12) {
-                  cardWidth = 'min-w-[120px] max-w-[160px]';
+                // 动态宽度计算 - 移动端优化
+                let cardWidth = isMobile ? 'min-w-[90px] max-w-[160px]' : 'min-w-[100px] max-w-[180px]';
+                if (isMobile) {
+                  if (totalLength <= 6) {
+                    cardWidth = 'min-w-[90px] max-w-[120px]';
+                  } else if (totalLength <= 10) {
+                    cardWidth = 'min-w-[100px] max-w-[140px]';
+                  } else {
+                    cardWidth = 'min-w-[110px] max-w-[160px]';
+                  }
                 } else {
-                  cardWidth = 'min-w-[140px] max-w-[200px]';
+                  if (totalLength <= 8) {
+                    cardWidth = 'min-w-[100px] max-w-[140px]';
+                  } else if (totalLength <= 12) {
+                    cardWidth = 'min-w-[120px] max-w-[160px]';
+                  } else {
+                    cardWidth = 'min-w-[140px] max-w-[200px]';
+                  }
                 }
                 
                 return (
                   <button
                     key={ingredient.id}
                     onClick={() => handleIngredientSelect(ingredient)}
-                    className={`group relative p-4 rounded-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 hover:from-primary/10 hover:via-primary/5 hover:to-primary/10 text-sm text-center transition-all duration-500 hover:scale-110 hover:shadow-xl hover:shadow-primary/25 hover:-translate-y-1 border border-gray-100 dark:border-gray-600 overflow-hidden flex-shrink-0 ${cardWidth}`}
+                    className={cn(
+                      "group relative rounded-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 hover:from-primary/10 hover:via-primary/5 hover:to-primary/10 text-sm text-center transition-all duration-500 border border-gray-100 dark:border-gray-600 overflow-hidden flex-shrink-0",
+                      isMobile 
+                        ? "p-3 hover:scale-105 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 active:scale-95" 
+                        : "p-4 hover:scale-110 hover:shadow-xl hover:shadow-primary/25 hover:-translate-y-1",
+                      cardWidth
+                    )}
                   >
                   {/* 背景装饰效果 */}
                   <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   
                   {/* 内容区域 */}
                   <div className="relative z-10 w-full">
-                    <div className="font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary transition-all duration-300 text-sm leading-tight break-words">
+                    <div className={cn(
+                      "font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary transition-all duration-300 leading-tight break-words",
+                      isMobile ? "text-xs" : "text-sm"
+                    )}>
                       {ingredient.englishName}
                     </div>
                     {locale === 'zh' && ingredient.name !== ingredient.englishName && (
-                      <div className="text-xs text-gray-600 dark:text-gray-300 mt-1.5 group-hover:text-primary/80 transition-all duration-300 font-medium break-words">
+                      <div className={cn(
+                        "text-gray-600 dark:text-gray-300 mt-1.5 group-hover:text-primary/80 transition-all duration-300 font-medium break-words",
+                        isMobile ? "text-[10px] mt-1" : "text-xs mt-1.5"
+                      )}>
                         {ingredient.name}
                       </div>
                     )}
