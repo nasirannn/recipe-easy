@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Recipe } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
 import { useUserUsage } from '@/hooks/use-user-usage';
@@ -12,7 +12,7 @@ export const useImageGeneration = () => {
   const { credits, updateCreditsLocally } = useUserUsage();
   const locale = useLocale();
 
-  const generateImage = async (
+  const generateImage = useCallback(async (
     recipeId: string, 
     recipe: Recipe, 
     imageModel: string,
@@ -82,9 +82,9 @@ export const useImageGeneration = () => {
       // 清除该菜谱的loading状态
       setImageLoadingStates(prev => ({ ...prev, [recipeId]: false }));
     }
-  };
+  }, [user?.id, credits?.credits, isAdmin, updateCreditsLocally, locale]);
 
-  const regenerateImage = async (
+  const regenerateImage = useCallback(async (
     recipeId: string, 
     recipe: Recipe, 
     imageModel: string,
@@ -153,11 +153,11 @@ export const useImageGeneration = () => {
       // 清除该菜谱的loading状态
       setImageLoadingStates(prev => ({ ...prev, [recipeId]: false }));
     }
-  };
+  }, [user?.id, credits?.credits, isAdmin, updateCreditsLocally, locale]);
 
-  const clearImageLoadingStates = () => {
+  const clearImageLoadingStates = useCallback(() => {
     setImageLoadingStates({});
-  };
+  }, []);
 
   return {
     imageGenerating,

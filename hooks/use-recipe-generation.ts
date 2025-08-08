@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Recipe, RecipeFormData } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
 import { useLocale } from 'next-intl';
@@ -11,7 +11,7 @@ export const useRecipeGeneration = () => {
   const { user, isAdmin } = useAuth();
   const locale = useLocale();
 
-  const generateRecipe = async (formData: RecipeFormData) => {
+  const generateRecipe = useCallback(async (formData: RecipeFormData) => {
     setLoading(true);
     setError(null);
 
@@ -59,9 +59,9 @@ export const useRecipeGeneration = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [locale, user?.id, isAdmin]);
 
-  const regenerateRecipe = async (ingredients: string[], recipe: Recipe, formData: RecipeFormData) => {
+  const regenerateRecipe = useCallback(async (ingredients: string[], recipe: Recipe, formData: RecipeFormData) => {
     setLoading(true);
     setError(null);
 
@@ -108,12 +108,12 @@ export const useRecipeGeneration = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [locale, user?.id, isAdmin]);
 
-  const clearRecipes = () => {
+  const clearRecipes = useCallback(() => {
     setRecipes([]);
     setError(null);
-  };
+  }, []);
 
   return {
     loading,

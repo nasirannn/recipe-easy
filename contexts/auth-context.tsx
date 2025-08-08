@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const supabase = createSupabaseClient()
 
-  const saveUserDisplayName = async (user: User) => {
+  const saveUserDisplayName = useCallback(async (user: User) => {
     try {
       // If user doesn't have a custom display_name, save the beautified email prefix
       if (!user.user_metadata?.display_name) {
@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Failed to save user display name:', error)
     }
-  }
+  }, [])
 
   const refreshUser = useCallback(async () => {
     try {

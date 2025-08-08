@@ -81,7 +81,16 @@ export const HeroSection = () => {
       }));
       
       try {
-        const generatedRecipes = await regenerateRecipe(ingredients, recipe, formData);
+        const generatedRecipes = await regenerateRecipe(ingredients, recipe, {
+          ingredients: ingredients,
+          servings: 2,
+          recipeCount: 1,
+          cookingTime: "medium",
+          difficulty: "medium",
+          cuisine: "any",
+          languageModel: recommendedModels.languageModel.toUpperCase() as LanguageModel,
+          imageModel: recommendedModels.imageModel.toLowerCase() as ImageModel
+        });
         setSearchedIngredients(ingredients);
         
         if (generatedRecipes.length > 0) {
@@ -97,7 +106,7 @@ export const HeroSection = () => {
     return () => {
       window.removeEventListener('regenerateRecipe', handleRegenerateRecipe as EventListener);
     };
-  }, [regenerateRecipe, formData]);
+  }, [regenerateRecipe, recommendedModels.languageModel, recommendedModels.imageModel]);
 
   const handleFormChange = (data: RecipeFormData) => {
     setFormData(data);
@@ -148,7 +157,7 @@ export const HeroSection = () => {
       window.removeEventListener('loginSuccess', handleLoginSuccess);
       window.removeEventListener('generateImage', handleGenerateImage as EventListener);
     };
-  }, [generateImage, formData.imageModel]);
+  }, [generateImage, recommendedModels.imageModel]);
 
   // 监听用户状态变化，当用户登出时重置状态
   useEffect(() => {

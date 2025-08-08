@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { Recipe } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
 import { useLocale } from 'next-intl';
@@ -8,7 +9,7 @@ export const useRecipeSave = () => {
   const { user } = useAuth();
   const locale = useLocale();
 
-  const saveRecipe = async (recipe: Recipe, imageModel: string) => {
+  const saveRecipe = useCallback(async (recipe: Recipe, imageModel: string) => {
     console.log('Saving recipe to database:', recipe.title);
     
     if (!user?.id) {
@@ -56,7 +57,7 @@ export const useRecipeSave = () => {
       console.error('Error saving recipe:', error);
       throw error;
     }
-  };
+  }, [user?.id, locale]);
 
   return {
     saveRecipe
