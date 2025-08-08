@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface RecipeWithMetadata extends Recipe {
   createdAt?: string;
@@ -290,10 +291,11 @@ export default function MyRecipesPage() {
                   {/* Image Container */}
                   <div className="relative aspect-[3/2] overflow-hidden">
                     {recipe.imagePath && !isImageExpired(recipe.imageExpiresAt) ? (
-                      <img 
+                      <Image 
                         src={recipe.imagePath} 
                         alt={recipe.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
@@ -302,10 +304,11 @@ export default function MyRecipesPage() {
                     ) : (
                       <div className="w-full h-full relative group overflow-hidden">
                         {/* 背景图片 - 移除模糊效果和遮罩 */}
-                        <img
+                        <Image
                           src="/images/recipe-placeholder-bg.png"
                           alt="Recipe placeholder background"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
                     )}
