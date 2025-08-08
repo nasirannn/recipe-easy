@@ -17,9 +17,10 @@ function generateRandomString(length: number): string {
 }
 
 function generateRecipeId(): string {
-  const timestamp = Date.now();
-  const random = generateRandomString(6);
-  return `REC-${timestamp}-${random}`;
+  // 使用新的 SEO 友好格式
+  const timestamp = Date.now().toString(36); // 转换为36进制，更短
+  const random = generateRandomString(4).toLowerCase();
+  return `recipe-${timestamp}-${random}`;
 }
 
 function generateImageId(): string {
@@ -82,11 +83,15 @@ const worker = {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // 设置CORS头
+    // 设置CORS头和安全头
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'X-Frame-Options': 'DENY',
+      'X-Content-Type-Options': 'nosniff',
+      'X-XSS-Protection': '1; mode=block',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
     };
 
     // 处理预检请求
@@ -225,6 +230,21 @@ const worker = {
         }
       }
 
+
+
+      if (path === '/api/test') {
+        return new Response(JSON.stringify({ 
+          message: 'Test endpoint reached',
+          path: path,
+          method: request.method,
+          timestamp: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+
+
       // 处理单个菜谱的API路由 /api/recipes/[id] - 根据HTTP方法区分操作
       if (path.startsWith('/api/recipes/') && path !== '/api/recipes' && !path.startsWith('/api/recipes/user/')) {
         if (request.method === 'DELETE') {
@@ -259,7 +279,12 @@ async function handleImages(request: Request, bucket: R2Bucket, corsHeaders: Rec
     const url = new URL(request.url);
     const imagePath = url.pathname.replace('/images/', '');
     
+    console.log('Image request - URL:', request.url);
+    console.log('Image request - pathname:', url.pathname);
+    console.log('Image request - processed path:', imagePath);
+    
     if (!imagePath) {
+      console.log('Image path is empty');
       return new Response('Image path is required', { 
         status: 400,
         headers: corsHeaders 
@@ -267,15 +292,19 @@ async function handleImages(request: Request, bucket: R2Bucket, corsHeaders: Rec
     }
 
     // 从R2存储桶获取图片
+    console.log('Attempting to get object from R2 with path:', imagePath);
     const object = await bucket.get(imagePath);
     
     if (!object) {
+      console.log('Object not found in R2');
       return new Response('Image not found', { 
         status: 404,
         headers: corsHeaders 
       });
     }
 
+    console.log('Object found in R2, size:', object.size);
+    
     // 根据文件扩展名设置正确的Content-Type
     const contentType = getContentType(imagePath);
     
@@ -476,7 +505,9 @@ async function handleCuisines(request: Request, db: D1Database, corsHeaders: Rec
       SELECT 
         c.id,
         c.name as cuisine_name,
-        COALESCE(c18n.name, c.name) as localized_cuisine_name
+        c.slug as cuisine_slug,
+        COALESCE(c18n.name, c.name) as localized_cuisine_name,
+        COALESCE(c18n.slug, c.slug) as localized_cuisine_slug
       FROM cuisines c
       LEFT JOIN cuisines_i18n c18n ON c.id = c18n.cuisine_id AND c18n.language_code = ?
       ORDER BY c.id ASC
@@ -486,7 +517,8 @@ async function handleCuisines(request: Request, db: D1Database, corsHeaders: Rec
     const formattedCuisines = cuisines.map((cuisine: any) => {
       return {
         id: cuisine.id,
-        name: cuisine.localized_cuisine_name || cuisine.cuisine_name || `Cuisine ${cuisine.id}`
+        name: cuisine.localized_cuisine_name || cuisine.cuisine_name || `Cuisine ${cuisine.id}`,
+        slug: cuisine.localized_cuisine_slug || cuisine.cuisine_slug || `cuisine-${cuisine.id}`
       };
     });
 
@@ -785,7 +817,9 @@ async function handleRecipes(request: Request, db: D1Database, env: Env, corsHea
 
     let sql = `
       SELECT 
-        r.*,
+        r.id, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
+        r.ingredients, r.seasoning, r.instructions, r.tags, r.chef_tips,
+        r.cuisine_id, r.user_id, r.created_at, r.updated_at,
         c.name as cuisine_name,
         COALESCE(c18n.name, c.name) as localized_cuisine_name
     `;
@@ -877,11 +911,11 @@ async function handleRecipes(request: Request, db: D1Database, env: Env, corsHea
     console.log('Fetching images for recipe IDs:', recipeIds);
     
     if (recipeIds.length > 0) {
-      // 使用正确的关联查询：通过 recipes.image_id 关联 recipe_images.id
+      // 使用正确的关联查询：通过 recipe_id 关联 recipe_images 表
       const imageResults = await db.prepare(`
         SELECT r.id as recipe_id, ri.image_path
         FROM recipes r
-        LEFT JOIN recipe_images ri ON r.image_id = ri.id
+        LEFT JOIN recipe_images ri ON r.id = ri.recipe_id
         WHERE r.id IN (${recipeIds.map(() => '?').join(',')})
       `).bind(...recipeIds).all();
       
@@ -899,28 +933,28 @@ async function handleRecipes(request: Request, db: D1Database, env: Env, corsHea
     }
 
     const formattedRecipes = recipes.map((recipe: any) => {
-      // 根据菜谱ID映射到正确的slug
+      // 根据菜系ID映射到正确的slug
       const slugMap: Record<number, string> = {
-        1: 'meat',
-        2: 'seafood', 
-        3: 'vegetables',
-        4: 'fruits',
-        5: 'dairy-eggs',
-        6: 'grains-bread',
-        7: 'nuts-seeds',
-        8: 'herbs-spices',
-        9: 'oils-condiments'
+        1: 'chinese',
+        2: 'italian', 
+        3: 'french',
+        4: 'indian',
+        5: 'japanese',
+        6: 'mediterranean',
+        7: 'thai',
+        8: 'mexican',
+        9: 'others'
       };
       
-      // 优先使用直接的 image_path 字段，如果没有则使用关联查询的结果
-      let imagePath = recipe.image_path || imageMap[recipe.id] || null;
+      // 使用关联查询的结果获取图片路径
+      let imagePath = imageMap[recipe.id] || null;
       
       return {
         id: recipe.id,
         slug: recipe.slug || `recipe-${recipe.id}`,
         title: recipe.localized_title || recipe.title || `Recipe ${recipe.id}`,
         description: recipe.localized_description || recipe.description || `Description for Recipe ${recipe.id}`,
-        imagePath: imagePath, // 优先使用直接的 image_path，否则使用关联查询的结果
+        imagePath: imagePath, // 从 recipe_images 表获取的图片URL
         ingredients: recipe.localized_ingredients || recipe.ingredients || [],
         seasoning: recipe.localized_seasoning || recipe.seasoning || [],
         instructions: recipe.localized_instructions || recipe.instructions || [],
@@ -1075,7 +1109,9 @@ async function handleSingleRecipe(request: Request, db: D1Database, env: Env, co
 
     let sql = `
       SELECT 
-        r.*,
+        r.id, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
+        r.ingredients, r.seasoning, r.instructions, r.tags, r.chef_tips,
+        r.cuisine_id, r.user_id, r.created_at, r.updated_at,
         c.name as cuisine_name,
         COALESCE(c18n.name, c.name) as localized_cuisine_name
     `;
@@ -1124,44 +1160,38 @@ async function handleSingleRecipe(request: Request, db: D1Database, env: Env, co
     // 查询关联的图片信息
     let imagePath = null;
     
-    // 首先检查 recipes 表中是否有直接的 image_path 字段
-    if (recipe.image_path) {
-      imagePath = recipe.image_path;
-    }
-    // 如果没有直接的 image_path，则通过 image_id 关联查询
-    else if (recipe.image_id) {
-      const imageResult = await db.prepare(`
-        SELECT image_path, expires_at 
-        FROM recipe_images 
-        WHERE id = ?
-      `).bind(recipe.image_id).first();
-      
-      if (imageResult) {
-        // 使用环境变量或默认域名
-        const baseUrl = env.WORKER_URL || 'https://api.recipe-easy.com';
-        imagePath = `${baseUrl}/images/${imageResult.image_path}`;
-      }
+    // 通过 recipe_id 关联查询图片路径
+    const imageResult = await db.prepare(`
+      SELECT image_path, expires_at 
+      FROM recipe_images 
+      WHERE recipe_id = ?
+    `).bind(recipe.id).first();
+    
+    if (imageResult) {
+      // 使用环境变量或默认域名
+      const baseUrl = env.WORKER_URL || 'https://api.recipe-easy.com';
+      imagePath = `${baseUrl}/images/${imageResult.image_path}`;
     }
 
-    // 根据菜谱ID映射到正确的slug
+    // 根据菜系ID映射到正确的slug
     const slugMap: Record<number, string> = {
-      1: 'meat',
-      2: 'seafood', 
-      3: 'vegetables',
-      4: 'fruits',
-      5: 'dairy-eggs',
-      6: 'grains-bread',
-      7: 'nuts-seeds',
-      8: 'herbs-spices',
-      9: 'oils-condiments'
+      1: 'chinese',
+      2: 'italian', 
+      3: 'french',
+      4: 'indian',
+      5: 'japanese',
+      6: 'mediterranean',
+      7: 'thai',
+      8: 'mexican',
+      9: 'others'
     };
 
     const formattedRecipe = {
       id: recipe.id,
-      slug: recipe.slug || `recipe-${recipe.id}`,
-      title: recipe.localized_title || recipe.title || `Recipe ${recipe.id}`,
-      description: recipe.localized_description || recipe.description || `Description for Recipe ${recipe.id}`,
-      imagePath: imagePath, // 从 recipe_images 表获取的图片URL
+      slug: recipe.slug,
+      title: recipe.title,
+      description: recipe.description,
+              imagePath: imagePath, // 从 recipe_images 表获取的图片URL
       ingredients: recipe.localized_ingredients || recipe.ingredients || [],
       seasoning: recipe.localized_seasoning || recipe.seasoning || [],
       instructions: recipe.localized_instructions || recipe.instructions || [],
@@ -1488,16 +1518,8 @@ async function handleUploadImage(request: Request, env: Env, corsHeaders: Record
         error: insertResult.error
       });
 
-      // 5. 更新菜谱表中的 image_id
-      const updateResult = await env.RECIPE_EASY_DB.prepare(`
-        UPDATE recipes SET image_id = ? WHERE id = ?
-      `).bind(imageId, recipeId).run();
-      
-      console.log('Database update result:', {
-        success: updateResult.success,
-        meta: updateResult.meta,
-        error: updateResult.error
-      });
+      // 5. 更新菜谱表中的 image_id (已移除，因为该列不存在)
+      console.log('Image ID update skipped - recipes table does not have image_id column');
       
     } catch (dbError) {
       console.error('Database operation failed:', dbError);
@@ -1544,7 +1566,7 @@ function normalizeRecipeForDatabase(recipe: any): any {
     instructions: recipe.instructions,
     tags: recipe.tags,
     chef_tips: recipe.chefTips || recipe.chef_tips, // 优先使用驼峰格式
-    languageModel: recipe.languageModel,
+
     cuisineId: recipe.cuisineId || recipe.cuisine_id // 优先使用驼峰格式
   };
 }
@@ -1562,10 +1584,12 @@ function normalizeRecipeForAPI(recipe: any): any {
     instructions: Array.isArray(recipe.instructions) ? recipe.instructions : JSON.parse(recipe.instructions || '[]'),
     tags: Array.isArray(recipe.tags) ? recipe.tags : JSON.parse(recipe.tags || '[]'),
     chefTips: Array.isArray(recipe.chef_tips) ? recipe.chef_tips : JSON.parse(recipe.chef_tips || '[]'), // 统一返回驼峰格式
-    languageModel: recipe.languageModel || recipe.language_model,
+
     cuisineId: recipe.cuisine_id || recipe.cuisineId // 统一返回驼峰格式
   };
 }
+
+
 
 // 保存菜谱到数据库
 async function handleSaveRecipe(request: Request, env: Env, corsHeaders: Record<string, string>): Promise<Response> {
@@ -1604,9 +1628,9 @@ async function handleSaveRecipe(request: Request, env: Env, corsHeaders: Record<
       
       // 检查菜谱是否已存在
       const existingRecipe = await env.RECIPE_EASY_DB.prepare(`
-        SELECT r.id, r.image_id, ri.image_path as current_image_path 
+        SELECT r.id, ri.id as image_id, ri.image_path as current_image_path 
         FROM recipes r 
-        LEFT JOIN recipe_images ri ON r.image_id = ri.id 
+        LEFT JOIN recipe_images ri ON r.id = ri.recipe_id 
         WHERE r.id = ?
       `).bind(recipe.id).first();
       
@@ -1673,17 +1697,41 @@ async function handleSaveRecipe(request: Request, env: Env, corsHeaders: Record<
                 });
                 
                 // 更新recipe_images表
-                if (existingRecipe.image_id) {
-                  await env.RECIPE_EASY_DB.prepare(`
-                    UPDATE recipe_images 
-                    SET image_path = ?, image_model = ?, created_at = ?
-                    WHERE id = ?
-                  `).bind(
-                    path,
-                    recipe.imageModel || 'unknown',
-                    new Date().toISOString(),
-                    existingRecipe.image_id
-                  ).run();
+                if (existingRecipe.current_image_path) {
+                  // 查找现有的图片记录
+                  const existingImageRecord = await env.RECIPE_EASY_DB.prepare(`
+                    SELECT id FROM recipe_images 
+                    WHERE recipe_id = ? AND image_path = ?
+                  `).bind(recipe.id, existingRecipe.current_image_path).first();
+                  
+                  if (existingImageRecord) {
+                    await env.RECIPE_EASY_DB.prepare(`
+                      UPDATE recipe_images 
+                      SET image_path = ?, image_model = ?, created_at = ?
+                      WHERE id = ?
+                    `).bind(
+                      path,
+                      recipe.imageModel || 'unknown',
+                      new Date().toISOString(),
+                      existingImageRecord.id
+                    ).run();
+                  } else {
+                    // 创建新的图片记录
+                    const imageId = generateImageId();
+                    await env.RECIPE_EASY_DB.prepare(`
+                      INSERT INTO recipe_images (
+                        id, user_id, recipe_id, image_path, expires_at, image_model, created_at
+                      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    `).bind(
+                      imageId,
+                      userId,
+                      recipe.id,
+                      path,
+                      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                      recipe.imageModel || 'unknown',
+                      new Date().toISOString()
+                    ).run();
+                  }
                 } else {
                   // 创建新的图片记录
                   const imageId = generateImageId();
@@ -1701,10 +1749,8 @@ async function handleSaveRecipe(request: Request, env: Env, corsHeaders: Record<
               new Date().toISOString()
             ).run();
                   
-                  // 更新菜谱的image_id
-                  await env.RECIPE_EASY_DB.prepare(`
-                    UPDATE recipes SET image_id = ? WHERE id = ?
-                  `).bind(imageId, recipe.id).run();
+                  // 更新菜谱的image_id (已移除，因为该列不存在)
+                  console.log('Image ID update skipped for existing recipe - recipes table does not have image_id column');
                 }
                 
                 console.log(`Image updated successfully for recipe: ${recipe.id}`);
@@ -1728,8 +1774,8 @@ async function handleSaveRecipe(request: Request, env: Env, corsHeaders: Record<
         INSERT INTO recipes (
           id, title, description, cooking_time, servings, difficulty, 
           ingredients, seasoning, instructions, tags, chef_tips, 
-          language_model, user_id, cuisine_id, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          user_id, cuisine_id, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
         recipe.id,
         recipe.title,
@@ -1742,7 +1788,6 @@ async function handleSaveRecipe(request: Request, env: Env, corsHeaders: Record<
         JSON.stringify(recipe.instructions || []),
         JSON.stringify(recipe.tags || []),
         JSON.stringify(recipe.chefTips || recipe.chef_tips || []),
-        recipe.languageModel,
         userId,
         recipe.cuisineId || 9,
         new Date().toISOString(),
@@ -1801,10 +1846,8 @@ async function handleSaveRecipe(request: Request, env: Env, corsHeaders: Record<
                     new Date().toISOString()
                   ).run();
             
-            // 更新菜谱的image_id
-            await env.RECIPE_EASY_DB.prepare(`
-              UPDATE recipes SET image_id = ? WHERE id = ?
-            `).bind(imageId, recipe.id).run();
+            // 更新菜谱的image_id (已移除，因为该列不存在)
+            console.log('Image ID update skipped for new recipe - recipes table does not have image_id column');
             
             console.log(`Image saved successfully for recipe: ${recipe.id}`);
           }
@@ -1874,15 +1917,8 @@ async function cleanupExpiredImages(env: Env): Promise<void> {
       WHERE expires_at IS NOT NULL AND expires_at < ?
     `).bind(new Date().toISOString()).run();
     
-    // 4. 更新菜谱表中的图片关联（将过期的图片关联设为NULL）
-    await env.RECIPE_EASY_DB.prepare(`
-      UPDATE recipes 
-      SET image_id = NULL 
-      WHERE image_id IN (
-        SELECT ri.id FROM recipe_images ri 
-        WHERE ri.expires_at IS NOT NULL AND ri.expires_at < ?
-      )
-    `).bind(new Date().toISOString()).run();
+    // 4. 更新菜谱表中的图片关联（已移除，因为该列不存在）
+    console.log('Image ID cleanup skipped - recipes table does not have image_id column');
     
     console.log(`Cleaned up ${expiredImages.results.length} expired images`);
     
@@ -1932,9 +1968,12 @@ async function handleGetUserRecipes(request: Request, db: D1Database, env: Env, 
     
     // 获取菜谱列表（包含图片信息）
     const recipesResult = await db.prepare(`
-      SELECT r.*, ri.image_path, ri.expires_at as image_expires_at, ri.image_model
+      SELECT r.id, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
+             r.ingredients, r.seasoning, r.instructions, r.tags, r.chef_tips,
+             r.cuisine_id, r.user_id, r.created_at, r.updated_at,
+             ri.image_path, ri.expires_at as image_expires_at, ri.image_model
       FROM recipes r
-      LEFT JOIN recipe_images ri ON r.image_id = ri.id
+      LEFT JOIN recipe_images ri ON r.id = ri.recipe_id
       WHERE r.user_id = ?
       ORDER BY r.created_at DESC 
       LIMIT ? OFFSET ?
@@ -1955,7 +1994,7 @@ async function handleGetUserRecipes(request: Request, db: D1Database, env: Env, 
       chefTips: JSON.parse(row.chef_tips || '[]'), // 修正字段名
       imagePath: row.image_path ? `${env.WORKER_URL || 'https://api.recipe-easy.com'}/images/${row.image_path}` : null,
       imageExpiresAt: row.image_expires_at,
-      languageModel: row.language_model,
+
       imageModel: row.image_model,
       createdAt: row.created_at
     }));
@@ -2031,7 +2070,7 @@ async function handleDeleteRecipe(request: Request, env: Env, corsHeaders: Recor
     const recipeResult = await env.RECIPE_EASY_DB.prepare(`
       SELECT r.user_id, ri.image_path 
       FROM recipes r
-      LEFT JOIN recipe_images ri ON r.image_id = ri.id
+      LEFT JOIN recipe_images ri ON r.id = ri.recipe_id
       WHERE r.id = ? AND r.user_id = ?
     `).bind(recipeId, userId).first();
     
