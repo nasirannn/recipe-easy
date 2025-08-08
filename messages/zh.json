@@ -90,9 +90,11 @@
     "cancel": "取消",
     "confirm": "确认",
     "loadingIngredients": "加载食材中...",
+    "loadingSubtitle": "正在为您准备美味的食材...",
     "noIngredientsFound": "未找到食材",
     "pressEnterToAdd": "按回车键将其添加为自定义食材",
     "noIngredientsInCategory": "此分类中没有可用的食材",
+    "tryOtherCategoryOrSearch": "请尝试选择其他分类或搜索其他食材",
     "items": "项",
     "categories": {
       "meat": "肉类",

@@ -90,9 +90,11 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "loadingIngredients": "Loading ingredients...",
+    "loadingSubtitle": "Preparing delicious ingredients for you...",
     "noIngredientsFound": "No ingredients found for",
     "pressEnterToAdd": "to add it as a custom ingredient",
     "noIngredientsInCategory": "No ingredients available in this category",
+    "tryOtherCategoryOrSearch": "Try selecting another category or search for other ingredients",
     "items": "items",
     "categories": {
       "meat": "Meat",

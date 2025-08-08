@@ -395,14 +395,14 @@ export const IngredientSelector = ({
                       <button
                         onClick={() => handleCategoryChange(categoryId as keyof typeof CATEGORIES)}
                         className={cn(
-                          "flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap overflow-hidden",
+                          "flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap overflow-hidden relative",
                           "min-w-[85px] max-w-[140px]",
                           isActive
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+                            ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-105"
+                            : "text-muted-foreground hover:text-foreground hover:scale-102"
                         )}
                       >
-                        <Icon className={cn("h-4 w-4 flex-shrink-0", isActive ? "text-primary-foreground" : category.color)} />
+                        <Icon className={cn("h-4 w-4 flex-shrink-0 transition-colors duration-300", isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
                         <span className="truncate">{categoryName}</span>
                       </button>
                     </TooltipTrigger>
@@ -455,29 +455,60 @@ export const IngredientSelector = ({
       {/* 食材网格 */}
       <div className="w-full">
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <span className="ml-3 text-muted-foreground">{t('loadingIngredients')}</span>
+          <div className="flex flex-col items-center justify-center py-16 space-y-4">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 dark:border-gray-700"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent absolute top-0 left-0"></div>
+            </div>
+            <div className="text-center space-y-2">
+              <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t('loadingIngredients')}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{t('loadingSubtitle')}</div>
+            </div>
           </div>
         ) : (
           <ScrollArea className="h-64 w-full">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 p-1">
-              {filteredIngredients.map((ingredient) => (
-                <button
-                  key={ingredient.id}
-                  onClick={() => handleIngredientSelect(ingredient)}
-                  className="group relative p-3 rounded-lg bg-card hover:bg-accent border border-border text-sm text-center transition-all duration-200 hover:shadow-sm"
-                >
-                  <div className="font-medium text-foreground group-hover:text-accent-foreground">
-                    {ingredient.englishName}
-                  </div>
-                  {locale === 'zh' && ingredient.name !== ingredient.englishName && (
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {ingredient.name}
+            <div className="flex flex-wrap gap-3 p-2">
+              {filteredIngredients.map((ingredient) => {
+                // 根据食材名称长度动态计算宽度
+                const nameLength = ingredient.englishName.length;
+                const chineseNameLength = locale === 'zh' && ingredient.name !== ingredient.englishName ? ingredient.name.length : 0;
+                const totalLength = Math.max(nameLength, chineseNameLength);
+                
+                // 动态宽度计算
+                let cardWidth = 'min-w-[100px] max-w-[180px]';
+                if (totalLength <= 8) {
+                  cardWidth = 'min-w-[100px] max-w-[140px]';
+                } else if (totalLength <= 12) {
+                  cardWidth = 'min-w-[120px] max-w-[160px]';
+                } else {
+                  cardWidth = 'min-w-[140px] max-w-[200px]';
+                }
+                
+                return (
+                  <button
+                    key={ingredient.id}
+                    onClick={() => handleIngredientSelect(ingredient)}
+                    className={`group relative p-4 rounded-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 hover:from-primary/10 hover:via-primary/5 hover:to-primary/10 text-sm text-center transition-all duration-500 hover:scale-110 hover:shadow-xl hover:shadow-primary/25 hover:-translate-y-1 border border-gray-100 dark:border-gray-600 overflow-hidden flex-shrink-0 ${cardWidth}`}
+                  >
+                  {/* 背景装饰效果 */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  
+                  {/* 内容区域 */}
+                  <div className="relative z-10 w-full">
+                    <div className="font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary transition-all duration-300 text-sm leading-tight break-words">
+                      {ingredient.englishName}
                     </div>
-                  )}
+                    {locale === 'zh' && ingredient.name !== ingredient.englishName && (
+                      <div className="text-xs text-gray-600 dark:text-gray-300 mt-1.5 group-hover:text-primary/80 transition-all duration-300 font-medium break-words">
+                        {ingredient.name}
+                      </div>
+                    )}
+                  </div>
+                  
+
                 </button>
-              ))}
+              );
+            })}
             </div>
             <ScrollBar orientation="vertical" />
           </ScrollArea>
@@ -485,20 +516,43 @@ export const IngredientSelector = ({
 
         {/* 搜索结果为空时的提示 */}
         {!loading && filteredIngredients.length === 0 && searchValue.trim() && (
-          <div className="text-center py-8 space-y-2">
-            <div className="text-muted-foreground">
-              {t('noIngredientsFound')} &quot;{searchValue}&quot;
+          <div className="text-center py-12 space-y-4">
+            <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 text-gray-400">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
             </div>
-            <div className="text-sm text-muted-foreground">
-              Press <kbd className="px-2 py-1 bg-muted rounded text-xs">Enter</kbd> {t('pressEnterToAdd')}
+            <div className="space-y-2">
+              <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                {t('noIngredientsFound')} &quot;{searchValue}&quot;
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Press <kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-md text-xs font-mono border border-gray-300 dark:border-gray-600">Enter</kbd> {t('pressEnterToAdd')}
+              </div>
             </div>
           </div>
         )}
 
         {/* 分类为空时的提示 */}
         {!loading && filteredIngredients.length === 0 && !searchValue.trim() && (
-          <div className="text-center py-8 text-muted-foreground">
-{t('noIngredientsInCategory')}
+          <div className="text-center py-12 space-y-4">
+            <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 text-gray-400">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                {t('noIngredientsInCategory')}
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                {t('tryOtherCategoryOrSearch')}
+              </div>
+            </div>
           </div>
         )}
       </div>
