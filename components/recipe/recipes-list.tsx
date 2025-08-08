@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Spinner } from '@/components/ui/spinner';
-import { Badge } from '@/components/ui/badge';
 import { Clock, Users, ChefHat } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -111,7 +110,7 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
   if (isLoading && page === 1) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center">
             <Spinner className="h-8 w-8 mx-auto" />
             <p className="mt-4 text-gray-600 dark:text-gray-300">
@@ -126,25 +125,22 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
       {/* 页面标题 */}
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              {t('allRecipes')}
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300">
-              {t('allRecipesSubtitle')}
-            </p>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="text-center">
+          <h2 className="text-4xl font-bold text-primary text-primary-dark mb-4">
+            {t('allRecipes')}
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-300">
+            {t('allRecipesSubtitle')}
+          </p>
         </div>
       </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {recipes.map((recipe) => {
             // 由于 Recipe 接口现在使用 cuisineId，这里暂时显示默认值
             const localizedCuisineName = getLocalizedCuisineName('', locale);
-            
+
             return (
               <Link
                 key={recipe.id}
@@ -153,7 +149,7 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
               >
                 <div className="relative aspect-[3/2] overflow-hidden">
                   <Image
-                    src={recipe.imagePath || '/images/placeholder.svg'}
+                    src={recipe.imagePath || '/images/recipe-placeholder-bg.png'}
                     alt={recipe.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
@@ -161,11 +157,11 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.onerror = null;
-                      target.src = '/images/placeholder.svg';
+                      target.src = '/images/recipe-placeholder-bg.png';
+                      target.className = 'object-cover group-hover:scale-105 transition-transform duration-300';
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
+
                   {/* 菜系标签 - 暂时隐藏，因为 Recipe 接口现在使用 cuisineId */}
                   {/* {recipe.cuisineId && (
                     <div className="absolute top-3 left-3">
@@ -175,31 +171,34 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
                     </div>
                   )} */}
 
-                  {/* 烹饪时间 */}
-                  {recipe.cookingTime && (
-                    <div className="absolute bottom-3 left-3 flex items-center gap-1 text-white bg-black/50 rounded-full px-2 py-1">
-                      <Clock className="h-3 w-3" />
-                      <span className="text-xs">{recipe.cookingTime} {tRecipe('mins')}</span>
-                    </div>
-                  )}
+                  {/* 烹饪时间 - 移除，将移到卡片底部 */}
                 </div>
 
                 <div className="p-6">
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-3 line-clamp-2 group-hover:text-primary transition-colors text-lg">
                     {recipe.title}
                   </h3>
-                  
+
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
                     {recipe.description}
                   </p>
 
-                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                    {/* 烹饪时间 */}
+                    {recipe.cookingTime && (
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        <span>{recipe.cookingTime} {tRecipe('mins')}</span>
+                      </div>
+                    )}
+                    {/* 人份 */}
                     {recipe.servings && (
                       <div className="flex items-center gap-1">
                         <Users className="h-3 w-3" />
                         <span>{recipe.servings}</span>
                       </div>
                     )}
+                    {/* 难度 */}
                     {recipe.difficulty && (
                       <div className="flex items-center gap-1">
                         <ChefHat className="h-3 w-3" />

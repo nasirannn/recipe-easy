@@ -34,6 +34,49 @@ function generateTransactionId(): string {
   return `TXN-${timestamp}-${random}`;
 }
 
+// 获取东八区时间字符串 (yyyy-MM-dd hh:mm:ss)
+function getBeijingTimeString(): string {
+  const now = new Date();
+  const beijingTime = new Date(now.getTime() + (8 * 60 * 60 * 1000)); // UTC+8
+  return beijingTime.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+// 记录模型使用情况
+async function recordModelUsage(db: D1Database, params: {
+  model_name: string;
+  model_type: 'language' | 'image';
+  model_response_id: string;               // 大模型返回的ID
+  request_details?: string;
+}): Promise<void> {
+  try {
+    const stmt = db.prepare(`
+      INSERT INTO model_usage_records (id, model_name, model_type, request_details, created_at)
+      VALUES (?, ?, ?, ?, DATETIME('now'))
+    `);
+    
+    await stmt.bind(
+      params.model_response_id,            // 使用大模型返回的ID作为主键
+      params.model_name,
+      params.model_type,
+      params.request_details || null
+    ).run();
+    
+    console.log(`✅ Model usage recorded: ${params.model_type} model ${params.model_name} with ID ${params.model_response_id}`);
+  } catch (error) {
+    console.error('❌ Failed to record model usage:', error);
+    // 不抛出错误，避免影响主要业务逻辑
+  }
+}
+
+// 生成UUID
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 const worker = {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -94,6 +137,17 @@ const worker = {
       if (path === '/api/user-usage') {
         if (request.method === 'GET' || request.method === 'POST') {
           return await handleUserUsage(request, env.RECIPE_EASY_DB, corsHeaders);
+        } else {
+          return new Response('Method not allowed', { 
+            status: 405,
+            headers: corsHeaders 
+          });
+        }
+      }
+      
+      if (path === '/api/model-usage') {
+        if (request.method === 'POST') {
+          return await handleModelUsage(request, env.RECIPE_EASY_DB, corsHeaders);
         } else {
           return new Response('Method not allowed', { 
             status: 405,
@@ -270,7 +324,7 @@ async function handleCategories(request: Request, db: D1Database, corsHeaders: R
     const { results } = await db.prepare(`
       SELECT 
         c.id,
-        c18n.name as category_name
+        COALESCE(c18n.name, c.name) as category_name
       FROM ingredient_categories c
       LEFT JOIN ingredient_categories_i18n c18n ON c.id = c18n.category_id AND c18n.language_code = ?
       ORDER BY c.id ASC
@@ -336,10 +390,11 @@ async function handleIngredients(request: Request, db: D1Database, corsHeaders: 
         i.id,
         i.slug,
         i.category_id,
-        i18n.name as ingredient_name,
-        c18n.name as category_name
+        COALESCE(i18n.name, i.name) as ingredient_name,
+        COALESCE(c18n.name, c.name) as category_name
       FROM ingredients i
       LEFT JOIN ingredients_i18n i18n ON i.id = i18n.ingredient_id AND i18n.language_code = ?
+      LEFT JOIN ingredient_categories c ON i.category_id = c.id
       LEFT JOIN ingredient_categories_i18n c18n ON i.category_id = c18n.category_id AND c18n.language_code = ?
     `;
     
@@ -490,8 +545,28 @@ async function getSystemConfig(db: D1Database, key: string, defaultValue: string
 async function handleUserUsage(request: Request, db: D1Database, corsHeaders: Record<string, string>): Promise<Response> {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const isAdmin = searchParams.get('isAdmin') === 'true';
+    const rawUserId = searchParams.get('userId');
+    const rawIsAdmin = searchParams.get('isAdmin');
+    
+    // 🔒 安全修复：严格验证和清理用户输入
+    if (!rawUserId || typeof rawUserId !== 'string') {
+      return new Response(JSON.stringify({ error: 'Invalid user ID' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // 验证用户ID格式（UUID格式）
+    const userIdRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!userIdRegex.test(rawUserId)) {
+      return new Response(JSON.stringify({ error: 'Invalid user ID format' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    const userId = rawUserId;
+    const isAdmin = rawIsAdmin === 'true';
 
     if (request.method === 'GET') {
       if (!userId) {
@@ -547,14 +622,26 @@ async function handleUserUsage(request: Request, db: D1Database, corsHeaders: Re
 
     } else if (request.method === 'POST') {
       const body = await request.json();
-      const { userId, action, amount, description } = body;
+      const { userId: bodyUserId, action, amount, description } = body;
 
-      if (!userId) {
-        return new Response(JSON.stringify({ error: 'User ID is required' }), {
+      // 🔒 安全修复：验证POST请求中的用户ID
+      if (!bodyUserId || typeof bodyUserId !== 'string') {
+        return new Response(JSON.stringify({ error: 'Invalid user ID' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
+      
+      // 验证用户ID格式（UUID格式）
+      const userIdRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!userIdRegex.test(bodyUserId)) {
+        return new Response(JSON.stringify({ error: 'Invalid user ID format' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      
+      const userId = bodyUserId;
 
       if (action === 'spend') {
         // 从系统配置中获取生成消耗
@@ -1234,9 +1321,27 @@ async function handleUploadImage(request: Request, env: Env, corsHeaders: Record
         });
       }
       
+      // 🔒 安全修复：验证用户是否有权限访问该菜谱
+      const recipeCheck = await env.RECIPE_EASY_DB.prepare(`
+        SELECT user_id FROM recipes WHERE id = ?
+      `).bind(recipeId).first();
+      
+      if (!recipeCheck || recipeCheck.user_id !== userId) {
+        return new Response(JSON.stringify({ 
+          error: 'Access denied',
+          details: 'You do not have permission to upload images for this recipe'
+        }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      
+      // 🔒 安全修复：服务器端生成安全的文件路径
       const timestamp = Date.now();
-      const randomString = Math.random().toString(36).substring(2, 15);
-      const generatedPath = `${userId}/${recipeId}/${timestamp}-${randomString}.jpg`;
+      const randomString = crypto.randomUUID().replace(/-/g, '').substring(0, 16);
+      const sanitizedUserId = userId.replace(/[^a-zA-Z0-9-_]/g, '');
+      const sanitizedRecipeId = recipeId.toString().replace(/[^a-zA-Z0-9-_]/g, '');
+      const generatedPath = `${sanitizedUserId}/${sanitizedRecipeId}/${timestamp}-${randomString}.jpg`;
       
       try {
         // 下载图片
@@ -1285,15 +1390,37 @@ async function handleUploadImage(request: Request, env: Env, corsHeaders: Record
     }
     
     // 模式2：传统的base64上传模式
-    if (!path || !imageData || !recipeId) {
+    if (!imageData || !recipeId) {
       return new Response(JSON.stringify({ 
         error: 'Missing required parameters',
-        details: 'For base64 upload: path, imageData, userId, and recipeId are required'
+        details: 'For base64 upload: imageData, userId, and recipeId are required'
       }), {
         status: 422,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
+    
+    // 🔒 安全修复：验证用户是否有权限访问该菜谱
+    const recipeCheck = await env.RECIPE_EASY_DB.prepare(`
+      SELECT user_id FROM recipes WHERE id = ?
+    `).bind(recipeId).first();
+    
+    if (!recipeCheck || recipeCheck.user_id !== userId) {
+      return new Response(JSON.stringify({ 
+        error: 'Access denied',
+        details: 'You do not have permission to upload images for this recipe'
+      }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // 🔒 安全修复：服务器端生成安全的文件路径，忽略客户端提供的path
+    const timestamp = Date.now();
+    const randomString = crypto.randomUUID().replace(/-/g, '').substring(0, 16);
+    const sanitizedUserId = userId.replace(/[^a-zA-Z0-9-_]/g, '');
+    const sanitizedRecipeId = recipeId.toString().replace(/[^a-zA-Z0-9-_]/g, '');
+    const safePath = `${sanitizedUserId}/${sanitizedRecipeId}/${timestamp}-${randomString}.jpg`;
     
     // 验证base64数据格式
     try {
@@ -1316,7 +1443,7 @@ async function handleUploadImage(request: Request, env: Env, corsHeaders: Record
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7天后过期
     
     // 3. 上传到 R2
-    await env.RECIPE_IMAGES.put(path, imageBuffer, {
+    await env.RECIPE_IMAGES.put(safePath, imageBuffer, {
       httpMetadata: {
         contentType: contentType || 'image/jpeg',
       },
@@ -1349,7 +1476,7 @@ async function handleUploadImage(request: Request, env: Env, corsHeaders: Record
         imageId,
         userId,
         recipeId,
-        path,
+        safePath,
         expiresAt?.toISOString() || null,
         imageModel || 'unknown',
         new Date().toISOString()
@@ -1381,7 +1508,7 @@ async function handleUploadImage(request: Request, env: Env, corsHeaders: Record
     // 5. 返回图片访问URL
     // 根据环境使用正确的域名
     const baseUrl = env.WORKER_URL || 'https://api.recipe-easy.com';
-    const imageUrl = `${baseUrl}/images/${path}`;
+    const imageUrl = `${baseUrl}/images/${safePath}`;
     
     return new Response(JSON.stringify({ 
       success: true, 
@@ -1515,8 +1642,17 @@ async function handleSaveRecipe(request: Request, env: Env, corsHeaders: Record<
                 // 删除旧图片（如果存在）
                 if (existingRecipe.current_image_path) {
                   try {
-                    await env.RECIPE_IMAGES.delete(String(existingRecipe.current_image_path));
-                    console.log(`Deleted old image: ${existingRecipe.current_image_path}`);
+                    const oldImagePath = String(existingRecipe.current_image_path);
+                    
+                    // 检查旧图片是否存在
+                    const oldImageObject = await env.RECIPE_IMAGES.head(oldImagePath);
+                    if (oldImageObject) {
+                      // 删除存在的旧图片
+                      await env.RECIPE_IMAGES.delete(oldImagePath);
+                      console.log(`Deleted old image: ${existingRecipe.current_image_path}`);
+                    } else {
+                      console.log(`Old image already deleted: ${existingRecipe.current_image_path}`);
+                    }
                   } catch (deleteError) {
                     console.error('Failed to delete old image:', deleteError);
                   }
@@ -1527,13 +1663,13 @@ async function handleSaveRecipe(request: Request, env: Env, corsHeaders: Record<
                   httpMetadata: {
                     contentType: 'image/jpeg',
                   },
-                  customMetadata: {
-                    userId,
-                    recipeId: recipe.id,
-                    imageModel: recipe.imageModel || 'unknown',
-                    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-                    uploadedAt: new Date().toISOString()
-                  }
+                                customMetadata: {
+                userId,
+                recipeId: recipe.id,
+                imageModel: recipe.imageModel || 'unknown',
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                uploadedAt: new Date().toISOString()
+              }
                 });
                 
                 // 更新recipe_images表
@@ -1551,19 +1687,19 @@ async function handleSaveRecipe(request: Request, env: Env, corsHeaders: Record<
                 } else {
                   // 创建新的图片记录
                   const imageId = generateImageId();
-                  await env.RECIPE_EASY_DB.prepare(`
-                    INSERT INTO recipe_images (
-                      id, user_id, recipe_id, image_path, expires_at, image_model, created_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                  `).bind(
-                    imageId,
-                    userId,
-                    recipe.id,
-                    path,
-                    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-                    recipe.imageModel || 'unknown',
-                    new Date().toISOString()
-                  ).run();
+                              await env.RECIPE_EASY_DB.prepare(`
+              INSERT INTO recipe_images (
+                id, user_id, recipe_id, image_path, expires_at, image_model, created_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            `).bind(
+              imageId,
+              userId,
+              recipe.id,
+              path,
+              new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+              recipe.imageModel || 'unknown',
+              new Date().toISOString()
+            ).run();
                   
                   // 更新菜谱的image_id
                   await env.RECIPE_EASY_DB.prepare(`
@@ -1640,30 +1776,30 @@ async function handleSaveRecipe(request: Request, env: Env, corsHeaders: Record<
               httpMetadata: {
                 contentType: 'image/jpeg',
               },
-              customMetadata: {
-                userId,
-                recipeId: recipe.id,
-                imageModel: recipe.imageModel || 'unknown',
-                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-                uploadedAt: new Date().toISOString()
-              }
+                              customMetadata: {
+                  userId,
+                  recipeId: recipe.id,
+                  imageModel: recipe.imageModel || 'unknown',
+                  expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                  uploadedAt: new Date().toISOString()
+                }
             });
             
             // 保存到recipe_images表
             const imageId = generateImageId();
-            await env.RECIPE_EASY_DB.prepare(`
-              INSERT INTO recipe_images (
-                id, user_id, recipe_id, image_path, expires_at, image_model, created_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?)
-            `).bind(
-              imageId,
-              userId,
-              recipe.id,
-              path,
-              new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-              recipe.imageModel || 'unknown',
-              new Date().toISOString()
-            ).run();
+                              await env.RECIPE_EASY_DB.prepare(`
+                    INSERT INTO recipe_images (
+                      id, user_id, recipe_id, image_path, expires_at, image_model, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                  `).bind(
+                    imageId,
+                    userId,
+                    recipe.id,
+                    path,
+                    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    recipe.imageModel || 'unknown',
+                    new Date().toISOString()
+                  ).run();
             
             // 更新菜谱的image_id
             await env.RECIPE_EASY_DB.prepare(`
@@ -1716,6 +1852,15 @@ async function cleanupExpiredImages(env: Env): Promise<void> {
     for (const image of expiredImages.results) {
       try {
         const imagePath = image.image_path as string;
+        
+        // 检查图片是否存在
+        const imageObject = await env.RECIPE_IMAGES.head(imagePath);
+        if (!imageObject) {
+          console.log(`Image already deleted: ${imagePath}`);
+          continue;
+        }
+        
+        // 删除存在的图片
         await env.RECIPE_IMAGES.delete(imagePath);
         console.log(`Deleted expired image: ${imagePath}`);
       } catch (error) {
@@ -1751,9 +1896,33 @@ async function handleGetUserRecipes(request: Request, db: D1Database, env: Env, 
   try {
     const url = new URL(request.url);
     const pathParts = url.pathname.split('/');
-    const userId = pathParts[pathParts.length - 1]; // 获取最后一个部分作为用户ID
-    const page = parseInt(url.searchParams.get('page') || '1');
-    const limit = parseInt(url.searchParams.get('limit') || '10');
+    const rawUserId = pathParts[pathParts.length - 1]; // 获取最后一个部分作为用户ID
+    
+    // 🔒 安全修复：验证用户ID格式
+    if (!rawUserId || typeof rawUserId !== 'string') {
+      return new Response(JSON.stringify({ error: 'Invalid user ID' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // 验证用户ID格式（UUID格式）
+    const userIdRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!userIdRegex.test(rawUserId)) {
+      return new Response(JSON.stringify({ error: 'Invalid user ID format' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    const userId = rawUserId;
+    
+    // 🔒 安全修复：验证分页参数
+    const rawPage = url.searchParams.get('page') || '1';
+    const rawLimit = url.searchParams.get('limit') || '10';
+    
+    const page = Math.max(1, Math.min(1000, parseInt(rawPage) || 1)); // 限制最大页数
+    const limit = Math.max(1, Math.min(100, parseInt(rawLimit) || 10)); // 限制每页最大数量
     const offset = (page - 1) * limit;
     
     // 获取总数
@@ -1817,16 +1986,46 @@ async function handleDeleteRecipe(request: Request, env: Env, corsHeaders: Recor
   try {
     const url = new URL(request.url);
     const pathParts = url.pathname.split('/');
-    const recipeId = pathParts[pathParts.length - 1]; // 获取最后一个部分作为菜谱ID
-    const body = await request.json();
-    const { userId } = body;
+    const rawRecipeId = pathParts[pathParts.length - 1]; // 获取最后一个部分作为菜谱ID
     
-    if (!userId) {
-      return new Response(JSON.stringify({ error: 'User ID is required' }), {
+    // 🔒 安全修复：验证菜谱ID格式
+    if (!rawRecipeId || typeof rawRecipeId !== 'string') {
+      return new Response(JSON.stringify({ error: 'Invalid recipe ID' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
+    
+    // 验证菜谱ID是否为数字
+    const recipeId = parseInt(rawRecipeId);
+    if (isNaN(recipeId) || recipeId <= 0) {
+      return new Response(JSON.stringify({ error: 'Invalid recipe ID format' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    const body = await request.json();
+    const { userId: bodyUserId } = body;
+    
+    // 🔒 安全修复：验证用户ID
+    if (!bodyUserId || typeof bodyUserId !== 'string') {
+      return new Response(JSON.stringify({ error: 'Invalid user ID' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // 验证用户ID格式（UUID格式）
+    const userIdRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!userIdRegex.test(bodyUserId)) {
+      return new Response(JSON.stringify({ error: 'Invalid user ID format' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    const userId = bodyUserId;
     
     // 获取菜谱信息
     const recipeResult = await env.RECIPE_EASY_DB.prepare(`
@@ -1847,8 +2046,16 @@ async function handleDeleteRecipe(request: Request, env: Env, corsHeaders: Recor
     if (recipeResult.image_path) {
       try {
         const imagePath = recipeResult.image_path as string;
-        await env.RECIPE_IMAGES.delete(imagePath);
-        console.log(`Deleted image from R2: ${imagePath}`);
+        
+        // 检查图片是否存在
+        const imageObject = await env.RECIPE_IMAGES.head(imagePath);
+        if (imageObject) {
+          // 删除存在的图片
+          await env.RECIPE_IMAGES.delete(imagePath);
+          console.log(`Deleted image from R2: ${imagePath}`);
+        } else {
+          console.log(`Image already deleted: ${imagePath}`);
+        }
       } catch (error) {
         console.error('Failed to delete image from R2:', error);
       }
@@ -1874,6 +2081,60 @@ async function handleDeleteRecipe(request: Request, env: Env, corsHeaders: Recor
     console.error('Delete recipe error:', error);
     return new Response(JSON.stringify({ 
       error: 'Failed to delete recipe',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+// 处理模型使用记录
+async function handleModelUsage(request: Request, db: D1Database, corsHeaders: Record<string, string>): Promise<Response> {
+  try {
+    const body = await request.json();
+    const { model_name, model_type, model_response_id, request_details } = body;
+
+    // 验证必要参数
+    if (!model_name || !model_type || !model_response_id) {
+      return new Response(JSON.stringify({ 
+        error: 'Missing required fields: model_name, model_type, model_response_id' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 验证模型类型
+    if (!['language', 'image'].includes(model_type)) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid model_type. Must be either "language" or "image"' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 记录模型使用情况
+    await recordModelUsage(db, {
+      model_name,
+      model_type: model_type as 'language' | 'image',
+      model_response_id,
+      request_details
+    });
+
+    return new Response(JSON.stringify({ 
+      success: true,
+      message: 'Model usage recorded successfully'
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+
+  } catch (error) {
+    console.error('Model usage recording error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Failed to record model usage',
       details: error instanceof Error ? error.message : 'Unknown error'
     }), {
       status: 500,

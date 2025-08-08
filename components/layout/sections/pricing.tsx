@@ -80,7 +80,7 @@ export const PricingSection = () => {
   
   return (
     <section className="container py-24 sm:py-32">
-      <h2 className="text-lg text-primary text-center mb-2 tracking-wider">
+      <h2 className="text-lg text-secondary text-center mb-2 tracking-wider">
         Pricing
       </h2>
 

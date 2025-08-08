@@ -1,15 +1,10 @@
 import { ChefHat, Users, Clock, Copy, Check, X, RefreshCw, Save, Loader2, Bookmark } from "lucide-react";
 import { Recipe, Ingredient } from "@/lib/types";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useEffect } from "react";
 import { Button } from "./button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
-import { Badge } from "./badge";
 import Image from "next/image";
-import { Spinner } from "./spinner";
 import { Dialog, DialogContent } from "./dialog";
 import { useTranslations, useLocale } from 'next-intl';
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
 import { useUserUsage } from "@/hooks/use-user-usage";
 
@@ -26,10 +21,9 @@ interface RecipeDisplayProps {
 
 export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates = {}, onRegenerateImage, onSaveRecipe }: RecipeDisplayProps) => {
   const t = useTranslations('recipeDisplay');
-  const tImagePlaceholder = useTranslations('imagePlaceholder');
+  const tRecipeForm = useTranslations('recipeForm');
   const locale = useLocale();
-  const { user, isAdmin } = useAuth();
-  const { credits } = useUserUsage();
+  const { user } = useAuth();
   
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const [savingStates, setSavingStates] = useState<Record<string, boolean>>({});
@@ -100,7 +94,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
   };
 
   return (
-    <div className="min-h-screen bg-primary/5">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
 
@@ -118,15 +112,15 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
               <div key={recipe.id || `recipe-${index}`} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* 左侧：图片和基本信息 */}
                 <div className="lg:col-span-2 space-y-6">
-                  {/* 主图片 */}
-                  <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl group">
+                  {/* 主图片 - 悬浮交互完整恢复 */}
+                  <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl group hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transition-all duration-300">
                     {recipe.imagePath && !imageErrors[recipe.id] ? (
                       <Image
                         src={recipe.imagePath}
                         alt={recipe.title}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover cursor-pointer transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover cursor-pointer transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
                         unoptimized={true}
                         onClick={() => openImageDialog(recipe.imagePath!)}
                         onError={(e) => {
@@ -135,30 +129,30 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                         }}
                       />
                     ) : imageLoadingStates[recipe.id] ? (
-                      // Loading状态 - 与默认状态保持一致的样式
-                      <div className="w-full h-full relative pointer-events-none overflow-hidden">
-                        {/* 背景图片 - 添加高斯模糊 */}
+                      // Loading状态 - 移除模糊遮罩和透明度
+                      <div className="w-full h-full relative overflow-hidden">
+                        {/* 背景图片 - 移除模糊效果 */}
                         <Image
                           src="/images/recipe-placeholder-bg.png"
                           alt="Background"
                           fill
-                          className="object-cover blur-sm scale-110"
+                          className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
                           unoptimized={true}
                         />
                         
-                        {/* 渐变遮罩层 - 与默认状态保持一致 */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-black/5 to-black/15" />
+                        {/* 高斯模糊遮罩 */}
+                        <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
                         
                         {/* 加载状态 - 中央位置，简洁明了 */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <div className="h-16 w-16 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl border border-white/30">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                          <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-xl border border-gray-200">
                             <RefreshCw className="h-8 w-8 text-gray-700 animate-spin" />
                           </div>
                         </div>
                         
                         {/* 底部文字提示 */}
-                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-                          <div className="bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2">
+                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 pointer-events-none">
+                          <div className="bg-black rounded-lg px-4 py-2">
                             <p className="text-white text-sm font-medium">
                               {locale === 'zh' ? '正在生成图片...' : 'Generating image...'}
                             </p>
@@ -166,86 +160,68 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                         </div>
                       </div>
                     ) : (
-                      // 默认状态 - 优化后的简洁设计
-                      <div className="w-full h-full relative group overflow-hidden cursor-pointer">
-                        {/* 背景图片 - 保持recipe-placeholder-bg.png */}
+                      // 没有图片时的占位符
+                      <div className="w-full h-full relative overflow-hidden">
                         <Image
                           src="/images/recipe-placeholder-bg.png"
-                          alt="Recipe placeholder background"
+                          alt="Recipe placeholder"
                           fill
-                          className="object-cover transition-all duration-500 group-hover:scale-105 blur-sm"
+                          className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
                           unoptimized={true}
                         />
                         
-                        {/* 渐变遮罩层 - 与加载状态保持一致 */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-black/15 via-black/10 to-black/20" />
+                        {/* 高斯模糊遮罩 */}
+                        <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
                         
-                        {/* 中央交互区域 */}
-                        <div 
-                          className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-300"
-                          onClick={() => {
-                            console.log('Generate button clicked, user:', user?.id, 'isAdmin:', isAdmin);
-                            
-                            // 检查用户是否登录
-                            if (!user?.id) {
-                              console.log('User not logged in, showing login modal');
-                              const event = new CustomEvent('showLoginModal');
-                              window.dispatchEvent(event);
-                              return;
-                            }
-                            
-                            console.log('User logged in, checking credits. Available credits:', credits?.credits);
-                            // 已登录用户，检查积分余额
-                            const availableCredits = credits?.credits || 0;
-                            if (!isAdmin && availableCredits < 1) {
-                              console.log('Insufficient credits, showing error');
-                              return;
-                            }
-                            
-                            console.log('Credits sufficient, dispatching generateImage event for recipe:', recipe.title);
-                            // 积分充足，触发生成图片事件
-                            const event = new CustomEvent('generateImage', { 
-                              detail: { recipeId: recipe.id, recipe: recipe } 
-                            });
-                            window.dispatchEvent(event);
-                          }}
-                        >
-                          {/* 主生成按钮 - 与加载状态保持一致的大小和样式 */}
-                          <div className="relative">
-                            {/* 主按钮 - 使用与加载状态相同的尺寸 */}
-                            <div className="h-16 w-16 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl border border-white/30 group-hover:scale-105 transition-all duration-300">
-                              <RefreshCw className="h-8 w-8 text-gray-700 group-hover:rotate-12 transition-transform duration-300" />
-                            </div>
-                          </div>
+                        {/* 中央生成按钮 */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (onRegenerateImage) {
+                                onRegenerateImage(recipe.id, recipe);
+                              }
+                            }}
+                            className="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-xl border border-gray-200 hover:bg-gray-50 transition-all duration-200 hover:scale-110 cursor-pointer"
+                            disabled={imageLoadingStates[recipe.id]}
+                          >
+                            {imageLoadingStates[recipe.id] ? (
+                              <RefreshCw className="h-8 w-8 text-gray-700 animate-spin" />
+                            ) : (
+                              <RefreshCw className="h-8 w-8 text-gray-700" />
+                            )}
+                          </button>
                         </div>
                         
-                        {/* 底部提示 */}
-                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1 text-xs text-gray-700 font-medium">
-                            {locale === 'zh' ? '消耗1积分生成菜谱图片' : 'Cost 1 credit to generate recipe image'}
+                        {/* 悬浮提示 - 底部居中 */}
+                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                          <div className="bg-black rounded-lg px-4 py-2">
+                            <p className="text-white text-sm font-medium">
+                              {tRecipeForm('generateImageCost')}
+                            </p>
                           </div>
                         </div>
                       </div>
                     )}
                     
-                    {/* 重新生成按钮 - 只在已生成图片时显示，悬停时显示 */}
+                    {/* 重新生成按钮 - 悬浮交互完整恢复 */}
                     {onRegenerateImage && recipe.imagePath && !imageErrors[recipe.id] && !imageLoadingStates[recipe.id] && (
-                      <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                      <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-20">
                         <div 
-                          className="relative h-12 w-12 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-xl border border-white/30 cursor-pointer hover:bg-white transition-colors duration-200 hover:scale-110 group/button"
+                          className="relative h-12 w-12 bg-white rounded-full flex items-center justify-center shadow-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-all duration-200 hover:scale-110 group/regenerate-btn"
                           onClick={(e) => {
                             e.stopPropagation();
                             onRegenerateImage(recipe.id, recipe);
                           }}
                           title={locale === 'zh' ? '重新生成图片需消耗1积分' : 'Regenerate image costs 1 credit'}
                         >
-                          <RefreshCw className="h-6 w-6 text-gray-700 hover:rotate-180 transition-transform duration-300" />
+                          <RefreshCw className="h-6 w-6 text-gray-700 group-hover/regenerate-btn:rotate-180 transition-transform duration-300" />
                           
                           {/* 悬浮提示 - 显示积分消耗信息 */}
-                          <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover/button:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
-                            <div className="bg-black/80 backdrop-blur-sm rounded-lg px-3 py-2 text-xs text-white whitespace-nowrap shadow-lg">
+                          <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover/regenerate-btn:opacity-100 transition-opacity duration-300 pointer-events-none z-30">
+                            <div className="bg-black rounded-lg px-3 py-2 text-xs text-white whitespace-nowrap shadow-lg">
                               {locale === 'zh' ? '重新生成图片需消耗1积分' : 'Regenerate image costs 1 credit'}
-                              <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/80"></div>
+                              <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black"></div>
                             </div>
                           </div>
                         </div>
@@ -283,8 +259,8 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {recipe.cookingTime && (
                           <div className="flex items-center gap-3">
-                            <div className="p-3 bg-primary/10 rounded-xl">
-                              <Clock className="h-6 w-6 text-primary" />
+                            <div className="p-3 bg-secondary/10 rounded-xl">
+                              <Clock className="h-6 w-6 text-secondary" />
                             </div>
                             <div>
                               <p className="text-sm text-gray-500 dark:text-gray-400">{t('cookTime')}</p>
@@ -297,8 +273,8 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                         
                         {recipe.servings && (
                           <div className="flex items-center gap-3">
-                            <div className="p-3 bg-primary/10 rounded-xl">
-                              <Users className="h-6 w-6 text-primary" />
+                            <div className="p-3 bg-secondary/10 rounded-xl">
+                              <Users className="h-6 w-6 text-secondary" />
                             </div>
                             <div>
                               <p className="text-sm text-gray-500 dark:text-gray-400">{t('serves')}</p>
@@ -311,8 +287,8 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                         
                         {recipe.difficulty && (
                           <div className="flex items-center gap-3">
-                            <div className="p-3 bg-primary/10 rounded-xl">
-                              <ChefHat className="h-6 w-6 text-primary" />
+                            <div className="p-3 bg-secondary/10 rounded-xl">
+                              <ChefHat className="h-6 w-6 text-secondary" />
                             </div>
                             <div>
                               <p className="text-sm text-gray-500 dark:text-gray-400">{t('difficulty')}</p>
@@ -502,7 +478,6 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                           </Button>
                           
                           <Button 
-                            variant="outline" 
                             className="w-full"
                             onClick={() => {
                               const allContent = [

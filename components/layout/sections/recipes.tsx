@@ -144,7 +144,7 @@ export const RecipesSection = () => {
               >
                 <div className="relative aspect-[3/2] overflow-hidden">
                   <Image
-                    src={recipe.imagePath || '/images/placeholder.svg'}
+                    src={recipe.imagePath || '/images/recipe-placeholder-bg.png'}
                     alt={recipe.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
@@ -152,10 +152,10 @@ export const RecipesSection = () => {
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.onerror = null;
-                      target.src = '/images/placeholder.svg';
+                      target.src = '/images/recipe-placeholder-bg.png';
+                      target.className = 'object-cover group-hover:scale-105 transition-transform duration-300';
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   
                   {/* 菜系标签 - 暂时隐藏，因为 Recipe 接口现在使用 cuisineId */}
                   {/* {recipe.cuisineId && (
@@ -166,13 +166,7 @@ export const RecipesSection = () => {
                     </div>
                   )} */}
 
-                  {/* 烹饪时间 */}
-                  {recipe.cookingTime && (
-                    <div className="absolute bottom-3 left-3 flex items-center gap-1 text-white bg-black/50 rounded-full px-2 py-1">
-                      <Clock className="h-3 w-3" />
-                      <span className="text-xs">{recipe.cookingTime} {tRecipe('mins')}</span>
-                    </div>
-                  )}
+
                 </div>
 
                 <div className="p-6">
@@ -184,7 +178,13 @@ export const RecipesSection = () => {
                     {recipe.description}
                   </p>
 
-                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                    {recipe.cookingTime && (
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        <span>{recipe.cookingTime}</span>
+                      </div>
+                    )}
                     {recipe.servings && (
                       <div className="flex items-center gap-1">
                         <Users className="h-3 w-3" />

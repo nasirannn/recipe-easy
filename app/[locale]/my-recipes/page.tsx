@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Recipe, UserStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
   Dialog,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Clock, Users, ChefHat, Calendar, Image as ImageIcon, ArrowLeft, AlertTriangle, Trash2, Eye } from 'lucide-react';
+import { Clock, Users, ChefHat, Calendar, ArrowLeft, AlertTriangle, Trash2, } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
@@ -164,68 +164,6 @@ export default function MyRecipesPage() {
     return diffDays;
   };
 
-  const getDifficultyInfo = (difficulty: string) => {
-    // 统一转换为小写进行比较
-    const difficultyLower = difficulty.toLowerCase();
-    
-    // 处理英文难度等级
-    switch (difficultyLower) {
-      case 'easy':
-        return { 
-          color: 'text-emerald-700', 
-          bg: 'bg-emerald-50', 
-          border: 'border-emerald-200',
-          icon: '🟢'
-        };
-      case 'medium':
-        return { 
-          color: 'text-amber-700', 
-          bg: 'bg-amber-50', 
-          border: 'border-amber-200',
-          icon: '🟡'
-        };
-      case 'hard':
-        return { 
-          color: 'text-rose-700', 
-          bg: 'bg-rose-50', 
-          border: 'border-rose-200',
-          icon: '🔴'
-        };
-    }
-    
-    // 处理中文难度等级
-    switch (difficulty) {
-      case '简单':
-        return { 
-          color: 'text-emerald-700', 
-          bg: 'bg-emerald-50', 
-          border: 'border-emerald-200',
-          icon: '🟢'
-        };
-      case '中等':
-        return { 
-          color: 'text-amber-700', 
-          bg: 'bg-amber-50', 
-          border: 'border-amber-200',
-          icon: '🟡'
-        };
-      case '困难':
-        return { 
-          color: 'text-rose-700', 
-          bg: 'bg-rose-50', 
-          border: 'border-rose-200',
-          icon: '🔴'
-        };
-      default:
-        return { 
-          color: 'text-slate-700', 
-          bg: 'bg-slate-50', 
-          border: 'border-slate-200',
-          icon: '⚪'
-        };
-    }
-  };
-
   // 显示加载状态
   if (userLoading) {
     return (
@@ -278,8 +216,8 @@ export default function MyRecipesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-primary/5">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-8">
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-6">
@@ -345,32 +283,37 @@ export default function MyRecipesPage() {
           </div>
         ) : (
           <>
-            {/* Grid Layout */}
-            <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6">
+            {/* Grid Layout - 与 explore 页面保持一致 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {recipes.map((recipe) => (
-                <Card key={recipe.id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-2xl break-inside-avoid mb-6">
+                <Card key={recipe.id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-2xl transform hover:-translate-y-1">
                   {/* Image Container */}
-                  <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600">
+                  <div className="relative aspect-[3/2] overflow-hidden">
                     {recipe.imagePath && !isImageExpired(recipe.imageExpiresAt) ? (
                       <img 
                         src={recipe.imagePath} 
                         alt={recipe.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
                         }}
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ImageIcon className="h-12 w-12 text-gray-400" />
+                      <div className="w-full h-full relative group overflow-hidden">
+                        {/* 背景图片 - 移除模糊效果和遮罩 */}
+                        <img
+                          src="/images/recipe-placeholder-bg.png"
+                          alt="Recipe placeholder background"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
                       </div>
                     )}
                     
                     {/* Expiry Badge - Only show on hover */}
                     {recipe.imageExpiresAt && getDaysUntilExpiry(recipe.imageExpiresAt) !== null && (
                       <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <Badge className="text-xs bg-black/80 text-white border-0 backdrop-blur-sm font-medium">
+                        <Badge className="text-xs bg-black text-white border-0 font-medium">
                           {getDaysUntilExpiry(recipe.imageExpiresAt)! <= 0 ? 
                             (locale === 'zh' ? '0' : '0') : 
                             `${getDaysUntilExpiry(recipe.imageExpiresAt)}`
@@ -380,7 +323,7 @@ export default function MyRecipesPage() {
                     )}
                     
                     {/* Overlay Actions */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all duration-300 flex items-center justify-center">
                       <div className="flex gap-3 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
                         <Button
                           size="sm"
@@ -399,9 +342,9 @@ export default function MyRecipesPage() {
                     </div>
                   </div>
                   
-                  {/* Content */}
-                  <CardContent className="p-4">
-                    <h3 className="font-bold text-lg mb-3 line-clamp-2 text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400">
+                  {/* Content - 与 explore 页面保持一致 */}
+                  <div className="p-6">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3 line-clamp-2 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors text-lg">
                       <Link 
                         href={`/${locale}/recipe/${recipe.id}`} 
                         className="block hover:text-orange-600 dark:hover:text-orange-400"
@@ -411,32 +354,43 @@ export default function MyRecipesPage() {
                       </Link>
                     </h3>
                     
-                    {/* Meta Info */}
-                    <div className="flex items-center gap-4 mb-3 text-sm text-gray-600 dark:text-gray-400">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        <span>{recipe.cookingTime}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        <span>{recipe.servings}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {getDifficultyInfo(recipe.difficulty).icon}
-                        <span>{recipe.difficulty}</span>
-                      </div>
+                    {/* 描述 - 与 explore 页面保持一致 */}
+                    {recipe.description && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                        {recipe.description}
+                      </p>
+                    )}
+                    
+                    {/* Meta Info - 与 explore 页面保持一致 */}
+                    <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                      {recipe.cookingTime && (
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{recipe.cookingTime}</span>
+                        </div>
+                      )}
+                      {recipe.servings && (
+                        <div className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          <span>{recipe.servings}</span>
+                        </div>
+                      )}
+                      {recipe.difficulty && (
+                        <div className="flex items-center gap-1">
+                          <ChefHat className="h-3 w-3" />
+                          <span>{recipe.difficulty}</span>
+                        </div>
+                      )}
                     </div>
                     
-
-                    
                     {/* Date */}
-                    <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-2">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {recipe.createdAt && <span>{formatDate(recipe.createdAt)}</span>}
                       </div>
                     </div>
-                  </CardContent>
+                  </div>
                 </Card>
               ))}
             </div>
@@ -503,10 +457,7 @@ export default function MyRecipesPage() {
                 {t('deleteDialog.title')}
               </DialogTitle>
               <DialogDescription className="text-slate-600 dark:text-slate-400">
-                {locale === 'zh' 
-                  ? `您确定要删除"${recipeToDelete?.title}"吗？此操作无法撤销。`
-                  : `Are you sure you want to delete "${recipeToDelete?.title}"? This action cannot be undone.`
-                }
+                {t('deleteDialog.description', { title: recipeToDelete?.title })}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="gap-2">

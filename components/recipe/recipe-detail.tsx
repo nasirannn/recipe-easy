@@ -1,7 +1,6 @@
 "use client";
 import { useState } from 'react';
 import Image from 'next/image';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -12,14 +11,9 @@ import {
   ChefHat, 
   Copy, 
   Check, 
-  ArrowLeft,
-  Share2,
-  Heart,
-  Bookmark,
-  Plus
+  ArrowLeft
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Recipe } from '@/lib/types';
 
@@ -28,33 +22,7 @@ interface RecipeDetailProps {
   locale: string;
 }
 
-// 获取 cuisine 的 CSS 类名
-const getCuisineClassName = (cuisineName: string): string => {
-  if (!cuisineName) return 'cuisine-other';
-  
-  const cuisineClassMap: { [key: string]: string } = {
-    'Chinese': 'cuisine-chinese',
-    'Italian': 'cuisine-italian',
-    'French': 'cuisine-french',
-    'Indian': 'cuisine-indian',
-    'Japanese': 'cuisine-japanese',
-    'Mediterranean': 'cuisine-mediterranean',
-    'Thai': 'cuisine-thai',
-    'Mexican': 'cuisine-mexican',
-    'Others': 'cuisine-other',
-    '中式': 'cuisine-chinese',
-    '意式': 'cuisine-italian',
-    '法式': 'cuisine-french',
-    '印式': 'cuisine-indian',
-    '日式': 'cuisine-japanese',
-    '地中海': 'cuisine-mediterranean',
-    '地中海式': 'cuisine-mediterranean',
-    '泰式': 'cuisine-thai',
-    '墨西哥': 'cuisine-mexican',
-    '其他': 'cuisine-other'
-  };
-  return cuisineClassMap[cuisineName] || 'cuisine-other';
-};
+
 
 export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
   const t = useTranslations('recipeDisplay');
@@ -139,7 +107,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-primary/5">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* 左侧：图片和基本信息 */}
@@ -147,22 +115,25 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
 
 
             {/* 主图片 */}
-            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
-              <Image
-                src={recipe.imagePath || '/images/placeholder.svg'}
-                alt={recipe.title}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover"
-                priority
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.onerror = null;
-                  target.src = '/images/placeholder.svg';
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            </div>
+            {/* 菜谱图片 - 只在有图片时显示 */}
+            {recipe.imagePath && (
+              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
+                <Image
+                  src={recipe.imagePath}
+                  alt={recipe.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover"
+                  priority
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.parentElement!.style.display = 'none';
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+              </div>
+            )}
 
             {/* 标题和描述 */}
             <div className="space-y-4">
@@ -194,8 +165,8 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {recipe.cookingTime && (
                     <div className="flex items-center gap-3">
-                      <div className="p-3 bg-primary/10 rounded-xl">
-                        <Clock className="h-6 w-6 text-primary" />
+                      <div className="p-3 bg-secondary/10 rounded-xl">
+                        <Clock className="h-6 w-6 text-secondary" />
                       </div>
                       <div>
                         <p className="text-sm text-gray-500 dark:text-gray-400">{t('cookTime')}</p>
@@ -208,8 +179,8 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                   
                   {recipe.servings && (
                     <div className="flex items-center gap-3">
-                      <div className="p-3 bg-primary/10 rounded-xl">
-                        <Users className="h-6 w-6 text-primary" />
+                      <div className="p-3 bg-secondary/10 rounded-xl">
+                        <Users className="h-6 w-6 text-secondary" />
                       </div>
                       <div>
                         <p className="text-sm text-gray-500 dark:text-gray-400">{t('serves')}</p>
@@ -222,8 +193,8 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                   
                   {recipe.difficulty && (
                     <div className="flex items-center gap-3">
-                      <div className="p-3 bg-primary/10 rounded-xl">
-                        <ChefHat className="h-6 w-6 text-primary" />
+                      <div className="p-3 bg-secondary/10 rounded-xl">
+                        <ChefHat className="h-6 w-6 text-secondary" />
                       </div>
                       <div>
                         <p className="text-sm text-gray-500 dark:text-gray-400">{t('difficulty')}</p>
@@ -386,7 +357,6 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                 
                 <div className="space-y-3">
                   <Button 
-                    variant="secondary"
                     className="w-full"
                     onClick={() => {
                       const allContent = [
@@ -415,16 +385,6 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                       <Copy className="w-4 h-4 mr-2" />
                     )}
                     {locale === 'zh' ? '复制菜谱' : 'Copy Full Recipe'}
-                  </Button>
-                  
-                  <Button 
-                    className="w-full"
-                    onClick={() => {
-                      router.push(`/${locale}#recipe-form-section`);
-                    }}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    {locale === 'zh' ? '生成菜谱' : 'Generate Recipe'}
                   </Button>
                   
                   <Button 

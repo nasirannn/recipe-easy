@@ -6,5 +6,10 @@ http://www.recipe-easy.com/* https://recipe-easy.com/:splat 301!
 # 确保 www 和非 www 都重定向到主域名
 https://www.recipe-easy.com/* https://recipe-easy.com/:splat 301!
 
-# 保持末尾斜杠一致性
-# 确保所有URL都有末尾斜杠（可选配置） 
+# 处理带和不带末尾斜杠的URL
+https://recipe-easy.com https://recipe-easy.com/ 301!
+https://recipe-easy.com/zh https://recipe-easy.com/zh/ 301!
+https://recipe-easy.com/en https://recipe-easy.com/en/ 301!
+
+# 强制使用HTTPS的canonical URL
+# 这确保所有页面都指向HTTPS版本 

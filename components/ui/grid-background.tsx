@@ -24,7 +24,7 @@ interface FloatingIconProps {
 const FloatingIcon = ({ icon, className }: FloatingIconProps) => (
   <div
     className={cn(
-      "absolute opacity-10",
+      "absolute opacity-30",
       className
     )}
   >
@@ -81,7 +81,7 @@ export const GridBackground = ({
       {icons.map(({ Icon, position }, index) => (
         <FloatingIcon
           key={index}
-          icon={<Icon size={40} className="text-primary" strokeWidth={1.5} />}
+          icon={<Icon size={40} className="text-secondary" strokeWidth={1.5} />}
           className={position}
         />
       ))}

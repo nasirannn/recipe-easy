@@ -1,17 +1,15 @@
 "use client";
 
-import { Menu, LogOut, Coins, ChevronDown, User, Settings, Edit, BookOpen, Home, Search, Star, HelpCircle, ChevronRight } from "lucide-react";
+import { Menu, LogOut, User, Settings, BookOpen, Home, Search, Star, HelpCircle, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/auth-context";
 import { useUserUsage } from '@/hooks/use-user-usage';
@@ -273,7 +271,6 @@ export const Navbar = () => {
                           <div className="bg-accent/50 rounded-md p-3">
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-1.5">
-                                <Coins className="h-4 w-4 text-primary" />
                                 <span className="font-medium text-sm">{t('credits')}</span>
                               </div>
                               <span className="font-semibold tabular-nums">

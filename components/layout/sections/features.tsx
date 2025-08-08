@@ -11,37 +11,37 @@ export const FeaturesSection = () => {
       id: 1, 
       title: 'imageModels', 
       description: 'imageModelsDesc',
-      icon: <ImageIcon className="h-6 w-6 text-primary" />
+      icon: <ImageIcon className="h-6 w-6 text-secondary" />
     },
     { 
       id: 2, 
       title: 'aiGeneration', 
       description: 'aiGenerationDesc',
-      icon: <Sparkles className="h-6 w-6 text-primary" />
+      icon: <Sparkles className="h-6 w-6 text-secondary" />
     },
     { 
       id: 3, 
       title: 'customIngredients', 
       description: 'customIngredientsDesc',
-      icon: <Utensils className="h-6 w-6 text-primary" />
+      icon: <Utensils className="h-6 w-6 text-secondary" />
     },
     { 
       id: 4, 
       title: 'multipleCuisine', 
       description: 'multipleCuisineDesc',
-      icon: <Pizza className="h-6 w-6 text-primary" />
+      icon: <Pizza className="h-6 w-6 text-secondary" />
     },
     { 
       id: 5, 
       title: 'multiLanguage', 
       description: 'multiLanguageDesc',
-      icon: <Globe className="h-6 w-6 text-primary" />
+      icon: <Globe className="h-6 w-6 text-secondary" />
     },
     { 
       id: 6, 
       title: 'responsive', 
       description: 'responsiveDesc',
-      icon: <Smartphone className="h-6 w-6 text-primary" />
+      icon: <Smartphone className="h-6 w-6 text-secondary" />
     }
   ];
 

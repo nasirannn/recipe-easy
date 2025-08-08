@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Upload, ChefHat, Download } from "lucide-react";
 import Image from 'next/image';
 
@@ -18,7 +18,7 @@ const TutorialStep = ({ step, title, description, icon, imageSrc }: TutorialStep
         <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
           {icon}
         </div>
-        <h3 className="text-lg font-semibold text-primary">
+        <h3 className="text-lg font-semibold text-secondary">
           {step}
         </h3>
       </div>
@@ -52,21 +52,21 @@ export const TutorialSection = () => {
       step: "01",
       title: t('step1.title'),
       description: t('step1.description'),
-      icon: <Upload className="w-5 h-5 text-primary" />,
+      icon: <Upload className="w-5 h-5 text-secondary" />,
       imageSrc: "/images/tutorial_step_1.png"
     },
     {
       step: "02", 
       title: t('step2.title'),
       description: t('step2.description'),
-      icon: <ChefHat className="w-5 h-5 text-primary" />,
+      icon: <ChefHat className="w-5 h-5 text-secondary" />,
       imageSrc: "/images/tutorial_step_2.png"
     },
     {
       step: "03",
       title: t('step3.title'), 
       description: t('step3.description'),
-      icon: <Download className="w-5 h-5 text-primary" />,
+      icon: <Download className="w-5 h-5 text-secondary" />,
       imageSrc: "/images/tutorial_step_3.png"
     }
   ];

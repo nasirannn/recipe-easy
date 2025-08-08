@@ -7,6 +7,35 @@ import { generateRecipeId } from '@/lib/utils/id-generator';
 // 强制动态渲染
 export const runtime = 'edge';
 
+// 记录模型使用情况的函数
+async function recordModelUsage(modelName: string, modelResponseId: string, requestDetails: string) {
+  try {
+    // 调用Worker API记录模型使用情况
+    const workerUrl = process.env.WORKER_URL || 'https://api.recipe-easy.com';
+    const response = await fetch(`${workerUrl}/api/model-usage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model_name: modelName,
+        model_type: 'language',
+        model_response_id: modelResponseId,
+        request_details: requestDetails
+      }),
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to record model usage:', response.statusText);
+    } else {
+      console.log(`✅ Model usage recorded: ${modelName} with ID ${modelResponseId}`);
+    }
+  } catch (error) {
+    console.error('Error recording model usage:', error);
+    // 不抛出错误，避免影响主要业务逻辑
+  }
+}
+
 // 提取公共的数据转换函数
 function transformRecipeData(recipe: any, finalLanguageModel: string, language: string) {
   const recipeId = generateRecipeId();
@@ -136,6 +165,13 @@ export async function POST(request: NextRequest) {
         throw new Error('Empty response from GPT-4o mini');
       }
 
+      // 记录模型使用情况
+      await recordModelUsage(
+        finalLanguageModel,
+        prediction.id,
+        userPrompt
+      );
+
       // 解析 output
       let recipes = [];
       try {
@@ -193,6 +229,13 @@ export async function POST(request: NextRequest) {
     if (!response.choices?.[0]?.message?.content) {
       throw new Error('Empty response from API');
     }
+
+    // 记录模型使用情况
+    await recordModelUsage(
+      finalLanguageModel,
+      response.id,
+      userPrompt
+    );
 
     // 解析返回的JSON
     const content = response.choices[0].message.content;

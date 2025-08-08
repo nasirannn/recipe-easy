@@ -145,7 +145,7 @@ export const TestimonialSection = () => {
   return (
     <section id="testimonials" className="container py-4 sm:py-12">
       <div className="text-center mb-8">
-        <h2 className="text-lg text-primary text-center mb-2 tracking-wider">
+        <h2 className="text-lg text-secondary text-center mb-2 tracking-wider">
           {t('title')}
         </h2>
 

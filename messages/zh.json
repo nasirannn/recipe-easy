@@ -77,7 +77,9 @@
     "generating": "生成中...",
     "wait": "等待...",
     "go": "开始",
-    "moreOptions": "更多选项"
+    "moreOptions": "更多选项",
+    "generateImage": "生成图片",
+    "generateImageCost": "生成图片需消耗1积分"
   },
   "ingredientSelector": {
     "addMoreIngredients": "添加更多食材...",
@@ -138,7 +140,7 @@
     "title": "获取灵感",
     "subtitle": "从我们的全球美食食谱集合中获取灵感。",
     "exploreMore": "探索更多",
-    "allRecipes": "所有菜谱",
+    "allRecipes": "探索所有菜谱",
     "allRecipesSubtitle": "发现来自世界各地的美味菜谱",
     "loadingRecipes": "加载菜谱中...",
     "loadMore": "加载更多",
@@ -176,6 +178,7 @@
     },
     "deleteDialog": {
       "title": "删除菜谱",
+      "description": "您确定要删除\"{title}\"吗？此操作无法撤销。",
       "cancel": "取消",
       "confirm": "删除菜谱",
       "deleting": "删除中..."

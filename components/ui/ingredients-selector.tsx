@@ -12,7 +12,6 @@ import {
   Cookie,
   Fish,
   X,
-  ChevronDown,
   Trash2
 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
@@ -125,8 +124,8 @@ export const IngredientSelector = ({
   const fetchAllIngredients = useCallback(async () => {
     setLoading(true);
     try {
-      // 获取所有食材
-      const response = await fetch(`/api/ingredients?lang=${locale}`);
+      // 获取所有食材 - 增加limit确保获取所有食材
+      const response = await fetch(`/api/ingredients?lang=${locale}&limit=200`);
       const data = await response.json();
 
       if (!data.success || !data.results) {
@@ -305,8 +304,6 @@ export const IngredientSelector = ({
       }
     }
   };
-
-  // 移除未使用的变量
 
   return (
     <div className="w-full space-y-4 relative">

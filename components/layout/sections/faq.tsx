@@ -1,5 +1,4 @@
 "use client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslations } from 'next-intl';
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
@@ -55,7 +54,7 @@ export const FAQSection = () => {
     <section id="faq" className="w-full bg-primary/5 py-4 sm:py-12">
       <div className="container">
         <div className="text-center mb-16 ">
-         <h2 className="text-lg text-primary text-center mb-2 tracking-wider">
+         <h2 className="text-lg text-secondary text-center mb-2 tracking-wider">
           FAQ
         </h2>
         <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -74,7 +73,7 @@ export const FAQSection = () => {
               >
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <span className="text-primary font-semibold text-sm">
+                    <span className="text-secondary font-semibold text-sm">
                       {String(index + 1).padStart(2, '0')}
                     </span>
                   </div>
@@ -86,9 +85,9 @@ export const FAQSection = () => {
                 </div>
                 <div className="flex-shrink-0">
                   {isOpen ? (
-                    <ChevronUp className={`h-5 w-5 ${isOpen ? 'text-primary' : 'text-muted-foreground'}`} />
-                  ) : (
-                    <ChevronDown className={`h-5 w-5 ${isOpen ? 'text-primary' : 'text-muted-foreground'}`} />
+                                      <ChevronUp className={`h-5 w-5 ${isOpen ? 'text-secondary' : 'text-muted-foreground'}`} />
+                ) : (
+                  <ChevronDown className={`h-5 w-5 ${isOpen ? 'text-secondary' : 'text-muted-foreground'}`} />
                   )}
                 </div>
               </button>

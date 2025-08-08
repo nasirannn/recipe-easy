@@ -6,22 +6,41 @@ import { LanguageModel, ImageModel } from "@/lib/config";
 import { RecipeForm } from "@/components/ui/recipe-form";
 import { RecipeDisplay } from "@/components/ui/recipe-display";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
-import { IMAGE_GEN_CONFIG, APP_CONFIG, getRecommendedModels } from "@/lib/config";
-import { env } from "@/lib/env";
+import { APP_CONFIG, getRecommendedModels } from "@/lib/config";
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from "@/contexts/auth-context";
-import { useUserUsage } from "@/hooks/use-user-usage";
 import { Button } from "@/components/ui/button";
 import React from "react";
-import { trackRecipeGeneration, trackFeatureUsage } from "@/lib/gtag";
-import { toast } from "sonner";
+import { useRecipeGeneration } from "@/hooks/use-recipe-generation";
+import { useImageGeneration } from "@/hooks/use-image-generation";
+import { useRecipeSave } from "@/hooks/use-recipe-save";
 
 export const HeroSection = () => {
   const t = useTranslations('hero');
   const tRecipe = useTranslations('recipeDisplay');
   const locale = useLocale();
-  const { user, isAdmin } = useAuth();
-  const { credits, updateCreditsLocally } = useUserUsage();
+  const { user } = useAuth();
+  
+  // 使用自定义 hooks
+  const { 
+    loading, 
+    recipes, 
+    error, 
+    generateRecipe, 
+    regenerateRecipe, 
+    clearRecipes, 
+    setRecipes 
+  } = useRecipeGeneration();
+  
+  const { 
+    imageGenerating, 
+    imageLoadingStates, 
+    generateImage, 
+    regenerateImage, 
+    clearImageLoadingStates 
+  } = useImageGeneration();
+  
+  const { saveRecipe } = useRecipeSave();
   
   // 根据语言获取推荐的模型
   const recommendedModels = getRecommendedModels(locale);
@@ -47,13 +66,8 @@ export const HeroSection = () => {
     }));
   }, [locale, recommendedModels.languageModel, recommendedModels.imageModel]);
   
-  const [loading, setLoading] = useState(false);
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [searchedIngredients, setSearchedIngredients] = useState<RecipeFormData['ingredients']>([]);
   const [showRecipe, setShowRecipe] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [imageGenerating, setImageGenerating] = useState(false);
-  const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({}); // 为每个菜谱跟踪loading状态
 
   // 监听重新生成菜谱事件
   useEffect(() => {
@@ -66,53 +80,15 @@ export const HeroSection = () => {
         ingredients: ingredients
       }));
       
-      // 重新生成菜谱
-      setLoading(true);
-      setError(null);
-
       try {
-        const response = await fetch('/api/generate-recipe', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            ingredients: ingredients,
-            servings: recipe.servings || 2,
-            recipeCount: 1,
-            cookingTime: recipe.cookingTime || "medium",
-            difficulty: recipe.difficulty || "medium",
-            cuisine: recipe.cuisine || "any",
-            language: locale,
-            imageModel: formData.imageModel,
-            languageModel: formData.languageModel,
-            userId: user?.id,
-            isAdmin: isAdmin
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to regenerate recipes');
-        }
-
-        const data = await response.json();
-        const generatedRecipes = data.recipes || [];
-        setRecipes(generatedRecipes);
+        const generatedRecipes = await regenerateRecipe(ingredients, recipe, formData);
         setSearchedIngredients(ingredients);
-        
-        // 跟踪菜谱重新生成事件
-        trackRecipeGeneration(recipe.cuisine, ingredients.length);
-        trackFeatureUsage('recipe_regeneration');
         
         if (generatedRecipes.length > 0) {
           setShowRecipe(true);
         }
       } catch (error) {
         console.error('Regenerate recipe error:', error);
-        setError(error instanceof Error ? error.message : 'Failed to regenerate recipe');
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -121,210 +97,23 @@ export const HeroSection = () => {
     return () => {
       window.removeEventListener('regenerateRecipe', handleRegenerateRecipe as EventListener);
     };
-  }, [locale, user?.id, isAdmin, formData.imageModel, formData.languageModel]);
-
-
+  }, [regenerateRecipe]);
 
   const handleFormChange = (data: RecipeFormData) => {
     setFormData(data);
   };
 
-  // 为每个菜谱生成图片
-  const generateRecipeImages = async (recipes: Recipe[]) => {
-    setImageGenerating(true);
-    
-    try {
-      const updatedRecipes = [...recipes];
-    } catch (error) {
-      console.error('Error generating images:', error);
-    } finally {
-      setImageGenerating(false);
-    }
-  };
-
-  // 保存菜谱到数据库
-  const handleSaveRecipe = async (recipe: Recipe) => {
-    console.log('Saving recipe to database:', recipe.title);
-    
-    if (!user?.id) {
-      throw new Error('User not logged in');
-    }
-    
-    try {
-      // 调用worker API保存菜谱
-      const workerUrl = env.WORKER_URL;
-      const response = await fetch(`${workerUrl}/api/recipes/save`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          recipe: {
-            ...recipe,
-            imageModel: formData.imageModel || recommendedModels.imageModel // 添加图片模型信息
-          },
-          userId: user.id
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save recipe');
-      }
-
-      const result = await response.json();
-      console.log('Recipe saved successfully:', result);
-      
-      // 根据返回的状态显示不同的提示
-      if (result.alreadyExists) {
-        if (result.hasUpdatedImage) {
-          toast.success(locale === 'zh' ? '菜谱图片已更新！' : 'Recipe image updated successfully!');
-        } else {
-          toast.info(locale === 'zh' ? '菜谱已存在，无需重复保存' : 'Recipe already exists, no need to save again');
-        }
-      } else {
-        toast.success(locale === 'zh' ? '菜谱保存成功！' : 'Recipe saved successfully!');
-      }
-      
-    } catch (error) {
-      console.error('Error saving recipe:', error);
-      throw error;
-    }
-  };
-
   // 重新生成单个菜谱的图片
   const handleRegenerateImage = async (recipeId: string, recipe: Recipe) => {
-    console.log('Regenerating image for recipe:', recipe.title);
-    
-    // 检查用户是否登录
-    if (!user?.id) {
-      const event = new CustomEvent('showLoginModal');
-      window.dispatchEvent(event);
-      return;
-    }
-    
-    // 检查积分余额
-    const availableCredits = credits?.credits || 0;
-    if (!isAdmin && availableCredits < 1) {
-      toast.error(
-        locale === 'zh' 
-          ? '积分不足，无法重新生成图片' 
-          : 'Insufficient credits to regenerate image'
-      );
-      return;
-    }
-    
-    // 设置该菜谱的loading状态并清除现有图片
-    setImageLoadingStates(prev => ({ ...prev, [recipeId]: true }));
-    
-    // 清除现有图片路径，让组件显示loading状态
-    const updatedRecipes = recipes.map(r => 
-      r.id === recipeId 
-        ? { ...r, imagePath: undefined }
-        : r
-    );
-    setRecipes(updatedRecipes);
-    
-    try {
-      // 调用图片生成API
-      const response = await fetch('/api/generate-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          recipeTitle: recipe.title,
-          recipeDescription: recipe.description,
-          recipeIngredients: recipe.ingredients,
-          style: 'photographic',
-          size: '1024x1024',
-          n: 1,
-          model: formData.imageModel || recommendedModels.imageModel,
-          userId: user.id,
-          isAdmin: isAdmin,
-          language: locale
-        }),
-      });
-
-      const result = await response.json();
-      
-      if (result.success && result.imageUrl) {
-        
-        // 将AI生成的图片上传到R2存储
-        try {
-          
-          // 下载AI生成的图片
-          const imageResponse = await fetch(result.imageUrl);
-          if (!imageResponse.ok) {
-            throw new Error(`Failed to download image: ${imageResponse.status}`);
-          }
-          
-          const imageBlob = await imageResponse.blob();
-          const imageBuffer = await imageBlob.arrayBuffer();
-          
-          // 生成正确的图片路径：userId/recipeId/imageName
-          const timestamp = Date.now();
-          const randomString = Math.random().toString(36).substring(2, 15);
-          const path = `${user.id}/${recipeId}/${timestamp}-${randomString}.jpg`;
-          
-          // 上传到R2存储
-          const uploadResponse = await fetch(`${env.WORKER_URL}/api/upload-image`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              path: path,
-              imageData: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(imageBuffer)))), // 转换为base64
-              contentType: 'image/jpeg',
-              userId: user.id,
-              recipeId: recipeId,
-              imageModel: formData.imageModel || recommendedModels.imageModel
-            }),
-          });
-          
-          if (!uploadResponse.ok) {
-            throw new Error('Failed to upload image to R2');
-          }
-          
-          const uploadResult = await uploadResponse.json();
-          if (uploadResult.success && uploadResult.imageUrl) {
-            // 使用R2的URL更新菜谱
-            setRecipes(prevRecipes => prevRecipes.map(r => 
-              r.id === recipeId 
-                ? { ...r, imagePath: uploadResult.imageUrl }
-                : r
-            ));
-          } else {
-            throw new Error('Upload response indicates failure');
-          }
-        } catch (uploadError) {
-          console.error('Failed to upload regenerated image to R2:', uploadError);
-          
-          // 即使上传失败，也使用原始URL（临时方案）
-          setRecipes(prevRecipes => prevRecipes.map(r => 
-            r.id === recipeId 
-              ? { ...r, imagePath: result.imageUrl }
-              : r
-          ));
-        }
-        
-        // 更新积分
-        if (updateCreditsLocally) {
-          updateCreditsLocally();
-        }
-      } else {
-        console.error('Image regeneration failed:', result.error);
-        toast.error(result.error || (locale === 'zh' ? '图片重新生成失败' : 'Image regeneration failed'));
-      }
-    } catch (error) {
-      console.error('Error regenerating image:', error);
-      toast.error(locale === 'zh' ? '图片重新生成失败' : 'Image regeneration failed');
-    } finally {
-      // 清除该菜谱的loading状态
-      setImageLoadingStates(prev => ({ ...prev, [recipeId]: false }));
-    }
+    await regenerateImage(recipeId, recipe, formData.imageModel, (imageUrl) => {
+      setRecipes(prevRecipes => prevRecipes.map(r => 
+        r.id === recipeId 
+          ? { ...r, imagePath: imageUrl }
+          : r
+      ));
+    });
   };
+
   // 监听登录模态窗口事件
   useEffect(() => {
     const handleShowLoginModal = () => {
@@ -333,87 +122,21 @@ export const HeroSection = () => {
     };
 
     const handleLoginSuccess = () => {
-      // 登录成功后生成图片
-      setTimeout(() => {
-        handleLoginSuccess();
-      }, 1000); // 给一点时间让登录状态更新
+      // 登录成功后的处理逻辑
+      // 这里可以添加登录成功后的操作，比如刷新页面或重新加载数据
+      console.log('Login successful');
     };
 
     const handleGenerateImage = async (event: CustomEvent) => {
       const { recipeId, recipe } = event.detail;
       
-      // 检查用户是否登录
-      if (!user?.id) {
-        console.log('User not logged in, showing login modal');
-        // 未登录用户，显示登录模态窗口
-        const showLoginEvent = new CustomEvent('showLoginModal');
-        window.dispatchEvent(showLoginEvent);
-        return;
-      }
-
-      console.log('User logged in, checking credits...');
-      // 检查积分余额
-      const availableCredits = credits?.credits || 0;
-      if (!isAdmin && availableCredits < 1) {
-        toast.error(tRecipe('insufficientCredits'));
-        return;
-      }
-
-      console.log('Starting image generation for recipe:', recipe.title);
-      
-      // 设置该菜谱的loading状态
-      setImageLoadingStates(prev => ({ ...prev, [recipeId]: true }));
-      
-      try {
-        // 调用图片生成API
-        const response = await fetch('/api/generate-image', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            recipeTitle: recipe.title,
-            recipeDescription: recipe.description,
-            recipeIngredients: recipe.ingredients,
-            style: 'photographic',
-            size: '1024x1024',
-            n: 1,
-            model: formData.imageModel || recommendedModels.imageModel,
-            userId: user.id,
-            isAdmin: isAdmin,
-            language: locale
-          }),
-        });
-
-        const result = await response.json();
-        
-        if (result.success && result.imageUrl) {
-          
-          // 直接使用后端返回的图片URL（已经上传到R2）
-          const updatedRecipes = recipes.map(r => 
-            r.id === recipeId 
-              ? { ...r, imagePath: result.imageUrl }
-              : r
-          );
-          setRecipes(updatedRecipes);
-          
-          // 积分已在后端扣除，只需要更新本地状态
-          if (!isAdmin) {
-            updateCreditsLocally(-1);
-          }
-          
-          toast.success(locale === 'zh' ? '图片生成成功' : 'Image generated successfully');
-        } else {
-          toast.error(result.error || (locale === 'zh' ? '图片生成失败' : 'Image generation failed'));
-        }
-      } catch (error) {
-        toast.error(locale === 'zh' ? '图片生成失败' : 'Image generation failed');
-        // 清除loading状态
-        setImageLoadingStates(prev => ({ ...prev, [recipeId]: false }));
-      } finally {
-        // 清除该菜谱的loading状态
-        setImageLoadingStates(prev => ({ ...prev, [recipeId]: false }));
-      }
+      await generateImage(recipeId, recipe, formData.imageModel, (imageUrl) => {
+        setRecipes(prevRecipes => prevRecipes.map(r => 
+          r.id === recipeId 
+            ? { ...r, imagePath: imageUrl }
+            : r
+        ));
+      });
     };
 
     window.addEventListener('showLoginModal', handleShowLoginModal);
@@ -425,18 +148,16 @@ export const HeroSection = () => {
       window.removeEventListener('loginSuccess', handleLoginSuccess);
       window.removeEventListener('generateImage', handleGenerateImage as EventListener);
     };
-  }, [recipes, user?.id, isAdmin, formData.imageModel, updateCreditsLocally, locale, credits, recommendedModels.imageModel]);
+  }, [generateImage, formData.imageModel]);
 
   // 监听用户状态变化，当用户登出时重置状态
   useEffect(() => {
     if (!user) {
       // 用户登出，重置所有状态到初始值
-      setRecipes([]);
+      clearRecipes();
+      clearImageLoadingStates();
       setSearchedIngredients([]);
       setShowRecipe(false);
-      setError(null);
-      setImageGenerating(false);
-      setImageLoadingStates({});
       
       // 重置表单数据到初始状态
       setFormData({
@@ -446,78 +167,36 @@ export const HeroSection = () => {
         cookingTime: "medium",
         difficulty: "medium",
         cuisine: "any",
+        languageModel: recommendedModels.languageModel.toUpperCase() as LanguageModel,
         imageModel: recommendedModels.imageModel as ImageModel
       });
     }
   }, [user, recommendedModels.imageModel]);
 
-  
   const handleSubmit = async () => {
-    setLoading(true);
-    setError(null);
-
     try {
-      const response = await fetch('/api/generate-recipe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ingredients: formData.ingredients,
-          servings: formData.servings,
-          recipeCount: 1, // 固定生成1个菜谱
-          cookingTime: formData.cookingTime,
-          difficulty: formData.difficulty,
-          cuisine: formData.cuisine,
-          language: locale, // 传递当前用户选择的语言
-          imageModel: formData.imageModel, // 传递选择的图片生成模型
-          languageModel: formData.languageModel, // 传递选择的语言模型
-          userId: user?.id, // 传递用户ID（可选）
-          isAdmin: isAdmin // 传递管理员标识
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate recipes');
-      }
-
-      const data = await response.json();
-      const generatedRecipes = data.recipes || [];
-      setRecipes(generatedRecipes);
+      const generatedRecipes = await generateRecipe(formData);
       setSearchedIngredients(formData.ingredients);
       
-      // 跟踪菜谱生成事件
-      trackRecipeGeneration(formData.cuisine, formData.ingredients.length);
-      trackFeatureUsage('recipe_generation');
-      
-      // 菜谱生成成功，不显示提示信息
-      // 用户需要手动保存菜谱
-      
-      // 在获取菜谱后自动生成图片（仅登录用户）
       if (generatedRecipes.length > 0) {
         setShowRecipe(true);
-        // 移除自动生成图片逻辑，改为手动触发
-        // 只有登录用户才生成图片
-        // if (user?.id) {
-        //   generateRecipeImages(generatedRecipes);
-        // }
       }
-
     } catch (error) {
       console.error('Recipe generation failed:', error);
-      setError(error instanceof Error ? error.message : 'Failed to generate recipes');
-      setRecipes([]);
-    } finally {
-      setLoading(false);
     }
   };
 
+  const handleSaveRecipe = async (recipe: Recipe) => {
+    try {
+      await saveRecipe(recipe, formData.imageModel);
+    } catch (error) {
+      console.error('Error saving recipe:', error);
+    }
+  };
 
   return (
     <section id="hero" className="w-full bg-primary/5 pt-20">
-
-    <GridBackground className="absolute inset-0 z-[-1] opacity-50" />
+      <GridBackground className="absolute inset-0 z-[-1] opacity-50" />
       {/* 上半部分：左侧标题和描述，右侧视频 */}
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col lg:flex-row items-start gap-8">
@@ -598,15 +277,13 @@ export const HeroSection = () => {
               {loading ? (
                 <LoadingAnimation language={locale as 'en' | 'zh'} />
               ) : (
-                recipes.length > 0 && (
-                  <RecipeDisplay 
-                    recipes={recipes} 
-                    selectedIngredients={searchedIngredients}
-                    imageLoadingStates={imageLoadingStates}
-                    onRegenerateImage={handleRegenerateImage}
-                    onSaveRecipe={handleSaveRecipe}
-                  />
-                )
+                <RecipeDisplay 
+                  recipes={recipes} 
+                  selectedIngredients={searchedIngredients}
+                  imageLoadingStates={imageLoadingStates}
+                  onRegenerateImage={handleRegenerateImage}
+                  onSaveRecipe={handleSaveRecipe}
+                />
               )}
               {error && (
                 <div className="max-w-screen-md mx-auto text-center mt-8 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400">

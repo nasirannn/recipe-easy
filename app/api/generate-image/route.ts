@@ -4,6 +4,35 @@ import { getImageModelConfig, getLanguageConfig } from '@/lib/config';
 // 强制动态渲染
 export const runtime = 'edge';
 
+// 记录模型使用情况的函数
+async function recordModelUsage(modelName: string, modelResponseId: string, requestDetails: string) {
+  try {
+    // 调用Worker API记录模型使用情况
+    const workerUrl = process.env.WORKER_URL || 'https://api.recipe-easy.com';
+    const response = await fetch(`${workerUrl}/api/model-usage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model_name: modelName,
+        model_type: 'image',
+        model_response_id: modelResponseId,
+        request_details: requestDetails
+      }),
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to record model usage:', response.statusText);
+    } else {
+      console.log(`✅ Model usage recorded: ${modelName} with ID ${modelResponseId}`);
+    }
+  } catch (error) {
+    console.error('Error recording model usage:', error);
+    // 不抛出错误，避免影响主要业务逻辑
+  }
+}
+
 // 获取当前服务器URL
 function getServerUrl(request: NextRequest): string {
   // 在开发环境中使用 localhost
@@ -87,6 +116,7 @@ export async function POST(request: NextRequest) {
 
     let imageUrl = '';
     let modelUsed = '';
+    let modelResponseId = '';
 
     // 根据语言选择对应的图片模型
     if (language === 'zh') {
@@ -126,6 +156,7 @@ export async function POST(request: NextRequest) {
       if (result.output?.task_id) {
         // 这是异步调用，需要轮询获取结果
         const taskId = result.output.task_id;
+        modelResponseId = taskId;
         let attempts = 0;
         
         while (attempts < imageConfig.maxAttempts) {
@@ -159,9 +190,13 @@ export async function POST(request: NextRequest) {
       } else if (result.output?.results?.[0]?.url) {
         // 同步调用结果
         imageUrl = result.output.results[0].url;
+        modelResponseId = result.request_id || `wanx_${Date.now()}`;
       } else {
         throw new Error('No image URL returned from Wanx API');
       }
+
+      // 记录模型使用情况
+      await recordModelUsage(modelUsed, modelResponseId, prompt);
     } else {
       // 使用 Flux
       modelUsed = 'flux';
@@ -198,6 +233,8 @@ export async function POST(request: NextRequest) {
         throw new Error(`Flux API error: ${prediction.error}`);
       }
 
+      modelResponseId = prediction.id;
+
       // 轮询等待结果
       let attempts = 0;
       let currentPrediction = prediction;
@@ -224,6 +261,9 @@ export async function POST(request: NextRequest) {
       } else {
         throw new Error(`Flux generation failed: ${currentPrediction.error || 'Unknown error'}`);
       }
+
+      // 记录模型使用情况
+      await recordModelUsage(modelUsed, modelResponseId, prompt);
     }
 
     // 扣除积分（管理员跳过）

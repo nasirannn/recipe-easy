@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/auth-context";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { cn } from "@/lib/utils";
-import { IMAGE_GEN_CONFIG, APP_CONFIG, getRecommendedModels } from "@/lib/config";
+import { getRecommendedModels } from "@/lib/config";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCuisines } from "@/hooks/use-cuisines";
 import { useTranslations, useLocale } from 'next-intl';

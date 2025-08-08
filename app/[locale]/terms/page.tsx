@@ -24,22 +24,23 @@ async function getTermsOfService(locale: string) {
     // 根据语言选择对应的文件
     const fileName = locale === 'zh' ? 'terms-of-service-zh.md' : 'terms-of-service.md';
     
-    // 使用相对路径从public目录获取文件
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://recipe-easy.com';
-    const response = await fetch(`${baseUrl}/${fileName}`);
+    // 在构建时使用本地文件系统
+    const fs = require('fs');
+    const path = require('path');
+    const filePath = path.join(process.cwd(), 'public', fileName);
     
-    if (!response.ok) {
-      throw new Error(`Failed to fetch terms of service: ${response.status}`);
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf8');
+      
+      // 使用remark渲染Markdown
+      const processedContent = await remark()
+        .use(html)
+        .process(content);
+
+      return processedContent.toString();
+    } else {
+      throw new Error(`Terms file not found: ${filePath}`);
     }
-    
-    const content = await response.text();
-
-    // 使用remark渲染Markdown
-    const processedContent = await remark()
-      .use(html)
-      .process(content);
-
-    return processedContent.toString();
   } catch (error) {
     console.error('Error loading terms of service:', error);
     

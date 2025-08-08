@@ -1,7 +1,7 @@
 // SEO 工具函数
 
-// 网站基础 URL
-export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://recipe-easy.com'
+// 网站基础 URL - 强制使用HTTPS
+export const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://recipe-easy.com').replace(/^http:/, 'https:')
 
 // 生成 canonical URL
 export function generateCanonicalUrl(path: string = '', locale?: string): string {
@@ -48,6 +48,10 @@ export function generateMetadata({
     description,
     alternates: {
       canonical: canonicalUrl,
+      languages: {
+        'en': canonicalUrl,
+        'zh': canonicalUrl.replace('/en/', '/zh/').replace(/\/$/, '/zh/'),
+      },
     },
     openGraph: {
       title,
