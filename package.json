@@ -12,9 +12,9 @@
     "db:query": "wrangler d1 execute recipe-easy-db --remote --command",
     "db:backup": "wrangler d1 export recipe-easy-db --remote --output=db-backup/remote.sql",
     "db:migrate": "wrangler d1 migrations apply recipe-easy-db --remote",
-    "deploy": "npm run build:cf && wrangler pages deploy .vercel/output/static --project-name=recipe-easy-frontend",
+    "deploy": "npm run build:cf && wrangler pages deploy .vercel/output/static",
     "deploy:worker": "wrangler deploy",
-    "deploy:cf": "npm run build:cf && wrangler pages deploy .vercel/output/static --project-name=recipe-easy-frontend"
+    "deploy:cf": "npm run build:cf && wrangler pages deploy .vercel/output/static"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
