@@ -8,7 +8,7 @@ Each generated recipe must include the following fields:
 - description: Brief description highlighting dish characteristics and flavors (1-2 sentences)
 - cookingTime: Cooking time (minutes, integer, estimated within user's selected range)
 - servings: Portion size (integer, based on user's selected servings)
-- difficulty: Difficulty level ("easy", "medium", or "hard")
+- difficulty: Difficulty level ("Easy", "Medium", or "Hard")
 - ingredients: Ingredient list (string array, each item includes ingredient name, quantity, and preparation method such as whole, chunks, slices, strips, diced, minced, roll-cut pieces, etc.DO NOT include any seasonings)
 - seasoning: Seasoning list (string array, each item includes seasoning name, quantity, and usage method such as whole, ground, chopped, etc.)
 - instructions: Cooking steps (string array, each step clear and concise)
@@ -26,9 +26,9 @@ Each generated recipe must include the following fields:
 ### 2. Cooking Time and Difficulty
 - Adjust cooking time according to user preferences
 - Difficulty should match actual cooking skill requirements
-- "easy": Basic techniques, simple steps, 10-30 minutes, suitable for beginners
-- "medium": Requires some cooking experience, 30-60 minutes, suitable for intermediate cooks
-- "hard": Complex techniques or multi-step processes, 60-120 minutes, suitable for experienced cooks
+- "Easy": Basic techniques, simple steps, 10-30 minutes, suitable for beginners
+- "Medium": Requires some cooking experience, 30-60 minutes, suitable for intermediate cooks
+- "Hard": Complex techniques or multi-step processes, 60-120 minutes, suitable for experienced cooks
 
 ### 3. Instructions
 - Instructions should be clear, specific, and arranged in order
@@ -183,7 +183,7 @@ Please output in JSON format with recipes array containing EXACTLY 1 recipe.
 Each recipe must include:
 - cooking_time, servings (integer values)
 - cuisine_id (integer, based on the cuisine type of the recipe)
-- difficulty (string: "easy", "medium", or "hard")
+- difficulty (string: "Easy", "Medium", or "Hard")
 - title, description, ingredients, seasoning, instructions, tags, chef_tips (all in English)
 - recommended (boolean, only true for the recommended recipe)
 
@@ -195,7 +195,7 @@ EXAMPLE JSON OUTPUT:
       "description": "A delicious example recipe",
       "cooking_time": 30,
       "servings": 2,
-      "difficulty": "easy",
+      "difficulty": "Easy",
       "ingredients": ["ingredient 1", "ingredient 2"],
       "seasoning": ["seasoning 1", "seasoning 2"],
       "instructions": ["step 1", "step 2"],

@@ -5,7 +5,7 @@ export type LanguageModel = 'QWENPLUS' | 'GPT4o_MINI' | 'DEEPSEEK';
 export type ImageModel = 'wanx' | 'flux';
 export type ImageSize = '1024x1024' | '1024*1024';
 export type ImageStyle = 'photographic' | '<photography>';
-export type Difficulty = 'easy' | 'medium' | 'hard';
+export type Difficulty = 'Easy' | 'Medium' | 'Hard';
 
 export const config = {
   // Worker URL - 支持环境变量配置
@@ -40,9 +40,9 @@ export const APP_CONFIG = {
   MAX_RECIPE_COUNT: 1,
   SUPPORTED_LANGUAGES: ['en', 'zh'] as const,
   DIFFICULTY_LEVELS: {
-    EASY: 'easy',
-    MEDIUM: 'medium',
-    HARD: 'hard'
+    EASY: 'Easy',
+    MEDIUM: 'Medium',
+    HARD: 'Hard'
   } as const,
   POLLING: {
     INTERVAL_MS: 2000,
