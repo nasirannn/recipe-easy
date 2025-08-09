@@ -196,10 +196,13 @@ NEXT_PUBLIC_APP_URL=https://your-domain.com
 
 ### 🚀 Deployment
 ```bash
-# Deploy Cloudflare Worker
+# Deploy Frontend (Cloudflare Pages)
 npm run deploy
 
-# Deploy Cloudflare Pages
+# Deploy Backend API (Cloudflare Workers)  
+npm run deploy:worker
+
+# Alternative Frontend deployment
 npm run deploy:cf
 ```
 
