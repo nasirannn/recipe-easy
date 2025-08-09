@@ -100,6 +100,36 @@ const worker = {
     }
 
     try {
+      // 健康检查路由
+      if (path === '/health' || path === '/api/health') {
+        return new Response(JSON.stringify({ 
+          status: 'healthy',
+          timestamp: new Date().toISOString(),
+          service: 'recipe-easy-api'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // 根路径
+      if (path === '/') {
+        return new Response(JSON.stringify({ 
+          message: 'Recipe Easy API',
+          version: '1.0.0',
+          timestamp: new Date().toISOString(),
+          endpoints: [
+            '/health',
+            '/api/categories',
+            '/api/ingredients', 
+            '/api/cuisines',
+            '/api/recipes',
+            '/api/user-usage'
+          ]
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
       // 图片服务路由
       if (path.startsWith('/images/')) {
         return await handleImages(request, env.RECIPE_IMAGES, corsHeaders);
@@ -817,7 +847,7 @@ async function handleRecipes(request: Request, db: D1Database, env: Env, corsHea
 
     let sql = `
       SELECT 
-        r.id, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
+        r.id, r.slug, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
         r.ingredients, r.seasoning, r.instructions, r.tags, r.chef_tips,
         r.cuisine_id, r.user_id, r.created_at, r.updated_at,
         c.name as cuisine_name,
@@ -1109,7 +1139,7 @@ async function handleSingleRecipe(request: Request, db: D1Database, env: Env, co
 
     let sql = `
       SELECT 
-        r.id, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
+        r.id, r.slug, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
         r.ingredients, r.seasoning, r.instructions, r.tags, r.chef_tips,
         r.cuisine_id, r.user_id, r.created_at, r.updated_at,
         c.name as cuisine_name,
@@ -1968,7 +1998,7 @@ async function handleGetUserRecipes(request: Request, db: D1Database, env: Env, 
     
     // 获取菜谱列表（包含图片信息）
     const recipesResult = await db.prepare(`
-      SELECT r.id, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
+      SELECT r.id, r.slug, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
              r.ingredients, r.seasoning, r.instructions, r.tags, r.chef_tips,
              r.cuisine_id, r.user_id, r.created_at, r.updated_at,
              ri.image_path, ri.expires_at as image_expires_at, ri.image_model
@@ -1982,6 +2012,7 @@ async function handleGetUserRecipes(request: Request, db: D1Database, env: Env, 
     // 格式化菜谱数据
     const recipes = recipesResult.results.map((row: any) => ({
       id: row.id,
+      slug: row.slug || `recipe-${row.id}`,
       title: row.title,
       description: row.description,
       cookingTime: row.cooking_time, 
