@@ -847,7 +847,7 @@ async function handleRecipes(request: Request, db: D1Database, env: Env, corsHea
 
     let sql = `
       SELECT 
-        r.id, r.slug, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
+        r.id, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
         r.ingredients, r.seasoning, r.instructions, r.tags, r.chef_tips,
         r.cuisine_id, r.user_id, r.created_at, r.updated_at,
         c.name as cuisine_name,
@@ -981,7 +981,6 @@ async function handleRecipes(request: Request, db: D1Database, env: Env, corsHea
       
       return {
         id: recipe.id,
-        slug: recipe.slug || `recipe-${recipe.id}`,
         title: recipe.localized_title || recipe.title || `Recipe ${recipe.id}`,
         description: recipe.localized_description || recipe.description || `Description for Recipe ${recipe.id}`,
         imagePath: imagePath, // 从 recipe_images 表获取的图片URL
@@ -1139,7 +1138,7 @@ async function handleSingleRecipe(request: Request, db: D1Database, env: Env, co
 
     let sql = `
       SELECT 
-        r.id, r.slug, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
+        r.id, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
         r.ingredients, r.seasoning, r.instructions, r.tags, r.chef_tips,
         r.cuisine_id, r.user_id, r.created_at, r.updated_at,
         c.name as cuisine_name,
@@ -1218,7 +1217,6 @@ async function handleSingleRecipe(request: Request, db: D1Database, env: Env, co
 
     const formattedRecipe = {
       id: recipe.id,
-      slug: recipe.slug,
       title: recipe.title,
       description: recipe.description,
               imagePath: imagePath, // 从 recipe_images 表获取的图片URL
@@ -1998,7 +1996,7 @@ async function handleGetUserRecipes(request: Request, db: D1Database, env: Env, 
     
     // 获取菜谱列表（包含图片信息）
     const recipesResult = await db.prepare(`
-      SELECT r.id, r.slug, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
+      SELECT r.id, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
              r.ingredients, r.seasoning, r.instructions, r.tags, r.chef_tips,
              r.cuisine_id, r.user_id, r.created_at, r.updated_at,
              ri.image_path, ri.expires_at as image_expires_at, ri.image_model
@@ -2012,7 +2010,6 @@ async function handleGetUserRecipes(request: Request, db: D1Database, env: Env, 
     // 格式化菜谱数据
     const recipes = recipesResult.results.map((row: any) => ({
       id: row.id,
-      slug: row.slug || `recipe-${row.id}`,
       title: row.title,
       description: row.description,
       cookingTime: row.cooking_time, 
