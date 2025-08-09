@@ -179,7 +179,7 @@ export const RecipeForm = ({
                     </Label>
                     <Select
                       value={formData.cookingTime}
-                      onValueChange={(value) => onFormChange({ ...formData, cookingTime: value })}
+                      onValueChange={(value) => onFormChange({ ...formData, cookingTime: value as 'quick' | 'medium' | 'long' })}
                     >
                       <SelectTrigger id="cookingTime" className="h-8 sm:h-9 text-xs sm:text-sm">
                         <SelectValue placeholder={t('selectCookingTime')} />

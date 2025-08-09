@@ -216,7 +216,7 @@ export const IngredientSelector = ({
   useEffect(() => {
     fetchAllIngredients();
     fetchCategories();
-  }, [locale]);
+  }, [locale, fetchAllIngredients, fetchCategories]);
 
   // 使用 useMemo 派生过滤后的食材列表，从根源上解决闪动问题
   const filteredIngredients = useMemo(() => {
@@ -293,10 +293,15 @@ export const IngredientSelector = ({
       } else {
         // 如果没有精确匹配，创建一个带有搜索文本的自定义食材
         const customIngredient: CustomIngredient = {
-          id: `custom-${generateNanoId(8)}`,
+          id: -Math.floor(Math.random() * 10000), // 使用负数避免与真实食材ID冲突
+          slug: `custom-${generateNanoId(8)}`,
           name: searchValue,
           englishName: searchValue,
-          category: undefined,
+          category: {
+            id: 0,
+            slug: 'custom',
+            name: 'Custom'
+          },
           isCustom: true
         };
 

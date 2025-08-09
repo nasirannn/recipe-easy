@@ -1,4 +1,4 @@
-import { LanguageModel, ImageModel } from '@/lib/config';
+import { LanguageModel, ImageModel } from '@/lib/types';
 
 // 用户状态类型
 export type UserStatus = 'anonymous' | 'registered' | 'premium';

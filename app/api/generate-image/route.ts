@@ -4,33 +4,10 @@ import { getImageModelConfig, getLanguageConfig } from '@/lib/config';
 // 强制动态渲染
 export const runtime = 'edge';
 
-// 记录模型使用情况的函数
+// 记录模型使用情况的函数（已禁用，Worker已删除）
 async function recordModelUsage(modelName: string, modelResponseId: string, requestDetails: string) {
-  try {
-    // 调用Worker API记录模型使用情况
-    const workerUrl = process.env.WORKER_URL || 'https://api.recipe-easy.com';
-    const response = await fetch(`${workerUrl}/api/model-usage`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model_name: modelName,
-        model_type: 'image',
-        model_response_id: modelResponseId,
-        request_details: requestDetails
-      }),
-    });
-    
-    if (!response.ok) {
-      console.error('Failed to record model usage:', response.statusText);
-    } else {
-      console.log(`✅ Model usage recorded: ${modelName} with ID ${modelResponseId}`);
-    }
-  } catch (error) {
-    console.error('Error recording model usage:', error);
-    // 不抛出错误，避免影响主要业务逻辑
-  }
+  // Worker已删除，模型使用记录功能暂时禁用
+  console.log(`Model used: ${modelName} with ID ${modelResponseId}`);
 }
 
 // 获取当前服务器URL

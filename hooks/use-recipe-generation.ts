@@ -1,17 +1,31 @@
-import { useState, useCallback } from 'react';
-import { Recipe, RecipeFormData } from '@/lib/types';
-import { useAuth } from '@/contexts/auth-context';
-import { useLocale } from 'next-intl';
-import { trackRecipeGeneration, trackFeatureUsage } from '@/lib/gtag';
+// ==================== 食谱生成 Hook ====================
 
-export const useRecipeGeneration = () => {
+import { useState, useCallback } from 'react';
+import { useLocale } from 'next-intl';
+import { 
+  Recipe, 
+  RecipeFormData, 
+  Ingredient,
+  UseRecipeGenerationReturn
+} from '@/lib/types';
+import { useAuth } from '@/contexts/auth-context';
+
+/**
+ * 食谱生成相关的自定义Hook
+ * 直接调用Next.js API路由，避免代码重复
+ */
+export function useRecipeGeneration(): UseRecipeGenerationReturn {
   const [loading, setLoading] = useState(false);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const { user, isAdmin } = useAuth();
+  
   const locale = useLocale();
+  const { user, isAdmin } = useAuth();
 
-  const generateRecipe = useCallback(async (formData: RecipeFormData) => {
+  /**
+   * 生成食谱
+   */
+  const generateRecipe = useCallback(async (formData: RecipeFormData): Promise<Recipe[]> => {
     setLoading(true);
     setError(null);
 
@@ -24,12 +38,10 @@ export const useRecipeGeneration = () => {
         body: JSON.stringify({
           ingredients: formData.ingredients,
           servings: formData.servings,
-          recipeCount: 1,
           cookingTime: formData.cookingTime,
           difficulty: formData.difficulty,
           cuisine: formData.cuisine,
           language: locale,
-          imageModel: formData.imageModel,
           languageModel: formData.languageModel,
           userId: user?.id,
           isAdmin: isAdmin
@@ -38,71 +50,17 @@ export const useRecipeGeneration = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate recipes');
+        throw new Error(errorData.error || '食谱生成失败');
       }
 
       const data = await response.json();
+      // API返回格式: { recipes: [...] }
       const generatedRecipes = data.recipes || [];
+      
       setRecipes(generatedRecipes);
-      
-      // 跟踪菜谱生成事件
-      trackRecipeGeneration(formData.cuisine || 'any', formData.ingredients.length);
-      trackFeatureUsage('recipe_generation');
-      
       return generatedRecipes;
     } catch (error) {
-      console.error('Recipe generation failed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to generate recipes';
-      setError(errorMessage);
-      setRecipes([]);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, [locale, user?.id, isAdmin]);
-
-  const regenerateRecipe = useCallback(async (ingredients: string[], recipe: Recipe, formData: RecipeFormData) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/generate-recipe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ingredients: ingredients,
-          servings: recipe.servings || 2,
-          recipeCount: 1,
-          cookingTime: recipe.cookingTime || "medium",
-          difficulty: recipe.difficulty || "medium",
-          cuisine: "any", // Recipe 类型使用 cuisineId，这里使用默认值
-          language: locale,
-          imageModel: formData.imageModel,
-          languageModel: formData.languageModel,
-          userId: user?.id,
-          isAdmin: isAdmin
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to regenerate recipes');
-      }
-
-      const data = await response.json();
-      const generatedRecipes = data.recipes || [];
-      setRecipes(generatedRecipes);
-      
-      // 跟踪菜谱重新生成事件
-      trackRecipeGeneration(String(recipe.cuisineId) || 'any', ingredients.length);
-      trackFeatureUsage('recipe_regeneration');
-      
-      return generatedRecipes;
-    } catch (error) {
-      console.error('Regenerate recipe error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to regenerate recipe';
+      const errorMessage = error instanceof Error ? error.message : '食谱生成失败，请稍后重试';
       setError(errorMessage);
       throw error;
     } finally {
@@ -110,9 +68,38 @@ export const useRecipeGeneration = () => {
     }
   }, [locale, user?.id, isAdmin]);
 
+  /**
+   * 重新生成食谱
+   */
+  const regenerateRecipe = useCallback(async (
+    ingredients: Ingredient[], 
+    originalRecipe: Recipe, 
+    formData: RecipeFormData
+  ): Promise<Recipe[]> => {
+    // 使用新的食材重新生成
+    const updatedFormData: RecipeFormData = {
+      ...formData,
+      ingredients
+    };
+
+    return generateRecipe(updatedFormData);
+  }, [generateRecipe]);
+
+  /**
+   * 清空食谱列表
+   */
   const clearRecipes = useCallback(() => {
     setRecipes([]);
     setError(null);
+  }, []);
+
+  /**
+   * 直接设置食谱（用于更新图片等）
+   */
+  const setRecipesCallback = useCallback((
+    value: React.SetStateAction<Recipe[]>
+  ) => {
+    setRecipes(value);
   }, []);
 
   return {
@@ -122,6 +109,6 @@ export const useRecipeGeneration = () => {
     generateRecipe,
     regenerateRecipe,
     clearRecipes,
-    setRecipes
+    setRecipes: setRecipesCallback
   };
-}; 
+} 

@@ -131,7 +131,6 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                     target.parentElement!.style.display = 'none';
                   }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
               </div>
             )}
 

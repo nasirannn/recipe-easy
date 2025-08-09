@@ -1,169 +1,208 @@
-import { useState, useCallback } from 'react';
-import { Recipe } from '@/lib/types';
-import { useAuth } from '@/contexts/auth-context';
-import { useUserUsage } from '@/hooks/use-user-usage';
-import { useLocale } from 'next-intl';
-import { toast } from 'sonner';
+// ==================== 图片生成 Hook ====================
 
-export const useImageGeneration = () => {
+import { useState, useCallback } from 'react';
+import { useLocale } from 'next-intl';
+import { 
+  Recipe, 
+  ImageModel,
+  UseImageGenerationReturn
+} from '@/lib/types';
+import { useAuth } from '@/contexts/auth-context';
+
+/**
+ * 图片生成相关的自定义Hook
+ * 直接调用Next.js API路由，避免代码重复
+ */
+export function useImageGeneration(): UseImageGenerationReturn {
   const [imageGenerating, setImageGenerating] = useState(false);
   const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({});
-  const { user, isAdmin } = useAuth();
-  const { credits, updateCreditsLocally } = useUserUsage();
+  
   const locale = useLocale();
+  const { user, isAdmin } = useAuth();
 
+  /**
+   * 设置单个食谱的图片加载状态
+   */
+  const setImageLoadingState = useCallback((recipeId: string, loading: boolean) => {
+    setImageLoadingStates(prev => ({
+      ...prev,
+      [recipeId]: loading
+    }));
+  }, []);
+
+  /**
+   * 生成图片的通用方法
+   */
+  const generateImageInternal = useCallback(async (
+    recipeId: string,
+    recipe: Recipe,
+    imageModel: ImageModel,
+    onSuccess: (imageUrl: string) => void
+  ): Promise<void> => {
+    if (!user?.id) {
+      throw new Error('请先登录以生成图片');
+    }
+
+    try {
+      // 设置加载状态
+      setImageLoadingState(recipeId, true);
+      setImageGenerating(true);
+
+      const response = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recipeTitle: recipe.title,
+          recipeDescription: recipe.description,
+          recipeIngredients: recipe.ingredients,
+          userId: user.id,
+          isAdmin: isAdmin,
+          language: locale
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '图片生成失败');
+      }
+
+      const data = await response.json();
+      
+      if (!data.success || !data.imageUrl) {
+        throw new Error(data.error || '图片生成失败');
+      }
+
+      // 调用成功回调
+      onSuccess(data.imageUrl);
+    } catch (error) {
+      console.error('Image generation failed:', error);
+      throw error;
+    } finally {
+      setImageLoadingState(recipeId, false);
+      setImageGenerating(false);
+    }
+  }, [locale, user?.id, isAdmin, setImageLoadingState]);
+
+  /**
+   * 生成食谱图片
+   */
   const generateImage = useCallback(async (
-    recipeId: string, 
-    recipe: Recipe, 
-    imageModel: string,
-    onSuccess?: (imageUrl: string) => void
-  ) => {
-    // 检查用户是否登录
-    if (!user?.id) {
-      const event = new CustomEvent('showLoginModal');
-      window.dispatchEvent(event);
-      return;
-    }
-    
-    // 检查积分余额
-    const availableCredits = credits?.credits || 0;
-    if (!isAdmin && availableCredits < 1) {
-      toast.error(
-        locale === 'zh' 
-          ? '积分不足，无法生成图片' 
-          : 'Insufficient credits to generate image'
-      );
-      return;
-    }
-    
-    // 设置该菜谱的loading状态
-    setImageLoadingStates(prev => ({ ...prev, [recipeId]: true }));
-    
+    recipeId: string,
+    recipe: Recipe,
+    imageModel: ImageModel,
+    onSuccess: (imageUrl: string) => void
+  ): Promise<void> => {
     try {
-      // 调用图片生成API
-      const response = await fetch('/api/generate-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          recipeTitle: recipe.title,
-          recipeDescription: recipe.description,
-          recipeIngredients: recipe.ingredients,
-          style: 'photographic',
-          size: '1024x1024',
-          n: 1,
-          model: imageModel,
-          userId: user.id,
-          isAdmin: isAdmin,
-          language: locale
-        }),
-      });
-
-      const result = await response.json();
-      
-      if (result.success && result.imageUrl) {
-        // 直接使用后端返回的图片URL（已经上传到R2）
-        onSuccess?.(result.imageUrl);
-        
-        // 积分已在后端扣除，只需要更新本地状态
-        if (!isAdmin && updateCreditsLocally) {
-          updateCreditsLocally(-1);
-        }
-        
-        toast.success(locale === 'zh' ? '图片生成成功' : 'Image generated successfully');
-      } else {
-        toast.error(result.error || (locale === 'zh' ? '图片生成失败' : 'Image generation failed'));
-      }
+      await generateImageInternal(recipeId, recipe, imageModel, onSuccess);
     } catch (error) {
-      console.error('Error generating image:', error);
-      toast.error(locale === 'zh' ? '图片生成失败' : 'Image generation failed');
-    } finally {
-      // 清除该菜谱的loading状态
-      setImageLoadingStates(prev => ({ ...prev, [recipeId]: false }));
+      const errorMessage = error instanceof Error ? error.message : '图片生成失败，请稍后重试';
+      console.error('Generate image error:', errorMessage);
+      throw error;
     }
-  }, [user?.id, credits?.credits, isAdmin, updateCreditsLocally, locale]);
+  }, [generateImageInternal]);
 
+  /**
+   * 重新生成食谱图片
+   */
   const regenerateImage = useCallback(async (
-    recipeId: string, 
-    recipe: Recipe, 
-    imageModel: string,
-    onSuccess?: (imageUrl: string) => void
-  ) => {
-    // 检查用户是否登录
-    if (!user?.id) {
-      const event = new CustomEvent('showLoginModal');
-      window.dispatchEvent(event);
-      return;
-    }
-    
-    // 检查积分余额
-    const availableCredits = credits?.credits || 0;
-    if (!isAdmin && availableCredits < 1) {
-      toast.error(
-        locale === 'zh' 
-          ? '积分不足，无法重新生成图片' 
-          : 'Insufficient credits to regenerate image'
-      );
-      return;
-    }
-    
-    // 设置该菜谱的loading状态
-    setImageLoadingStates(prev => ({ ...prev, [recipeId]: true }));
-    
+    recipeId: string,
+    recipe: Recipe,
+    imageModel: ImageModel,
+    onSuccess: (imageUrl: string) => void
+  ): Promise<void> => {
     try {
-      // 调用图片生成API
-      const response = await fetch('/api/generate-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          recipeTitle: recipe.title,
-          recipeDescription: recipe.description,
-          recipeIngredients: recipe.ingredients,
-          style: 'photographic',
-          size: '1024x1024',
-          n: 1,
-          model: imageModel,
-          userId: user.id,
-          isAdmin: isAdmin,
-          language: locale
-        }),
-      });
-
-      const result = await response.json();
-      
-      if (result.success && result.imageUrl) {
-        // 直接使用后端返回的图片URL（已经上传到R2）
-        onSuccess?.(result.imageUrl);
-        
-        // 更新积分
-        if (!isAdmin && updateCreditsLocally) {
-          updateCreditsLocally(-1);
-        }
-      } else {
-        console.error('Image regeneration failed:', result.error);
-        toast.error(result.error || (locale === 'zh' ? '图片重新生成失败' : 'Image regeneration failed'));
-      }
+      await generateImageInternal(recipeId, recipe, imageModel, onSuccess);
     } catch (error) {
-      console.error('Error regenerating image:', error);
-      toast.error(locale === 'zh' ? '图片重新生成失败' : 'Image regeneration failed');
-    } finally {
-      // 清除该菜谱的loading状态
-      setImageLoadingStates(prev => ({ ...prev, [recipeId]: false }));
+      const errorMessage = error instanceof Error ? error.message : '图片生成失败，请稍后重试';
+      console.error('Regenerate image error:', errorMessage);
+      throw error;
     }
-  }, [user?.id, credits?.credits, isAdmin, updateCreditsLocally, locale]);
+  }, [generateImageInternal]);
 
+  /**
+   * 清空图片加载状态
+   */
   const clearImageLoadingStates = useCallback(() => {
     setImageLoadingStates({});
+    setImageGenerating(false);
   }, []);
+
+  /**
+   * 批量生成图片
+   */
+  const generateImagesForRecipes = useCallback(async (
+    recipes: Recipe[],
+    imageModel: ImageModel,
+    onRecipeImageGenerated: (recipeId: string, imageUrl: string) => void
+  ): Promise<void> => {
+    if (!user?.id) {
+      throw new Error('请先登录以生成图片');
+    }
+
+    try {
+      setImageGenerating(true);
+
+      // 并发生成图片（但限制并发数）
+      const concurrency = 2; // 限制并发数为2
+      const batches: Recipe[][] = [];
+      
+      for (let i = 0; i < recipes.length; i += concurrency) {
+        batches.push(recipes.slice(i, i + concurrency));
+      }
+
+      for (const batch of batches) {
+        const promises = batch.map(async (recipe) => {
+          try {
+            setImageLoadingState(recipe.id, true);
+
+            const response = await fetch('/api/generate-image', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                recipeTitle: recipe.title,
+                recipeDescription: recipe.description,
+                recipeIngredients: recipe.ingredients,
+                userId: user.id,
+                isAdmin: isAdmin,
+                language: locale
+              }),
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              if (data.success && data.imageUrl) {
+                onRecipeImageGenerated(recipe.id, data.imageUrl);
+              }
+            }
+          } catch (error) {
+            console.error(`Failed to generate image for recipe ${recipe.id}:`, error);
+            // 单个图片生成失败不影响其他图片
+          } finally {
+            setImageLoadingState(recipe.id, false);
+          }
+        });
+
+        await Promise.all(promises);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '批量图片生成失败，请稍后重试';
+      console.error('Batch image generation error:', errorMessage);
+      throw error;
+    } finally {
+      setImageGenerating(false);
+    }
+  }, [locale, user?.id, isAdmin, setImageLoadingState]);
 
   return {
     imageGenerating,
     imageLoadingStates,
     generateImage,
     regenerateImage,
-    clearImageLoadingStates
+    clearImageLoadingStates,
+    generateImagesForRecipes
   };
-}; 
+} 

@@ -1,4 +1,4 @@
-import { ImageModel,ImageSize,ImageStyle } from '@/lib/config';
+import { ImageModel,ImageSize,ImageStyle } from '@/lib/types';
 
 export interface ImageGenParams {
   prompt: string;

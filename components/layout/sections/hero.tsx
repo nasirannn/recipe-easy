@@ -157,7 +157,7 @@ export const HeroSection = () => {
       window.removeEventListener('loginSuccess', handleLoginSuccess);
       window.removeEventListener('generateImage', handleGenerateImage as EventListener);
     };
-  }, [generateImage, recommendedModels.imageModel]);
+  }, [generateImage, formData.imageModel, setRecipes]);
 
   // 监听用户状态变化，当用户登出时重置状态
   useEffect(() => {
@@ -172,7 +172,7 @@ export const HeroSection = () => {
       setFormData({
         ingredients: [],
         servings: 2,
-        recipeCount: APP_CONFIG.DEFAULT_RECIPE_COUNT,
+        recipeCount: APP_CONFIG.defaultRecipeCount,
         cookingTime: "medium",
         difficulty: "medium",
         cuisine: "any",

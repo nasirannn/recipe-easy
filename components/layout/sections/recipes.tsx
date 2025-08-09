@@ -60,7 +60,7 @@ export const RecipesSection = () => {
       try {
         setIsLoading(true);
         // 获取管理员菜谱
-        const response = await fetch(`/api/recipes?limit=8&lang=${locale}&adminOnly=true`);
+        const response = await fetch(`/api/recipes?limit=20&lang=${locale}&adminOnly=true`);
         const data = await response.json();
 
         if (data.success) {

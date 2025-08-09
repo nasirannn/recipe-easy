@@ -4,38 +4,8 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 启用静态导出
-  output: 'export',
-  
   // 控制末尾斜杠行为 - false表示不添加末尾斜杠
   trailingSlash: false,
-  
-  // 禁用图片优化（静态导出不支持）
-  images: {
-    unoptimized: true,
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "**.aliyuncs.com",
-      },
-      {
-        protocol: "https",
-        hostname: "dashscope-result-wlcb-acdr-1.oss-cn-wulanchabu-acdr-1.aliyuncs.com",
-      },
-      {
-        protocol: "https",
-        hostname: "replicate.delivery",
-      },
-      {
-        protocol: "https",
-        hostname: "recipe-easy.annnb016.workers.dev",
-      },
-      {
-        protocol: "https",
-        hostname: "api.recipe-easy.com",
-      },
-    ],
-  },
   
   // 添加安全头部
   async headers() {
@@ -64,6 +34,30 @@ const nextConfig = {
     ]
   },
   
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.aliyuncs.com",
+      },
+      {
+        protocol: "https",
+        hostname: "dashscope-result-wlcb-acdr-1.oss-cn-wulanchabu-acdr-1.aliyuncs.com",
+      },
+      {
+        protocol: "https",
+        hostname: "replicate.delivery",
+      },
+      {
+        protocol: "https",
+        hostname: "recipe-easy.annnb016.workers.dev",
+      },
+      {
+        protocol: "https",
+        hostname: "api.recipe-easy.com",
+      },
+    ],
+  },
   // 优化webpack配置
   webpack: (config, { isServer }) => {
     // 减少包大小
