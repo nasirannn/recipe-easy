@@ -158,7 +158,6 @@ Desktop.ini
 
 # Cloudflare Wrangler
 .wrangler/
-wrangler.toml
 .vercel/
 
 # Temporary files
@@ -190,7 +189,6 @@ build/
 node_modules/
 
 # Additional security and build files
-.env.example
 .env.*.local
 *.pem
 *.key

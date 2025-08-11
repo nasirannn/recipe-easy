@@ -14,10 +14,8 @@ WORKER_URL = "https://api.recipe-easy.com"
 binding = "RECIPE_EASY_DB"
 database_name = "recipe-easy-db"
 database_id = "${D1_DATABASE_ID}"
-preview_database_id = "${D1_PREVIEW_DATABASE_ID}"
 
 # R2 Bucket binding
 [[r2_buckets]]
 binding = "RECIPE_IMAGES"
 bucket_name = "${R2_BUCKET_NAME}"
-preview_bucket_name = "${R2_PREVIEW_BUCKET_NAME}"
