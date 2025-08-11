@@ -1,264 +1,222 @@
-# 🍳 RecipeEasy - AI Recipe Generator
+# 🍳 RecipeEasy
 
-> AI-powered intelligent recipe generation platform that makes cooking simple and fun! Input ingredients, and AI creates delicious recipes for you!
+> AI-powered recipe generation platform that transforms your ingredients into delicious recipes
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
-[![Supabase](https://img.shields.io/badge/Supabase-Auth-3ECF8E?style=flat-square&logo=supabase)](https://supabase.com/)
 [![Cloudflare](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=flat-square&logo=cloudflare)](https://workers.cloudflare.com/)
 
-🌐 **Live Demo**: [https://recipe-easy.com](https://recipe-easy.com)
+**Live Demo**: [https://recipe-easy.com](https://recipe-easy.com)
 
-## 📋 Table of Contents
+## ✨ Features
 
-- [✨ Core Features](#-core-features)
-- [🚀 Quick Start](#-quick-start)
-- [🎯 Product Highlights](#-product-highlights)
-- [🏗️ Technical Architecture](#️-technical-architecture)
-- [📁 Project Structure](#-project-structure)
-- [🛠️ Development Guide](#️-development-guide)
-- [📊 Performance Optimization](#-performance-optimization)
-- [🔒 Security Measures](#-security-measures)
-- [📈 Monitoring & Analytics](#-monitoring--analytics)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
-- [🙏 Acknowledgments](#-acknowledgments)
-- [📞 Contact Us](#-contact-us)
-
-## ✨ Core Features
-
-### 🎯 Intelligent Recipe Generation
-- **🤖 Smart Model Selection**: Automatically selects the best AI model based on language (Chinese users use Qwen Plus, English users use GPT-4o Mini)
-- **📝 Personalized Recipes**: Intelligently generates recipes based on your selected ingredients
-- **🌍 Multi-language Support**: Chinese and English bilingual interface with automatic model optimization
-- **🎨 AI Image Generation**: Smart image model selection (Chinese users use Wanx, English users use Flux Schnell)
-- **⚡ Fast Generation**: Complete recipe generation in 20-60 seconds
-- **🆓 Free Recipes**: Recipe generation is completely free, no credits required
-
-### 🛠️ User-Friendly Features
-- **🔍 Smart Ingredient Selection**: Preset categories + custom input with Chinese and English search support
-- **📱 Responsive Design**: Perfectly adapted for desktop and mobile devices
-- **🌙 Theme Switching**: Free switching between light and dark themes
-- **🔐 Easy Login**: Google OAuth + email login
-- **💎 Credit System**: New users receive 100 free credits (only for image generation)
-- **🎛️ Admin Privileges**: Administrators can manually select AI models with unlimited credits
-
-### 🍽️ Recipe Features
-- **📊 Detailed Steps**: Clear cooking steps and techniques
-- **⏱️ Time Control**: Supports quick, medium, and long cooking times
-- **🎯 Difficulty Levels**: Simple, medium, and hard difficulty levels
-- **🌏 Global Cuisines**: Supports various cuisine styles
-- **👨‍🍳 Chef Tips**: Each recipe includes professional cooking tips
-
-### 🧠 Smart Optimization Features
-- **🌐 Language Adaptation**: Automatically selects the best AI model based on user language
-- **🎯 Model Optimization**: Chinese users automatically use Qwen Plus, English users automatically use GPT-4o Mini
-- **🖼️ Smart Images**: Automatically selects the most suitable image generation model based on language
-- **⚡ Performance Optimization**: Ensures optimal generation results for each language
+- 🤖 **Smart AI Models**: Automatically selects optimal AI models based on language
+- 🌍 **Multi-language**: Chinese (Qwen Plus) and English (GPT-4o Mini) support
+- 🎨 **Image Generation**: AI-powered recipe images with smart model selection
+- 📱 **Responsive Design**: Perfect experience on all devices
+- 🔐 **User Authentication**: Google OAuth and email login
+- 💎 **Credit System**: Free credits for new users
+- 🌙 **Theme Support**: Light and dark mode
 
 ## 🚀 Quick Start
 
-### 🆓 Try Without Registration
-1. Visit [https://recipe-easy.com](https://recipe-easy.com)
-2. Select or input your available ingredients
-3. Set cooking preferences (time, difficulty, cuisine)
-4. Click generate and wait for AI to create delicious recipes
-
-### 📝 Register Account for More Features
-- 🎨 **AI Image Generation**: Generate beautiful images for recipes (1 credit per image)
-- 📊 **Usage Statistics**: View your credits and usage information
-- 🔐 **Personal Account**: Manage your personal information and settings
-- 🎯 **Smart Optimization**: Automatically selects the best AI model based on language
-
-## 🎯 Product Highlights
-
-- **🆓 Completely Free Recipe Generation** - No credits required, start using immediately
-- **🧠 Smart Model Selection** - Automatically selects the best AI model based on language
-- **🌍 Multi-language Optimization** - Chinese users automatically use Qwen Plus, English users automatically use GPT-4o Mini
-- **🎨 Beautiful Image Generation** - Smart image model selection, only 1 credit per image
-- **📱 Perfect Mobile Experience** - Responsive design, supports all devices
-
-## 🏗️ Technical Architecture
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Next.js 14    │    │   Supabase      │    │  Cloudflare     │
-│   (Frontend)    │◄──►│   (Auth+DB)     │    │  (Worker+D1+R2) │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   AI Services   │    │   User Mgmt     │    │   File Storage  │
-│ • Smart Model   │    │ • Credit System │    │ • Image Storage │
-│   Selection     │    │ • Usage Stats   │    │ • Data Backup   │
-│ • Qwen Plus     │    │ • Access Control│    │ • CDN Delivery  │
-│ • GPT-4o Mini   │    │ • User Profiles │    │ • Global Dist.  │
-│ • Wanx (Images) │    │ • Credit Mgmt   │    │ • High Avail.   │
-│ • Flux Schnell  │    │ • Admin Tools   │    │ • Performance   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
-## 📁 Project Structure
-
-```
-recipe-easy/
-├── app/                          # Next.js 14 App Router
-│   ├── [locale]/                 # Internationalization routes (en/zh)
-│   │   ├── layout.tsx           # Layout components
-│   │   ├── page.tsx             # Homepage
-│   │   ├── privacy/             # Privacy Policy
-│   │   └── terms/               # Terms of Service
-│   ├── api/                     # API routes
-│   │   ├── auth/                # Authentication
-│   │   ├── generate-recipe/     # Recipe generation
-│   │   ├── generate-image/      # Image generation
-│   │   ├── ingredients/         # Ingredient management
-│   │   ├── recipes/             # Recipe management
-│   │   └── user-usage/          # User usage statistics
-│   ├── layout.tsx               # Root layout
-│   ├── robots.ts                # SEO robots.txt
-│   └── sitemap.ts               # SEO sitemap
-├── components/                   # React components
-│   ├── auth/                    # Authentication components
-│   ├── layout/                  # Layout components
-│   │   └── sections/            # Page sections
-│   │       ├── hero.tsx         # Hero section
-│   │       ├── tutorial.tsx     # Tutorial section
-│   │       ├── recipes.tsx      # Recipe showcase
-│   │       ├── features.tsx     # Feature highlights
-│   │       ├── faq.tsx          # FAQ section
-│   │       ├── testimonial.tsx  # User testimonials
-│   │       └── footer.tsx       # Footer
-│   └── ui/                      # UI base components
-├── contexts/                    # React Context
-├── hooks/                       # Custom Hooks
-├── lib/                         # Utilities
-│   ├── services/                # Service layer
-│   ├── utils/                   # Utility functions
-│   ├── config.ts                # Configuration management
-│   ├── prompts.ts               # AI prompts
-│   └── types/                   # Type definitions
-├── messages/                    # Internationalization files
-│   ├── en.json                  # English translations
-│   └── zh.json                  # Chinese translations
-├── public/                      # Static assets
-└── src/                         # Cloudflare Worker
-    └── worker.ts                # Backend API logic
-```
-
-## 🛠️ Development Guide
-
-### 📋 Requirements
+### Prerequisites
 - Node.js 18+
 - npm or yarn
 - Git
 
-### 🚀 Local Development
+### Installation
+
 ```bash
-# Clone the project
+# Clone the repository
 git clone https://github.com/nasirannn/recipe-easy.git
 cd recipe-easy
 
 # Install dependencies
 npm install
 
-# Configure environment variables
+# Set up environment variables
 cp .env.example .env.local
-# Edit .env.local file and add necessary API keys
+# Edit .env.local with your API keys
 
 # Start development server
 npm run dev
-
-# Visit http://localhost:3000
 ```
 
-### 🔧 Environment Variables Configuration
+Visit [http://localhost:3000](http://localhost:3000) to see the app.
+
+## 🏗️ Architecture
+
+```
+Frontend (Next.js 14)     Backend (Cloudflare Workers)     Database (D1 + R2)
+     │                            │                            │
+     ├── React Components         ├── API Routes               ├── User Data
+     ├── Tailwind CSS            ├── AI Integration           ├── Recipe Storage
+     ├── TypeScript              ├── File Storage             └── Image Storage
+     └── Responsive UI           └── Authentication
+```
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **Next.js 14** - React framework with App Router
+- **TypeScript** - Type-safe development
+- **Tailwind CSS** - Utility-first CSS framework
+- **Radix UI** - Accessible component primitives
+- **React Hook Form** - Form handling
+- **Zustand** - State management
+
+### Backend
+- **Cloudflare Workers** - Serverless functions
+- **D1 Database** - SQLite database
+- **R2 Storage** - Object storage for images
+- **Wrangler** - Development and deployment tool
+
+### AI Services
+- **Qwen Plus** - Chinese language model
+- **GPT-4o Mini** - English language model
+- **Wanx** - Chinese image generation
+- **Flux Schnell** - English image generation
+
+## 📁 Project Structure
+
+```
+recipe-easy/
+├── app/                    # Next.js App Router
+│   ├── [locale]/          # Internationalization (en/zh)
+│   ├── api/               # API routes
+│   ├── auth/              # Authentication pages
+│   └── layout.tsx         # Root layout
+├── components/             # React components
+│   ├── auth/              # Auth components
+│   ├── layout/            # Layout components
+│   └── ui/                # UI components
+├── contexts/               # React contexts
+├── hooks/                  # Custom hooks
+├── lib/                    # Utilities and services
+├── messages/               # i18n translations
+├── public/                 # Static assets
+├── src/                    # Cloudflare Worker
+│   └── worker.ts          # Backend logic
+└── wrangler.toml          # Cloudflare configuration
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env.local` file with the following variables:
+
 ```bash
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# Cloudflare Worker URL
-WORKER_URL=https://your-worker.your-subdomain.workers.dev
+# Cloudflare Worker
+WORKER_URL=your_worker_url
 
-# AI Service API Keys
-QWENPLUS_API_KEY=your_qwenplus_api_key
-DASHSCOPE_API_KEY=your_dashscope_api_key
-REPLICATE_API_TOKEN=your_replicate_api_token
+# AI Services
+QWENPLUS_API_KEY=your_qwenplus_key
+DASHSCOPE_API_KEY=your_dashscope_key
+REPLICATE_API_TOKEN=your_replicate_token
 
-# Optional Configuration
+# Analytics (Optional)
 NEXT_PUBLIC_GA_ID=your_ga_id
 NEXT_PUBLIC_CLARITY_ID=your_clarity_id
-NEXT_PUBLIC_APP_URL=https://your-domain.com
 ```
 
-### 🚀 Deployment
+## 🚀 Deployment
+
+### Frontend (Cloudflare Pages)
+
 ```bash
-# Deploy Frontend (Cloudflare Pages)
+# Build and deploy
 npm run deploy
 
-# Deploy Backend API (Cloudflare Workers)  
-npm run deploy:worker
-
-# Alternative Frontend deployment
+# Alternative deployment
 npm run deploy:cf
 ```
 
-## 📊 Performance Optimization
+### Backend (Cloudflare Workers)
 
-### 🎯 Frontend Optimization
-- ✅ **Image Lazy Loading**: Improves page loading speed
-- ✅ **Code Splitting**: On-demand component loading
-- ✅ **Server-Side Rendering**: Better SEO and first-screen loading
-- ✅ **Static Generation**: Pre-rendered static pages
-- ✅ **Cache Strategy**: Intelligent cache management
+```bash
+# Deploy worker
+npm run deploy:worker
+```
 
-### 🔧 Backend Optimization
-- ✅ **API Caching**: Reduces redundant calculations
-- ✅ **Database Optimization**: Efficient queries and indexing
-- ✅ **CDN Acceleration**: Global content delivery
-- ✅ **Image Optimization**: Automatic compression and format conversion
+### Database Operations
 
-## 🔒 Security Measures
+```bash
+# Execute database queries
+npm run db:query "SELECT * FROM users"
 
-- ✅ **Input Validation**: Prevents malicious input
-- ✅ **SQL Injection Protection**: Parameterized queries
-- ✅ **XSS Protection**: Content Security Policy
-- ✅ **CSRF Protection**: Cross-Site Request Forgery protection
-- ✅ **API Key Protection**: Environment variable management
-- ✅ **User Authentication**: Secure login system
+# Backup database
+npm run db:backup
 
-## 📈 Monitoring & Analytics
+# Apply migrations
+npm run db:migrate
+```
 
-### 📊 User Analytics
-- **Google Analytics 4**: User behavior analysis
-- **Microsoft Clarity**: User session recording
-- **Cloudflare Analytics**: Performance monitoring
+## 🧪 Development
 
-### ⚡ Performance Metrics
-- Page loading time optimization
-- API response time optimization
-- Image loading optimization
-- Mobile experience optimization
+### Available Scripts
+
+```bash
+npm run dev          # Start Next.js dev server
+npm run dev:cf       # Start Cloudflare Worker locally
+npm run build        # Build Next.js app
+npm run build:cf     # Build for Cloudflare Pages
+npm run lint         # Run ESLint
+npm run start        # Start production server
+```
+
+### Local Development
+
+1. **Frontend**: `npm run dev` (runs on port 3000)
+2. **Backend**: `npm run dev:cf` (runs on port 8787)
+3. **Database**: Use `npm run db:query` for database operations
+
+## 📊 Performance
+
+- **Image Optimization**: Automatic compression and format conversion
+- **Code Splitting**: On-demand component loading
+- **Static Generation**: Pre-rendered pages for better SEO
+- **CDN Delivery**: Global content distribution via Cloudflare
+- **API Caching**: Intelligent response caching
+
+## 🔒 Security
+
+- Input validation and sanitization
+- SQL injection protection
+- XSS prevention
+- CSRF protection
+- Secure API key management
+- User authentication and authorization
+
+## 🌍 Internationalization
+
+The app supports multiple languages with automatic model selection:
+
+- **Chinese**: Uses Qwen Plus for optimal results
+- **English**: Uses GPT-4o Mini for best performance
+- **Images**: Automatically selects appropriate image generation models
 
 ## 🤝 Contributing
 
-We welcome all forms of contributions!
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### 📝 How to Contribute
-1. Fork the project
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Create a Pull Request
+### Development Standards
 
-### 📋 Development Standards
-- Use TypeScript for type checking
+- Use TypeScript for all new code
 - Follow ESLint rules
-- Use Prettier for code formatting
 - Write clear commit messages
-- Add necessary tests
+- Add tests for new features
+- Update documentation as needed
 
 ## 📄 License
 
@@ -267,22 +225,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - [Next.js](https://nextjs.org/) - React framework
-- [Supabase](https://supabase.com/) - Backend services
-- [Cloudflare](https://cloudflare.com/) - Cloud services
+- [Cloudflare](https://cloudflare.com/) - Cloud infrastructure
 - [Tailwind CSS](https://tailwindcss.com/) - CSS framework
-- [Radix UI](https://www.radix-ui.com/) - UI component library
-- [Alibaba Cloud](https://www.aliyun.com/) - Qwen AI service
-- [OpenAI](https://openai.com/) - GPT-4o Mini model service
-- [Replicate](https://replicate.com/) - AI model deployment platform
+- [Radix UI](https://www.radix-ui.com/) - UI components
+- [Alibaba Cloud](https://www.aliyun.com/) - Qwen AI models
+- [OpenAI](https://openai.com/) - GPT models
 
-## 📞 Contact Us
+## 📞 Support
 
-- 🌐 Website: [https://recipe-easy.com](https://recipe-easy.com)
-- 📧 Email: [annnb016@gmail.com](mailto:annnb016@gmail.com)
-- 🐛 Issue Report: [GitHub Issues](https://github.com/nasirannn/recipe-easy/issues)
+- **Website**: [https://recipe-easy.com](https://recipe-easy.com)
+- **Email**: [annnb016@gmail.com](mailto:annnb016@gmail.com)
+- **Issues**: [GitHub Issues](https://github.com/nasirannn/recipe-easy/issues)
 
 ---
 
-⭐ If this project helps you, please give us a star!
+⭐ **Star this repository if it helps you!**
 
-**Let AI add infinite possibilities to your cooking journey!** 🍳✨ 
+**Let AI transform your cooking experience!** 🍳✨ 
