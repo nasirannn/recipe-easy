@@ -1,27 +1,17 @@
 // SEO 工具函数
 
-// 网站基础 URL - 强制使用HTTPS
-export const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://recipe-easy.com').replace(/^http:/, 'https:')
+// 网站基础 URL
+export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://recipe-easy.com';
 
 // 生成 canonical URL
 export function generateCanonicalUrl(path: string = '', locale?: string): string {
-  // 标准化路径：移除开头和结尾的斜杠
-  const cleanPath = path.replace(/^\/+|\/+$/g, '')
+  const cleanPath = path.replace(/^\/+|\/+$/g, '');
   
-  // 如果是默认语言 (en)，不添加语言前缀
   if (locale === 'en' || !locale) {
-    // 如果路径为空，返回网站URL（添加末尾斜杠）
-    if (!cleanPath) {
-      return `${SITE_URL}/`
-    }
-    return `${SITE_URL}/${cleanPath}/`
+    return cleanPath ? `${SITE_URL}/${cleanPath}` : SITE_URL;
   }
   
-  // 其他语言添加语言前缀
-  if (!cleanPath) {
-    return `${SITE_URL}/${locale}/`
-  }
-  return `${SITE_URL}/${locale}/${cleanPath}/`
+  return cleanPath ? `${SITE_URL}/${locale}/${cleanPath}` : `${SITE_URL}/${locale}`;
 }
 
 // 生成页面元数据
@@ -33,39 +23,28 @@ export function generateMetadata({
   image = 'images/recipe-easy-og.png',
   type = 'website'
 }: {
-  title: string
-  description: string
-  path?: string
-  locale?: string
-  image?: string
-  type?: 'website' | 'article'
+  title: string;
+  description: string;
+  path?: string;
+  locale?: string;
+  image?: string;
+  type?: 'website' | 'article';
 }) {
-  const canonicalUrl = generateCanonicalUrl(path, locale)
-  const imageUrl = image.startsWith('http') ? image : `${SITE_URL}${image}`
+  const canonicalUrl = generateCanonicalUrl(path, locale);
+  const imageUrl = image.startsWith('http') ? image : `${SITE_URL}/${image}`;
 
   return {
     title,
     description,
     alternates: {
       canonical: canonicalUrl,
-      languages: {
-        'en': canonicalUrl,
-        'zh': canonicalUrl.replace('/en/', '/zh/').replace(/\/$/, '/zh/'),
-      },
     },
     openGraph: {
       title,
       description,
       url: canonicalUrl,
       siteName: 'RecipeEasy',
-      images: [
-        {
-          url: imageUrl,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
+      images: [{ url: imageUrl, width: 1200, height: 630, alt: title }],
       type,
     },
     twitter: {
@@ -74,52 +53,46 @@ export function generateMetadata({
       description,
       images: [imageUrl],
     },
-  }
+  };
 }
 
 // 生成结构化数据
-export function generateStructuredData({
-  type,
-  data
-}: {
-  type: 'website' | 'article' | 'recipe'
-  data: any
-}) {
-  const baseData = {
+export function generateStructuredData(type: string, data: any) {
+  return {
     '@context': 'https://schema.org',
     '@type': type,
-  }
-
-  return {
-    ...baseData,
     ...data,
-  }
+  };
 }
 
 // 网站结构化数据
-export const websiteStructuredData = {
-  '@context': 'https://schema.org',
-  '@type': 'WebSite',
+export const websiteStructuredData = generateStructuredData('WebSite', {
   name: 'RecipeEasy',
   url: SITE_URL,
-  description: 'AI Recipe Generator, Random Recipes, Meal Ideas',
-  potentialAction: {
-    '@type': 'SearchAction',
-    target: `${SITE_URL}/search?q={search_term_string}`,
-    'query-input': 'required name=search_term_string',
-  },
+  description: 'AI-powered recipe generation platform',
+  inLanguage: ['en', 'zh'],
+});
+
+// 食谱结构化数据
+export function generateRecipeStructuredData(recipe: any) {
+  return generateStructuredData('Recipe', {
+    name: recipe.title,
+    description: recipe.description,
+    cookTime: `PT${recipe.cookingTime}M`,
+    recipeYield: recipe.servings,
+    recipeInstructions: recipe.instructions,
+    recipeIngredient: recipe.ingredients,
+  });
 }
 
 // 组织结构化数据
-export const organizationStructuredData = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
+export const organizationStructuredData = generateStructuredData('Organization', {
   name: 'RecipeEasy',
   url: SITE_URL,
-  logo: `${SITE_URL}/recipe-easy-logo.svg`,
+  logo: `${SITE_URL}/images/logo.png`,
+  description: 'AI-powered recipe generation platform',
   sameAs: [
-    // 添加您的社交媒体链接
-    // 'https://twitter.com/recipeeasy',
-    // 'https://facebook.com/recipeeasy',
+    'https://twitter.com/recipeeasy',
+    'https://facebook.com/recipeeasy',
   ],
-} 
+}); 
