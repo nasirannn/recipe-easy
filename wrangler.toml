@@ -1,0 +1,23 @@
+name = "recipe-easy-api"
+compatibility_date = "2024-03-20"
+main = "src/worker.ts"
+
+# Node.js兼容性
+compatibility_flags = ["nodejs_compat"]
+
+# 环境变量配置
+[vars]
+WORKER_URL = "https://api.recipe-easy.com"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "RECIPE_EASY_DB"
+database_name = "recipe-easy-db"
+database_id = "${D1_DATABASE_ID}"
+preview_database_id = "${D1_PREVIEW_DATABASE_ID}"
+
+# R2 Bucket binding
+[[r2_buckets]]
+binding = "RECIPE_IMAGES"
+bucket_name = "${R2_BUCKET_NAME}"
+preview_bucket_name = "${R2_PREVIEW_BUCKET_NAME}"
