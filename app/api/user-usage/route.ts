@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validateUserId } from '@/lib/utils/validation';
 
 // 强制动态渲染
-// 强制动态渲染
-export const runtime = 'edge';
+// 启用缓存以提高性能
+export const revalidate = 300; // 5分钟缓存
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,17 +12,12 @@ export async function GET(request: NextRequest) {
     const rawIsAdmin = searchParams.get('isAdmin');
 
     // 🔒 安全修复：严格验证用户输入
-    if (!rawUserId || typeof rawUserId !== 'string') {
-      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    const userValidation = validateUserId(rawUserId);
+    if (!userValidation.isValid) {
+      return NextResponse.json({ error: userValidation.error }, { status: 400 });
     }
     
-    // 验证用户ID格式（UUID格式）
-    const userIdRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!userIdRegex.test(rawUserId)) {
-      return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
-    }
-    
-    const userId = rawUserId;
+    const userId = userValidation.userId!;
     const isAdmin = rawIsAdmin === 'true';
 
     // 构建查询参数
@@ -58,17 +54,12 @@ export async function POST(request: NextRequest) {
     const { userId: bodyUserId, action, amount, description } = body;
 
     // 🔒 安全修复：严格验证用户输入
-    if (!bodyUserId || typeof bodyUserId !== 'string') {
-      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    const userValidation = validateUserId(bodyUserId);
+    if (!userValidation.isValid) {
+      return NextResponse.json({ error: userValidation.error }, { status: 400 });
     }
     
-    // 验证用户ID格式（UUID格式）
-    const userIdRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!userIdRegex.test(bodyUserId)) {
-      return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
-    }
-    
-    const userId = bodyUserId;
+    const userId = userValidation.userId!;
 
     // 直接调用云端数据库
     const workerUrl = process.env.WORKER_URL || 'https://api.recipe-easy.com';

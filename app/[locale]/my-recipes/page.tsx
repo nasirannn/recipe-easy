@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { Recipe, UserStatus } from '@/lib/types';
+import { Recipe, UserLoginStatus } from '@/lib/types';
+import { getImageUrl } from '@/lib/config';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +24,7 @@ import Image from 'next/image';
 interface RecipeWithMetadata extends Recipe {
   createdAt?: string;
   imageExpiresAt?: string;
-  userStatus?: UserStatus;
+  userStatus?: UserLoginStatus;
 }
 
 export default function MyRecipesPage() {
@@ -52,7 +53,7 @@ export default function MyRecipesPage() {
     try {
       setLoading(true);
       const response = await fetch(
-        `/api/recipes/user/${user.id}?page=${page}&limit=12`
+        `/api/recipes/user/${user.id}?page=${page}&limit=12&lang=${locale}`
       );
       
       if (!response.ok) {
@@ -69,7 +70,7 @@ export default function MyRecipesPage() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, page, t, hasLoaded]);
+  }, [user?.id, page, t, hasLoaded, locale]);
   
   useEffect(() => {
     // 等待用户状态加载完成
@@ -292,7 +293,7 @@ export default function MyRecipesPage() {
                   <div className="relative aspect-[3/2] overflow-hidden">
                     {recipe.imagePath && !isImageExpired(recipe.imageExpiresAt) ? (
                       <Image 
-                        src={recipe.imagePath} 
+                        src={getImageUrl(recipe.imagePath)} 
                         alt={recipe.title}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"

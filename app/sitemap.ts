@@ -1,3 +1,4 @@
+
 import { MetadataRoute } from 'next'
 import { SITE_URL } from '@/lib/seo'
 
@@ -5,29 +6,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 确保使用HTTPS
   const baseUrl = SITE_URL.replace(/^http:/, 'https:')
   
+  // 设置不同类型页面的更新时间
+  const now = new Date()
+  const staticPageDate = new Date('2024-12-01') // 静态页面的基准时间
+  
   // 基础页面
   const routes: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
-      lastModified: new Date(),
+      lastModified: now, // 首页保持动态更新
       changeFrequency: 'daily' as const,
       priority: 1,
     },
     {
       url: `${baseUrl}/recipes`,
-      lastModified: new Date(),
+      lastModified: now, // 菜谱列表页保持动态更新
       changeFrequency: 'daily' as const,
       priority: 0.8,
     },
     {
       url: `${baseUrl}/privacy`,
-      lastModified: new Date(),
+      lastModified: staticPageDate, // 隐私政策使用固定时间
       changeFrequency: 'monthly' as const,
       priority: 0.3,
     },
     {
       url: `${baseUrl}/terms`,
-      lastModified: new Date(),
+      lastModified: staticPageDate, // 服务条款使用固定时间
       changeFrequency: 'monthly' as const,
       priority: 0.3,
     },
@@ -38,57 +43,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const localizedRoutes: MetadataRoute.Sitemap = locales.flatMap(locale => [
     {
       url: `${baseUrl}/${locale}`,
-      lastModified: new Date(),
+      lastModified: now, // 本地化首页保持动态更新
       changeFrequency: 'daily' as const,
       priority: 0.9,
     },
     {
       url: `${baseUrl}/${locale}/recipes`,
-      lastModified: new Date(),
+      lastModified: now, // 本地化菜谱页保持动态更新
       changeFrequency: 'daily' as const,
       priority: 0.8,
     },
     {
       url: `${baseUrl}/${locale}/privacy`,
-      lastModified: new Date(),
+      lastModified: staticPageDate, // 本地化隐私政策使用固定时间
       changeFrequency: 'monthly' as const,
       priority: 0.3,
     },
     {
       url: `${baseUrl}/${locale}/terms`,
-      lastModified: new Date(),
+      lastModified: staticPageDate, // 本地化服务条款使用固定时间
       changeFrequency: 'monthly' as const,
       priority: 0.3,
     },
   ])
-
-  // 动态菜谱页面 - 从API获取菜谱列表
-  try {
-    const response = await fetch('https://recipe-easy.com/api/recipes?lang=en&limit=100')
-    if (response.ok) {
-      const data = await response.json()
-      if (data.success && data.results) {
-        const recipeRoutes: MetadataRoute.Sitemap = data.results.map((recipe: any) => ({
-          url: `${baseUrl}/recipe/${recipe.id}`,
-          lastModified: new Date(recipe.updated_at || recipe.created_at),
-          changeFrequency: 'weekly' as const,
-          priority: 0.7,
-        }))
-        
-        // 中文菜谱页面
-        const zhRecipeRoutes: MetadataRoute.Sitemap = data.results.map((recipe: any) => ({
-          url: `${baseUrl}/zh/recipe/${recipe.id}`,
-          lastModified: new Date(recipe.updated_at || recipe.created_at),
-          changeFrequency: 'weekly' as const,
-          priority: 0.7,
-        }))
-        
-        return [...routes, ...localizedRoutes, ...recipeRoutes, ...zhRecipeRoutes]
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching recipes for sitemap:', error)
-  }
-
   return [...routes, ...localizedRoutes]
 } 

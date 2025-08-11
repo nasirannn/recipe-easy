@@ -2,24 +2,27 @@
 import { GridBackground } from "@/components/ui/grid-background";
 import { useState, useEffect } from "react";
 import { Recipe, RecipeFormData } from "@/lib/types";
-import { LanguageModel, ImageModel } from "@/lib/config";
+import { LanguageModel, ImageModel } from "@/lib/types";
 import { RecipeForm } from "@/components/ui/recipe-form";
 import { RecipeDisplay } from "@/components/ui/recipe-display";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { APP_CONFIG, getRecommendedModels } from "@/lib/config";
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from "@/contexts/auth-context";
+import { useUserUsage } from "@/hooks/use-user-usage";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import { useRecipeGeneration } from "@/hooks/use-recipe-generation";
 import { useImageGeneration } from "@/hooks/use-image-generation";
 import { useRecipeSave } from "@/hooks/use-recipe-save";
+import { toast } from "sonner";
 
 export const HeroSection = () => {
   const t = useTranslations('hero');
   const tRecipe = useTranslations('recipeDisplay');
   const locale = useLocale();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const { canGenerate } = useUserUsage();
   
   // 使用自定义 hooks
   const { 
@@ -53,18 +56,17 @@ export const HeroSection = () => {
     cookingTime: "medium",
     difficulty: "medium",
     cuisine: "any",
-    languageModel: recommendedModels.languageModel.toUpperCase() as LanguageModel, // 根据语言自动选择语言模型
-    imageModel: recommendedModels.imageModel.toLowerCase() as ImageModel // 根据语言自动选择图片模型
+    languageModel: (locale === 'zh' ? 'QWENPLUS' : 'GPT4o_MINI') as LanguageModel, // 根据语言自动选择语言模型
+    imageModel: (locale === 'zh' ? 'wanx' : 'flux') as ImageModel // 根据语言自动选择图片模型
   });
 
   // 当语言改变时，自动更新模型选择（对所有用户生效）
-  useEffect(() => {
-    setFormData(prev => ({
+  useEffect(() => { setFormData(prev => ({
       ...prev,
-      languageModel: recommendedModels.languageModel.toUpperCase() as LanguageModel,
-      imageModel: recommendedModels.imageModel.toLowerCase() as ImageModel
+      languageModel: (locale === 'zh' ? 'QWENPLUS' : 'GPT4o_MINI') as LanguageModel,
+      imageModel: (locale === 'zh' ? 'wanx' : 'flux') as ImageModel
     }));
-  }, [locale, recommendedModels.languageModel, recommendedModels.imageModel]);
+  }, [locale]);
   
   const [searchedIngredients, setSearchedIngredients] = useState<RecipeFormData['ingredients']>([]);
   const [showRecipe, setShowRecipe] = useState(false);
@@ -88,8 +90,8 @@ export const HeroSection = () => {
           cookingTime: "medium",
           difficulty: "medium",
           cuisine: "any",
-          languageModel: recommendedModels.languageModel.toUpperCase() as LanguageModel,
-          imageModel: recommendedModels.imageModel.toLowerCase() as ImageModel
+          languageModel: (locale === 'zh' ? 'QWENPLUS' : 'GPT4o_MINI') as LanguageModel,
+          imageModel: (locale === 'zh' ? 'wanx' : 'flux') as ImageModel
         });
         setSearchedIngredients(ingredients);
         
@@ -114,13 +116,44 @@ export const HeroSection = () => {
 
   // 重新生成单个菜谱的图片
   const handleRegenerateImage = async (recipeId: string, recipe: Recipe) => {
-    await regenerateImage(recipeId, recipe, formData.imageModel, (imageUrl) => {
-      setRecipes(prevRecipes => prevRecipes.map(r => 
-        r.id === recipeId 
-          ? { ...r, imagePath: imageUrl }
-          : r
-      ));
-    });
+    // 检查用户登录状态
+    if (!user?.id) {
+      toast.error(locale === 'zh' ? '请先登录以生成图片' : 'Please login to generate images');
+      return;
+    }
+
+    // 检查积分余额（管理员跳过）
+    if (!isAdmin && !canGenerate) {
+      toast.error(
+        locale === 'zh' 
+          ? '积分不足，无法重新生成图片。每次生成需要 1 个积分。' 
+          : 'Insufficient credits to regenerate image. Each generation requires 1 credit.'
+      );
+      return;
+    }
+
+    try {
+      await regenerateImage(recipeId, recipe, formData.imageModel, (imageUrl) => {
+        setRecipes(prevRecipes => prevRecipes.map(r => 
+          r.id === recipeId 
+            ? { ...r, imagePath: imageUrl }
+            : r
+        ));
+        
+        // 显示成功提示
+        toast.success(
+          locale === 'zh' 
+            ? '图片重新生成成功！已消耗 1 个积分。' 
+            : 'Image regenerated successfully! 1 credit consumed.'
+        );
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 
+        (locale === 'zh' ? '图片重新生成失败，请稍后重试' : 'Failed to regenerate image, please try again');
+      
+      toast.error(errorMessage);
+      console.error('Regenerate image error:', error);
+    }
   };
 
   // 监听登录模态窗口事件
@@ -139,13 +172,42 @@ export const HeroSection = () => {
     const handleGenerateImage = async (event: CustomEvent) => {
       const { recipeId, recipe } = event.detail;
       
-      await generateImage(recipeId, recipe, formData.imageModel, (imageUrl) => {
-        setRecipes(prevRecipes => prevRecipes.map(r => 
-          r.id === recipeId 
-            ? { ...r, imagePath: imageUrl }
-            : r
-        ));
-      });
+      // 检查用户登录状态
+      if (!user?.id) {
+        toast.error(locale === 'zh' ? '请先登录以生成图片' : 'Please login to generate images');
+        return;
+      }
+
+      // 检查积分余额（管理员跳过）
+      if (!isAdmin && !canGenerate) {
+        toast.error(
+          locale === 'zh' 
+            ? '积分不足，无法生成图片。每次生成需要 1 个积分。' 
+            : 'Insufficient credits to generate image. Each generation requires 1 credit.'
+        );
+        return;
+      }
+
+      try {
+        await generateImage(recipeId, recipe, formData.imageModel, (imageUrl) => {
+          setRecipes(prevRecipes => prevRecipes.map(r => 
+            r.id === recipeId 
+              ? { ...r, imagePath: imageUrl }
+              : r
+          ));
+          
+          // 触发积分扣减动画事件
+          window.dispatchEvent(new CustomEvent('creditDeducted', { 
+            detail: { amount: 1 } 
+          }));
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 
+          (locale === 'zh' ? '图片生成失败，请稍后重试' : 'Failed to generate image, please try again');
+        
+        toast.error(errorMessage);
+        console.error('Generate image error:', error);
+      }
     };
 
     window.addEventListener('showLoginModal', handleShowLoginModal);
@@ -157,7 +219,7 @@ export const HeroSection = () => {
       window.removeEventListener('loginSuccess', handleLoginSuccess);
       window.removeEventListener('generateImage', handleGenerateImage as EventListener);
     };
-  }, [generateImage, formData.imageModel, setRecipes]);
+  }, [generateImage, formData.imageModel, setRecipes, user, isAdmin, canGenerate, locale]);
 
   // 监听用户状态变化，当用户登出时重置状态
   useEffect(() => {
@@ -172,15 +234,15 @@ export const HeroSection = () => {
       setFormData({
         ingredients: [],
         servings: 2,
-        recipeCount: APP_CONFIG.defaultRecipeCount,
+        recipeCount: 1,
         cookingTime: "medium",
         difficulty: "medium",
         cuisine: "any",
-        languageModel: recommendedModels.languageModel.toUpperCase() as LanguageModel,
-        imageModel: recommendedModels.imageModel as ImageModel
+        languageModel: (locale === 'zh' ? 'QWENPLUS' : 'GPT4o_MINI') as LanguageModel,
+        imageModel: (locale === 'zh' ? 'wanx' : 'flux') as ImageModel
       });
     }
-  }, [user, recommendedModels.imageModel, clearRecipes, clearImageLoadingStates, recommendedModels.languageModel]);
+  }, [user, locale, clearRecipes, clearImageLoadingStates]);
 
   const handleSubmit = async () => {
     try {

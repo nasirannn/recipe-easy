@@ -11,7 +11,7 @@ By accessing or using Recipe Easy ("Service"), you agree to be bound by these Te
 
 Recipe Easy is an AI-powered platform that generates recipes based on ingredients you provide. Our Service includes:
 - User account registration and authentication (supports email and Google OAuth login)
-- Intelligent recipe generation using multiple AI language models (DeepSeek, Qwen Plus, GPT-4o Mini)
+- Intelligent recipe generation using multiple AI language models (Qwen Plus, GPT-4o Mini)
 - Automatic model selection based on language preference (Chinese users automatically use Qwen Plus for text and WanX for images; English users automatically use GPT-4o Mini for text and Flux Schnell for images)
 - Ingredient database and selection tools with custom ingredient support
 - Recipe image generation functionality (WanX, Flux Schnell, etc)
@@ -120,7 +120,7 @@ Your privacy is important to us. Please review our Privacy Policy, which governs
 Our Service integrates with multiple third-party services:
 - **Supabase**: User authentication and account management
 - **Cloudflare**: Content delivery, security, and database storage
-- **AI Model Providers**: Recipe generation (DeepSeek, Qwen Plus, GPT-4o Mini, etc.)
+- **AI Model Providers**: Recipe generation (Qwen Plus, GPT-4o Mini, etc.)
 - **Image Generation Services**: Recipe image generation (WanX, Flux Schnell, etc.)
 - **Google OAuth**: Third-party login
 

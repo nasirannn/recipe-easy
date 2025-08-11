@@ -26,7 +26,7 @@ Welcome to Recipe Easy ("we," "our," or "us"). This Privacy Policy explains how 
 We use the following third-party services that may collect information:
 - **Supabase**: For user authentication and account management
 - **Cloudflare**: For content delivery, security, and database storage
-- **AI Model Providers**: For recipe generation (DeepSeek, Qwen Plus, GPT-4o Mini, etc.)
+- **AI Model Providers**: For recipe generation (Qwen Plus, GPT-4o Mini, etc.)
 - **Image Generation Services**: For recipe image generation (WanX, Flux Schnell, etc.)
 - **Google OAuth**: For third-party login
 

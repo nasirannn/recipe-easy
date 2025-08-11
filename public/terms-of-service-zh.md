@@ -11,7 +11,7 @@
 
 Recipe Easy是一个基于您提供的食材生成食谱的AI驱动平台。我们的服务包括：
 - 用户账户注册和认证（支持邮箱和Google OAuth登录）
-- 使用多种AI语言模型的智能食谱生成（DeepSeek、Qwen Plus、GPT-4o Mini）
+- 使用多种AI语言模型的智能食谱生成（Qwen Plus、GPT-4o Mini）
 - **基于语言偏好的自动模型选择**（中文用户自动使用Qwen Plus进行文本生成和WanX进行图片生成；英文用户自动使用GPT-4o Mini进行文本生成和Flux Schnell进行图片生成）
 - 食材数据库和选择工具，支持自定义食材添加
 - 食谱图片生成功能（WanX、Flux Schnell等）
@@ -120,7 +120,7 @@ Recipe Easy是一个基于您提供的食材生成食谱的AI驱动平台。我�
 我们的服务与多个第三方服务集成：
 - **Supabase**：用户认证和账户管理
 - **Cloudflare**：内容分发、安全和数据库存储
-- **AI模型提供商**：食谱生成（DeepSeek、Qwen Plus、GPT-4o Mini等）
+- **AI模型提供商**：食谱生成（Qwen Plus、GPT-4o Mini等）
 - **图片生成服务**：食谱图片生成（WanX、Flux Schnell等）
 - **Google OAuth**：第三方登录
 

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getWorkerApiUrl } from '@/lib/config';
 
-// 强制动态渲染
-export const runtime = 'edge';
+// 启用缓存以提高性能
+export const revalidate = 3600; // 1小时缓存
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,6 +22,15 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
+    
+    // 修复数据结构：将data字段转换为results字段以匹配前端期望
+    if (data.success && data.data) {
+      return NextResponse.json({
+        ...data,
+        results: data.data
+      });
+    }
+    
     return NextResponse.json(data);
 
   } catch (error) {

@@ -183,7 +183,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 WORKER_URL=https://your-worker.your-subdomain.workers.dev
 
 # AI Service API Keys
-DEEPSEEK_API_KEY=your_deepseek_api_key
 QWENPLUS_API_KEY=your_qwenplus_api_key
 DASHSCOPE_API_KEY=your_dashscope_api_key
 REPLICATE_API_TOKEN=your_replicate_api_token
@@ -272,7 +271,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Cloudflare](https://cloudflare.com/) - Cloud services
 - [Tailwind CSS](https://tailwindcss.com/) - CSS framework
 - [Radix UI](https://www.radix-ui.com/) - UI component library
-- [DeepSeek](https://deepseek.com/) - AI language model service
 - [Alibaba Cloud](https://www.aliyun.com/) - Qwen AI service
 - [OpenAI](https://openai.com/) - GPT-4o Mini model service
 - [Replicate](https://replicate.com/) - AI model deployment platform

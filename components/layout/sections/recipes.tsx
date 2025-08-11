@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 
 import { Recipe } from '@/lib/types';
+import { getImageUrl } from '@/lib/config';
 
 // 获取 cuisine 的 CSS 类名
 const getCuisineClassName = (cuisineName: string): string => {
@@ -59,8 +60,8 @@ export const RecipesSection = () => {
     const fetchRecipes = async () => {
       try {
         setIsLoading(true);
-        // 获取管理员菜谱
-        const response = await fetch(`/api/recipes?limit=20&lang=${locale}&adminOnly=true`);
+        // 调用管理员菜谱接口
+        const response = await fetch(`/api/recipes/admin?limit=20&lang=${locale}`);
         const data = await response.json();
 
         if (data.success) {
@@ -68,29 +69,29 @@ export const RecipesSection = () => {
           const transformedRecipes = (data.results || []).map((recipe: any) => ({
             id: recipe.id,
             title: recipe.title,
-            imagePath: recipe.imagePath,
+            imagePath: recipe.image_url || recipe.imagePath,
             description: recipe.description,
-            tags: recipe.tags ? JSON.parse(recipe.tags) : [],
-            cookingTime: recipe.cookingTime || 30,
+            tags: recipe.tags || [],
+            cookingTime: recipe.cooking_time || recipe.cookingTime || 30,
             servings: recipe.servings || 4,
             difficulty: recipe.difficulty || 'easy',
-            ingredients: recipe.ingredients ? JSON.parse(recipe.ingredients) : [],
-            seasoning: recipe.seasoning ? JSON.parse(recipe.seasoning) : [],
-            instructions: recipe.instructions ? JSON.parse(recipe.instructions) : [],
-            chefTips: recipe.chefTips ? JSON.parse(recipe.chefTips) : [],
+            ingredients: recipe.ingredients || [],
+            seasoning: recipe.seasoning || [],
+            instructions: recipe.instructions || [],
+            chefTips: recipe.chef_tips || recipe.chefTips || [],
             cuisine: recipe.cuisine ? {
-              id: recipe.cuisine.id,
-              name: recipe.cuisine.name
+              id: recipe.cuisine_id || recipe.cuisine.id,
+              name: recipe.cuisine_name || recipe.cuisine.name
             } : undefined,
             userId: recipe.user_id // 添加用户ID用于过滤
           }));
 
           setRecipes(transformedRecipes);
         } else {
-          console.error('Failed to fetch recipes:', data.error);
+          console.error('Failed to fetch admin recipes:', data.error);
         }
       } catch (error) {
-        console.error('Error fetching recipes:', error);
+        console.error('Error fetching admin recipes:', error);
       } finally {
         setIsLoading(false);
       }
@@ -144,7 +145,7 @@ export const RecipesSection = () => {
               >
                 <div className="relative aspect-[3/2] overflow-hidden">
                   <Image
-                    src={recipe.imagePath || '/images/recipe-placeholder-bg.png'}
+                    src={getImageUrl(recipe.imagePath) || '/images/recipe-placeholder-bg.png'}
                     alt={recipe.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"

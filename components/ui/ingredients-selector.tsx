@@ -95,10 +95,12 @@ export const IngredientSelector = ({
       }
       const data = await response.json();
 
-      if (data.success && data.data) {
+
+
+      if (data.success && data.results) {
         // 使用API返回的数据
         const categoriesMap: Record<string, { name: string; icon?: any; color?: string }> = {};
-        data.data.forEach((category: any) => {
+        data.results.forEach((category: any) => {
           const categoryKey = category.slug as keyof typeof CATEGORIES;
           if (CATEGORIES[categoryKey]) {
             categoriesMap[categoryKey] = {
@@ -108,9 +110,11 @@ export const IngredientSelector = ({
             };
           }
         });
+
         setDynamicCategories(categoriesMap);
       } else {
-        throw new Error('Invalid API response');
+        console.error('Invalid API response structure:', data); // 添加详细错误信息
+        throw new Error(`Invalid API response: ${JSON.stringify(data)}`);
       }
     } catch (error) {
       console.error("获取分类失败", error);
@@ -128,8 +132,11 @@ export const IngredientSelector = ({
       const response = await fetch(`/api/ingredients?lang=${locale}&limit=200`);
       const data = await response.json();
 
+
+
       if (!data.success || !data.results) {
-        throw new Error('Invalid API response');
+        console.error('Invalid ingredients API response structure:', data); // 添加详细错误信息
+        throw new Error(`Invalid API response: ${JSON.stringify(data)}`);
       }
 
       const ingredientsData = data.results;
@@ -161,6 +168,7 @@ export const IngredientSelector = ({
           groupedByCategory.other.push(ingredient);
         }
       });
+
 
       setCategorizedIngredients(groupedByCategory);
 
@@ -220,19 +228,34 @@ export const IngredientSelector = ({
 
   // 使用 useMemo 派生过滤后的食材列表，从根源上解决闪动问题
   const filteredIngredients = useMemo(() => {
+    // 确保 allIngredients 和 categorizedIngredients 已初始化
+    if (!allIngredients || !categorizedIngredients) {
+      return [];
+    }
+    
+    // 数据验证函数：确保食材对象有效
+    const isValidIngredient = (ingredient: any) => {
+      return ingredient && 
+             ingredient.id && 
+             ingredient.name &&
+             typeof ingredient.name === 'string';
+    };
+    
     if (searchValue.trim()) {
       // 搜索模式：在所有食材中搜索
       return allIngredients.filter(
         ingredient =>
+          isValidIngredient(ingredient) &&
           !selectedIngredients.some(selected => selected.id === ingredient.id) &&
-          (ingredient.englishName.toLowerCase().includes(searchValue.toLowerCase()) ||
-           ingredient.name.toLowerCase().includes(searchValue.toLowerCase()))
+          ingredient.name.toLowerCase().includes(searchValue.toLowerCase())
       );
     } else {
       // 分类模式：显示当前分类的食材
       const categoryIngredients = categorizedIngredients[activeCategory] || [];
       return categoryIngredients.filter(
-        ingredient => !selectedIngredients.some(selected => selected.id === ingredient.id)
+        ingredient => 
+          isValidIngredient(ingredient) &&
+          !selectedIngredients.some(selected => selected.id === ingredient.id)
       );
     }
   }, [searchValue, activeCategory, allIngredients, categorizedIngredients, selectedIngredients]);
@@ -282,9 +305,9 @@ export const IngredientSelector = ({
       // 先检查是否有匹配的预设食材
       const matchedIngredient = allIngredients.find(
         ingredient =>
+          ingredient && ingredient.name &&
           !selectedIngredients.some(selected => selected.id === ingredient.id) &&
-          (ingredient.englishName.toLowerCase() === searchValue.toLowerCase() ||
-           ingredient.name.toLowerCase() === searchValue.toLowerCase())
+          ingredient.name.toLowerCase() === searchValue.toLowerCase()
       );
 
       if (matchedIngredient) {
@@ -296,7 +319,6 @@ export const IngredientSelector = ({
           id: -Math.floor(Math.random() * 10000), // 使用负数避免与真实食材ID冲突
           slug: `custom-${generateNanoId(8)}`,
           name: searchValue,
-          englishName: searchValue,
           category: {
             id: 0,
             slug: 'custom',
@@ -328,7 +350,7 @@ export const IngredientSelector = ({
                 ingredient.isCustom && "bg-white text-yellow-600 border-2 border-dashed border-yellow-400 hover:bg-white/90"
               )}
             >
-              {ingredient.englishName}
+              {ingredient.name}
               <X
                 className="h-3 w-3 cursor-pointer hover:text-destructive"
                 onClick={() => handleRemoveIngredient(ingredient)}
@@ -489,11 +511,15 @@ export const IngredientSelector = ({
         ) : (
           <ScrollArea className={cn("w-full", isMobile ? "h-80" : "h-64")}>
             <div className={cn("flex flex-wrap gap-3 p-2", isMobile ? "gap-2" : "gap-3")}>
-              {filteredIngredients.map((ingredient) => {
+              {filteredIngredients && filteredIngredients.map((ingredient) => {
+                // 安全检查：确保 ingredient 对象和必要属性存在
+                if (!ingredient || !ingredient.name) {
+                  return null; // 跳过无效的食材
+                }
+                
                 // 根据食材名称长度动态计算宽度
-                const nameLength = ingredient.englishName.length;
-                const chineseNameLength = locale === 'zh' && ingredient.name !== ingredient.englishName ? ingredient.name.length : 0;
-                const totalLength = Math.max(nameLength, chineseNameLength);
+                const nameLength = ingredient.name.length;
+                const totalLength = nameLength;
                 
                 // 动态宽度计算 - 移动端优化
                 let cardWidth = isMobile ? 'min-w-[90px] max-w-[160px]' : 'min-w-[100px] max-w-[180px]';
@@ -536,16 +562,8 @@ export const IngredientSelector = ({
                       "font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary transition-all duration-300 leading-tight break-words",
                       isMobile ? "text-xs" : "text-sm"
                     )}>
-                      {ingredient.englishName}
+                      {ingredient.name}
                     </div>
-                    {locale === 'zh' && ingredient.name !== ingredient.englishName && (
-                      <div className={cn(
-                        "text-gray-600 dark:text-gray-300 mt-1.5 group-hover:text-primary/80 transition-all duration-300 font-medium break-words",
-                        isMobile ? "text-[10px] mt-1" : "text-xs mt-1.5"
-                      )}>
-                        {ingredient.name}
-                      </div>
-                    )}
                   </div>
                   
 
@@ -558,7 +576,7 @@ export const IngredientSelector = ({
         )}
 
         {/* 搜索结果为空时的提示 */}
-        {!loading && filteredIngredients.length === 0 && searchValue.trim() && (
+        {!loading && filteredIngredients && filteredIngredients.length === 0 && searchValue.trim() && (
           <div className="text-center py-12 space-y-4">
             <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
               <div className="w-8 h-8 text-gray-400">
@@ -579,7 +597,7 @@ export const IngredientSelector = ({
         )}
 
         {/* 分类为空时的提示 */}
-        {!loading && filteredIngredients.length === 0 && !searchValue.trim() && (
+        {!loading && filteredIngredients && filteredIngredients.length === 0 && !searchValue.trim() && (
           <div className="text-center py-12 space-y-4">
             <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
               <div className="w-8 h-8 text-gray-400">

@@ -1,64 +1,52 @@
 // Google Analytics 4 工具函数
-export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID
+export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID;
 
-// https://developers.google.com/analytics/devguides/collection/gtagjs/pages
+// 页面浏览跟踪
 export const pageview = (url: string) => {
   if (typeof window !== 'undefined' && window.gtag && GA_TRACKING_ID) {
     window.gtag('config', GA_TRACKING_ID, {
       page_location: url,
-    })
+    });
   }
-}
+};
 
-// https://developers.google.com/analytics/devguides/collection/gtagjs/events
+// 通用事件跟踪
 export const event = ({ action, category, label, value }: {
-  action: string
-  category: string
-  label?: string
-  value?: number
+  action: string;
+  category: string;
+  label?: string;
+  value?: number;
 }) => {
   if (typeof window !== 'undefined' && window.gtag && GA_TRACKING_ID) {
     window.gtag('event', action, {
       event_category: category,
       event_label: label,
       value: value,
-    })
+    });
   }
-}
+};
 
-// 自定义事件跟踪
+// 通用跟踪函数
+export const track = (action: string, category: string, label?: string, value?: number) => {
+  event({ action, category, label, value });
+};
+
+// 常用事件跟踪（保持向后兼容）
 export const trackRecipeGeneration = (cuisine?: string, ingredientsCount?: number) => {
-  event({
-    action: 'generate_recipe',
-    category: 'recipe',
-    label: cuisine,
-    value: ingredientsCount,
-  })
-}
+  track('generate_recipe', 'recipe', cuisine, ingredientsCount);
+};
 
 export const trackUserSignup = (method: string) => {
-  event({
-    action: 'sign_up',
-    category: 'engagement',
-    label: method,
-  })
-}
+  track('sign_up', 'engagement', method);
+};
 
 export const trackUserLogin = (method: string) => {
-  event({
-    action: 'login',
-    category: 'engagement',
-    label: method,
-  })
-}
+  track('login', 'engagement', method);
+};
 
 export const trackFeatureUsage = (feature: string) => {
-  event({
-    action: 'feature_usage',
-    category: 'engagement',
-    label: feature,
-  })
-}
+  track('feature_usage', 'engagement', feature);
+};
 
 // 声明全局 gtag 类型
 declare global {
@@ -67,8 +55,8 @@ declare global {
       command: 'config' | 'event' | 'js' | 'consent',
       targetId: string,
       config?: Record<string, any>
-    ) => void
-    dataLayer: any[]
-    clarity: any
+    ) => void;
+    dataLayer: any[];
+    clarity: any;
   }
 } 

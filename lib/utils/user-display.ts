@@ -1,5 +1,5 @@
 import { User } from '@supabase/supabase-js'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseClient } from '../supabase'
 
 /**
  * 获取用户友好的显示名称

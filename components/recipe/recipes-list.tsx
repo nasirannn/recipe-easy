@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import { Recipe } from '@/lib/types';
+import { getImageUrl } from '@/lib/config';
 
 // 获取 cuisine 的 CSS 类名
 const getCuisineClassName = (cuisineName: string): string => {
@@ -69,14 +70,14 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
             title: recipe.title,
             imagePath: recipe.imagePath,
             description: recipe.description,
-            tags: recipe.tags ? JSON.parse(recipe.tags) : [],
+            tags: recipe.tags || [],
             cookingTime: recipe.cookingTime || 30,
             servings: recipe.servings || 4,
             difficulty: recipe.difficulty || 'easy',
-            ingredients: recipe.ingredients ? JSON.parse(recipe.ingredients) : [],
-            seasoning: recipe.seasoning ? JSON.parse(recipe.seasoning) : [],
-            instructions: recipe.instructions ? JSON.parse(recipe.instructions) : [],
-            chefTips: recipe.chefTips ? JSON.parse(recipe.chefTips) : [],
+            ingredients: recipe.ingredients || [],
+            seasoning: recipe.seasoning || [],
+            instructions: recipe.instructions || [],
+            chefTips: recipe.chefTips || [],
             cuisine: recipe.cuisine ? {
               id: recipe.cuisine.id,
               name: recipe.cuisine.name
@@ -149,7 +150,7 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
               >
                 <div className="relative aspect-[3/2] overflow-hidden">
                   <Image
-                    src={recipe.imagePath || '/images/recipe-placeholder-bg.png'}
+                    src={getImageUrl(recipe.imagePath) || '/images/recipe-placeholder-bg.png'}
                     alt={recipe.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"

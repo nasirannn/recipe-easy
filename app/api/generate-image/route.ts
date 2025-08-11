@@ -7,7 +7,7 @@ export const runtime = 'edge';
 // 记录模型使用情况的函数（已禁用，Worker已删除）
 async function recordModelUsage(modelName: string, modelResponseId: string, requestDetails: string) {
   // Worker已删除，模型使用记录功能暂时禁用
-  console.log(`Model used: ${modelName} with ID ${modelResponseId}`);
+
 }
 
 // 获取当前服务器URL
@@ -116,7 +116,9 @@ export async function POST(request: NextRequest) {
             style: imageConfig.style,
             size: imageConfig.size,
             n: imageConfig.maxImages,
-            seed: Math.floor(Math.random() * 1000000)
+            seed: Math.floor(Math.random() * 1000000),
+            width: 1024,
+            height: 1024
           }
         })
       });
@@ -128,7 +130,7 @@ export async function POST(request: NextRequest) {
       }
 
       const result = await response.json();
-      console.log('Wanx API Response:', result);
+
       
       if (result.output?.task_id) {
         // 这是异步调用，需要轮询获取结果
@@ -148,7 +150,7 @@ export async function POST(request: NextRequest) {
           
           if (statusResponse.ok) {
             const statusResult = await statusResponse.json();
-            console.log('Wanx Status Response:', statusResult);
+
             
             if (statusResult.output?.task_status === 'SUCCEEDED' && statusResult.output?.results?.[0]?.url) {
               imageUrl = statusResult.output.results[0].url;
@@ -204,7 +206,7 @@ export async function POST(request: NextRequest) {
       }
 
       const prediction = await response.json();
-      console.log('Flux API Response:', prediction);
+
 
       if (prediction.error) {
         throw new Error(`Flux API error: ${prediction.error}`);
@@ -227,7 +229,7 @@ export async function POST(request: NextRequest) {
         
         if (statusResponse.ok) {
           currentPrediction = await statusResponse.json();
-          console.log('Flux Status Response:', currentPrediction);
+
         }
         
         attempts++;

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getWorkerApiUrl } from '@/lib/config';
 
 // 强制动态渲染
-// 强制动态渲染
-export const runtime = 'edge';
+// 启用缓存以提高性能
+export const revalidate = 3600; // 1小时缓存
 
 export async function GET(request: NextRequest) {
   try {

@@ -6,6 +6,7 @@ import { User } from '@supabase/supabase-js'
 import { useState, useEffect } from 'react'
 import { cn } from "@/lib/utils"
 import { getUserDisplayName, getUserAvatarUrl } from '@/lib/utils/user-display'
+import { Minus } from "lucide-react"
 
 interface UserAvatarProps {
   user: User | null
@@ -36,6 +37,7 @@ export function UserAvatar({
 }: UserAvatarProps) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [imageError, setImageError] = useState(false)
+  const [showCreditDeduction, setShowCreditDeduction] = useState(false)
 
   // 获取头像URL
   useEffect(() => {
@@ -50,6 +52,25 @@ export function UserAvatar({
     setImageError(false)
   }, [user])
 
+  // 监听积分扣减事件
+  useEffect(() => {
+    const handleCreditDeduction = (event: CustomEvent) => {
+      if (event.detail?.amount) {
+        setShowCreditDeduction(true)
+        // 3秒后自动隐藏
+        setTimeout(() => {
+          setShowCreditDeduction(false)
+        }, 3000)
+      }
+    }
+
+    window.addEventListener('creditDeducted', handleCreditDeduction as EventListener)
+    
+    return () => {
+      window.removeEventListener('creditDeducted', handleCreditDeduction as EventListener)
+    }
+  }, [])
+
   const handleImageError = () => {
     setImageError(true)
   }
@@ -59,20 +80,30 @@ export function UserAvatar({
   }
 
   return (
-    <Avatar className={cn(sizeClasses[size], className)}>
-      {avatarUrl && !imageError ? (
-        <AvatarImage 
-          src={avatarUrl} 
-          alt={getUserDisplayName(user)}
-          onError={handleImageError}
-          onLoad={handleImageLoad}
-        />
-      ) : null}
-      {showFallback && (
-        <AvatarFallback className="bg-primary/10 text-primary">
-          <UserIcon className={iconSizes[size]} />
-        </AvatarFallback>
+    <div className="relative">
+      <Avatar className={cn(sizeClasses[size], className)}>
+        {avatarUrl && !imageError ? (
+          <AvatarImage 
+            src={avatarUrl} 
+            alt={getUserDisplayName(user)}
+            onError={handleImageError}
+            onLoad={handleImageLoad}
+          />
+        ) : null}
+        {showFallback && (
+          <AvatarFallback className="bg-primary/10 text-primary">
+            <UserIcon className={iconSizes[size]} />
+          </AvatarFallback>
+        )}
+      </Avatar>
+      
+      {/* 积分扣减气泡 */}
+      {showCreditDeduction && (
+        <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-bounce shadow-lg border-2 border-white">
+          <Minus className="h-3 w-3" />
+          <span className="ml-0.5">1</span>
+        </div>
       )}
-    </Avatar>
+    </div>
   )
 }

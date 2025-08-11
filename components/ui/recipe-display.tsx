@@ -1,5 +1,6 @@
 import { ChefHat, Users, Clock, Copy, Check, X, RefreshCw, Save, Loader2, Bookmark } from "lucide-react";
 import { Recipe, Ingredient } from "@/lib/types";
+import { getImageUrl } from "@/lib/config";
 import { useState, useEffect } from "react";
 import { Button } from "./button";
 import Image from "next/image";
@@ -23,7 +24,8 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
   const t = useTranslations('recipeDisplay');
   const tRecipeForm = useTranslations('recipeForm');
   const locale = useLocale();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const { canGenerate } = useUserUsage();
   
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const [savingStates, setSavingStates] = useState<Record<string, boolean>>({});
@@ -116,13 +118,13 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                   <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl group hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transition-all duration-300">
                     {recipe.imagePath && !imageErrors[recipe.id] ? (
                       <Image
-                        src={recipe.imagePath}
+                        src={getImageUrl(recipe.imagePath)}
                         alt={recipe.title}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="object-cover cursor-pointer transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
                         unoptimized={true}
-                        onClick={() => openImageDialog(recipe.imagePath!)}
+                        onClick={() => openImageDialog(getImageUrl(recipe.imagePath!))}
                         onError={(e) => {
                           console.error('Image load error for recipe:', recipe.id, e);
                           setImageErrors(prev => ({ ...prev, [recipe.id]: true }));
@@ -208,20 +210,41 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                     {onRegenerateImage && recipe.imagePath && !imageErrors[recipe.id] && !imageLoadingStates[recipe.id] && (
                       <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-20">
                         <div 
-                          className="relative h-12 w-12 bg-white rounded-full flex items-center justify-center shadow-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-all duration-200 hover:scale-110 group/regenerate-btn"
+                          className={`relative h-12 w-12 rounded-full flex items-center justify-center shadow-xl border transition-all duration-200 hover:scale-110 group/regenerate-btn ${
+                            !isAdmin && !canGenerate 
+                              ? 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-50' 
+                              : 'bg-white border-gray-200 cursor-pointer hover:bg-gray-50'
+                          }`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            onRegenerateImage(recipe.id, recipe);
+                            if (isAdmin || canGenerate) {
+                              onRegenerateImage(recipe.id, recipe);
+                            }
                           }}
-                          title={locale === 'zh' ? '重新生成图片需消耗1积分' : 'Regenerate image costs 1 credit'}
+                          title={
+                            !isAdmin && !canGenerate 
+                              ? (locale === 'zh' ? '积分不足，无法重新生成图片' : 'Insufficient credits to regenerate image')
+                              : (locale === 'zh' ? '重新生成图片需消耗1积分' : 'Regenerate image costs 1 credit')
+                          }
                         >
-                          <RefreshCw className="h-6 w-6 text-gray-700 group-hover/regenerate-btn:rotate-180 transition-transform duration-300" />
+                          <RefreshCw className={`h-6 w-6 transition-transform duration-300 ${
+                            !isAdmin && !canGenerate 
+                              ? 'text-gray-400' 
+                              : 'text-gray-700 group-hover/regenerate-btn:rotate-180'
+                          }`} />
                           
-                          {/* 悬浮提示 - 显示积分消耗信息 */}
+                          {/* 悬浮提示 - 显示积分消耗信息或不足提示 */}
                           <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover/regenerate-btn:opacity-100 transition-opacity duration-300 pointer-events-none z-30">
-                            <div className="bg-black rounded-lg px-3 py-2 text-xs text-white whitespace-nowrap shadow-lg">
-                              {locale === 'zh' ? '重新生成图片需消耗1积分' : 'Regenerate image costs 1 credit'}
-                              <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black"></div>
+                            <div className={`rounded-lg px-3 py-2 text-xs text-white whitespace-nowrap shadow-lg ${
+                              !isAdmin && !canGenerate ? 'bg-red-600' : 'bg-black'
+                            }`}>
+                              {!isAdmin && !canGenerate 
+                                ? (locale === 'zh' ? '积分不足，无法重新生成' : 'Insufficient credits')
+                                : (locale === 'zh' ? '重新生成图片需消耗1积分' : 'Regenerate image costs 1 credit')
+                              }
+                              <div className={`absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent ${
+                                !isAdmin && !canGenerate ? 'border-t-red-600' : 'border-t-black'
+                              }`}></div>
                             </div>
                           </div>
                         </div>

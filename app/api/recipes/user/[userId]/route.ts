@@ -8,10 +8,11 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
+    const lang = searchParams.get('lang') || 'en';
     const offset = (page - 1) * limit;
     
     const response = await fetch(
-      `${process.env.WORKER_URL || 'https://api.recipe-easy.com'}/api/recipes/user/${params.userId}?page=${page}&limit=${limit}`,
+      `${process.env.WORKER_URL || 'https://api.recipe-easy.com'}/api/recipes/user/${params.userId}?page=${page}&limit=${limit}&lang=${lang}`,
       {
         headers: {
           'Content-Type': 'application/json',

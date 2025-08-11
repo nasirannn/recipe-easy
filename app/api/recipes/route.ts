@@ -25,7 +25,6 @@ export async function GET(req: NextRequest) {
     const lang = searchParams.get('lang') || 'en';
     const search = searchParams.get('search');
     const cuisineId = searchParams.get('cuisineId');
-    const adminOnly = searchParams.get('adminOnly');
 
     // 构建查询参数
     const params = new URLSearchParams();
@@ -34,7 +33,6 @@ export async function GET(req: NextRequest) {
     params.append('lang', lang);
     if (search) params.append('search', search);
     if (cuisineId) params.append('cuisineId', cuisineId);
-    if (adminOnly) params.append('adminOnly', adminOnly);
 
     // 直接调用云端数据库
     const response = await fetch(getWorkerApiUrl(`/api/recipes?${params}`), {

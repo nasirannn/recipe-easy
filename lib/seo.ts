@@ -92,7 +92,6 @@ export const organizationStructuredData = generateStructuredData('Organization',
   logo: `${SITE_URL}/images/logo.png`,
   description: 'AI-powered recipe generation platform',
   sameAs: [
-    'https://twitter.com/recipeeasy',
-    'https://facebook.com/recipeeasy',
+    
   ],
 }); 

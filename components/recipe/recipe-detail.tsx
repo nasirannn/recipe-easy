@@ -16,6 +16,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Recipe } from '@/lib/types';
+import { getImageUrl } from '@/lib/config';
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -119,7 +120,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
             {recipe.imagePath && (
               <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
                 <Image
-                  src={recipe.imagePath}
+                  src={getImageUrl(recipe.imagePath)}
                   alt={recipe.title}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

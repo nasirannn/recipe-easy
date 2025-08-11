@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getWorkerApiUrl } from '@/lib/config';
-import { Recipe, DatabaseRecipe, UpdateRecipeInput } from '@/lib/types';
+import { Recipe, DatabaseRecipe, RecipeInput } from '@/lib/types';
 
 export const runtime = 'edge';
 

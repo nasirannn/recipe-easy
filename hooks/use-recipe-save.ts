@@ -51,15 +51,14 @@ export const useRecipeSave = () => {
       } else {
         toast.success(locale === 'zh' ? '菜谱保存成功！' : 'Recipe saved successfully!');
       }
-      
+
       return result;
     } catch (error) {
-      console.error('Error saving recipe:', error);
+      console.error('Save recipe error:', error);
+      toast.error(locale === 'zh' ? '保存菜谱失败' : 'Failed to save recipe');
       throw error;
     }
   }, [user?.id, locale]);
 
-  return {
-    saveRecipe
-  };
+  return { saveRecipe };
 }; 

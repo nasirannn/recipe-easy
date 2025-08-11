@@ -10,7 +10,8 @@ export interface Cuisine {
 
 interface CuisinesResponse {
   success: boolean;
-  data: Cuisine[];
+  results?: Cuisine[];
+  data?: Cuisine[];
   total: number;
   source: string;
 }
@@ -38,11 +39,13 @@ export function useCuisines(): UseCuisinesReturn {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data: CuisinesResponse = await response.json();
+      const data: any = await response.json();
       
       if (data.success) {
+        // Worker返回的是results字段，不是data字段
+        const cuisinesData = data.results || data.data || [];
         // 过滤掉"Others"菜系，不在前端显示
-        const filteredCuisines = data.data.filter(cuisine => cuisine.id !== 9);
+        const filteredCuisines = cuisinesData.filter((cuisine: any) => cuisine.id !== 9);
         setCuisines(filteredCuisines);
       } else {
         throw new Error('Failed to fetch cuisines');

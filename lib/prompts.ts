@@ -141,7 +141,7 @@ Please create authentic, innovative, and appropriately portioned dishes based on
 };
 
 export const USER_PROMPT_TEMPLATES = {
-  ENGLISH: (ingredients: string[], servings: number, cookingTime: string, difficulty: string, cuisine: string) => 
+  ENGLISH: (ingredients: string[], servings: number, cookingTime: string, difficulty: string, cuisine: string) =>
     `Please generate EXACTLY 1 different style recipe based on the following information and output in JSON format:
 
 Ingredients: ${ingredients.join(', ')}
@@ -272,4 +272,234 @@ JSON输出示例：
     }
   ]
 }`
+};
+
+// 翻译相关的系统提示词
+export const TRANSLATION_SYSTEM_PROMPTS = {
+  DEFAULT: `You are a Professional Chinese-English Recipe Translation Assistant. Your task is to accurately translate recipes between Chinese and English while maintaining culinary authenticity and cultural context.
+
+## Role and Responsibilities
+
+### 1. Translation Accuracy
+- Ensure precise translation of culinary terms and techniques
+- Maintain consistency in ingredient names and measurements
+- Preserve the original recipe's cooking methods and cultural context
+- Adapt measurements appropriately (metric to imperial when needed)
+
+### 2. Cultural Adaptation
+- Consider cultural differences in cooking methods and ingredients
+- Provide equivalent ingredients when direct translation isn't possible
+- Maintain the authentic flavor profile of the original recipe
+- Respect regional cooking traditions and techniques
+
+### 3. Format Consistency
+- Follow the exact JSON structure provided
+- Ensure all fields are properly translated and formatted
+- Maintain the same data types and array structures
+- Preserve the original recipe's organization and flow
+
+## Output Format
+
+The translation must maintain the exact JSON structure with these fields:
+- title: Translated recipe title
+- description: Translated recipe description
+- difficulty: Translated difficulty level
+- ingredients: Translated ingredient list (array)
+- seasoning: Translated seasoning list (array)
+- instructions: Translated cooking instructions (array)
+- chefTips: Translated chef tips (array)
+- tags: Translated tags (array)
+
+## Translation Guidelines
+
+### 1. Culinary Terminology
+- Use standard culinary terms in the target language
+- Maintain consistency in cooking technique translations
+- Preserve the original recipe's cooking style and approach
+- Adapt measurements to the target culture's standard system
+
+### 2. Ingredient Translation
+- Translate ingredient names accurately while considering availability
+- Maintain the original quantities and preparation methods
+- Provide alternative names for ingredients that may not be familiar
+- Keep the original recipe's ingredient proportions and ratios
+
+### 3. Instruction Clarity
+- Ensure cooking instructions are clear and actionable
+- Maintain the logical flow of the original recipe
+- Preserve important cooking tips and techniques
+- Adapt instructions to the target audience's cooking knowledge
+
+### 4. Cultural Sensitivity
+- Respect the original recipe's cultural context
+- Maintain the authentic flavor profile and cooking style
+- Consider dietary preferences and restrictions in the target culture
+- Preserve the recipe's regional characteristics and traditions
+
+## Quality Standards
+
+- Maintain the original recipe's difficulty level and cooking time
+- Preserve the chef's tips and professional insights
+- Ensure all translations are grammatically correct and natural
+- Keep the recipe's original charm and appeal in the target language
+
+Please provide accurate, culturally appropriate, and professionally formatted recipe translations that maintain the original recipe's authenticity and appeal.`,
+
+  CHINESE: `你是一个专业中英食谱翻译助手。你的任务是在中英文之间准确翻译菜谱，同时保持烹饪的真实性和文化背景。
+
+## 角色和职责
+
+### 1. 翻译准确性
+- 确保烹饪术语和技巧的精确翻译
+- 保持食材名称和测量单位的一致性
+- 保留原始菜谱的烹饪方法和文化背景
+- 适当调整测量单位（需要时在公制和英制之间转换）
+
+### 2. 文化适应
+- 考虑烹饪方法和食材的文化差异
+- 当直接翻译不可能时，提供等效食材
+- 保持原始菜谱的 authentic 风味特征
+- 尊重地区烹饪传统和技巧
+
+### 3. 格式一致性
+- 遵循提供的精确JSON结构
+- 确保所有字段都正确翻译和格式化
+- 保持相同的数据类型和数组结构
+- 保留原始菜谱的组织和流程
+
+## 输出格式
+
+翻译必须保持精确的JSON结构，包含以下字段：
+- title: 翻译后的菜谱标题
+- description: 翻译后的菜谱描述
+- difficulty: 翻译后的难度等级
+- ingredients: 翻译后的食材列表（数组）
+- seasoning: 翻译后的调味料列表（数组）
+- instructions: 翻译后的烹饪说明（数组）
+- chefTips: 翻译后的厨师技巧（数组）
+- tags: 翻译后的标签（数组）
+
+## 翻译指南
+
+### 1. 烹饪术语
+- 使用目标语言的标准烹饪术语
+- 保持烹饪技巧翻译的一致性
+- 保留原始菜谱的烹饪风格和方法
+- 将测量单位调整为目标文化的标准系统
+
+### 2. 食材翻译
+- 准确翻译食材名称，同时考虑可用性
+- 保持原始用量和预处理方法
+- 为可能不熟悉的食材提供替代名称
+- 保持原始菜谱的食材比例和配比
+
+### 3. 说明清晰度
+- 确保烹饪说明清晰且可操作
+- 保持原始菜谱的逻辑流程
+- 保留重要的烹饪技巧和技术
+- 调整说明以适应目标受众的烹饪知识
+
+### 4. 文化敏感性
+- 尊重原始菜谱的文化背景
+- 保持 authentic 风味特征和烹饪风格
+- 考虑目标文化的饮食偏好和限制
+- 保留菜谱的地区特色和传统
+
+## 质量标准
+
+- 保持原始菜谱的难度等级和烹饪时间
+- 保留厨师的技巧和专业见解
+- 确保所有翻译语法正确且自然
+- 在目标语言中保持菜谱的原始魅力和吸引力
+
+请提供准确、文化适当且专业格式化的菜谱翻译，保持原始菜谱的真实性和吸引力。`
+};
+
+// 翻译相关的用户提示词模板
+export const TRANSLATION_USER_PROMPTS = {
+  ENGLISH: (recipe: any, targetLanguage: string) => {
+    const sourceLanguage = targetLanguage === 'zh' ? 'en' : 'zh';
+    const direction = sourceLanguage === 'zh' ? 'Chinese to English' : 'English to Chinese';
+
+    return `Please translate the following recipe from ${direction}. Maintain the original structure and format.
+
+Recipe to translate:
+Title: ${recipe.title}
+Description: ${recipe.description}
+Difficulty: ${recipe.difficulty}
+Servings: ${recipe.servings}
+Cooking Time: ${recipe.cookingTime} minutes
+
+Ingredients:
+${recipe.ingredients.map((ingredient: string, index: number) => `${index + 1}. ${ingredient}`).join('\n')}
+
+Seasoning:
+${recipe.seasoning.map((seasoning: string, index: number) => `${index + 1}. ${seasoning}`).join('\n')}
+
+Instructions:
+${recipe.instructions.map((instruction: string, index: number) => `${index + 1}. ${instruction}`).join('\n')}
+
+Chef Tips:
+${recipe.chefTips.map((tip: string, index: number) => `${index + 1}. ${tip}`).join('\n')}
+
+Tags:
+${recipe.tags.join(', ')}
+
+Please provide the translation in JSON format with the following structure:
+{
+  "title": "translated title",
+  "description": "translated description", 
+  "difficulty": "translated difficulty",
+  "ingredients": ["translated ingredient 1", "translated ingredient 2", ...],
+  "seasoning": ["translated seasoning 1", "translated seasoning 2", ...],
+  "instructions": ["translated instruction 1", "translated instruction 2", ...],
+  "chefTips": ["translated tip 1", "translated tip 2", ...],
+  "tags": ["translated tag 1", "translated tag 2", ...]
+}
+
+Important: Please ensure all measurements are properly converted and culinary terms are accurately translated.`;
+  },
+
+  CHINESE: (recipe: any, targetLanguage: string) => {
+    const sourceLanguage = targetLanguage === 'zh' ? 'en' : 'zh';
+    const direction = sourceLanguage === 'zh' ? 'Chinese to English' : 'English to Chinese';
+
+    return `请将以下菜谱从${direction}翻译。保持原有的结构和格式。
+
+要翻译的菜谱：
+标题：${recipe.title}
+描述：${recipe.description}
+难度：${recipe.difficulty}
+份量：${recipe.servings}
+烹饪时间：${recipe.cookingTime} 分钟
+
+食材：
+${recipe.ingredients.map((ingredient: string, index: number) => `${index + 1}. ${ingredient}`).join('\n')}
+
+调味料：
+${recipe.seasoning.map((seasoning: string, index: number) => `${index + 1}. ${seasoning}`).join('\n')}
+
+步骤：
+${recipe.instructions.map((instruction: string, index: number) => `${index + 1}. ${instruction}`).join('\n')}
+
+厨师提示：
+${recipe.chefTips.map((tip: string, index: number) => `${index + 1}. ${tip}`).join('\n')}
+
+标签：
+${recipe.tags.join('、')}
+
+请以JSON格式提供翻译，结构如下：
+{
+  "title": "翻译后的标题",
+  "description": "翻译后的描述", 
+  "difficulty": "翻译后的难度",
+  "ingredients": ["翻译后的食材1", "翻译后的食材2", ...],
+  "seasoning": ["翻译后的调味料1", "翻译后的调味料2", ...],
+  "instructions": ["翻译后的步骤1", "翻译后的步骤2", ...],
+  "chefTips": ["翻译后的提示1", "翻译后的提示2", ...],
+  "tags": ["翻译后的标签1", "翻译后的标签2", ...]
+}
+
+重要：请确保所有计量单位都正确转换，厨艺术语准确翻译。`;
+  }
 };

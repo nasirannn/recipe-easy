@@ -16,16 +16,33 @@ interface UserCredits {
 interface CreditsStore {
   credits: UserCredits | null;
   canGenerate: boolean;
+  loading: boolean;
+  error: string | null;
+  initialized: boolean; // 是否已初始化
+  requestInProgress: boolean; // 请求进行中标志
   setCredits: (credits: UserCredits | null) => void;
   setCanGenerate: (canGenerate: boolean) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  setInitialized: (initialized: boolean) => void;
+  setRequestInProgress: (inProgress: boolean) => void;
   updateCredits: (amount: number) => void;
+  reset: () => void;
 }
 
 export const useCreditsStore = create<CreditsStore>((set) => ({
   credits: null,
   canGenerate: false,
+  loading: true,
+  error: null,
+  initialized: false,
+  requestInProgress: false,
   setCredits: (credits) => set({ credits }),
   setCanGenerate: (canGenerate) => set({ canGenerate }),
+  setLoading: (loading) => set({ loading }),
+  setError: (error) => set({ error }),
+  setInitialized: (initialized) => set({ initialized }),
+  setRequestInProgress: (inProgress) => set({ requestInProgress: inProgress }),
   updateCredits: (amount) => set((state) => {
     if (!state.credits) return state;
     
@@ -39,21 +56,46 @@ export const useCreditsStore = create<CreditsStore>((set) => ({
       credits: updatedCredits,
       canGenerate: updatedCredits.credits >= 1
     };
+  }),
+  reset: () => set({
+    credits: null,
+    canGenerate: false,
+    loading: true,
+    error: null,
+    initialized: false,
+    requestInProgress: false
   })
 }));
 
 export function useUserUsage() {
   const { user, isAdmin } = useAuth();
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   // 使用全局状态
-  const { credits, canGenerate, setCredits, setCanGenerate, updateCredits } = useCreditsStore();
+  const { 
+    credits, 
+    canGenerate, 
+    loading, 
+    error, 
+    initialized, 
+    requestInProgress,
+    setCredits, 
+    setCanGenerate, 
+    setLoading, 
+    setError, 
+    setInitialized,
+    setRequestInProgress,
+    updateCredits,
+    reset
+  } = useCreditsStore();
   
   // 获取用户积分情况
   const fetchCredits = useCallback(async () => {
-    
     if (!user?.id) return;
+    
+    // 如果请求正在进行中，不重复发起请求
+    if (requestInProgress) return;
+    
     try {
+      setRequestInProgress(true);
       setLoading(true);
       setError(null);
       
@@ -68,6 +110,7 @@ export function useUserUsage() {
       if (data.success) {
         setCredits(data.data.credits);
         setCanGenerate(data.data.canGenerate);
+        setInitialized(true);
       } else {
         // 检查是否是配置错误
         if (data.setup_required) {
@@ -82,8 +125,9 @@ export function useUserUsage() {
       console.error('Error fetching credits:', err);
     } finally {
       setLoading(false);
+      setRequestInProgress(false);
     }
-  }, [user?.id, isAdmin, setCredits, setCanGenerate]);
+  }, [user?.id, isAdmin, setCredits, setCanGenerate, setLoading, setError, setInitialized, setRequestInProgress, requestInProgress]);
 
   // 消费积分
   const spendCredits = useCallback(async (amount: number = 1) => {
@@ -117,7 +161,7 @@ export function useUserUsage() {
       console.error('Error spending credits:', err);
       return false;
     }
-  }, [user?.id, setCredits, setCanGenerate]);
+  }, [user?.id, setCredits, setCanGenerate, setError]);
   
   // 实时更新积分（无需等待API响应）
   const updateCreditsLocally = useCallback((amount: number = 1) => {
@@ -127,14 +171,15 @@ export function useUserUsage() {
   // 初始化数据
   useEffect(() => {
     if (user?.id) {
-  
-      fetchCredits();
+      // 只有在未初始化且没有请求进行中时才发起请求
+      if (!initialized && !requestInProgress) {
+        fetchCredits();
+      }
     } else {
-  
-      setCredits(null);
-      setCanGenerate(false);
+      // 用户未登录时重置状态
+      reset();
     }
-  }, [user?.id, fetchCredits, setCredits, setCanGenerate]);
+  }, [user?.id, initialized, requestInProgress, fetchCredits, reset]);
 
   return {
     credits,

@@ -26,7 +26,7 @@
 我们使用以下可能收集信息的第三方服务：
 - **Supabase**：用于用户认证和账户管理
 - **Cloudflare**：用于内容分发、安全和数据库存储
-- **AI模型提供商**：用于食谱生成（DeepSeek、Qwen Plus、GPT-4o Mini等）
+- **AI模型提供商**：用于食谱生成（Qwen Plus、GPT-4o Mini等）
 - **图片生成服务**：用于食谱图片生成（WanX、Flux Schnell等）
 - **Google OAuth**：用于第三方登录
 

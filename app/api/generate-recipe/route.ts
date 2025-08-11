@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { SYSTEM_PROMPTS, USER_PROMPT_TEMPLATES } from '@/lib/prompts';
-import { getLanguageModelConfig, getLanguageConfig } from '@/lib/config';
+import { getLanguageConfig } from '@/lib/config';
 import { generateRecipeId } from '@/lib/utils/id-generator';
 
 // 强制动态渲染
@@ -10,7 +10,7 @@ export const runtime = 'edge';
 // 记录模型使用情况的函数（已禁用，Worker已删除）
 async function recordModelUsage(modelName: string, modelResponseId: string, requestDetails: string) {
   // Worker已删除，模型使用记录功能暂时禁用
-  console.log(`Model used: ${modelName} with ID ${modelResponseId}`);
+
 }
 
 // 提取公共的数据转换函数
@@ -48,8 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 获取基于语言的模型配置
-    const languageConfig = getLanguageConfig(language || 'en');
-    const modelConfig = languageConfig.language;
+    const modelConfig = getLanguageConfig(language || 'en');
     
     // 管理员可以选择模型，普通用户使用基于语言的默认模型
     if (isAdmin && languageModel) {
@@ -69,14 +68,14 @@ export async function POST(request: NextRequest) {
     const ingredientNames = ingredients.map((ingredient: any) => ingredient.name);
     
     if (language === 'zh' || language === 'zh-CN') {
-      console.log(language);
+
       // 中文用户使用中文提示词
       systemPrompt = SYSTEM_PROMPTS.CHINESE;
-      userPrompt = USER_PROMPT_TEMPLATES.CHINESE(ingredientNames, servings, cookingTime, difficulty, cuisine);
+      userPrompt = `${USER_PROMPT_TEMPLATES.CHINESE}\n\n食材：${ingredientNames.join(', ')}\n份量：${servings}人份\n烹饪时间：${cookingTime}\n难度：${difficulty}\n菜系：${cuisine}`;
     } else {
       // 英文用户使用英文提示词
       systemPrompt = SYSTEM_PROMPTS.DEFAULT;
-      userPrompt = USER_PROMPT_TEMPLATES.ENGLISH(ingredientNames, servings, cookingTime, difficulty, cuisine);
+      userPrompt = `${USER_PROMPT_TEMPLATES.ENGLISH}\n\nIngredients: ${ingredientNames.join(', ')}\nServings: ${servings}\nCooking Time: ${cookingTime}\nDifficulty: ${difficulty}\nCuisine: ${cuisine}`;
     }
 
     // 验证提示词是否为空
@@ -109,7 +108,7 @@ export async function POST(request: NextRequest) {
       }
 
       const prediction = await response.json();
-      console.log('GPT-4o mini 预测结果:', prediction);
+
 
       // 轮询等待结果
       let attempts = 0;
@@ -127,7 +126,7 @@ export async function POST(request: NextRequest) {
         
         if (statusResponse.ok) {
           result = await statusResponse.json();
-          console.log('GPT-4o mini 状态检查:', result.status);
+
         }
 
         attempts++;
