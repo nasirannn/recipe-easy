@@ -46,22 +46,17 @@ async function recordModelUsage(db: D1Database, params: {
       INSERT INTO model_usage_records (id, model_name, model_type, request_details, created_at)
       VALUES (?, ?, ?, ?, DATETIME('now'))
     `);
-    
     await stmt.bind(
       params.model_response_id,            // 使用大模型返回的ID作为主键
       params.model_name,
       params.model_type,
       params.request_details || null
     ).run();
-    
-
   } catch (error) {
     console.error('❌ Failed to record model usage:', error);
     // 不抛出错误，避免影响主要业务逻辑
   }
 }
-
-
 
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -355,8 +350,6 @@ async function handleImages(request: Request, bucket: R2Bucket, corsHeaders: Rec
   }
 }
 
-
-
 // 处理分类API
 async function handleCategories(request: Request, db: D1Database, corsHeaders: Record<string, string>): Promise<Response> {
   try {
@@ -457,7 +450,7 @@ async function handleIngredients(request: Request, db: D1Database, corsHeaders: 
 async function handleCuisines(request: Request, db: D1Database, corsHeaders: Record<string, string>): Promise<Response> {
   try {
     const { searchParams } = new URL(request.url);
-      const language = searchParams.get('lang') || 'en';
+    const language = searchParams.get('lang') || 'en';
 
     const { results } = await db.prepare(`
         SELECT 
@@ -495,22 +488,38 @@ async function handleCuisines(request: Request, db: D1Database, corsHeaders: Rec
 // 处理用户积分API
 async function handleUserUsage(request: Request, db: D1Database, corsHeaders: Record<string, string>): Promise<Response> {
   try {
-    const { searchParams } = new URL(request.url);
-    const rawUserId = searchParams.get('userId');
-    const rawIsAdmin = searchParams.get('isAdmin');
-    
-    // 🔒 安全修复：使用validateUserId函数验证用户ID
-    const userValidation = validateUserId(rawUserId);
-    if (!userValidation.isValid) {
-      return createErrorResponse(userValidation.error || 'Invalid user ID', 400, undefined, corsHeaders);
-    }
-    
-    const userId = userValidation.userId!;
-    const isAdmin = rawIsAdmin === 'true';
+    console.log('🔍 handleUserUsage called with method:', request.method);
 
     if (request.method === 'GET') {
+      // GET请求：从URL参数获取并验证userId
+      const { searchParams } = new URL(request.url);
+      const rawUserId = searchParams.get('userId');
+      const rawIsAdmin = searchParams.get('isAdmin');
+      
+      console.log('🔍 GET request params:', { rawUserId, rawIsAdmin });
+      
+      // 🔒 安全修复：使用validateUserId函数验证用户ID
+      const userValidation = validateUserId(rawUserId);
+      if (!userValidation.isValid) {
+        console.log('❌ GET User ID validation failed:', userValidation.error);
+        return createErrorResponse(userValidation.error || 'Invalid user ID', 400, undefined, corsHeaders);
+      }
+      
+      const userId = userValidation.userId!;
+      const isAdmin = rawIsAdmin === 'true';
+      console.log('✅ GET User ID validation passed:', userId);
       if (!userId) {
         return createErrorResponse('User ID is required', 400, undefined, corsHeaders);
+      }
+
+      // 检查表是否存在
+      const tableExists = await db.prepare(`
+        SELECT name FROM sqlite_master WHERE type='table' AND name='user_credits'
+      `).first();
+      
+      if (!tableExists) {
+        console.log('❌ user_credits table does not exist');
+        return createErrorResponse('Database setup required: user_credits table missing', 500, 'user_credits table not found', corsHeaders);
       }
 
       // 获取用户积分
@@ -518,9 +527,12 @@ async function handleUserUsage(request: Request, db: D1Database, corsHeaders: Re
         SELECT * FROM user_credits WHERE user_id = ?
       `).bind(userId).first();
 
+      console.log('🔍 User credits query result:', { userId, userCredits: userCredits ? 'found' : 'not found' });
+
       if (!userCredits) {
         // 从系统配置中获取初始积分
         const initialCredits = await getSystemConfig(db, 'initial_credits', 100);
+        console.log('🔧 Creating new user credits record with initial credits:', initialCredits);
         
         // 创建新用户积分记录
         const creditId = generateTransactionId();
@@ -530,16 +542,20 @@ async function handleUserUsage(request: Request, db: D1Database, corsHeaders: Re
           RETURNING *
         `).bind(creditId, userId, initialCredits, initialCredits).first();
 
-      return createSuccessResponse({
-        credits: newCredits,
-        canGenerate: true,
-        availableCredits: initialCredits,
-      }, { corsHeaders });
+        console.log('✅ New user credits record created:', newCredits);
+
+        return createSuccessResponse({
+          credits: newCredits,
+          canGenerate: true,
+          availableCredits: initialCredits,
+        }, { corsHeaders });
       }
 
       // 检查是否可以生成
       const adminUnlimited = await getSystemConfig(db, 'admin_unlimited', true);
       const canGenerate = (isAdmin && adminUnlimited) || (userCredits.credits as number) > 0;
+
+      console.log('🔍 User can generate:', { isAdmin, adminUnlimited, userCredits: userCredits.credits, canGenerate });
 
       return createSuccessResponse({
         credits: userCredits,
@@ -551,123 +567,130 @@ async function handleUserUsage(request: Request, db: D1Database, corsHeaders: Re
       const body = await request.json();
       const { userId: bodyUserId, action, amount, description } = body;
 
+      console.log('🔍 POST request body:', { bodyUserId, action, amount, description });
+
       // 🔒 安全修复：使用validateUserId函数验证POST请求中的用户ID
       const userValidation = validateUserId(bodyUserId);
       if (!userValidation.isValid) {
+        console.log('❌ POST request user ID validation failed:', userValidation.error);
         return createErrorResponse(userValidation.error || 'Invalid user ID', 400, undefined, corsHeaders);
       }
       
       const userId = userValidation.userId!;
+      console.log('✅ POST request user ID validation passed:', userId);
 
       if (action === 'spend') {
         // 从系统配置中获取生成消耗
         const generationCost = amount || await getSystemConfig(db, 'generation_cost', 1);
+        console.log('🔍 Spending credits:', { userId, generationCost });
+        
+        // 检查表是否存在
+        const tableExists = await db.prepare(`
+          SELECT name FROM sqlite_master WHERE type='table' AND name='user_credits'
+        `).first();
+        
+        if (!tableExists) {
+          console.log('❌ user_credits table does not exist for POST request');
+          return createErrorResponse('Database setup required: user_credits table missing', 500, 'user_credits table not found', corsHeaders);
+        }
         
         // 消费积分
         const userCredits = await db.prepare(`
           SELECT * FROM user_credits WHERE user_id = ?
         `).bind(userId).first();
 
+        console.log('🔍 User credits before spending:', { userId, userCredits: userCredits ? userCredits.credits : 'not found' });
+
         if (!userCredits || userCredits.credits < generationCost) {
+          console.log('❌ Insufficient credits:', { userId, available: userCredits?.credits, required: generationCost });
           return createErrorResponse('Insufficient credits.', 400, undefined, corsHeaders);
         }
 
-        const updatedCredits = await db.prepare(`
-          UPDATE user_credits 
-          SET credits = credits - ?, total_spent = total_spent + ?, updated_at = DATETIME('now')
-          WHERE user_id = ?
-          RETURNING *
-        `).bind(generationCost, generationCost, userId).first();
+        try {
+          const updatedCredits = await db.prepare(`
+            UPDATE user_credits 
+            SET credits = credits - ?, total_spent = total_spent + ?, updated_at = DATETIME('now')
+            WHERE user_id = ?
+            RETURNING *
+          `).bind(generationCost, generationCost, userId).first();
 
-        // 记录交易
-        const transactionId = generateTransactionId();
-        const transaction = await db.prepare(`
-          INSERT INTO credit_transactions (id, user_id, type, amount, reason, description, created_at)
-          VALUES (?, ?, 'spend', ?, 'generation', ?, DATETIME('now'))
-          RETURNING *
-        `).bind(transactionId, userId, generationCost, description || `Generated a recipe for ${generationCost} credits.`).first();
+          console.log('✅ Credits updated successfully:', updatedCredits);
 
-        return new Response(JSON.stringify({
-          success: true,
-          message: `Successfully spent ${generationCost} credits.`,
-          data: { credits: updatedCredits, transactionId: transaction.id }
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      } else if (action === 'earn') {
-        // 增加积分
-        const earnAmount = amount || 0;
-        
-        if (earnAmount <= 0) {
-          return new Response(JSON.stringify({ 
-            success: false, 
-            message: 'Invalid earn amount.' 
-          }), {
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          });
+          // 记录交易
+          const transactionId = generateTransactionId();
+          const transaction = await db.prepare(`
+            INSERT INTO credit_transactions (id, user_id, type, amount, reason, description, created_at)
+            VALUES (?, ?, 'spend', ?, 'generation', ?, DATETIME('now'))
+            RETURNING *
+          `).bind(transactionId, userId, generationCost, description || `Generated a recipe for ${generationCost} credits.`).first();
+
+          console.log('✅ Transaction recorded:', transaction);
+
+          return createSuccessResponse({
+            success: true,
+            message: `Successfully spent ${generationCost} credits.`,
+            data: { credits: updatedCredits, transactionId: transaction.id }
+          }, { corsHeaders });
+
+        } catch (dbError) {
+          console.error('❌ Database error during credit update:', dbError);
+          return createErrorResponse('Database error during credit update', 500, dbError instanceof Error ? dbError.message : 'Unknown database error', corsHeaders);
         }
 
-        // 获取用户积分记录
-        const userCredits = await db.prepare(`
+      } else if (action === 'earn') {
+        const earnAmount = amount || 0;
+        console.log('🔍 Earning credits:', { userId, earnAmount });
+        
+        if (earnAmount <= 0) {
+          return createErrorResponse('Earn amount must be positive', 400, undefined, corsHeaders);
+        }
+
+        // 检查用户积分记录是否存在
+        let userCredits = await db.prepare(`
           SELECT * FROM user_credits WHERE user_id = ?
         `).bind(userId).first();
 
         if (!userCredits) {
-          return new Response(JSON.stringify({ 
-            success: false, 
-            message: 'User credits record not found.' 
-          }), {
-            status: 404,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          });
+          // 创建新用户积分记录
+          const creditId = generateTransactionId();
+          userCredits = await db.prepare(`
+            INSERT INTO user_credits (id, user_id, credits, total_earned, total_spent, created_at, updated_at)
+            VALUES (?, ?, ?, ?, 0, DATETIME('now'), DATETIME('now'))
+            RETURNING *
+          `).bind(creditId, userId, earnAmount, earnAmount).first();
+        } else {
+          // 更新现有记录
+          userCredits = await db.prepare(`
+            UPDATE user_credits 
+            SET credits = credits + ?, total_earned = total_earned + ?, updated_at = DATETIME('now')
+            WHERE user_id = ?
+            RETURNING *
+          `).bind(earnAmount, earnAmount, userId).first();
         }
-
-        const updatedCredits = await db.prepare(`
-          UPDATE user_credits 
-          SET credits = credits + ?, total_earned = total_earned + ?, updated_at = DATETIME('now')
-          WHERE user_id = ?
-          RETURNING *
-        `).bind(earnAmount, earnAmount, userId).first();
 
         // 记录交易
         const transactionId = generateTransactionId();
         const transaction = await db.prepare(`
           INSERT INTO credit_transactions (id, user_id, type, amount, reason, description, created_at)
-          VALUES (?, ?, 'earn', ?, 'manual', ?, DATETIME('now'))
+          VALUES (?, ?, 'earn', ?, 'earned', ?, DATETIME('now'))
           RETURNING *
-        `).bind(transactionId, userId, earnAmount, description || `Manually earned ${earnAmount} credits.`).first();
+        `).bind(transactionId, userId, earnAmount, description || `Earned ${earnAmount} credits.`).first();
 
-        return new Response(JSON.stringify({
+        return createSuccessResponse({
           success: true,
           message: `Successfully earned ${earnAmount} credits.`,
-          data: { credits: updatedCredits, transactionId: transaction.id }
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
+          data: { credits: userCredits, transactionId: transaction.id }
+        }, { corsHeaders });
       }
 
-      return new Response(JSON.stringify({ error: 'Invalid action' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+      return createErrorResponse('Invalid action', 400, undefined, corsHeaders);
     }
 
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+    return createErrorResponse('Method not allowed', 405, undefined, corsHeaders);
       
-    } catch (error) {
-    console.error('User usage API error:', error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: 'Failed to process user usage request',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+  } catch (error) {
+    console.error('❌ User usage API error:', error);
+    return createErrorResponse('Failed to process user usage request', 500, error instanceof Error ? error.message : 'Unknown error', corsHeaders);
   }
 }
 
@@ -1353,10 +1376,6 @@ async function handleUploadImage(request: Request, env: Env, corsHeaders: Record
     });
   }
 }
-
-
-
-
 
 // 异步翻译菜谱
 async function triggerRecipeTranslation(recipe: any, targetLanguage: string, db: D1Database, env: Env): Promise<void> {

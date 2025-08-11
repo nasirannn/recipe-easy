@@ -35,6 +35,7 @@ export function validateSearchParam(search: string | null): string | null {
  */
 export function validateUserId(userId: string | null): { isValid: boolean; userId?: string; error?: string } {
   if (!userId || typeof userId !== 'string') {
+    console.log('Invalid user ID', userId);
     return { isValid: false, error: 'Invalid user ID' };
   }
   
