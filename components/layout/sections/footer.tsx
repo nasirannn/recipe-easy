@@ -38,10 +38,6 @@ export const FooterSection = () => {
 
           </div>
 
-           <div className="flex flex-col gap-2">
-
-          </div>
-
           <div className="flex flex-col gap-2">
             <h3 className="font-bold text-lg">{t('about')}</h3>
             <div>
@@ -75,6 +71,26 @@ export const FooterSection = () => {
               <Link href="#faq" className="opacity-60 hover:opacity-100">
                 {t('faq')}
               </Link>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <h3 className="font-bold text-lg">Featured</h3>
+            <div>
+              <a 
+                href="https://startupfa.me/s/recipe-easy.com?utm_source=recipe-easy.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity"
+              >
+                <img 
+                  src="https://startupfa.me/badges/featured-badge-small.webp" 
+                  alt="Featured on Startup Fame" 
+                  width="224" 
+                  height="36" 
+                  className="h-9 w-auto"
+                />
+              </a>
             </div>
           </div>
         </div>
