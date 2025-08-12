@@ -75,7 +75,7 @@ export const FooterSection = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <h3 className="font-bold text-lg">Featured</h3>
+            <h3 className="font-bold text-lg">{t('featuredOn')}</h3>
             <div>
               <a 
                 href="https://startupfa.me/s/recipe-easy.com?utm_source=recipe-easy.com" 
