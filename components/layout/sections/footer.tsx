@@ -149,6 +149,21 @@ export const FooterSection = () => {
               unoptimized
             />
           </a>
+          <a 
+            href="https://tinylaunch.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:opacity-80 transition-opacity"
+          >
+            <Image 
+              src="https://tinylaunch.com/tinylaunch_badge_featured_on.svg"
+              alt="TinyLaunch Badge"
+              width={202}
+              height={36}
+              className="h-9 w-auto"
+              unoptimized
+            />
+          </a>
         </div>
       </div>
 

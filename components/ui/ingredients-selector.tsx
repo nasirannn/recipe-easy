@@ -450,27 +450,7 @@ export const IngredientSelector = ({
 
 
 
-      {/* 移动端浮动按钮 */}
-      {isMobile && showFloatingButton && selectedIngredients.length > 0 && (
-        <div className="fixed bottom-6 right-6 z-50">
-          <Button
-            size="lg"
-            className="rounded-full shadow-lg h-14 w-14 p-0"
-            onClick={() => {
-              // 滚动到顶部，使用更平滑的方式
-              window.scrollTo({ 
-                top: 0, 
-                behavior: 'smooth' 
-              });
-            }}
-          >
-            <div className="flex flex-col items-center">
-              <div className="text-xs font-bold">{selectedIngredients.length}</div>
-              <div className="text-xs">{t('items')}</div>
-            </div>
-          </Button>
-        </div>
-      )}
+
     </div>
   );
 };

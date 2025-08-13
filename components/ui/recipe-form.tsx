@@ -514,134 +514,33 @@ export const RecipeForm = ({
           )}
         </div>
         {/* 生成按钮和高级设置 */}
-        <div className="flex items-center justify-between mt-3 sm:mt-4 pt-3 border-t border-muted/20">
-          <div className="flex items-center gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="text-xs flex gap-1.5 h-7 px-2 sm:px-3">
-                  <Sliders className="h-3 w-3" />
-                  {/* <span className="hidden sm:inline-block">{t('moreOptions')}</span> */}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent 
-                className="w-[240px] sm:w-[260px]"
-                onInteractOutside={(e) => {
-                  // 阻止交互外部事件关闭弹窗
-                  e.preventDefault();
-                }}
-                onPointerDownOutside={(e) => {
-                  // 阻止点击外部事件关闭弹窗
-                  e.preventDefault();
-                }}
-                align="start"
-                side="bottom"
-                sideOffset={4}
-                alignOffset={0}
-              >
-                <div className="flex items-center justify-end mb-2">
-                  {/* <h3 className="text-sm font-medium">{t('moreOptions')}</span> */}
-                  <PopoverClose className="rounded-full h-5 w-5 inline-flex items-center justify-center text-muted-foreground hover:text-foreground">
-                    <X className="h-3 w-3" />
-                  </PopoverClose>
-                </div>
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="servings" className="flex items-center gap-1 sm:gap-2 text-sm">
-                        <Users className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
-                        <span>{t('servings')}</span>
-                      </Label>
-                      <span className="text-xs sm:text-sm font-medium">{formData.servings} {t('servingsCount')}</span>
-                    </div>
-                    <Slider
-                      id="servings"
-                      min={1}
-                      max={8}
-                      step={1}
-                      value={[formData.servings]}
-                      onValueChange={(value: number[]) => {
-                        onFormChange({ ...formData, servings: value[0] })
-                      }}
-                    />
-                  </div>
-                  
-                  <div className="space-y-1 sm:space-y-2">
-                    <Label htmlFor="cookingTime" className="flex items-center gap-1 sm:gap-2 text-sm">
-                      <Clock className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
-                      <span>{t('cookingTime')}</span>
-                    </Label>
-                    <Select
-                      value={formData.cookingTime}
-                      onValueChange={(value) => onFormChange({ ...formData, cookingTime: value as 'quick' | 'medium' | 'long' })}
-                    >
-                      <SelectTrigger id="cookingTime" className="h-8 sm:h-9 text-xs sm:text-sm">
-                        <SelectValue placeholder={t('selectCookingTime')} />
-                      </SelectTrigger>
-                      <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()}>
-                        <SelectItem value="quick">{t('quick')}</SelectItem>
-                        <SelectItem value="medium">{t('medium')}</SelectItem>
-                        <SelectItem value="long">{t('long')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-1 sm:space-y-2">
-                    <Label htmlFor="difficulty" className="flex items-center gap-1 sm:gap-2 text-sm">
-                      <Gauge className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
-                      <span>{t('difficulty')}</span>
-                    </Label>
-                    <Select
-                      value={formData.difficulty}
-                      onValueChange={(value: 'easy' | 'medium' | 'hard') => onFormChange({ ...formData, difficulty: value })}
-                    >
-                      <SelectTrigger id="difficulty" className="h-8 sm:h-9 text-xs sm:text-sm">
-                        <SelectValue placeholder={t('selectDifficulty')} />
-                      </SelectTrigger>
-                      <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()}>
-                        <SelectItem value="easy">{t('easy')}</SelectItem>
-                        <SelectItem value="medium">{t('mediumDifficulty')}</SelectItem>
-                        <SelectItem value="hard">{t('hard')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-1 sm:space-y-2">
-                    <Label htmlFor="cuisine" className="flex items-center gap-1 sm:gap-2 text-sm">
-                      <Globe className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
-                      <span>{t('cuisine')}</span>
-                    </Label>
-                    <Select
-                      value={formData.cuisine}
-                      onValueChange={(value) => onFormChange({ ...formData, cuisine: value })}
-                    >
-                      <SelectTrigger id="cuisine" className="h-8 sm:h-9 text-xs sm:text-sm">
-                        <SelectValue placeholder={t('selectCuisine')} />
-                      </SelectTrigger>
-                      <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()}>
-                        <SelectItem value="any">{t('anyCuisine')}</SelectItem>
-                        {cuisinesLoading ? (
-                          <SelectItem value="" disabled>{t('loadingCuisines')}</SelectItem>
-                        ) : (
-                          cuisines.map((cuisine) => (
-                            <SelectItem key={cuisine.id} value={cuisine.name.toLowerCase()}>
-                              {cuisine.name}
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-
-            {/* 语言模型选择器 - 仅管理员可见 */}
-            {isAdmin && (
+        <div className={cn(
+          "flex items-center mt-3 sm:mt-4 pt-3 border-t border-muted/20",
+          isMobile ? "justify-center" : "justify-end"
+        )}>
+          <div
+            className={cn(
+              "flex items-center gap-2",
+              isMobile ? "w-full" : ""
+            )}
+          >
+            <div className={cn(
+              "flex items-center gap-2",
+              isMobile ? "w-full" : ""
+            )}>
+              {/* More Options按钮 */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-xs flex gap-1.5 h-7 px-2 sm:px-3">
-                    <Sparkles className="h-3 w-3" />
-                    <span className="hidden sm:inline-block">Language Model</span>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className={cn(
+                      "font-medium",
+                      isMobile ? "w-1/4" : "px-3 sm:px-6"
+                    )}
+                  >
+                    <Sliders className="h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">{t('moreOptions')}</span>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent 
@@ -659,141 +558,116 @@ export const RecipeForm = ({
                   sideOffset={4}
                   alignOffset={0}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-medium">Language Model</h3>
+                  <div className="flex items-center justify-end mb-2">
+                    <h3 className="text-sm font-medium">{t('moreOptions')}</h3>
                     <PopoverClose className="rounded-full h-5 w-5 inline-flex items-center justify-center text-muted-foreground hover:text-foreground">
                       <X className="h-3 w-3" />
                     </PopoverClose>
                   </div>
-                  <div className="space-y-3">
-                    <RadioGroup
-                      value={formData.languageModel || (locale === 'zh' ? 'QWENPLUS' : 'GPT4o_MINI')}
-                      onValueChange={value => onFormChange({ ...formData, languageModel: value as 'QWENPLUS' | 'GPT4o_MINI' })}
-                      className="grid grid-cols-1 gap-3"
-                    >
-                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || (locale === 'zh' ? 'QWENPLUS' : 'GPT4o_MINI')) === 'QWENPLUS' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem value="QWENPLUS" id="lm-qwenplus" />
-                          <Label htmlFor="lm-qwenplus" className="font-medium cursor-pointer">Qwen Plus</Label>
-                        </div>
-                        <div className="text-xs text-muted-foreground pl-6">
-                          <ul className="list-disc pl-4 space-y-1">
-                            <li>Alibaba Qwen</li>
-                            <li>OpenAI compatible</li>
-                            <li>Good for Chinese</li>
-                          </ul>
-                        </div>
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="servings" className="flex items-center gap-1 sm:gap-2 text-sm">
+                          <Users className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
+                          <span>{t('servings')}</span>
+                        </Label>
+                        <span className="text-xs sm:text-sm font-medium">{formData.servings} {t('servingsCount')}</span>
                       </div>
-                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.languageModel || (locale === 'zh' ? 'QWENPLUS' : 'GPT4o_MINI')) === 'GPT4o_MINI' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem value="GPT4o_MINI" id="lm-gpt4o_mini" />
-                          <Label htmlFor="lm-gpt4o_mini" className="font-medium cursor-pointer">GPT-4o Mini</Label>
-                        </div>
-                        <div className="text-xs text-muted-foreground pl-6">
-                          <ul className="list-disc pl-4 space-y-1">
-                            <li>Latest OpenAI</li>
-                            <li>Low latency & cost</li>
-                            <li>Best for English</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            )} 
+                      <Slider
+                        id="servings"
+                        min={1}
+                        max={8}
+                        step={1}
+                        value={[formData.servings]}
+                        onValueChange={(value: number[]) => {
+                          onFormChange({ ...formData, servings: value[0] })
+                        }}
+                      />
+                    </div>
+                    
+                    <div className="space-y-1 sm:space-y-2">
+                      <Label htmlFor="cookingTime" className="flex items-center gap-1 sm:gap-2 text-sm">
+                        <Clock className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
+                        <span>{t('cookingTime')}</span>
+                      </Label>
+                      <Select
+                        value={formData.cookingTime}
+                        onValueChange={(value) => onFormChange({ ...formData, cookingTime: value as 'quick' | 'medium' | 'long' })}
+                      >
+                        <SelectTrigger id="cookingTime" className="h-8 sm:h-9 text-xs sm:text-sm">
+                          <SelectValue placeholder={t('selectCookingTime')} />
+                        </SelectTrigger>
+                        <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()}>
+                          <SelectItem value="quick">{t('quick')}</SelectItem>
+                          <SelectItem value="medium">{t('medium')}</SelectItem>
+                          <SelectItem value="long">{t('long')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-            {/* 图片生成模型选择器 - 仅管理员可见 */}
-            {isAdmin && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-xs flex gap-1.5 h-7 px-2 sm:px-3">
-                    <ImageIcon className="h-3 w-3" />
-                    <span className="hidden sm:inline-block">Image Model</span>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent 
-                  className="w-[240px] sm:w-[260px]"
-                  onInteractOutside={(e) => {
-                    // 阻止交互外部事件关闭弹窗
-                    e.preventDefault();
-                  }}
-                  onPointerDownOutside={(e) => {
-                    // 阻止点击外部事件关闭弹窗
-                    e.preventDefault();
-                  }}
-                  align="start"
-                  sideOffset={8}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-medium">Image Generation Model</h3>
-                    <PopoverClose className="rounded-full h-5 w-5 inline-flex items-center justify-center text-muted-foreground hover:text-foreground">
-                      <X className="h-3 w-3" />
-                    </PopoverClose>
-                  </div>
-                  <div className="space-y-3">
-                    <RadioGroup 
-                      value={formData.imageModel || (locale === 'zh' ? 'wanx' : 'flux')}
-                      onValueChange={value => handleModelChange(value as ImageModel)}
-                      className="grid grid-cols-1 gap-3"
-                    >
-                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.imageModel || (locale === 'zh' ? 'wanx' : 'flux')) === 'wanx' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem value="wanx" id="model-wanx" />
-                          <Label htmlFor="model-wanx" className="font-medium cursor-pointer">Wanx Model</Label>
-                        </div>
-                        <div className="text-xs text-muted-foreground pl-6">
-                          <ul className="list-disc pl-4 space-y-1">
-                            <li>Free</li>
-                            <li>Good for Chinese prompts</li>
-                            <li>Faster generation (10-15s)</li>
-                          </ul>
-                        </div>
-                      </div>
-                      
-                      <div className={`flex flex-col gap-2 border rounded-lg p-3 ${(formData.imageModel || (locale === 'zh' ? 'wanx' : 'flux')) === 'flux' ? 'border-primary bg-muted/50' : 'border-muted-foreground/20'}`}>
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem value="flux" id="model-flux" />
-                          <Label htmlFor="model-flux" className="font-medium cursor-pointer">Flux Schnell</Label>
-                        </div>
-                        <div className="text-xs text-muted-foreground pl-6">
-                          <ul className="list-disc pl-4 space-y-1">
-                            <li>High quality</li>
-                            <li>Better realism and details</li>
-                            <li>Faster generation (8-15s)</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </RadioGroup>
+                    <div className="space-y-1 sm:space-y-2">
+                      <Label htmlFor="difficulty" className="flex items-center gap-1 sm:gap-2 text-sm">
+                        <Gauge className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
+                        <span>{t('difficulty')}</span>
+                      </Label>
+                      <Select
+                        value={formData.difficulty}
+                        onValueChange={(value: 'easy' | 'medium' | 'hard') => onFormChange({ ...formData, difficulty: value })}
+                      >
+                        <SelectTrigger id="difficulty" className="h-8 sm:h-9 text-xs sm:text-sm">
+                          <SelectValue placeholder={t('selectDifficulty')} />
+                        </SelectTrigger>
+                        <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()}>
+                          <SelectItem value="easy">{t('easy')}</SelectItem>
+                          <SelectItem value="medium">{t('mediumDifficulty')}</SelectItem>
+                          <SelectItem value="hard">{t('hard')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1 sm:space-y-2">
+                      <Label htmlFor="cuisine" className="flex items-center gap-1 sm:gap-2 text-sm">
+                        <Globe className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
+                        <span>{t('cuisine')}</span>
+                      </Label>
+                      <Select
+                        value={formData.cuisine}
+                        onValueChange={(value) => onFormChange({ ...formData, cuisine: value })}
+                      >
+                        <SelectTrigger id="cuisine" className="h-8 sm:h-9 text-xs sm:text-sm">
+                          <SelectValue placeholder={t('selectCuisine')} />
+                        </SelectTrigger>
+                        <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()}>
+                          <SelectItem value="any">{t('anyCuisine')}</SelectItem>
+                          {cuisinesLoading ? (
+                            <SelectItem value="" disabled>{t('loadingCuisines')}</SelectItem>
+                          ) : (
+                            cuisines.map((cuisine) => (
+                              <SelectItem key={cuisine.id} value={cuisine.name.toLowerCase()}>
+                                {cuisine.name}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </PopoverContent>
               </Popover>
-            )}
-          </div>
-          <div
-            className={cn(
-              isMobile ? "flex justify-center w-full" : "",
-              "mt-4"
-            )}
-          >
-            <div className={cn(
-              "flex items-center gap-2",
-              isMobile ? "w-full justify-center" : ""
-            )}>
+
               {/* Reset按钮 */}
               <Button
                 variant="outline"
                 onClick={() => onFormChange({ ...formData, ingredients: [] })}
                 className={cn(
                   "font-medium",
-                  isMobile ? "flex-1 max-w-[120px]" : "px-3 sm:px-6"
+                  isMobile ? "w-1/4" : "px-3 sm:px-6"
                 )}
                 size="sm"
                 disabled={formData.ingredients.length === 0}
               >
                 <RotateCcw className="h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">{t('reset')}</span>
-                <span className="sm:hidden">{t('reset')}</span>
               </Button>
               
               {/* 生成按钮 */}
@@ -802,7 +676,7 @@ export const RecipeForm = ({
                 className={cn(
                   "font-medium",
                   isMobile
-                    ? "flex-1 max-w-[200px]"
+                    ? "w-1/2"
                     : "px-3 sm:px-6"
                 )}
                 size="sm"
