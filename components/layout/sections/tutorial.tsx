@@ -72,7 +72,7 @@ export const TutorialSection = () => {
   ];
 
   return (
-    <section id="tutorial" className="container py-24 sm:py-32">
+    <section id="tutorial" className="container py-16 sm:py-20">
       <div className="text-center mb-16">
         <h2 className="text-lg text-secondary mb-2 tracking-wider font-medium">
           {t('subtitle')}

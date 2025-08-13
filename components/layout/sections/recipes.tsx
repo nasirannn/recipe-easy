@@ -186,7 +186,7 @@ export const RecipesSection = () => {
   }
 
   return (
-    <section id="recipes" className="container py-8 sm:py-12 lg:py-16 xl:py-20">
+    <section id="recipes" className="container py-8 sm:py-12 lg:py-16 xl:py-16">
       <div className="grid lg:grid-cols-2 gap-8 lg:gap-24">
         {/* 左侧：图片轮播 */}
         <div className="w-full order-2 lg:order-1">
@@ -284,7 +284,7 @@ export const RecipesSection = () => {
 
         {/* 右侧：文字内容 */}
         <div className="text-center lg:text-left flex flex-col h-full order-1 lg:order-2">
-          <div className="flex-1">
+          <div className="flex flex-col h-full">
             <h2 className="text-base sm:text-lg text-secondary mb-2 tracking-wider">
               {t('title')}
             </h2>
@@ -292,80 +292,76 @@ export const RecipesSection = () => {
               {t('subtitle')}
             </h2>
             
-            {/* 菜谱内容包装器 */}
-            <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
-              <p className="text-base sm:text-lg text-foreground mb-3 sm:mb-4 overflow-hidden" style={{
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                lineHeight: '1.5',
-                maxHeight: '3rem'
-              }}>
-                {displayRecipes.length > 0 ? (
-                  displayRecipes[currentImageIndex].title
-                ) : (
-                  t('description1')
-                )}
-              </p>
-              
-              {/* 菜系标签 - 放在名称下面 */}
-              {displayRecipes.length > 0 && displayRecipes[currentImageIndex].cuisine_name && displayRecipes[currentImageIndex].cuisine_name.trim() !== '' && (
-                <div className="mb-4 sm:mb-6">
-                  <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium text-white rounded-full shadow-sm ${getCuisineClassName(displayRecipes[currentImageIndex].cuisine)}`}>
-                    {getLocalizedCuisineName(displayRecipes[currentImageIndex].cuisine_name, locale)}
-                  </span>
-                </div>
-              )}
-              <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 overflow-hidden" style={{
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                lineHeight: '1.5',
-                maxHeight: '4rem'
-              }}>
-                {displayRecipes.length > 0 ? (
-                  displayRecipes[currentImageIndex].description || t('description2')
-                ) : (
-                  t('description2')
-                )}
-              </p>
-              <p className="text-base sm:text-lg text-muted-foreground mb-0">
-                {displayRecipes.length > 0 ? (
-                  <div className="flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3">
-                    {displayRecipes[currentImageIndex].cookingTime && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
-                        <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
-                        {displayRecipes[currentImageIndex].cookingTime}
-                      </span>
-                    )}
-                    {displayRecipes[currentImageIndex].servings && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
-                        <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                        {displayRecipes[currentImageIndex].servings}
-                      </span>
-                    )}
-                    {displayRecipes[currentImageIndex].difficulty && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
-                        <ChefHat className="h-3 w-3 sm:h-4 sm:w-4" />
-                        {displayRecipes[currentImageIndex].difficulty}
-                      </span>
-                    )}
+            {/* 菜谱内容包装器 - 使用flex-1占满剩余空间，移除底部margin */}
+            <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl p-4 sm:p-6 border border-slate-200/50 dark:border-slate-700/50 shadow-sm flex-1 flex flex-col">
+              <div className="flex-1">
+                <p className="text-base sm:text-lg text-foreground mb-3 sm:mb-4 overflow-hidden" style={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  lineHeight: '1.5',
+                  maxHeight: '3rem'
+                }}>
+                  {displayRecipes.length > 0 ? (
+                    displayRecipes[currentImageIndex].title
+                  ) : (
+                    t('description1')
+                  )}
+                </p>
+                
+                {/* 菜系标签 - 放在名称下面 */}
+                {displayRecipes.length > 0 && displayRecipes[currentImageIndex].cuisine_name && displayRecipes[currentImageIndex].cuisine_name.trim() !== '' && (
+                  <div className="mb-4 sm:mb-6">
+                    <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium text-white rounded-full shadow-sm ${getCuisineClassName(displayRecipes[currentImageIndex].cuisine)}`}>
+                      {getLocalizedCuisineName(displayRecipes[currentImageIndex].cuisine_name, locale)}
+                    </span>
                   </div>
-                ) : (
-                  t('description3')
                 )}
-              </p>
+                <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 overflow-hidden" style={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  lineHeight: '1.5',
+                  maxHeight: '4rem'
+                }}>
+                  {displayRecipes.length > 0 ? (
+                    displayRecipes[currentImageIndex].description || t('description2')
+                  ) : (
+                    t('description2')
+                  )}
+                </p>
+              </div>
+              
+              {/* 底部信息 - 固定在底部 */}
+              <div className="mt-auto pt-2">
+                <p className="text-base sm:text-lg text-muted-foreground mb-0">
+                  {displayRecipes.length > 0 ? (
+                    <div className="flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3">
+                      {displayRecipes[currentImageIndex].cookingTime && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
+                          <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span className="text-xs sm:text-sm">{displayRecipes[currentImageIndex].cookingTime}</span>
+                        </span>
+                      )}
+                      {displayRecipes[currentImageIndex].servings && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
+                          <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span className="text-xs sm:text-sm">{displayRecipes[currentImageIndex].servings}</span>
+                        </span>
+                      )}
+                      {displayRecipes[currentImageIndex].difficulty && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
+                          <ChefHat className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span className="text-xs sm:text-sm">{displayRecipes[currentImageIndex].difficulty}</span>
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    t('description3')
+                  )}
+                </p>
+              </div>
             </div>
-          </div>
-          {/* 查看所有食谱链接 - 固定在底部，与图片底部对齐 */}
-          <div className="mt-4 sm:mt-auto">
-            <Link
-              href={`/${locale}/recipes`}
-              className="inline-flex items-center text-muted-foreground hover:text-muted-foreground/80 text-sm font-medium transition-colors duration-200"
-            >
-              {t('allRecipes')}
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Link>
           </div>
         </div>
       </div>

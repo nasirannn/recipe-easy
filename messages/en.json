@@ -60,7 +60,6 @@
   "recipeForm": {
     "servings": "Servings",
     "servingsCount": "servings",
-
     "cookingTime": "Cooking Time",
     "selectCookingTime": "Select cooking time",
     "quick": "Quick",
@@ -138,7 +137,6 @@
     "quickInfo": "Quick Info",
     "saveRecipe": "Save Recipe",
     "copyFullRecipe": "Copy Full Recipe",
-
     "regenerate": "Regenerate",
     "pleaseLoginFirst": "Please login first",
     "saveFailed": "Save failed",
@@ -147,8 +145,6 @@
   "recipes": {
     "title": "Get Inspired",
     "subtitle": "Delicious recipes from around the world",
-    "exploreMore": "Explore More",
-    "allRecipes": "Explore All Recipes",
     "allRecipesSubtitle": "Discover delicious recipes from around the world",
     "loadingRecipes": "Loading recipes...",
     "loadMore": "Load More",
@@ -158,7 +154,6 @@
     "description2": "From simple quick dishes to complex gourmet creations, our recipe collection covers various difficulty levels and styles to meet different cooking skill requirements.",
     "description3": "Each recipe includes detailed cooking time, serving size, and difficulty level, making it easy for you to choose the most suitable dish."
   },
-
   "myRecipes": {
     "title": "My Recipes",
     "loading": "Loading your recipes...",
@@ -183,8 +178,7 @@
     "deleting": "Deleting...",
     "pagination": {
       "previous": "Previous",
-      "next": "Next",
-      "pageInfo": "Page {current} of {total}"
+      "next": "Next"
     },
     "deleteDialog": {
       "title": "Delete Recipe",
@@ -195,7 +189,6 @@
     },
     "noMoreData": "No more recipe data"
   },
-
   "credits": {
     "credits": "Credits",
     "remaining": "remaining",
@@ -219,10 +212,10 @@
       "title": "Generate Your Recipe",
       "description": "Click 'Generate' button and watch our AI create a personalized recipe just for you. Choose your preferred cuisine style, cooking time, and difficulty level. The AI will analyze your ingredients and create the perfect recipe."
     },
-          "step3": {
-        "title": "Get Your Recipe & Image",
-        "description": "Based on your selected ingredients, get your recipe first and then the image. You can copy ingredients, seasoning, instructions and the beautiful AI-generated image. You can also share your recipe with friends or save for later."
-      }
+    "step3": {
+      "title": "Get Your Recipe & Image",
+      "description": "Based on your selected ingredients, get your recipe first and then the image. You can copy ingredients, seasoning, instructions and the beautiful AI-generated image. You can also share your recipe with friends or save for later."
+    }
   },
   "testimonials": {
     "title": "Testimonials",
@@ -281,7 +274,7 @@
     "help": "Help",
     "contact": "Contact Us",
     "faq": "FAQ",
-    "friend": "Friend",
+    "friends": "Friends",
     "featuredOn": "Featured On",
     "description": "RecipeEasy is an AI-powered platform that transforms your ingredients into delicious recipes. Experience the magic of culinary creativity in seconds.",
     "copyright": "© 2025 Recipe Easy. Not affiliated with recipeeasy.com.",
@@ -342,8 +335,6 @@
     "signInNotInitialized": "Sign in function not properly initialized",
     "generalError": "An error occurred during sign in"
   },
-
-
   "Theme": {
     "light": "Light",
     "dark": "Dark",
@@ -362,7 +353,7 @@
   },
   "introduction": {
     "title": "Introduction",
-    "heading": "Why I made this AI recipe generator?",
+    "heading": "Why I built this AI recipe generator?",
     "description1": "I'm an unemployed product manager, and I'm currently without job, so I have limited income sources and cook at home every day. The question I must think about before bed is always: \"What should I eat tomorrow?\" I constantly rack my brain trying to figure out how to make the most of the leftover ingredients in my fridge.",
     "description2": "Cooking at home is not only more cost-effective than ordering takeout, but also healthier and more nutritious(I'm a good cook, and I've lost almost 10kg by cooking at home). This pain point inspired me to develop this product. Compared to similar alternatives, I believe this product offers a superior user experience - users primarily complete tasks through clicking rather than typing, significantly lowering the barrier to entry.",
     "description3": "Although the features are still relatively simple, I'm proud to have successfully launched it. This represents not just a breakthrough in my technical skills, but a milestone of developing a complete product from zero to one. I hope this product can help more people like me solve the daily dilemma of \"what to eat tomorrow,\" allowing everyone to enjoy healthy, affordable, and delicious homemade meals.",

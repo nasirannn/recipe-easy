@@ -254,24 +254,6 @@ export const HeroSection = () => {
                 {t('tryNow')}
               </Button>
             </div>
-            {/* AI模型Badge */}
-            <div className="mt-8 text-center lg:text-left">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{t('aiPoweredBy')}</p>
-              <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                  GPT-4o mini
-                </span>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                  Flux-Schnell
-                </span>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                  Qwen3-Plus
-                </span>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                  WANX
-                </span>
-              </div>
-            </div>
           </div>
           {/* 右侧视频区域 */}
           <div className="flex-shrink-0 w-full lg:w-[500px]" style={{ position: 'relative', paddingBottom: 'calc(52.31292517006803% + 41px)', height: 0 }}>

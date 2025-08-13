@@ -69,7 +69,7 @@ export const FooterSection = () => {
 
               {/* Friend section */}
               <div className="flex flex-col gap-2 flex-shrink-0 text-center md:text-left">
-                <h3 className="font-bold text-lg">{t('friend')}</h3>
+                <h3 className="font-bold text-lg">{t('friends')}</h3>
                 <div>
                   <a 
                     href="https://aiketorecipes.com/" 
