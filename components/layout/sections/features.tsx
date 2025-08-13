@@ -48,7 +48,7 @@ export const FeaturesSection = () => {
   return (
     <section
       id="features"
-      className="w-full py-24 bg-background relative"
+      className="w-full py-20 bg-background relative"
     >
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">

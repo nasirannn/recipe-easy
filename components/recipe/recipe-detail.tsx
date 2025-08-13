@@ -212,7 +212,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* 食材 */}
               {ingredients.length > 0 && (
-                <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+                <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-0 shadow-lg">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -221,21 +221,21 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                       </h3>
 
                     </div>
-                                              <ul className="space-y-2">
-                            {ingredients?.map((ingredient, i) => (
-                              <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                                <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0" />
-                                <span>{ingredient}</span>
-                              </li>
-                            ))}
-                          </ul>
+                    <ul className="space-y-2">
+                      {ingredients?.map((ingredient, i) => (
+                        <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                          <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0" />
+                          <span>{ingredient}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </CardContent>
                 </Card>
               )}
 
               {/* 调料 */}
               {seasoning.length > 0 && (
-                <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+                <Card className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-0 shadow-lg">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -244,14 +244,14 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                       </h3>
 
                     </div>
-                                              <ul className="space-y-2">
-                            {seasoning?.map((season, i) => (
-                              <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                                <div className="w-2 h-2 bg-secondary rounded-full flex-shrink-0" />
-                                <span>{season}</span>
-                              </li>
-                            ))}
-                          </ul>
+                    <ul className="space-y-2">
+                      {seasoning?.map((season, i) => (
+                        <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+                          <div className="w-2 h-2 bg-amber-500 rounded-full flex-shrink-0" />
+                          <span>{season}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </CardContent>
                 </Card>
               )}
@@ -259,7 +259,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
 
             {/* 烹饪步骤 */}
             {instructions.length > 0 && (
-              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+              <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-0 shadow-lg">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -268,18 +268,18 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                     </h3>
 
                   </div>
-                                          <div className="space-y-6">
-                          {instructions?.map((step, i) => (
-                            <div key={i} className="flex gap-4">
-                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white flex items-center justify-center font-semibold text-sm">
-                                {i + 1}
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{step}</p>
-                              </div>
-                            </div>
-                          ))}
+                  <div className="space-y-6">
+                    {instructions?.map((step, i) => (
+                      <div key={i} className="flex gap-4">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white flex items-center justify-center font-semibold text-sm">
+                          {i + 1}
                         </div>
+                        <div className="flex-1">
+                          <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{step}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             )}
