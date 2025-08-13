@@ -11,24 +11,14 @@ import {
   Sandwich,
   Cookie,
   Fish,
-  X,
-  Trash2
+  X
 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Badge } from "./badge";
 import { Input } from "./input";
 import { Button } from "./button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose
-} from "./dialog";
+
 import { useLocale, useTranslations } from 'next-intl';
 import {
   Select,
@@ -49,15 +39,15 @@ const CATEGORIES = {
   'dairy-eggs': { icon: Milk, color: 'text-purple-600' },
   'grains-bread': { icon: Sandwich, color: 'text-amber-600' },
   'nuts-seeds': { icon: Nut, color: 'text-orange-600' },
-  'herbs-spices': { icon: Flower, color: 'text-emerald-600' },
-  'oils-condiments': { icon: Cookie, color: 'text-indigo-600' }
+  'herbs-spices': { icon: Flower, color: 'text-emerald-600' }
 } as const;
 
 interface IngredientSelectorProps {
   selectedIngredients: Ingredient[];
   onIngredientSelect: (ingredient: Ingredient) => void;
   onIngredientRemove?: (ingredient: Ingredient) => void;
-  onClearAll?: () => void;
+  activeCategory?: keyof typeof CATEGORIES;
+  onCategoryChange?: (categoryId: keyof typeof CATEGORIES) => void;
 }
 
 interface CustomIngredient extends Ingredient {
@@ -68,12 +58,16 @@ export const IngredientSelector = ({
   selectedIngredients,
   onIngredientSelect,
   onIngredientRemove,
-  onClearAll,
+  activeCategory: externalActiveCategory,
+  onCategoryChange,
 }: IngredientSelectorProps) => {
   const locale = useLocale();
   const t = useTranslations('ingredientSelector');
   const [searchValue, setSearchValue] = useState("");
-  const [activeCategory, setActiveCategory] = React.useState<keyof typeof CATEGORIES>('meat');
+  const [internalActiveCategory, setInternalActiveCategory] = React.useState<keyof typeof CATEGORIES>('meat');
+  
+  // 使用外部传入的分类或内部状态
+  const activeCategory = externalActiveCategory || internalActiveCategory;
   const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
   const [categorizedIngredients, setCategorizedIngredients] = useState<Record<string, Ingredient[]>>({});
   const [dynamicCategories, setDynamicCategories] = useState<Record<string, { name: string; icon?: any; color?: string }>>({});
@@ -82,7 +76,6 @@ export const IngredientSelector = ({
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [showFloatingButton, setShowFloatingButton] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // 获取分类数据
   const fetchCategories = useCallback(async () => {
@@ -154,7 +147,6 @@ export const IngredientSelector = ({
         'grains-bread': [],
         'nuts-seeds': [],
         'herbs-spices': [],
-        'oils-condiments': [],
         other: [],
       };
 
@@ -281,20 +273,18 @@ export const IngredientSelector = ({
 
   // 处理分类切换
   const handleCategoryChange = (categoryId: keyof typeof CATEGORIES) => {
-    setActiveCategory(categoryId);
+    if (onCategoryChange) {
+      onCategoryChange(categoryId);
+    } else {
+      setInternalActiveCategory(categoryId);
+    }
     setSearchValue(""); // 清空搜索
     if (isMobile) {
       setShowCategories(false); // 在移动设备上选择分类后自动隐藏分类列表
     }
   };
 
-  // 处理清空所有食材
-  const handleClearAll = () => {
-    if (onClearAll) {
-      onClearAll();
-    }
-    setIsDialogOpen(false);
-  };
+
 
   // 处理键盘事件
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -335,166 +325,6 @@ export const IngredientSelector = ({
 
   return (
     <div className="w-full space-y-4 relative">
-      {/* 输入框和已选食材标签区 */}
-      <div className="relative w-full">
-        <div className="flex flex-wrap items-center border rounded-lg p-3 gap-2 bg-background">
-
-          {/* 已选的食材标签 */}
-          {selectedIngredients.map((ingredient) => (
-            <Badge
-              key={ingredient.id}
-              variant="secondary"
-              className={cn(
-                "gap-1 py-1 text-sm",
-                // @ts-ignore - 检查是否为自定义食材
-                ingredient.isCustom && "bg-white text-yellow-600 border-2 border-dashed border-yellow-400 hover:bg-white/90"
-              )}
-            >
-              {ingredient.name}
-              <X
-                className="h-3 w-3 cursor-pointer hover:text-destructive"
-                onClick={() => handleRemoveIngredient(ingredient)}
-              />
-            </Badge>
-          ))}
-
-          {/* 输入框 */}
-          <div className="flex-1 flex items-center min-w-[150px]">
-            <Input
-              ref={inputRef}
-              type="text"
-              placeholder={selectedIngredients.length > 0 ? t('addMoreIngredients') : t('selectOrEnterIngredients')}
-              className="border-0 shadow-none outline-none ring-0 p-0 h-7 text-sm focus:outline-none focus:ring-0 focus:shadow-none focus:border-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-0"
-              value={searchValue}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              style={{ boxShadow: 'none' }}
-            />
-
-            {/* 清空按钮 - 仅在有选中食材时显示 */}
-            {selectedIngredients.length > 0 && (
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">{t('clearAll')}</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>{t('clearAllIngredients')}</DialogTitle>
-                    <DialogDescription>
-                      {t('clearAllConfirmation')}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button variant="outline">{t('cancel')}</Button>
-                    </DialogClose>
-                    <Button variant="destructive" onClick={handleClearAll}>
-                      {t('confirm')}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 分类选择器 - 桌面版 */}
-      {!isMobile && (
-        <TooltipProvider>
-          <div className="w-full">
-            <div className="flex gap-2 pb-2">
-              {Object.entries(CATEGORIES).map(([categoryId, category]) => {
-                const Icon = category.icon;
-                const isActive = activeCategory === categoryId;
-                // 优先使用动态获取的分类名称，如果没有则使用翻译作为备用
-                const categoryName = dynamicCategories[categoryId]?.name || t(`categories.${categoryId}`);
-
-                return (
-                  <Tooltip key={categoryId}>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => handleCategoryChange(categoryId as keyof typeof CATEGORIES)}
-                        className={cn(
-                          "flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap overflow-hidden relative",
-                          "min-w-[85px] max-w-[140px]",
-                          isActive
-                            ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-105"
-                            : "text-muted-foreground hover:text-foreground hover:scale-102"
-                        )}
-                      >
-                        <Icon className={cn("h-4 w-4 flex-shrink-0 transition-colors duration-300", isActive ? "text-primary-foreground" : category.color)} />
-                        <span className="truncate">{categoryName}</span>
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{categoryName}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                );
-              })}
-            </div>
-          </div>
-        </TooltipProvider>
-      )}
-
-      {/* 移动端分类选择器 */}
-      {isMobile && (
-        <div className="w-full mb-4">
-          <Select
-            value={activeCategory}
-            onValueChange={(value) => handleCategoryChange(value as keyof typeof CATEGORIES)}
-          >
-            <SelectTrigger className="w-full h-12 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:border-primary/50 focus:border-primary transition-all duration-300">
-              <SelectValue>
-                <div className="flex items-center gap-3">
-                  {CATEGORIES[activeCategory] && React.createElement(CATEGORIES[activeCategory].icon, {
-                    className: cn("h-5 w-5 flex-shrink-0", CATEGORIES[activeCategory].color)
-                  })}
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
-                    {dynamicCategories[activeCategory]?.name || t(`categories.${activeCategory}`)}
-                  </span>
-                </div>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent className="max-h-[300px] overflow-y-auto bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-lg">
-              {Object.entries(CATEGORIES).map(([categoryId, category]) => {
-                const Icon = category.icon;
-                const isActive = activeCategory === categoryId;
-
-                return (
-                  <SelectItem 
-                    key={categoryId} 
-                    value={categoryId} 
-                    hideIndicator={true}
-                    className={cn(
-                      "flex items-center gap-3 py-3 px-4 cursor-pointer transition-all duration-200",
-                      isActive 
-                        ? "bg-primary/10 text-primary font-medium" 
-                        : "hover:bg-gray-50 dark:hover:bg-gray-700"
-                    )}
-                  >
-                    <div className="flex items-center gap-3 w-full">
-                      <Icon className={cn("h-5 w-5 flex-shrink-0", category.color)} />
-                      <span className="font-medium">
-                        {dynamicCategories[categoryId]?.name || t(`categories.${categoryId}`)}
-                      </span>
-                    </div>
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
       {/* 食材网格 */}
       <div className="w-full">
         {loading ? (
@@ -617,6 +447,8 @@ export const IngredientSelector = ({
           </div>
         )}
       </div>
+
+
 
       {/* 移动端浮动按钮 */}
       {isMobile && showFloatingButton && selectedIngredients.length > 0 && (

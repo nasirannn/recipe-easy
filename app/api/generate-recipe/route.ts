@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
       // 中文用户使用中文提示词
       systemPrompt = SYSTEM_PROMPTS.CHINESE;
-      userPrompt = `${USER_PROMPT_TEMPLATES.CHINESE}\n\n食材：${ingredientNames.join(', ')}\n份量：${servings}人份\n烹饪时间：${cookingTime}\n难度：${difficulty}\n菜系：${cuisine}`;
+      userPrompt = `${USER_PROMPT_TEMPLATES.CHINESE}\n\n食材：${ingredientNames.join(', ')}\n份量：${servings}\n烹饪时间：${cookingTime}\n难度：${difficulty}\n菜系：${cuisine}`;
     } else {
       // 英文用户使用英文提示词
       systemPrompt = SYSTEM_PROMPTS.DEFAULT;

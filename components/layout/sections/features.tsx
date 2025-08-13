@@ -50,8 +50,6 @@ export const FeaturesSection = () => {
       id="features"
       className="w-full py-24 bg-background relative"
     >
-      <GridBackground className="absolute inset-0 z-[-1] opacity-50" />
-      
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">

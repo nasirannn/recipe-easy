@@ -35,7 +35,9 @@
     "title": "Free Online AI Recipe Generator",
     "description": "Simply select or enter ingredients, and our AI will create random, creative, and easy-to-follow recipes for you. No more \"What's for dinner?\" stress.",
     "tryNow": "Try Now",
-    "newUserWelcome": "🎉 Welcome! You have {credits} credits available to generate beautiful images!"
+    "freeRecipeGenerator": "Free Recipe Generator",
+    "benefitsBadge": "Image Generation Costs 1 Credit • Get 100 Credits on Registration • Permanent Validity",
+    "aiPoweredBy": "AI Powered by"
   },
   "features": {
     "title": "Smart AI-Powered Culinary Features",
@@ -79,11 +81,13 @@
     "go": "Go",
     "moreOptions": "More Options",
     "generateImage": "Generate Image",
-    "generateImageCost": "Cost 1 credit to generate image"
+    "generateImageCost": "Cost 1 credit to generate image",
+    "reset": "Reset"
   },
   "ingredientSelector": {
     "addMoreIngredients": "Add more ingredients...",
-    "selectOrEnterIngredients": "select or enter at least 2 ingredients...",
+    "selectOrEnterIngredients": "Search or type ingredients...",
+    "ingredientsHint": "Select or enter at least 2 ingredients",
     "clearAll": "Clear all",
     "clearAllIngredients": "Clear all ingredients?",
     "clearAllConfirmation": "Are you sure you want to remove all selected ingredients? This action cannot be undone.",
@@ -95,6 +99,9 @@
     "pressEnterToAdd": "to add it as a custom ingredient",
     "noIngredientsInCategory": "No ingredients available in this category",
     "tryOtherCategoryOrSearch": "Try selecting another category or search for other ingredients",
+    "noMatchingIngredients": "No matching ingredients found",
+    "selectedIngredients": "My Ingredients",
+    "pressEnterToAddCustom": "Press Enter key to add as custom ingredient",
     "items": "items",
     "categories": {
       "meat": "Meat",
@@ -104,8 +111,7 @@
       "dairy-eggs": "Dairy & Eggs",
       "grains-bread": "Grains & Bread",
       "nuts-seeds": "Nuts & Seeds",
-      "herbs-spices": "Herbs & Spices",
-      "oils-condiments": "Oils & Condiments"
+      "herbs-spices": "Herbs & Spices"
     }
   },
   "recipeDisplay": {
@@ -140,14 +146,17 @@
   },
   "recipes": {
     "title": "Get Inspired",
-    "subtitle": "Get inspired by our collection of delicious recipes from around the world.",
+    "subtitle": "Delicious recipes from around the world",
     "exploreMore": "Explore More",
     "allRecipes": "Explore All Recipes",
     "allRecipesSubtitle": "Discover delicious recipes from around the world",
     "loadingRecipes": "Loading recipes...",
     "loadMore": "Load More",
     "loading": "Loading...",
-    "allRecipesDisplayed": "All recipes displayed"
+    "allRecipesDisplayed": "All recipes displayed",
+    "description1": "Explore delicious recipes from around the world, each carefully selected to provide you with cooking inspiration.",
+    "description2": "From simple quick dishes to complex gourmet creations, our recipe collection covers various difficulty levels and styles to meet different cooking skill requirements.",
+    "description3": "Each recipe includes detailed cooking time, serving size, and difficulty level, making it easy for you to choose the most suitable dish."
   },
 
   "myRecipes": {
@@ -272,6 +281,7 @@
     "help": "Help",
     "contact": "Contact Us",
     "faq": "FAQ",
+    "friend": "Friend",
     "featuredOn": "Featured On",
     "description": "RecipeEasy is an AI-powered platform that transforms your ingredients into delicious recipes. Experience the magic of culinary creativity in seconds.",
     "copyright": "© 2025 Recipe Easy. Not affiliated with recipeeasy.com.",
@@ -352,10 +362,10 @@
   },
   "introduction": {
     "title": "Introduction",
-    "heading": "Make Cooking Simple and Fun",
-    "description1": "Do you often find yourself lying in bed wondering \"what to cook tomorrow\"? RecipeEasy AI Recipe Generator is designed to solve this daily dilemma. As the leading AI tool for cooking, our platform generates personalized AI recipes in seconds. Whether you're a busy professional, a budget-conscious homemaker, or an environmentally conscious person looking to reduce food waste, our AI recipe generator provides the perfect solution.",
-    "description2": "With RecipeEasy's advanced AI technology, you can quickly and effectively solve ingredient pairing challenges. Simply input the ingredients you have in your fridge, and our AI tool for cooking will generate personalized delicious AI recipes in seconds, greatly saving your thinking time and shopping time. At the same time, by making full use of existing ingredients, you can effectively reduce food waste and make every ingredient count.",
-    "description3": "Best of all, this powerful AI recipe generator is completely free to use, making it an ideal choice for both beginners and experienced chefs. By using RecipeEasy, you'll significantly improve the convenience of cooking and the diversity of dishes—ensuring your family and friends praise your culinary skills. Don't miss this opportunity to make cooking simple and precise with the best AI tool for cooking!",
+    "heading": "Why I made this AI recipe generator?",
+    "description1": "I'm an unemployed product manager, and I'm currently without job, so I have limited income sources and cook at home every day. The question I must think about before bed is always: \"What should I eat tomorrow?\" I constantly rack my brain trying to figure out how to make the most of the leftover ingredients in my fridge.",
+    "description2": "Cooking at home is not only more cost-effective than ordering takeout, but also healthier and more nutritious(I'm a good cook, and I've lost almost 10kg by cooking at home). This pain point inspired me to develop this product. Compared to similar alternatives, I believe this product offers a superior user experience - users primarily complete tasks through clicking rather than typing, significantly lowering the barrier to entry.",
+    "description3": "Although the features are still relatively simple, I'm proud to have successfully launched it. This represents not just a breakthrough in my technical skills, but a milestone of developing a complete product from zero to one. I hope this product can help more people like me solve the daily dilemma of \"what to eat tomorrow,\" allowing everyone to enjoy healthy, affordable, and delicious homemade meals.",
     "imageAlt": "AI Recipe Generator Introduction"
   }
 }

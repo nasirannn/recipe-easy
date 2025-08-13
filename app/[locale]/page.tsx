@@ -31,8 +31,8 @@ export default function Home() {
       <AnchorHandler />
       <HeroSection />
       <TutorialSection />
-      <IntroductionSection />
       <RecipesSection />
+      <IntroductionSection />
       <FeaturesSection />
       <FAQSection />
       <TestimonialSection />

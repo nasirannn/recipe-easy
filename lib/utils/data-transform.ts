@@ -70,8 +70,7 @@ export const CATEGORY_SLUG_MAP: Record<number, string> = {
   5: 'dairy-eggs',
   6: 'grains-bread',
   7: 'nuts-seeds',
-  8: 'herbs-spices',
-  9: 'oils-condiments'
+  8: 'herbs-spices'
 };
 
 /**
@@ -81,7 +80,8 @@ export function formatCuisine(cuisine: any): any {
   return {
     id: cuisine.id,
     name: cuisine.localized_cuisine_name || cuisine.cuisine_name || `Cuisine ${cuisine.id}`,
-    slug: cuisine.localized_cuisine_slug || cuisine.cuisine_slug || CUISINE_SLUG_MAP[cuisine.id] || `cuisine-${cuisine.id}`
+    slug: cuisine.localized_cuisine_slug || cuisine.cuisine_slug || CUISINE_SLUG_MAP[cuisine.id] || `cuisine-${cuisine.id}`,
+    cssClass: cuisine.css_class || 'cuisine-other'
   };
 }
 
@@ -139,7 +139,8 @@ export function formatRecipeWithImage(
     cuisine: {
       id: recipe.cuisine_id || 1,
       slug: CUISINE_SLUG_MAP[Number(recipe.cuisine_id)] || 'other',
-      name: recipe.localized_cuisine_name || recipe.cuisine_name || 'Other'
+      name: recipe.localized_cuisine_name || recipe.cuisine_name || 'Other',
+      cssClass: recipe.css_class || 'cuisine-other'
     },
     created_at: recipe.created_at,
     updated_at: recipe.updated_at

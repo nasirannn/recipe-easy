@@ -1,28 +1,31 @@
 "use client";
 import { GridBackground } from "@/components/ui/grid-background";
-import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import React, { useState, useEffect, useCallback } from "react";
+import { Rocket } from "lucide-react";
 import { Recipe, RecipeFormData } from "@/lib/types";
 import { LanguageModel, ImageModel } from "@/lib/types";
 import { RecipeForm } from "@/components/ui/recipe-form";
 import { RecipeDisplay } from "@/components/ui/recipe-display";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
-import { APP_CONFIG, getRecommendedModels } from "@/lib/config";
-import { useTranslations, useLocale } from 'next-intl';
+import { getRecommendedModels } from "@/lib/config";
 import { useAuth } from "@/contexts/auth-context";
 import { useUserUsage } from "@/hooks/use-user-usage";
-import { Button } from "@/components/ui/button";
-import React from "react";
 import { useRecipeGeneration } from "@/hooks/use-recipe-generation";
 import { useImageGeneration } from "@/hooks/use-image-generation";
 import { useRecipeSave } from "@/hooks/use-recipe-save";
 import { toast } from "sonner";
 
+// 合并后的Hero Section Component
 export const HeroSection = () => {
   const t = useTranslations('hero');
   const tRecipe = useTranslations('recipeDisplay');
   const locale = useLocale();
   const { user, isAdmin } = useAuth();
   const { canGenerate } = useUserUsage();
+
   
   // 使用自定义 hooks
   const { 
@@ -72,43 +75,43 @@ export const HeroSection = () => {
   const [showRecipe, setShowRecipe] = useState(false);
 
   // 监听重新生成菜谱事件
-  useEffect(() => {
-    const handleRegenerateRecipe = async (event: CustomEvent) => {
-      const { ingredients, recipe } = event.detail;
+  const handleRegenerateRecipe = useCallback(async (event: CustomEvent) => {
+    const { ingredients, recipe } = event.detail;
+    
+    // 设置表单数据
+    setFormData(prev => ({
+      ...prev,
+      ingredients: ingredients
+    }));
+    
+    try {
+      const generatedRecipes = await regenerateRecipe(ingredients, recipe, {
+        ingredients: ingredients,
+        servings: 2,
+        recipeCount: 1,
+        cookingTime: "medium",
+        difficulty: "medium",
+        cuisine: "any",
+        languageModel: (locale === 'zh' ? 'QWENPLUS' : 'GPT4o_MINI') as LanguageModel,
+        imageModel: (locale === 'zh' ? 'wanx' : 'flux') as ImageModel
+      });
+      setSearchedIngredients(ingredients);
       
-      // 设置表单数据
-      setFormData(prev => ({
-        ...prev,
-        ingredients: ingredients
-      }));
-      
-      try {
-        const generatedRecipes = await regenerateRecipe(ingredients, recipe, {
-          ingredients: ingredients,
-          servings: 2,
-          recipeCount: 1,
-          cookingTime: "medium",
-          difficulty: "medium",
-          cuisine: "any",
-          languageModel: (locale === 'zh' ? 'QWENPLUS' : 'GPT4o_MINI') as LanguageModel,
-          imageModel: (locale === 'zh' ? 'wanx' : 'flux') as ImageModel
-        });
-        setSearchedIngredients(ingredients);
-        
-        if (generatedRecipes.length > 0) {
-          setShowRecipe(true);
-        }
-      } catch (error) {
-        console.error('Regenerate recipe error:', error);
+      if (generatedRecipes.length > 0) {
+        setShowRecipe(true);
       }
-    };
+    } catch (error) {
+      console.error('Regenerate recipe error:', error);
+    }
+  }, [regenerateRecipe, locale]);
 
+  useEffect(() => {
     window.addEventListener('regenerateRecipe', handleRegenerateRecipe as EventListener);
     
     return () => {
       window.removeEventListener('regenerateRecipe', handleRegenerateRecipe as EventListener);
     };
-  }, [regenerateRecipe, recommendedModels.languageModel, recommendedModels.imageModel]);
+  }, [handleRegenerateRecipe]);
 
   const handleFormChange = (data: RecipeFormData) => {
     setFormData(data);
@@ -156,79 +159,11 @@ export const HeroSection = () => {
     }
   };
 
-  // 监听登录模态窗口事件
-  useEffect(() => {
-    const handleShowLoginModal = () => {
-      // 这里可以触发登录模态窗口显示
-      // 由于登录模态窗口在RecipeForm组件中，我们需要通过其他方式触发
-    };
-
-    const handleLoginSuccess = () => {
-      // 登录成功后的处理逻辑
-      // 这里可以添加登录成功后的操作，比如刷新页面或重新加载数据
-      console.log('Login successful');
-    };
-
-    const handleGenerateImage = async (event: CustomEvent) => {
-      const { recipeId, recipe } = event.detail;
-      
-      // 检查用户登录状态
-      if (!user?.id) {
-        toast.error(locale === 'zh' ? '请先登录以生成图片' : 'Please login to generate images');
-        return;
-      }
-
-      // 检查积分余额（管理员跳过）
-      if (!isAdmin && !canGenerate) {
-        toast.error(
-          locale === 'zh' 
-            ? '积分不足，无法生成图片。每次生成需要 1 个积分。' 
-            : 'Insufficient credits to generate image. Each generation requires 1 credit.'
-        );
-        return;
-      }
-
-      try {
-        await generateImage(recipeId, recipe, formData.imageModel, (imageUrl) => {
-          setRecipes(prevRecipes => prevRecipes.map(r => 
-            r.id === recipeId 
-              ? { ...r, imagePath: imageUrl }
-              : r
-          ));
-          
-          // 触发积分扣减动画事件
-          window.dispatchEvent(new CustomEvent('creditDeducted', { 
-            detail: { amount: 1 } 
-          }));
-        });
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 
-          (locale === 'zh' ? '图片生成失败，请稍后重试' : 'Failed to generate image, please try again');
-        
-        toast.error(errorMessage);
-        console.error('Generate image error:', error);
-      }
-    };
-
-    window.addEventListener('showLoginModal', handleShowLoginModal);
-    window.addEventListener('loginSuccess', handleLoginSuccess);
-    window.addEventListener('generateImage', handleGenerateImage as EventListener);
-
-    return () => {
-      window.removeEventListener('showLoginModal', handleShowLoginModal);
-      window.removeEventListener('loginSuccess', handleLoginSuccess);
-      window.removeEventListener('generateImage', handleGenerateImage as EventListener);
-    };
-  }, [generateImage, formData.imageModel, setRecipes, user, isAdmin, canGenerate, locale]);
-
-  // 监听用户状态变化，当用户登出时重置状态
-  useEffect(() => {
-    if (!user) {
-      // 用户登出，重置所有状态到初始值
+  // 清除菜谱和图片加载状态
+  const handleClearRecipes = useCallback(() => {
+    if (user?.id) {
       clearRecipes();
       clearImageLoadingStates();
-      setSearchedIngredients([]);
-      setShowRecipe(false);
       
       // 重置表单数据到初始状态
       setFormData({
@@ -266,25 +201,26 @@ export const HeroSection = () => {
   };
 
   return (
-    <section id="hero" className="w-full bg-primary/5 pt-20">
-      <GridBackground className="absolute inset-0 z-[-1] opacity-50" />
-      {/* 上半部分：左侧标题和描述，右侧视频 */}
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col lg:flex-row items-start gap-8">
-          {/* 左侧标题和描述 */}
-          <div className="w-full lg:w-3/5 space-y-6 text-center lg:text-left">
-            <h1 className="text-3xl md:text-5xl font-bold">
+    <section id="hero" className="w-full bg-primary/5">
+      {/* 第一个div: Hero Intro Section */}
+      <div className="w-full pb-8 lg:pb-0">
+        <GridBackground className="absolute inset-0 z-[-1] opacity-50" />
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center lg:items-start gap-8 lg:gap-12">
+          {/* 左侧内容 */}
+          <div className="text-center lg:text-left space-y-8 flex-1 max-w-2xl lg:max-w-none pt-20">
+            {/* 标题和描述 */}
+            <h1 className="text-5xl md:text-7xl font-bold">
               {locale === 'en' ? (
                 <>
-                  Free Online <span className="text-transparent bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">AI Recipe Generator</span>
+                  Generate <span className="text-transparent bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">AI recipes</span> from any ingredients
                 </>
               ) : (
                 <>
-                  免费在线<span className="text-transparent bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">AI食谱生成器</span>
+                  用任意食材生成<span className="text-transparent bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">AI食谱</span>
                 </>
               )}
             </h1>
-            <p className="text-xl text-muted-foreground max-w-md leading-relaxed mx-auto lg:mx-0">
+            <p className="text-xl text-muted-foreground max-w-2xl lg:max-w-none leading-relaxed">
               {t('description').split('. ').map((sentence, index, array) => (
                 <React.Fragment key={index}>
                   {sentence}
@@ -293,46 +229,67 @@ export const HeroSection = () => {
                 </React.Fragment>
               ))}
             </p>
-            <Button 
-              size="lg" 
-              className="rounded-full px-6 mt-4"
-              onClick={() => {
-                const recipeFormElement = document.getElementById('recipe-form-section');
-                if (recipeFormElement) {
-                  const elementRect = recipeFormElement.getBoundingClientRect();
-                  const absoluteElementTop = elementRect.top + window.pageYOffset;
-                  
-                  window.scrollTo({
-                    top: absoluteElementTop - 100, // 留一些顶部空间
-                    behavior: 'smooth'
-                  });
-                }
-              }}
-            >
-              {t('tryNow')} &rarr;
-            </Button>
-          </div>
-          
-          {/* 右侧视频 */}
-          <div className="w-full lg:w-2/5 lg:-ml-4">
-            <div style={{ position: 'relative', paddingBottom: 'calc(52.31292517006803% + 41px)', height: 0, width: '100%' }}>
-              <iframe
-                src="https://demo.arcade.software/S6h2tXiDTTN888NDMfSG?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
-                title="Welcome to Recipe Easy - AI Recipe Generator"
-                frameBorder="0"
-                loading="lazy"
-                allowFullScreen
-                allow="clipboard-write"
-                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', colorScheme: 'light' }}
-              />
+            <p className="text-sm text-muted-foreground max-w-2xl lg:max-w-none leading-relaxed">
+              {t('benefitsBadge')}
+            </p>
+            {/* 按钮组 */}
+            <div className="flex flex-col sm:flex-row gap-4 items-center lg:items-start mt-12">
+              <Button
+                size="lg"
+                className="rounded-full px-6"
+                onClick={() => {
+                  const recipeFormElement = document.getElementById('recipe-form-section');
+                  if (recipeFormElement) {
+                    const elementRect = recipeFormElement.getBoundingClientRect();
+                    const absoluteElementTop = elementRect.top + window.pageYOffset;
+
+                    window.scrollTo({
+                      top: absoluteElementTop - 100, // 留一些顶部空间
+                      behavior: 'smooth'
+                    });
+                  }
+                }}
+              >
+                <Rocket className="w-4 h-4 mr-2" />
+                {t('tryNow')}
+              </Button>
             </div>
+            {/* AI模型Badge */}
+            <div className="mt-8 text-center lg:text-left">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{t('aiPoweredBy')}</p>
+              <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                  GPT-4o mini
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                  Flux-Schnell
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                  Qwen3-Plus
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                  WANX
+                </span>
+              </div>
+            </div>
+          </div>
+          {/* 右侧视频区域 */}
+          <div className="flex-shrink-0 w-full lg:w-[500px]" style={{ position: 'relative', paddingBottom: 'calc(52.31292517006803% + 41px)', height: 0 }}>
+            <iframe
+              src="https://demo.arcade.software/S6h2tXiDTTN888NDMfSG?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
+              title=""
+              frameBorder="0"
+              loading="lazy"
+              allowFullScreen
+              allow="clipboard-write"
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', colorScheme: 'light' }}
+            />
           </div>
         </div>
       </div>
-      
-      {/* 下半部分：食材选择和菜谱生成区域 */}
-      <div id="recipe-form-section" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 pt-16">
-        <div className="rounded-xl p-6">
+      {/* 第二个div: Recipe Form Section */}
+      <div id="recipe-form-section" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-8 pb-20">
+        <div className="w-full bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 md:p-12">
           <RecipeForm
             formData={formData}
             onFormChange={handleFormChange}
@@ -341,10 +298,9 @@ export const HeroSection = () => {
             showRecipe={showRecipe}
             setShowRecipe={setShowRecipe}
           />
-          
           {/* Recipe Display Section */}
           {showRecipe && (
-            <div id="loading-animation-container" className="mt-10">
+            <div id="loading-animation-container" className="mt-6">
               {loading ? (
                 <LoadingAnimation language={locale as 'en' | 'zh'} />
               ) : (
@@ -357,7 +313,7 @@ export const HeroSection = () => {
                 />
               )}
               {error && (
-                <div className="max-w-screen-md mx-auto text-center mt-8 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400">
+                <div className="max-w-screen-md mx-auto text-center mt-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400">
                   {error}
                 </div>
               )}
@@ -367,4 +323,4 @@ export const HeroSection = () => {
       </div>
     </section>
   );
-};
+}; 

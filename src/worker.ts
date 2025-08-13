@@ -457,6 +457,7 @@ async function handleCuisines(request: Request, db: D1Database, corsHeaders: Rec
         c.id,
         c.name as cuisine_name,
         c.slug as cuisine_slug,
+        c.css_class,
         COALESCE(c18n.name, c.name) as localized_cuisine_name,
         COALESCE(c18n.slug, c.slug) as localized_cuisine_slug
       FROM cuisines c
@@ -492,21 +493,21 @@ async function handleUserUsage(request: Request, db: D1Database, corsHeaders: Re
 
     if (request.method === 'GET') {
       // GET请求：从URL参数获取并验证userId
-      const { searchParams } = new URL(request.url);
-      const rawUserId = searchParams.get('userId');
-      const rawIsAdmin = searchParams.get('isAdmin');
-      
+    const { searchParams } = new URL(request.url);
+    const rawUserId = searchParams.get('userId');
+    const rawIsAdmin = searchParams.get('isAdmin');
+    
       console.log('🔍 GET request params:', { rawUserId, rawIsAdmin });
-      
-      // 🔒 安全修复：使用validateUserId函数验证用户ID
-      const userValidation = validateUserId(rawUserId);
-      if (!userValidation.isValid) {
+    
+    // 🔒 安全修复：使用validateUserId函数验证用户ID
+    const userValidation = validateUserId(rawUserId);
+    if (!userValidation.isValid) {
         console.log('❌ GET User ID validation failed:', userValidation.error);
-        return createErrorResponse(userValidation.error || 'Invalid user ID', 400, undefined, corsHeaders);
-      }
-      
-      const userId = userValidation.userId!;
-      const isAdmin = rawIsAdmin === 'true';
+      return createErrorResponse(userValidation.error || 'Invalid user ID', 400, undefined, corsHeaders);
+    }
+    
+    const userId = userValidation.userId!;
+    const isAdmin = rawIsAdmin === 'true';
       console.log('✅ GET User ID validation passed:', userId);
       if (!userId) {
         return createErrorResponse('User ID is required', 400, undefined, corsHeaders);
@@ -732,6 +733,7 @@ async function handlePublicRecipes(request: Request, db: D1Database, env: Env, c
         r.ingredients, r.seasoning, r.instructions, r.tags, r.chef_tips,
         r.cuisine_id, r.user_id, r.created_at, r.updated_at,
         c.name as cuisine_name,
+        c.css_class,
         COALESCE(c18n.name, c.name) as localized_cuisine_name
     `;
     
@@ -867,7 +869,8 @@ async function handlePublicRecipes(request: Request, db: D1Database, env: Env, c
         cuisine: {
           id: recipe.cuisine_id || 1,
           slug: slugMap[Number(recipe.cuisine_id)] || 'other',
-          name: recipe.localized_cuisine_name || recipe.cuisine_name || 'Other'
+          name: recipe.localized_cuisine_name || recipe.cuisine_name || 'Other',
+          cssClass: recipe.css_class || 'cuisine-other'
         },
         created_at: recipe.created_at,
         updated_at: recipe.updated_at
@@ -935,6 +938,7 @@ async function handleSingleRecipe(request: Request, db: D1Database, env: Env, co
         r.ingredients, r.seasoning, r.instructions, r.tags, r.chef_tips,
         r.cuisine_id, r.user_id, r.created_at, r.updated_at,
           c.name as cuisine_name,
+          c.css_class,
         COALESCE(c18n.name, c.name) as localized_cuisine_name
     `;
 
@@ -1039,7 +1043,8 @@ async function handleSingleRecipe(request: Request, db: D1Database, env: Env, co
       cuisine: {
         id: recipe.cuisine_id || 1,
         slug: slugMap[Number(recipe.cuisine_id)] || 'other',
-        name: recipe.localized_cuisine_name || recipe.cuisine_name || 'Other'
+        name: recipe.localized_cuisine_name || recipe.cuisine_name || 'Other',
+        cssClass: recipe.css_class || 'cuisine-other'
       },
       created_at: recipe.created_at,
       updated_at: recipe.updated_at
@@ -1999,6 +2004,7 @@ async function handleAdminRecipes(request: Request, db: D1Database, env: Env, co
     // 构建查询SQL - 根据是否有翻译表来决定查询结构
     let sql = `
       SELECT r.*, c.name as cuisine_name,
+             c.css_class,
              COALESCE(c18n.name, c.name) as localized_cuisine_name
     `;
     
@@ -2114,7 +2120,8 @@ async function handleAdminRecipes(request: Request, db: D1Database, env: Env, co
         cuisine: {
           id: recipe.cuisine_id || 1,
           slug: slugMap[Number(recipe.cuisine_id)] || 'other',
-          name: recipe.localized_cuisine_name || recipe.cuisine_name || 'Other'
+          name: recipe.localized_cuisine_name || recipe.cuisine_name || 'Other',
+          cssClass: recipe.css_class || 'cuisine-other'
         },
         created_at: recipe.created_at,
         updated_at: recipe.updated_at,

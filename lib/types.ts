@@ -59,6 +59,7 @@ export interface Cuisine {
   id: number;
   name: string;
   slug: string;
+  cssClass?: string; // CSS类名
 }
 
 // ==================== 食谱相关类型 ====================
@@ -79,6 +80,8 @@ export interface Recipe extends BaseEntity {
   user_id?: string;
   cuisine_id?: number;
   cuisineId?: number; // 兼容前端使用
+  cuisine_name?: string; // 菜系名称
+  cuisine?: Cuisine; // 菜系对象
   imagePath?: string;
   imageModel?: string;
   languageModel?: string;

@@ -89,6 +89,22 @@ module.exports = {
           "0%": { transform: "scale3d(1, 1, 1)" },
           "50%": { transform: "scale3d(1.15, 1.15, 1)" },
           "100%": { transform: "scale3d(1, 1, 1)" }
+        },
+        "fade-in": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" }
+        },
+        "fade-out": {
+          "0%": { opacity: "1" },
+          "100%": { opacity: "0" }
+        },
+        "slide-in-right": {
+          "0%": { transform: "translateX(100%)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" }
+        },
+        "slide-in-left": {
+          "0%": { transform: "translateX(-100%)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" }
         }
       },
       animation: {
@@ -96,7 +112,11 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
         "float": "float 2.5s cubic-bezier(0.2, 0, 0.2, 1) forwards",
         "pulse-subtle": "pulse-subtle 2s ease-in-out infinite",
-        "badge-bounce": "badge-bounce 0.45s cubic-bezier(0.25, 0.1, 0.25, 1) 1"
+        "badge-bounce": "badge-bounce 0.45s cubic-bezier(0.25, 0.1, 0.25, 1) 1",
+        "fade-in": "fade-in 0.6s ease-in-out",
+        "fade-out": "fade-out 0.6s ease-in-out",
+        "slide-in-right": "slide-in-right 0.6s ease-in-out",
+        "slide-in-left": "slide-in-left 0.6s ease-in-out"
       },
     },
   },

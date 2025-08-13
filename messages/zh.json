@@ -35,7 +35,9 @@
     "title": "免费在线AI食谱生成器",
     "description": "只需选择或输入食材，我们的 AI 就会为您制作随机、创意且易于跟随的食谱。再也不用为\"晚餐吃什么？\"而烦恼。",
     "tryNow": "立即试用",
-    "newUserWelcome": "🎉 欢迎！您当前有 {credits} 积分，可以生成精美图片了！"
+    "freeRecipeGenerator": "免费食谱生成器",
+    "benefitsBadge": "免费生成食谱 • 生成图片消耗1积分 • 注册送100积分 • 永久有效",
+    "aiPoweredBy": "AI 技术支持"
   },
   "features": {
     "title": "智能AI烹饪功能",
@@ -58,7 +60,6 @@
   "recipeForm": {
     "servings": "份量",
     "servingsCount": "人份",
-
     "cookingTime": "烹饪时间",
     "selectCookingTime": "选择烹饪时间",
     "quick": "快速",
@@ -79,11 +80,13 @@
     "go": "开始",
     "moreOptions": "更多选项",
     "generateImage": "生成图片",
-    "generateImageCost": "生成图片需消耗1积分"
+    "generateImageCost": "生成图片需消耗1积分",
+    "reset": "重置"
   },
   "ingredientSelector": {
     "addMoreIngredients": "添加更多食材...",
-    "selectOrEnterIngredients": "选择或输入至少两个食材...",
+    "selectOrEnterIngredients": "搜索或输入食材...",
+    "ingredientsHint": "选择或输入至少两个食材",
     "clearAll": "清空全部",
     "clearAllIngredients": "清空所有食材？",
     "clearAllConfirmation": "您确定要移除所有已选择的食材吗？此操作无法撤销。",
@@ -95,6 +98,9 @@
     "pressEnterToAdd": "按回车键将其添加为自定义食材",
     "noIngredientsInCategory": "此分类中没有可用的食材",
     "tryOtherCategoryOrSearch": "请尝试选择其他分类或搜索其他食材",
+    "noMatchingIngredients": "未找到匹配的食材",
+    "selectedIngredients": "我的食材",
+    "pressEnterToAddCustom": "按 Enter 键添加为自定义食材",
     "items": "项",
     "categories": {
       "meat": "肉类",
@@ -104,8 +110,7 @@
       "dairy-eggs": "乳品和蛋类",
       "grains-bread": "谷物和面包",
       "nuts-seeds": "坚果和种子",
-      "herbs-spices": "香草和香料",
-      "oils-condiments": "油类和调料"
+      "herbs-spices": "香草和香料"
     }
   },
   "recipeDisplay": {
@@ -140,14 +145,17 @@
   },
   "recipes": {
     "title": "获取灵感",
-    "subtitle": "从我们的全球美食食谱集合中获取灵感。",
+    "subtitle": "来自世界各地的美味食谱",
     "exploreMore": "探索更多",
     "allRecipes": "探索所有菜谱",
     "allRecipesSubtitle": "发现来自世界各地的美味菜谱",
     "loadingRecipes": "加载菜谱中...",
     "loadMore": "加载更多",
     "loading": "加载中...",
-    "allRecipesDisplayed": "已显示所有菜谱"
+    "allRecipesDisplayed": "已显示所有菜谱",
+    "description1": "探索来自世界各地的美味食谱，每一道菜都经过精心挑选，为您提供烹饪灵感。",
+    "description2": "从简单快手菜到复杂精致料理，我们的食谱集合涵盖各种难度和风格，满足不同烹饪水平的需求。",
+    "description3": "每个食谱都包含详细的烹饪时间、适合的份量和难度等级，让您轻松选择最适合的菜品。"
   },
 
   "myRecipes": {
@@ -272,6 +280,7 @@
     "help": "帮助",
     "contact": "联系我们",
     "faq": "常见问题",
+    "friend": "友情链接",
     "featuredOn": "特色推荐",
     "description": "RecipeEasy 是一个AI驱动的平台，将您的食材转化为美味食谱。在几秒钟内体验烹饪创意的魔力。",
     "copyright": "© 2025 Recipe Easy. 与 recipeeasy.com 无关联。",
@@ -350,10 +359,10 @@
   },
   "introduction": {
     "title": "介绍",
-    "heading": "让烹饪变得简单有趣",
-    "description1": "是不是经常会有睡前还在考虑\"明天吃什么\"的困扰？RecipeEasy AI智能菜谱生成器正是为解决这个日常难题而生。作为领先的AI烹饪工具，我们的平台能在几秒钟内生成个性化的AI菜谱。无论您是忙碌的上班族、精打细算的家庭主妇，还是想要减少食物浪费的环保主义者，我们的AI菜谱生成器都能为您提供完美的解决方案。",
-    "description2": "通过RecipeEasy先进的AI技术，您可以快速有效地解决食材搭配的困扰。只需输入冰箱里现有的食材，我们的AI烹饪工具就能在几秒钟内为您生成个性化的美味AI菜谱，大大节省您的思考时间和购物时间。同时，通过充分利用现有食材，还能有效减少食物浪费，让每一份食材都物尽其用。",
-    "description3": "最重要的是，这个强大的AI菜谱生成器完全免费使用，是初学者和经验丰富的厨师们的理想选择。通过使用RecipeEasy，您将显著提升烹饪的便利性和菜品的多样性——确保您的家人和朋友对您的厨艺赞不绝口。不要错过这个让烹饪变得简单而精准的机会，体验最佳的AI烹饪工具！",
+    "heading": "为什么我要制作这个AI菜谱生成器？",
+    "description1": "我现在没工作，是个待业的产品经理，收入自然紧巴巴的，一日三餐基本都在家自己做。每天晚上躺床上，脑子里蹦出来的第一个问题准是：“明天吃点啥？” 这问题可太费脑子了，得想着着冰箱里那些剩菜边角料可劲琢磨。",
+    "description2": "在家开火确实比点外卖省钱多了，吃着也更健康、更对胃口（我厨艺还不错，而且自己做饭已经瘦了差不多10公斤左右了）。这个天天困扰我的“做饭难题”，后来干脆成了我动手做这个小产品的动力。跟市面上其他类似的东西比，我觉得我这个用起来更顺手——主要是靠点选操作，基本不用打字，门槛低了不少。",
+    "description3": "虽然功能还不算多，但能把它做出来并上线，我真心挺有成就感的。这对我来说不只是技术上的突破，更是第一次完完整整地从零到一把一个想法变成了真实可用的东西。希望它也能帮到更多像我这样精打细算的朋友，让大家每天少为“吃啥”发愁，吃得健康点、省心点。",
     "imageAlt": "智能菜谱生成器介绍"
   }
 }

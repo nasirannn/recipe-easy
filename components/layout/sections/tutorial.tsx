@@ -74,7 +74,7 @@ export const TutorialSection = () => {
   return (
     <section id="tutorial" className="container py-24 sm:py-32">
       <div className="text-center mb-16">
-        <h2 className="text-lg text-primary mb-2 tracking-wider font-medium">
+        <h2 className="text-lg text-secondary mb-2 tracking-wider font-medium">
           {t('subtitle')}
         </h2>
         <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
