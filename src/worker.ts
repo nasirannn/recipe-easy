@@ -418,7 +418,7 @@ async function handleIngredients(request: Request, db: D1Database, corsHeaders: 
       }
     }
     
-    sql += ' ORDER BY i.id ASC LIMIT ? OFFSET ?';
+    sql += ' ORDER BY COALESCE(i18n.name, i.name) ASC LIMIT ? OFFSET ?';
     params.push(limit, offset);
 
     const { results } = await db.prepare(sql).bind(...params).all();

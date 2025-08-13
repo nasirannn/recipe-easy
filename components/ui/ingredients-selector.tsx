@@ -2,15 +2,6 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { ScrollArea, ScrollBar } from "./scroll-area";
 import {
-  Beef,
-  Carrot,
-  Apple,
-  Milk,
-  Nut,
-  Flower,
-  Sandwich,
-  Cookie,
-  Fish,
   X
 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
@@ -32,14 +23,14 @@ import { generateNanoId } from '@/lib/utils/id-generator';
 
 // 分类图标映射 - 与数据库slug对应
 const CATEGORIES = {
-  meat: { icon: Beef, color: 'text-red-600' },
-  seafood: { icon: Fish, color: 'text-blue-600' },
-  vegetables: { icon: Carrot, color: 'text-green-600' },
-  fruits: { icon: Apple, color: 'text-yellow-600' },
-  'dairy-eggs': { icon: Milk, color: 'text-purple-600' },
-  'grains-bread': { icon: Sandwich, color: 'text-amber-600' },
-  'nuts-seeds': { icon: Nut, color: 'text-orange-600' },
-  'herbs-spices': { icon: Flower, color: 'text-emerald-600' }
+  meat: { icon: '🥩', color: 'text-red-600' },
+  seafood: { icon: '🐟', color: 'text-blue-600' },
+  vegetables: { icon: '🥬', color: 'text-green-600' },
+  fruits: { icon: '🍎', color: 'text-yellow-600' },
+  'dairy-eggs': { icon: '🥚', color: 'text-purple-600' },
+  'grains-bread': { icon: '🌾', color: 'text-amber-600' },
+  'nuts-seeds': { icon: '🌰', color: 'text-orange-600' },
+  'herbs-spices': { icon: '🌿', color: 'text-emerald-600' }
 } as const;
 
 interface IngredientSelectorProps {
@@ -70,7 +61,7 @@ export const IngredientSelector = ({
   const activeCategory = externalActiveCategory || internalActiveCategory;
   const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
   const [categorizedIngredients, setCategorizedIngredients] = useState<Record<string, Ingredient[]>>({});
-  const [dynamicCategories, setDynamicCategories] = useState<Record<string, { name: string; icon?: any; color?: string }>>({});
+  const [dynamicCategories, setDynamicCategories] = useState<Record<string, { name: string; icon?: string; color?: string }>>({});
   const [loading, setLoading] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
@@ -92,7 +83,7 @@ export const IngredientSelector = ({
 
       if (data.success && data.results) {
         // 使用API返回的数据
-        const categoriesMap: Record<string, { name: string; icon?: any; color?: string }> = {};
+        const categoriesMap: Record<string, { name: string; icon?: string; color?: string }> = {};
         data.results.forEach((category: any) => {
           const categoryKey = category.slug as keyof typeof CATEGORIES;
           if (CATEGORIES[categoryKey]) {

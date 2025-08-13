@@ -2,9 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, } from "react";
 import { IngredientSelector } from "./ingredients-selector";
-import { Sliders, Clock, Users, Gauge, Globe, Sparkles, Image as ImageIcon, X, Beef, Carrot, Apple, Milk, Nut, Flower, Sandwich, Cookie, Fish, RotateCcw, Search, List } from "lucide-react";
+import { Sliders, Clock, Users, Gauge, Globe, Sparkles, Image as ImageIcon, X, RotateCcw, Search, List } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent, PopoverClose } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
@@ -12,8 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/auth-context";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { cn } from "@/lib/utils";
-import { getRecommendedModels } from "@/lib/config";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCuisines } from "@/hooks/use-cuisines";
 import { useTranslations, useLocale } from 'next-intl';
 import { RecipeFormData, Ingredient } from "@/lib/types";
@@ -24,14 +22,14 @@ import { generateNanoId } from '@/lib/utils/id-generator';
 
 // 分类图标映射 - 与数据库slug对应
 const CATEGORIES = {
-  meat: { icon: Beef, color: 'text-red-600' },
-  seafood: { icon: Fish, color: 'text-blue-600' },
-  vegetables: { icon: Carrot, color: 'text-green-600' },
-  fruits: { icon: Apple, color: 'text-yellow-600' },
-  'dairy-eggs': { icon: Milk, color: 'text-purple-600' },
-  'grains-bread': { icon: Sandwich, color: 'text-amber-600' },
-  'nuts-seeds': { icon: Nut, color: 'text-orange-600' },
-  'herbs-spices': { icon: Flower, color: 'text-emerald-600' },
+  meat: { icon: '🥩', color: 'text-red-600' },
+  seafood: { icon: '🐟', color: 'text-blue-600' },
+  vegetables: { icon: '🥬', color: 'text-green-600' },
+  fruits: { icon: '🍎', color: 'text-yellow-600' },
+  'dairy-eggs': { icon: '🥚', color: 'text-purple-600' },
+  'grains-bread': { icon: '🌾', color: 'text-amber-600' },
+  'nuts-seeds': { icon: '🌰', color: 'text-orange-600' },
+  'herbs-spices': { icon: '🌿', color: 'text-emerald-600' },
 } as const;
 
 interface RecipeFormProps {
@@ -60,8 +58,9 @@ export const RecipeForm = ({
   
   // 分类相关状态
   const [activeCategory, setActiveCategory] = useState<keyof typeof CATEGORIES>('meat');
-  const [dynamicCategories, setDynamicCategories] = useState<Record<string, { name: string; icon?: any; color?: string }>>({});
+  const [dynamicCategories, setDynamicCategories] = useState<Record<string, { name: string; icon?: string; color?: string }>>({});
   const [searchValue, setSearchValue] = useState('');
+  const [showSearchInput, setShowSearchInput] = useState(false);
   
   // 新增：搜索相关状态
   const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
@@ -101,7 +100,7 @@ export const RecipeForm = ({
         const data = await response.json();
 
         if (data.success && data.results) {
-          const categoriesMap: Record<string, { name: string; icon?: any; color?: string }> = {};
+          const categoriesMap: Record<string, { name: string; icon?: string; color?: string }> = {};
           data.results.forEach((category: any) => {
             const categoryKey = category.slug as keyof typeof CATEGORIES;
             if (CATEGORIES[categoryKey]) {
@@ -194,6 +193,24 @@ export const RecipeForm = ({
     }, 200);
   };
 
+  // 处理搜索图标点击 - 支持切换显示/隐藏
+  const handleSearchIconClick = () => {
+    setShowSearchInput(!showSearchInput);
+    // 如果关闭搜索框，清空搜索内容
+    if (showSearchInput) {
+      setSearchValue('');
+      setShowSearchResults(false);
+      setSearchResults([]);
+    }
+  };
+
+  // 处理搜索框关闭
+  const handleSearchClose = () => {
+    setShowSearchInput(false);
+    setSearchValue('');
+    setShowSearchResults(false);
+  };
+
   // 检测屏幕尺寸
   useEffect(() => {
     const checkMobile = () => {
@@ -217,6 +234,8 @@ export const RecipeForm = ({
     window.addEventListener('showLoginModal', handleShowLoginModal);
     return () => window.removeEventListener('showLoginModal', handleShowLoginModal);
   }, []);
+
+
 
   // 处理生成按钮点击
   const handleGenerateClick = () => {
@@ -256,10 +275,9 @@ export const RecipeForm = ({
       {!isMobile && (
         <TooltipProvider>
           <div className="w-full">
-
             <div className="flex items-center justify-between gap-3 pb-2 pt-2">
               {/* 分类tab */}
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
                 {Object.entries(CATEGORIES).map(([categoryId, category]) => {
                   const Icon = category.icon;
                   const isActive = activeCategory === categoryId;
@@ -278,7 +296,7 @@ export const RecipeForm = ({
                               : "text-muted-foreground hover:text-foreground hover:scale-102 rounded-full p-3 min-w-[60px] max-w-[60px]"
                           )}
                         >
-                          <Icon className={cn("h-5 w-5 flex-shrink-0 transition-colors duration-300", isActive ? "text-primary-foreground" : category.color)} />
+                          <span className={cn("h-5 w-5 flex-shrink-0 transition-colors duration-300", isActive ? "text-primary-foreground" : category.color)}>{Icon}</span>
                           {isActive && (
                             <span className="truncate text-sm font-medium whitespace-nowrap">{categoryName}</span>
                           )}
@@ -290,57 +308,91 @@ export const RecipeForm = ({
                     </Tooltip>
                   );
                 })}
-              </div>
-
-              {/* 食材输入框 - 固定在右侧，宽度较小 */}
-              <div className="w-80 flex-shrink-0 relative">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    type="text"
-                    placeholder={formData.ingredients.length > 0 ? tIngredientSelector('addMoreIngredients') : tIngredientSelector('selectOrEnterIngredients')}
-                    className="h-12 pl-10 pr-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                    value={searchValue}
-                    onChange={handleSearchChange}
-                    onKeyDown={handleSearchKeyDown}
-                    onBlur={handleSearchBlur}
-                  />
-                </div>
                 
-                {/* 搜索结果下拉框 */}
-                {showSearchResults && searchResults.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
-                    {searchResults.map((ingredient) => (
+                {/* 搜索按钮和搜索框容器 - 抽屉式展开 */}
+                <div className="relative flex items-center">
+                  {/* 搜索按钮 */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
                       <button
-                        key={ingredient.id}
-                        onClick={() => handleSearchResultSelect(ingredient)}
-                        className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 border-b border-gray-100 dark:border-gray-600 last:border-b-0"
+                        onClick={handleSearchIconClick}
+                        className={cn(
+                          "flex items-center justify-center transition-all duration-300 relative z-10 h-12",
+                          showSearchInput
+                            ? "bg-secondary text-secondary-foreground shadow-md shadow-secondary/25 rounded-l-full px-3 min-w-[60px] max-w-[60px]"
+                            : "text-muted-foreground hover:text-foreground hover:scale-102 rounded-full p-3 min-w-[60px] max-w-[60px] hover:bg-gray-100 dark:hover:bg-gray-700"
+                        )}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-primary rounded-full"></div>
-                          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                            {ingredient.name}
-                          </span>
-                          {ingredient.category && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
-                              {ingredient.category.name}
-                            </span>
-                          )}
-                        </div>
+                        <Search className={cn("h-5 w-5 flex-shrink-0 transition-colors duration-300", showSearchInput ? "text-primary-foreground" : "text-gray-600 dark:text-gray-400")} />
                       </button>
-                    ))}
-                  </div>
-                )}
-                
-                {/* 无搜索结果提示 */}
-                {showSearchResults && searchValue.trim() && searchResults.length === 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-50 p-4">
-                    <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-                      <p>{tIngredientSelector('noMatchingIngredients')}</p>
-                      <p className="mt-1">{tIngredientSelector('pressEnterToAddCustom')}</p>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{showSearchInput ? tIngredientSelector('hideSearch') || '隐藏搜索' : tIngredientSelector('searchIconTooltip')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  {/* 抽屉式搜索框 - 从按钮右侧边缘展开 */}
+                  <div 
+                    className={cn(
+                      "h-12 bg-white dark:bg-gray-800 border-2 border-l-0 border-secondary rounded-r-full shadow-lg overflow-hidden transition-all duration-500 ease-out",
+                      showSearchInput 
+                        ? "w-80 opacity-100" 
+                        : "w-0 opacity-0"
+                    )}
+                    style={{
+                      transform: showSearchInput ? 'scaleX(1)' : 'scaleX(0)',
+                      transformOrigin: 'left center'
+                    }}
+                  >
+                    <div className="relative h-full flex items-center">
+                      <Input
+                        type="text"
+                        placeholder={formData.ingredients.length > 0 ? tIngredientSelector('addMoreIngredients') : tIngredientSelector('selectOrEnterIngredients')}
+                        className="h-full pl-4 pr-4 border-0 bg-transparent text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-0 text-sm"
+                        value={searchValue}
+                        onChange={handleSearchChange}
+                        onKeyDown={handleSearchKeyDown}
+                        onBlur={handleSearchBlur}
+                        autoFocus
+                      />
                     </div>
+                    
+                    {/* 搜索结果下拉框 */}
+                    {showSearchResults && searchResults.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
+                        {searchResults.map((ingredient) => (
+                          <button
+                            key={ingredient.id}
+                            onClick={() => handleSearchResultSelect(ingredient)}
+                            className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 border-b border-gray-100 dark:border-gray-600 last:border-b-0"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-2 h-2 bg-primary rounded-full"></div>
+                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {ingredient.name}
+                              </span>
+                              {ingredient.category && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
+                                  {ingredient.category.name}
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* 无搜索结果提示 */}
+                    {showSearchResults && searchValue.trim() && searchResults.length === 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-50 p-4">
+                        <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+                          <p>{tIngredientSelector('noMatchingIngredients')}</p>
+                          <p className="mt-1">{tIngredientSelector('pressEnterToAddCustom')}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -350,7 +402,6 @@ export const RecipeForm = ({
       {/* 移动端分类选择器 */}
       {isMobile && (
         <div className="w-full mb-2 space-y-3">
-
           {/* 分类选择器 */}
           <Select
             value={activeCategory}
@@ -361,7 +412,7 @@ export const RecipeForm = ({
                 <div className="flex items-center gap-3">
                   {CATEGORIES[activeCategory] && (() => {
                     const Icon = CATEGORIES[activeCategory].icon;
-                    return <Icon className={cn("h-5 w-5 flex-shrink-0", CATEGORIES[activeCategory].color)} />;
+                    return <span className={cn("h-5 w-5 flex-shrink-0", CATEGORIES[activeCategory].color)}>{Icon}</span>;
                   })()}
                   <span className="font-medium text-gray-900 dark:text-gray-100">
                     {dynamicCategories[activeCategory]?.name || tIngredientSelector(`categories.${activeCategory}`)}
@@ -387,7 +438,7 @@ export const RecipeForm = ({
                     )}
                   >
                     <div className="flex items-center gap-3 w-full">
-                      <Icon className={cn("h-5 w-5 flex-shrink-0", category.color)} />
+                      <span className={cn("h-5 w-5 flex-shrink-0", category.color)}>{Icon}</span>
                       <span className="font-medium">
                         {dynamicCategories[categoryId]?.name || tIngredientSelector(`categories.${categoryId}`)}
                       </span>
@@ -398,56 +449,83 @@ export const RecipeForm = ({
             </SelectContent>
           </Select>
           
-          {/* 移动端搜索框 */}
-          <div className="w-full relative">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder={formData.ingredients.length > 0 ? tIngredientSelector('addMoreIngredients') : tIngredientSelector('selectOrEnterIngredients')}
-                className="h-12 pl-10 pr-4 border-0 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:border-primary/50 focus:border-primary transition-all duration-300 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                value={searchValue}
-                onChange={handleSearchChange}
-                onKeyDown={handleSearchKeyDown}
-                onBlur={handleSearchBlur}
-              />
-            </div>
-            
-            {/* 移动端搜索结果下拉框 */}
-            {showSearchResults && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
-                {searchResults.map((ingredient) => (
-                  <button
-                    key={ingredient.id}
-                    onClick={() => handleSearchResultSelect(ingredient)}
-                    className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 border-b border-gray-100 dark:border-gray-600 last:border-b-0"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-primary rounded-full"></div>
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {ingredient.name}
-                      </span>
-                      {ingredient.category && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
-                          {ingredient.category.name}
+          {/* 移动端抽屉式搜索框 */}
+          <div className="relative">
+            <div 
+              className={cn(
+                "w-full h-12 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-lg overflow-hidden transition-all duration-500 ease-out",
+                showSearchInput 
+                  ? "opacity-100" 
+                  : "opacity-0 pointer-events-none"
+              )}
+            >
+              <div className="relative h-full flex items-center">
+                <Search className="absolute left-3 h-4 w-4 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder={formData.ingredients.length > 0 ? tIngredientSelector('addMoreIngredients') : tIngredientSelector('selectOrEnterIngredients')}
+                  className="h-full pl-10 pr-12 border-0 bg-transparent text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-0 text-sm"
+                  value={searchValue}
+                  onChange={handleSearchChange}
+                  onKeyDown={handleSearchKeyDown}
+                  onBlur={handleSearchBlur}
+                  autoFocus
+                />
+                {/* 关闭按钮 */}
+                <button
+                  onClick={handleSearchClose}
+                  className="absolute right-3 h-6 w-6 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              
+              {/* 移动端搜索结果下拉框 */}
+              {showSearchResults && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
+                  {searchResults.map((ingredient) => (
+                    <button
+                      key={ingredient.id}
+                      onClick={() => handleSearchResultSelect(ingredient)}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 border-b border-gray-100 dark:border-gray-600 last:border-b-0"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-primary rounded-full"></div>
+                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {ingredient.name}
                         </span>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-            
-            {/* 移动端无搜索结果提示 */}
-            {showSearchResults && searchValue.trim() && searchResults.length === 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-50 p-4">
-                <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-                  <p>{tIngredientSelector('noMatchingIngredients')}</p>
-                  <p className="mt-1">{tIngredientSelector('pressEnterToAddCustom')}</p>
+                        {ingredient.category && (
+                          <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
+                            {ingredient.category.name}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
                 </div>
-              </div>
-            )}
+              )}
+              
+              {/* 移动端无搜索结果提示 */}
+              {showSearchResults && searchValue.trim() && searchResults.length === 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-50 p-4">
+                  <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+                    <p>{tIngredientSelector('noMatchingIngredients')}</p>
+                    <p className="mt-1">{tIngredientSelector('pressEnterToAddCustom')}</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
+          
+          {/* 移动端搜索图标按钮 */}
+          {!showSearchInput && (
+            <button
+              onClick={handleSearchIconClick}
+              className="w-full h-12 flex items-center justify-center bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:border-primary/50 transition-all duration-300 text-gray-600 dark:text-gray-400 hover:text-primary"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+          )}
         </div>
       )}
 
@@ -473,7 +551,7 @@ export const RecipeForm = ({
         <div className="w-full mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="mb-3">
             <div className="flex items-center gap-2">
-              <List className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+             <span>🍳</span> 
               <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 {tIngredientSelector('selectedIngredients')}
               </h3>
@@ -545,25 +623,12 @@ export const RecipeForm = ({
                 </PopoverTrigger>
                 <PopoverContent 
                   className="w-[240px] sm:w-[260px]"
-                  onInteractOutside={(e) => {
-                    // 阻止交互外部事件关闭弹窗
-                    e.preventDefault();
-                  }}
-                  onPointerDownOutside={(e) => {
-                    // 阻止点击外部事件关闭弹窗
-                    e.preventDefault();
-                  }}
                   align="start"
                   side="bottom"
                   sideOffset={4}
                   alignOffset={0}
                 >
-                  <div className="flex items-center justify-end mb-2">
-                    <h3 className="text-sm font-medium">{t('moreOptions')}</h3>
-                    <PopoverClose className="rounded-full h-5 w-5 inline-flex items-center justify-center text-muted-foreground hover:text-foreground">
-                      <X className="h-3 w-3" />
-                    </PopoverClose>
-                  </div>
+
                   <div className="space-y-3 sm:space-y-4">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">

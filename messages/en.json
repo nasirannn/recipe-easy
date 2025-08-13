@@ -102,6 +102,8 @@
     "selectedIngredients": "My Ingredients",
     "pressEnterToAddCustom": "Press Enter key to add as custom ingredient",
     "items": "items",
+    "searchIngredients": "Search Ingredients",
+    "searchIconTooltip": "Search ingredients",
     "categories": {
       "meat": "Meat",
       "seafood": "Seafood",

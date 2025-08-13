@@ -270,7 +270,7 @@ export const HeroSection = () => {
         </div>
       </div>
       {/* 第二个div: Recipe Form Section */}
-      <div id="recipe-form-section" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-8 pb-20">
+      <div id="recipe-form-section" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-8 pb-8">
         <div className="w-full bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 md:p-12">
           <RecipeForm
             formData={formData}

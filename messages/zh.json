@@ -102,6 +102,8 @@
     "selectedIngredients": "我的食材",
     "pressEnterToAddCustom": "按 Enter 键添加为自定义食材",
     "items": "项",
+    "searchIngredients": "搜索食材",
+    "searchIconTooltip": "搜索食材",
     "categories": {
       "meat": "肉类",
       "seafood": "海鲜",
