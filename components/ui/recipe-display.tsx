@@ -96,10 +96,11 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-
+    <div className="min-h-screen">
+      {/* 虚线分割线 */}
+      <div className="w-full border-t-2 border-dashed border-gray-300 dark:border-gray-600 mb-4"></div>
+      
+      <div className="max-w-7xl rounded-lg mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Recipes Section */}
         <div className="space-y-8">
           {recipes.map((recipe, index) => {
@@ -117,49 +118,42 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                   {/* 主图片 - 悬浮交互完整恢复 */}
                   <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl group hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transition-all duration-300">
                     {recipe.imagePath && !imageErrors[recipe.id] ? (
-                      <Image
-                        src={getImageUrl(recipe.imagePath)}
-                        alt={recipe.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover cursor-pointer transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
-                        unoptimized={true}
-                        onClick={() => openImageDialog(getImageUrl(recipe.imagePath!))}
-                        onError={(e) => {
-                          console.error('Image load error for recipe:', recipe.id, e);
-                          setImageErrors(prev => ({ ...prev, [recipe.id]: true }));
-                        }}
-                      />
-                    ) : imageLoadingStates[recipe.id] ? (
-                      // Loading状态 - 移除模糊遮罩和透明度
+                      // 有图片时显示图片
                       <div className="w-full h-full relative overflow-hidden">
-                        {/* 背景图片 - 移除模糊效果 */}
                         <Image
-                          src="/images/recipe-placeholder-bg.png"
-                          alt="Background"
+                          src={getImageUrl(recipe.imagePath)}
+                          alt={recipe.title}
                           fill
-                          className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw"
+                          className="object-cover cursor-pointer transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
                           unoptimized={true}
+                          onClick={() => openImageDialog(getImageUrl(recipe.imagePath!))}
+                          onError={(e) => {
+                            console.error('Image load error for recipe:', recipe.id, e);
+                            setImageErrors(prev => ({ ...prev, [recipe.id]: true }));
+                          }}
                         />
                         
-                        {/* 高斯模糊遮罩 */}
-                        <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
-                        
-                        {/* 加载状态 - 中央位置，简洁明了 */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                          <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-xl border border-gray-200">
-                            <RefreshCw className="h-8 w-8 text-gray-700 animate-spin" />
+                        {/* Loading遮罩 - 当重新生成图片时显示 */}
+                        {imageLoadingStates[recipe.id] && (
+                          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-all duration-300">
+                            {/* 加载状态 - 中央位置 */}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                              <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-xl border border-gray-200">
+                                <RefreshCw className="h-8 w-8 text-gray-700 animate-spin" />
+                              </div>
+                            </div>
+                            
+                            {/* 底部文字提示 */}
+                            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 pointer-events-none">
+                              <div className="bg-black rounded-lg px-4 py-2">
+                                <p className="text-white text-sm font-medium">
+                                  {locale === 'zh' ? '正在生成图片...' : 'Generating image...'}
+                                </p>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                        
-                        {/* 底部文字提示 */}
-                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 pointer-events-none">
-                          <div className="bg-black rounded-lg px-4 py-2">
-                            <p className="text-white text-sm font-medium">
-                              {locale === 'zh' ? '正在生成图片...' : 'Generating image...'}
-                            </p>
-                          </div>
-                        </div>
+                        )}
                       </div>
                     ) : (
                       // 没有图片时的占位符
@@ -329,7 +323,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* 食材 */}
                     {ingredients.length > 0 && (
-                      <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+                      <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-0 shadow-lg">
                         <CardContent className="p-6">
                           <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -341,7 +335,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                           <ul className="space-y-2">
                             {ingredients?.map((ingredient, i) => (
                               <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                                <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0" />
+                                <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0" />
                                 <span>{ingredient}</span>
                               </li>
                             ))}
@@ -352,7 +346,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
 
                     {/* 调料 */}
                     {seasoning.length > 0 && (
-                      <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+                      <Card className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-0 shadow-lg">
                         <CardContent className="p-6">
                           <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -364,7 +358,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                           <ul className="space-y-2">
                             {seasoning?.map((season, i) => (
                               <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                                <div className="w-2 h-2 bg-secondary rounded-full flex-shrink-0" />
+                                <div className="w-2 h-2 bg-amber-500 rounded-full flex-shrink-0" />
                                 <span>{season}</span>
                               </li>
                             ))}
@@ -376,7 +370,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
 
                   {/* 烹饪步骤 */}
                   {instructions.length > 0 && (
-                    <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
+                    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-0 shadow-lg">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-6">
                           <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -388,7 +382,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                         <div className="space-y-6">
                           {instructions?.map((step, i) => (
                             <div key={i} className="flex gap-4">
-                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white flex items-center justify-center font-semibold text-sm">
+                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white flex items-center justify-center font-semibold text-sm">
                                 {i + 1}
                               </div>
                               <div className="flex-1">
