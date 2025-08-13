@@ -13,13 +13,13 @@ export const FooterSection = () => {
   const [showContactDialog, setShowContactDialog] = useState(false);
 
   return (
-    <footer id="footer" className="container py-24 sm:py-32">
+    <footer id="footer" className="container pt-8 pb-16 sm:pt-8 sm:pb-16">
       <div className="p-10 bg-card rounded-2xl">
         {/* Main content grid - two columns layout with right content grouped */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {/* First column: Logo and description */}
-          <div className="md:col-span-1">
-            <Link href="/" className="font-bold text-base sm:text-lg flex items-center gap-1.5 sm:gap-2">
+          <div className="md:col-span-1 text-center md:text-left">
+            <Link href="/" className="font-bold text-base sm:text-lg flex items-center gap-1.5 sm:gap-2 justify-center md:justify-start">
               <div className="relative w-7 h-7 sm:w-8 sm:h-8">
                 <Image 
                   src="/images/recipe-easy-logo.svg"
@@ -31,16 +31,16 @@ export const FooterSection = () => {
               </div>
               RecipeEasy
             </Link>
-            <p className="text-sm text-muted-foreground mt-3 max-w-xs">
+            <p className="text-sm text-muted-foreground mt-3 max-w-xs mx-auto md:mx-0">
               {t('description')}
             </p>
           </div>
 
           {/* Second column: About, Help, and Friend sections grouped together */}
           <div className="md:col-span-1">
-            <div className="flex gap-6 md:gap-8 justify-end">
+            <div className="flex gap-6 md:gap-8 justify-center md:justify-end">
               {/* About section */}
-              <div className="flex flex-col gap-2 flex-shrink-0">
+              <div className="flex flex-col gap-2 flex-shrink-0 text-center md:text-left">
                 <h3 className="font-bold text-lg">{t('about')}</h3>
                 <div>
                   <Link href="#features" className="opacity-60 hover:opacity-100">
@@ -50,12 +50,12 @@ export const FooterSection = () => {
               </div>
 
               {/* Help section */}
-              <div className="flex flex-col gap-2 flex-shrink-0">
+              <div className="flex flex-col gap-2 flex-shrink-0 text-center md:text-left">
                 <h3 className="font-bold text-lg">{t('help')}</h3>
                 <div>
                   <button 
                     onClick={() => setShowContactDialog(true)}
-                    className="opacity-60 hover:opacity-100 text-left bg-transparent border-none p-0 cursor-pointer"
+                    className="opacity-60 hover:opacity-100 text-center md:text-left bg-transparent border-none p-0 cursor-pointer"
                   >
                     {t('contact')}
                   </button>
@@ -68,7 +68,7 @@ export const FooterSection = () => {
               </div>
 
               {/* Friend section */}
-              <div className="flex flex-col gap-2 flex-shrink-0">
+              <div className="flex flex-col gap-2 flex-shrink-0 text-center md:text-left">
                 <h3 className="font-bold text-lg">{t('friend')}</h3>
                 <div>
                   <a 

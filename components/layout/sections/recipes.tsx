@@ -153,31 +153,31 @@ export const RecipesSection = () => {
 
   if (isLoading) {
     return (
-      <section id="recipes" className="container py-24 sm:py-28">
-        <div className="grid lg:grid-cols-2 place-items-center lg:gap-24">
-          <div className="w-full">
-            <div className="flex justify-center items-center h-96 bg-gray-200 dark:bg-gray-700 rounded-lg">
-              <Spinner className="h-8 w-8" />
+      <section id="recipes" className="container py-8 sm:py-12 lg:py-16 xl:py-20">
+        <div className="grid lg:grid-cols-2 place-items-center gap-8 lg:gap-24">
+          <div className="w-full order-2 lg:order-1">
+            <div className="flex justify-center items-center aspect-[4/3] sm:aspect-[3/2] bg-gray-200 dark:bg-gray-700 rounded-lg min-h-[280px] sm:min-h-[320px] lg:min-h-[400px]">
+              <Spinner className="h-6 w-6 sm:h-8 sm:w-8" />
             </div>
           </div>
-          <div className="text-center lg:text-left">
-            <h2 className="text-lg text-secondary mb-2 tracking-wider">
+          <div className="text-center lg:text-left order-1 lg:order-2">
+            <h2 className="text-base sm:text-lg text-secondary mb-2 tracking-wider">
               {t('title')}
             </h2>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
               {t('subtitle')}
             </h2>
-            <p className="text-lg text-muted-foreground mb-8">
+            <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8">
               {t('description1')}
             </p>
-            <p className="text-lg text-muted-foreground mb-8">
+            <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8">
               {t('description2')}
             </p>
-            <p className="text-lg text-muted-foreground mb-8">
+            <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8">
               {t('description3')}
             </p>
             <div className="flex justify-center lg:justify-start">
-              <Spinner className="h-8 w-8" />
+              <Spinner className="h-6 w-6 sm:h-8 sm:w-8" />
             </div>
           </div>
         </div>
@@ -186,13 +186,13 @@ export const RecipesSection = () => {
   }
 
   return (
-    <section id="recipes" className="container py-24 sm:py-28">
-      <div className="grid lg:grid-cols-2 lg:gap-24">
+    <section id="recipes" className="container py-8 sm:py-12 lg:py-16 xl:py-20">
+      <div className="grid lg:grid-cols-2 gap-8 lg:gap-24">
         {/* 左侧：图片轮播 */}
-        <div className="w-full">
+        <div className="w-full order-2 lg:order-1">
           {displayRecipes.length > 0 ? (
             <div className="relative">
-              <div className="relative aspect-[3/2] overflow-hidden rounded-lg shadow-lg min-h-[400px]">
+              <div className="relative aspect-[4/3] sm:aspect-[3/2] overflow-hidden rounded-lg shadow-lg min-h-[280px] sm:min-h-[320px] lg:min-h-[400px]">
                 {/* 底层图片 - 当前显示的图片 */}
                 <Link href={`/${locale}/recipe/${displayRecipes[currentImageIndex].id}`}>
                   <Image
@@ -200,7 +200,7 @@ export const RecipesSection = () => {
                     src={getImageUrl(displayRecipes[currentImageIndex].imagePath) || '/images/recipe-placeholder-bg.png'}
                     alt={displayRecipes[currentImageIndex].title}
                     fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 50vw, 25vw"
                     className={`object-cover cursor-pointer hover:scale-105 transition-all duration-300 ${
                       isTransitioning ? 'animate-fade-out' : ''
                     }`}
@@ -228,7 +228,7 @@ export const RecipesSection = () => {
                       src={getImageUrl(displayRecipes[nextImageIndex].imagePath) || '/images/recipe-placeholder-bg.png'}
                       alt={displayRecipes[nextImageIndex].title}
                       fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 50vw, 25vw"
                       className="object-cover animate-fade-in cursor-pointer hover:scale-105 transition-all duration-300"
                       style={{
                         animation: 'fade-in 0.6s ease-in-out',
@@ -247,7 +247,7 @@ export const RecipesSection = () => {
 
                 {/* 菜系标签 */}
                 {displayRecipes[currentImageIndex].cuisine_id && (
-                  <div className="absolute top-3 left-3">
+                  <div className="absolute top-2 sm:top-3 left-2 sm:left-3">
                     <span className={`inline-block px-2 py-1 text-xs font-medium text-white rounded-full ${getCuisineClassName(displayRecipes[currentImageIndex].cuisine)}`}>
                       {getLocalizedCuisineName(displayRecipes[currentImageIndex].cuisine_name, locale)}
                     </span>
@@ -259,102 +259,106 @@ export const RecipesSection = () => {
                   <>
                     <button
                       onClick={goToPrevious}
-                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200"
+                      className="absolute left-1 sm:left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition-all duration-200"
                       aria-label="Previous image"
                     >
-                      <ChevronLeft className="h-4 w-4" />
+                      <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
                     </button>
                     <button
                       onClick={goToNext}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200"
+                      className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition-all duration-200"
                       aria-label="Next image"
                     >
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
                     </button>
                   </>
                 )}
               </div>
             </div>
           ) : (
-            <div className="aspect-[3/2] bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-              <p className="text-gray-500 dark:text-gray-400">{t('loadingRecipes')}</p>
+            <div className="aspect-[4/3] sm:aspect-[3/2] bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center min-h-[280px] sm:min-h-[320px] lg:min-h-[400px]">
+              <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">{t('loadingRecipes')}</p>
             </div>
           )}
         </div>
 
         {/* 右侧：文字内容 */}
-        <div className="text-center lg:text-left flex flex-col h-full">
+        <div className="text-center lg:text-left flex flex-col h-full order-1 lg:order-2">
           <div className="flex-1">
-            <h2 className="text-lg text-secondary mb-2 tracking-wider">
+            <h2 className="text-base sm:text-lg text-secondary mb-2 tracking-wider">
               {t('title')}
             </h2>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
               {t('subtitle')}
             </h2>
-            <p className="text-lg text-foreground mb-4 overflow-hidden" style={{
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              lineHeight: '1.5',
-              maxHeight: '3rem'
-            }}>
-              {displayRecipes.length > 0 ? (
-                displayRecipes[currentImageIndex].title
-              ) : (
-                t('description1')
-              )}
-            </p>
             
-            {/* 菜系标签 - 放在名称下面 */}
-            {displayRecipes.length > 0 && displayRecipes[currentImageIndex].cuisine_name && displayRecipes[currentImageIndex].cuisine_name.trim() !== '' && (
-              <div className="mb-6">
-                <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium text-white rounded-full shadow-sm ${getCuisineClassName(displayRecipes[currentImageIndex].cuisine)}`}>
-                  {getLocalizedCuisineName(displayRecipes[currentImageIndex].cuisine_name, locale)}
-                </span>
-              </div>
-            )}
-            <p className="text-lg text-muted-foreground mb-8 overflow-hidden" style={{
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              lineHeight: '1.5',
-              maxHeight: '4rem'
-            }}>
-              {displayRecipes.length > 0 ? (
-                displayRecipes[currentImageIndex].description || t('description2')
-              ) : (
-                t('description2')
+            {/* 菜谱内容包装器 */}
+            <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
+              <p className="text-base sm:text-lg text-foreground mb-3 sm:mb-4 overflow-hidden" style={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                lineHeight: '1.5',
+                maxHeight: '3rem'
+              }}>
+                {displayRecipes.length > 0 ? (
+                  displayRecipes[currentImageIndex].title
+                ) : (
+                  t('description1')
+                )}
+              </p>
+              
+              {/* 菜系标签 - 放在名称下面 */}
+              {displayRecipes.length > 0 && displayRecipes[currentImageIndex].cuisine_name && displayRecipes[currentImageIndex].cuisine_name.trim() !== '' && (
+                <div className="mb-4 sm:mb-6">
+                  <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium text-white rounded-full shadow-sm ${getCuisineClassName(displayRecipes[currentImageIndex].cuisine)}`}>
+                    {getLocalizedCuisineName(displayRecipes[currentImageIndex].cuisine_name, locale)}
+                  </span>
+                </div>
               )}
-            </p>
-            <p className="text-lg text-muted-foreground mb-8">
-              {displayRecipes.length > 0 ? (
-                <>
-                  {displayRecipes[currentImageIndex].cookingTime && (
-                    <span className="inline-flex items-center gap-1 mx-2">
-                      <Clock className="h-4 w-4" />
-                      {displayRecipes[currentImageIndex].cookingTime}
-                    </span>
-                  )}
-                  {displayRecipes[currentImageIndex].servings && (
-                    <span className="inline-flex items-center gap-1 mx-2">
-                      <Users className="h-4 w-4" />
-                      {displayRecipes[currentImageIndex].servings}
-                    </span>
-                  )}
-                  {displayRecipes[currentImageIndex].difficulty && (
-                    <span className="inline-flex items-center gap-1 mx-2">
-                      <ChefHat className="h-4 w-4" />
-                      {displayRecipes[currentImageIndex].difficulty}
-                    </span>
-                  )}
-                </>
-              ) : (
-                t('description3')
-              )}
-            </p>
+              <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 overflow-hidden" style={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                lineHeight: '1.5',
+                maxHeight: '4rem'
+              }}>
+                {displayRecipes.length > 0 ? (
+                  displayRecipes[currentImageIndex].description || t('description2')
+                ) : (
+                  t('description2')
+                )}
+              </p>
+              <p className="text-base sm:text-lg text-muted-foreground mb-0">
+                {displayRecipes.length > 0 ? (
+                  <div className="flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3">
+                    {displayRecipes[currentImageIndex].cookingTime && (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                        {displayRecipes[currentImageIndex].cookingTime}
+                      </span>
+                    )}
+                    {displayRecipes[currentImageIndex].servings && (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
+                        <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                        {displayRecipes[currentImageIndex].servings}
+                      </span>
+                    )}
+                    {displayRecipes[currentImageIndex].difficulty && (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
+                        <ChefHat className="h-3 w-3 sm:h-4 sm:w-4" />
+                        {displayRecipes[currentImageIndex].difficulty}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  t('description3')
+                )}
+              </p>
+            </div>
           </div>
           {/* 查看所有食谱链接 - 固定在底部，与图片底部对齐 */}
-          <div className="mt-auto">
+          <div className="mt-4 sm:mt-auto">
             <Link
               href={`/${locale}/recipes`}
               className="inline-flex items-center text-muted-foreground hover:text-muted-foreground/80 text-sm font-medium transition-colors duration-200"

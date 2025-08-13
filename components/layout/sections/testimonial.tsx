@@ -143,7 +143,7 @@ export const TestimonialSection = () => {
   }, [animate]);
 
   return (
-    <section id="testimonials" className="container py-4 sm:py-12">
+    <section id="testimonials" className="container pt-8 pb-4 sm:pt-16 sm:pb-8">
       <div className="text-center mb-8">
         <h2 className="text-lg text-secondary text-center mb-2 tracking-wider">
           {t('title')}
