@@ -401,7 +401,7 @@ export const RecipeForm = ({
 
       {/* 移动端分类选择器 */}
       {isMobile && (
-        <div className="w-full mb-2 space-y-3">
+        <div className="w-full mb-1 space-y-2">
           {/* 分类选择器 */}
           <Select
             value={activeCategory}
@@ -449,35 +449,20 @@ export const RecipeForm = ({
             </SelectContent>
           </Select>
           
-          {/* 移动端抽屉式搜索框 */}
-          <div className="relative">
-            <div 
-              className={cn(
-                "w-full h-12 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-lg overflow-hidden transition-all duration-500 ease-out",
-                showSearchInput 
-                  ? "opacity-100" 
-                  : "opacity-0 pointer-events-none"
-              )}
-            >
+          {/* 移动端搜索框 - 默认显示，不需要隐藏交互 */}
+          <div className="relative w-full">
+            <div className="w-full h-12 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:border-primary/50 focus-within:border-primary transition-all duration-300">
               <div className="relative h-full flex items-center">
-                <Search className="absolute left-3 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-4 h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
                   placeholder={formData.ingredients.length > 0 ? tIngredientSelector('addMoreIngredients') : tIngredientSelector('selectOrEnterIngredients')}
-                  className="h-full pl-10 pr-12 border-0 bg-transparent text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-0 text-sm"
+                  className="h-full pl-12 pr-4 border-0 bg-transparent text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-0 text-sm"
                   value={searchValue}
                   onChange={handleSearchChange}
                   onKeyDown={handleSearchKeyDown}
                   onBlur={handleSearchBlur}
-                  autoFocus
                 />
-                {/* 关闭按钮 */}
-                <button
-                  onClick={handleSearchClose}
-                  className="absolute right-3 h-6 w-6 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
-                >
-                  <X className="h-4 w-4" />
-                </button>
               </div>
               
               {/* 移动端搜索结果下拉框 */}
@@ -517,15 +502,7 @@ export const RecipeForm = ({
             </div>
           </div>
           
-          {/* 移动端搜索图标按钮 */}
-          {!showSearchInput && (
-            <button
-              onClick={handleSearchIconClick}
-              className="w-full h-12 flex items-center justify-center bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:border-primary/50 transition-all duration-300 text-gray-600 dark:text-gray-400 hover:text-primary"
-            >
-              <Search className="h-5 w-5" />
-            </button>
-          )}
+
         </div>
       )}
 
@@ -548,13 +525,18 @@ export const RecipeForm = ({
         />
 
         {/* 已选食材展示区 - 独立区域 */}
-        <div className="w-full mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="w-full mt-4 p-4 rounded-lg">
           <div className="mb-3">
             <div className="flex items-center gap-2">
              <span>🍳</span> 
               <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 {tIngredientSelector('selectedIngredients')}
               </h3>
+              {formData.ingredients.length === 1 && (
+                <span className="text-xs text-muted-foreground">
+                  {tIngredientSelector('oneMoreToGo')}
+                </span>
+              )}
             </div>
           </div>
           

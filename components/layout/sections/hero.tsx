@@ -210,24 +210,37 @@ export const HeroSection = () => {
           <div className="text-center lg:text-left space-y-8 flex-1 max-w-2xl lg:max-w-none pt-20">
             {/* 标题和描述 */}
             <h1 className="text-5xl md:text-7xl font-bold">
-              {locale === 'en' ? (
+              {locale === 'zh' ? (
                 <>
-                  Generate <span className="text-transparent bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">AI recipes</span> from any ingredients
+                  <span>万能食材</span>
+                  <br />
+                  <span className="text-transparent bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">AI食谱生成器</span>
                 </>
               ) : (
                 <>
-                  用任意食材生成<span className="text-transparent bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">AI食谱</span>
+                  <span className="text-transparent bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">AI recipes generator</span>
+                  <span> from any ingredients</span>
                 </>
               )}
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl lg:max-w-none leading-relaxed">
-              {t('description').split('. ').map((sentence, index, array) => (
-                <React.Fragment key={index}>
-                  {sentence}
-                  {index < array.length - 1 ? '. ' : ''}
-                  {index < array.length - 1 && <br />}
-                </React.Fragment>
-              ))}
+              {locale === 'zh' ? (
+                <>
+                  只需选择或输入现有食材，AI 即刻为您生成随机搭配、
+                  <br />
+                  创意十足、简单易做的食谱。从此告别"今晚吃什么？"的烦恼。
+                </>
+              ) : (
+                <>
+                  {t('description').split('. ').map((sentence, index, array) => (
+                    <React.Fragment key={index}>
+                      {sentence}
+                      {index < array.length - 1 ? '. ' : ''}
+                      {index < array.length - 1 && <br />}
+                    </React.Fragment>
+                  ))}
+                </>
+              )}
             </p>
             <p className="text-sm text-muted-foreground max-w-2xl lg:max-w-none leading-relaxed">
               {t('benefitsBadge')}

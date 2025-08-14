@@ -33,6 +33,7 @@
   },
   "hero": {
     "title": "免费在线AI食谱生成器",
+    "mainTitle": "万能食材AI食谱生成器",
     "description": "只需选择或输入食材，我们的 AI 就会为您制作随机、创意且易于跟随的食谱。再也不用为\"晚餐吃什么？\"而烦恼。",
     "tryNow": "立即试用",
     "freeRecipeGenerator": "免费食谱生成器",
@@ -87,6 +88,7 @@
     "addMoreIngredients": "添加更多食材...",
     "selectOrEnterIngredients": "搜索或输入食材...",
     "ingredientsHint": "选择或输入至少两个食材",
+    "oneMoreToGo": "再选一个可生成菜谱",
     "clearAll": "清空全部",
     "clearAllIngredients": "清空所有食材？",
     "clearAllConfirmation": "您确定要移除所有已选择的食材吗？此操作无法撤销。",

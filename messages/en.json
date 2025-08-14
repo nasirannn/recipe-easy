@@ -33,6 +33,7 @@
   },
   "hero": {
     "title": "Free Online AI Recipe Generator",
+    "mainTitle": "AI recipes generator from any ingredients",
     "description": "Simply select or enter ingredients, and our AI will create random, creative, and easy-to-follow recipes for you. No more \"What's for dinner?\" stress.",
     "tryNow": "Try Now",
     "freeRecipeGenerator": "Free Recipe Generator",
@@ -86,7 +87,8 @@
   "ingredientSelector": {
     "addMoreIngredients": "Add more ingredients...",
     "selectOrEnterIngredients": "Search or type ingredients...",
-    "ingredientsHint": "Select or enter at least 2 ingredients",
+    "ingredientsHint": "Selected ingredients will appear here ✋",
+    "oneMoreToGo": "one more to go",
     "clearAll": "Clear all",
     "clearAllIngredients": "Clear all ingredients?",
     "clearAllConfirmation": "Are you sure you want to remove all selected ingredients? This action cannot be undone.",
