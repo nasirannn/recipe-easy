@@ -353,7 +353,6 @@ export const RecipeForm = ({
                         onChange={handleSearchChange}
                         onKeyDown={handleSearchKeyDown}
                         onBlur={handleSearchBlur}
-                        autoFocus
                       />
                     </div>
                     
@@ -588,7 +587,7 @@ export const RecipeForm = ({
               "flex items-center gap-2",
               isMobile ? "w-full" : ""
             )}>
-              {/* More Options按钮 */}
+              {/* Options按钮 */}
               <Popover>
                 <PopoverTrigger asChild>
                   <Button 

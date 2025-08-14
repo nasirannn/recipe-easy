@@ -13,7 +13,7 @@ export function SimpleLayout({ children, title }: SimpleLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* 简化的顶部导航 */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center">
           {/* Home 按钮 */}
           <Link href="/">

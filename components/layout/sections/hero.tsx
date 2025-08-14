@@ -212,9 +212,11 @@ export const HeroSection = () => {
             <h1 className="text-5xl md:text-7xl font-bold">
               {locale === 'zh' ? (
                 <>
-                  <span>万能食材</span>
+                  <span>用任意食材，</span>
                   <br />
-                  <span className="text-transparent bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">AI食谱生成器</span>
+                  <span>生成</span>
+                  <br />
+                  <span className="text-transparent bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">AI食谱</span>
                 </>
               ) : (
                 <>
@@ -228,7 +230,7 @@ export const HeroSection = () => {
                 <>
                   只需选择或输入现有食材，AI 即刻为您生成随机搭配、
                   <br />
-                  创意十足、简单易做的食谱。从此告别"今晚吃什么？"的烦恼。
+                  创意十足、简单易做的食谱。从此告别&ldquo;今晚吃什么？&rdquo;的烦恼。
                 </>
               ) : (
                 <>
