@@ -11,7 +11,6 @@ export interface Cuisine {
   updated_at?: string;
 }
 
-
 interface UseCuisinesReturn {
   cuisines: Cuisine[];
   loading: boolean;
@@ -30,6 +29,7 @@ export function useCuisines(): UseCuisinesReturn {
       setLoading(true);
       setError(null);
 
+      console.log('🔍 开始获取菜系数据，语言:', locale);
       const response = await fetch(`/api/cuisines?lang=${locale}`);
       
       if (!response.ok) {
@@ -37,22 +37,26 @@ export function useCuisines(): UseCuisinesReturn {
       }
 
       const data: any = await response.json();
+      console.log('🔍 API响应数据:', data);
       
       if (data.success) {
         // Worker返回的是results字段，不是data字段
         const cuisinesData = data.results || data.data || [];
+        console.log('🔍 原始菜系数据:', cuisinesData);
+        
         // 过滤掉"Others"菜系，不在前端显示
         const filteredCuisines = cuisinesData.filter((cuisine: any) => cuisine.id !== 9);
+        console.log('🔍 过滤后菜系数据:', filteredCuisines);
         
-        // 确保数据结构正确，Worker 返回的数据已经通过 formatCuisine 处理过
-        // 字段应该是：id, name, slug, cssClass
+        // 处理数据结构，Worker端已经返回正确的本地化名称
         const processedCuisines = filteredCuisines.map((cuisine: any) => ({
           id: cuisine.id,
-          name: cuisine.name || cuisine.localized_cuisine_name || cuisine.cuisine_name || `Cuisine ${cuisine.id}`,
-          slug: cuisine.slug || cuisine.localized_cuisine_slug || cuisine.cuisine_slug,
+          name: cuisine.name, // Worker端已经返回正确的本地化名称
+          slug: cuisine.slug,
           cssClass: cuisine.cssClass || cuisine.css_class || 'cuisine-other'
         }));
         
+        console.log('🔍 处理后的菜系数据:', processedCuisines);
         setCuisines(processedCuisines);
       } else {
         throw new Error('Failed to fetch cuisines');
@@ -63,7 +67,16 @@ export function useCuisines(): UseCuisinesReturn {
       console.error('Error fetching cuisines:', err);
       
       // 设置备用数据（不包含Others菜系）
-      setCuisines([
+      const fallbackCuisines = locale === 'zh' ? [
+        { id: 1, name: '中式' },
+        { id: 2, name: '意式' },
+        { id: 3, name: '法式' },
+        { id: 4, name: '印式' },
+        { id: 5, name: '日式' },
+        { id: 6, name: '地中海' },
+        { id: 7, name: '泰式' },
+        { id: 8, name: '墨西哥' },
+      ] : [
         { id: 1, name: 'Chinese' },
         { id: 2, name: 'Italian' },
         { id: 3, name: 'French' },
@@ -72,7 +85,8 @@ export function useCuisines(): UseCuisinesReturn {
         { id: 6, name: 'Mediterranean' },
         { id: 7, name: 'Thai' },
         { id: 8, name: 'Mexican' },
-      ]);
+      ];
+      setCuisines(fallbackCuisines);
     } finally {
       setLoading(false);
     }

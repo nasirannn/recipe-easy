@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button";
-import { useState, useEffect, } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { IngredientSelector } from "./ingredients-selector";
 import { Sliders, Sparkles, X, RotateCcw, Search, Minus, Plus } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -28,6 +28,21 @@ const CATEGORIES = {
   'herbs-spices': { icon: '🌿', color: 'text-emerald-600' },
 } as const;
 
+// 轮播配置常量
+const CAROUSEL_CONFIG = {
+  TOTAL_ITEMS: 6,
+  INTERVAL_MS: 3000,
+  TRANSITION_DURATION: 1000,
+  ITEM_HEIGHT: 32,
+} as const;
+
+// 搜索配置常量
+const SEARCH_CONFIG = {
+  MAX_RESULTS: 8,
+  BLUR_DELAY: 150,
+  SCROLL_DELAY: 150,
+} as const;
+
 interface RecipeFormProps {
   formData: RecipeFormData;
   onFormChange: (data: RecipeFormData) => void;
@@ -44,6 +59,89 @@ interface RecipeFormProps {
   onMealPlannerSubmit?: () => void;
 }
 
+// 自定义 Hook: 搜索状态管理
+const useSearchState = () => {
+  const [searchValue, setSearchValue] = useState('');
+  const [showSearchInput, setShowSearchInput] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [searchResults, setSearchResults] = useState<Ingredient[]>([]);
+
+  const clearSearchState = useCallback(() => {
+    setSearchValue('');
+    setShowSearchResults(false);
+    setSearchResults([]);
+  }, []);
+
+  const toggleSearch = useCallback(() => {
+    setShowSearchInput(prev => !prev);
+  }, []);
+
+  const closeSearch = useCallback(() => {
+    setShowSearchInput(false);
+    clearSearchState();
+  }, [clearSearchState]);
+
+  return {
+    searchValue,
+    setSearchValue,
+    showSearchInput,
+    setShowSearchInput,
+    showSearchResults,
+    setShowSearchResults,
+    searchResults,
+    setSearchResults,
+    clearSearchState,
+    toggleSearch,
+    closeSearch,
+  };
+};
+
+// 自定义 Hook: 食材操作管理
+const useIngredientsActions = (formData: RecipeFormData, onFormChange: (data: RecipeFormData) => void) => {
+  const addIngredient = useCallback((ingredient: Ingredient) => {
+    const isAlreadySelected = formData.ingredients.some(
+      selected => selected.id === ingredient.id
+    );
+    
+    if (!isAlreadySelected) {
+      onFormChange({
+        ...formData,
+        ingredients: [...formData.ingredients, ingredient]
+      });
+    }
+  }, [formData, onFormChange]);
+
+  const removeIngredient = useCallback((ingredientId: string) => {
+    onFormChange({
+      ...formData,
+      ingredients: formData.ingredients.filter(item => item.id !== ingredientId)
+    });
+  }, [formData, onFormChange]);
+
+  const clearIngredients = useCallback(() => {
+    onFormChange({ ...formData, ingredients: [] });
+  }, [formData, onFormChange]);
+
+  return { addIngredient, removeIngredient, clearIngredients };
+};
+
+// 自定义 Hook: 响应式检测
+const useResponsive = () => {
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  return { isMobile };
+};
+
 export const RecipeForm = ({
   formData,
   onFormChange,
@@ -52,47 +150,61 @@ export const RecipeForm = ({
   setShowRecipe,
 }: RecipeFormProps) => {
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const { cuisines, loading: cuisinesLoading } = useCuisines();
   const t = useTranslations('recipeForm');
   const tIngredientSelector = useTranslations('ingredientSelector');
   const locale = useLocale();
   
+  // 使用自定义 hooks
+  const { isMobile } = useResponsive();
+  const searchState = useSearchState();
+  const { addIngredient, removeIngredient, clearIngredients } = useIngredientsActions(formData, onFormChange);
+  
   // 分类相关状态
   const [activeCategory, setActiveCategory] = useState<keyof typeof CATEGORIES>('meat');
   const [dynamicCategories, setDynamicCategories] = useState<Record<string, { name: string; icon?: string; color?: string }>>({});
-  const [searchValue, setSearchValue] = useState('');
-  const [showSearchInput, setShowSearchInput] = useState(false);
   
   // 新增：搜索相关状态
   const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
-  const [showSearchResults, setShowSearchResults] = useState(false);
-  const [searchResults, setSearchResults] = useState<Ingredient[]>([]);
+  const [ingredientsLoading, setIngredientsLoading] = useState(true);
+  const [ingredientsError, setIngredientsError] = useState<string | null>(null);
   
   // 新增：选项面板显示状态
   const [showOptions, setShowOptions] = useState(true);
 
-  // 处理分类变更
-  const handleCategoryChange = (categoryId: keyof typeof CATEGORIES) => {
+  // 处理分类变更 - 使用 useCallback 优化
+  const handleCategoryChange = useCallback((categoryId: keyof typeof CATEGORIES) => {
     setActiveCategory(categoryId);
-  };
+  }, []);
+
+  // 获取食材数据的函数 - 提取为可复用函数
+  const fetchIngredientsData = useCallback(async () => {
+    setIngredientsLoading(true);
+    setIngredientsError(null);
+    
+    try {
+      const response = await fetch(`/api/ingredients?lang=${locale}&limit=200`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.success && data.results) {
+        setAllIngredients(data.results);
+      } else {
+        throw new Error(data.message || '获取食材数据失败');
+      }
+    } catch (error) {
+      console.error("获取食材失败", error);
+      setIngredientsError(error instanceof Error ? error.message : '获取食材数据失败');
+    } finally {
+      setIngredientsLoading(false);
+    }
+  }, [locale]);
 
   // 新增：获取所有食材数据
   useEffect(() => {
-    const fetchIngredients = async () => {
-      try {
-        const response = await fetch(`/api/ingredients?lang=${locale}&limit=200`);
-        const data = await response.json();
-        if (data.success && data.results) {
-          setAllIngredients(data.results);
-        }
-      } catch (error) {
-        console.error("获取食材失败", error);
-      }
-    };
-    
-    fetchIngredients();
-  }, [locale]);
+    fetchIngredientsData();
+  }, [fetchIngredientsData]);
 
   // 新增：获取分类数据
   useEffect(() => {
@@ -122,42 +234,24 @@ export const RecipeForm = ({
         console.error("获取分类失败", error);
       }
     };
-    
     fetchCategories();
   }, [locale]);
 
-  // 处理搜索框展开/收起
-  const handleSearchIconClick = () => {
-    setShowSearchInput(!showSearchInput);
+  // 处理搜索框展开/收起 - 使用 useCallback 优化
+  const handleSearchIconClick = useCallback(() => {
+    searchState.toggleSearch();
     // 如果关闭搜索框，清空搜索内容和状态
-    if (showSearchInput) {
-      setSearchValue('');
-      setShowSearchResults(false);
-      setSearchResults([]);
+    if (searchState.showSearchInput) {
+      searchState.clearSearchState();
     }
-  };
+  }, [searchState]);
 
-  // 处理搜索框关闭
-  const handleSearchClose = () => {
-    setShowSearchInput(false);
-    setSearchValue('');
-    setShowSearchResults(false);
-    setSearchResults([]);
-  };
+  // 处理搜索框关闭 - 使用 useCallback 优化
+  const handleSearchClose = useCallback(() => {
+    searchState.closeSearch();
+  }, [searchState]);
 
-  // 检测屏幕尺寸
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640);
-    };
-    
-    // 初始检查
-    checkMobile();
-    
-    // 监听窗口大小变化
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  // 检测屏幕尺寸 - 已移至 useResponsive hook
 
   // 监听showLoginModal事件
   useEffect(() => {
@@ -169,18 +263,17 @@ export const RecipeForm = ({
     return () => window.removeEventListener('showLoginModal', handleShowLoginModal);
   }, []);
 
-  // 轮播自动播放
+  // 轮播自动播放 - 使用常量配置优化
   useEffect(() => {
     const carousel = document.getElementById('meal-planner-carousel');
     if (!carousel) return;
 
     let currentIndex = 0;
-    const totalItems = 6; // 实际内容数量
     const interval = setInterval(() => {
       currentIndex++;
       
       // 当到达重复的第一个元素时，重置到真正的第一个元素
-      if (currentIndex >= totalItems) {
+      if (currentIndex >= CAROUSEL_CONFIG.TOTAL_ITEMS) {
         // 等待过渡动画完成后，无动画地重置位置
         setTimeout(() => {
           carousel.style.transition = 'none';
@@ -189,19 +282,19 @@ export const RecipeForm = ({
           
           // 恢复过渡动画
           setTimeout(() => {
-            carousel.style.transition = 'transform 1s ease-in-out';
+            carousel.style.transition = `transform ${CAROUSEL_CONFIG.TRANSITION_DURATION}ms ease-in-out`;
           }, 10);
-        }, 1000); // 等待1秒让过渡动画完成
+        }, CAROUSEL_CONFIG.TRANSITION_DURATION);
       } else {
-        carousel.style.transform = `translateY(-${currentIndex * 32}px)`; // 32px = h-8
+        carousel.style.transform = `translateY(-${currentIndex * CAROUSEL_CONFIG.ITEM_HEIGHT}px)`;
       }
-    }, 3000); // 每3秒切换一次
+    }, CAROUSEL_CONFIG.INTERVAL_MS);
 
     return () => clearInterval(interval);
   }, []);
 
-  // 处理生成按钮点击
-  const handleGenerateClick = () => {
+  // 处理生成按钮点击 - 使用常量配置优化
+  const handleGenerateClick = useCallback(() => {
     // 允许未登录用户生成菜谱，移除所有积分检查
     if (formData.ingredients.length >= 2) {
       onSubmit();
@@ -220,14 +313,20 @@ export const RecipeForm = ({
             behavior: 'smooth'
           });
         }
-      }, 150);
+      }, SEARCH_CONFIG.SCROLL_DELAY);
     }
-  };
+  }, [formData.ingredients.length, onSubmit, setShowRecipe]);
 
-  // 处理搜索输入变更
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // 处理搜索结果选择 - 使用 useCallback 优化（提前声明）
+  const handleSearchResultSelect = useCallback((ingredient: Ingredient) => {
+    addIngredient(ingredient);
+    searchState.clearSearchState();
+  }, [addIngredient, searchState]);
+
+  // 处理搜索输入变更 - 使用 useCallback 优化
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setSearchValue(value);
+    searchState.setSearchValue(value);
     
     if (value.trim()) {
       // 实时搜索逻辑 - 支持以输入内容开头的匹配
@@ -251,28 +350,28 @@ export const RecipeForm = ({
         return aName.localeCompare(bName);
       });
       
-      const finalResults = sortedResults.slice(0, 8); // 限制显示数量
-      setSearchResults(finalResults);
-      setShowSearchResults(true);
+      const finalResults = sortedResults.slice(0, SEARCH_CONFIG.MAX_RESULTS); // 限制显示数量
+      searchState.setSearchResults(finalResults);
+      searchState.setShowSearchResults(true);
     } else {
-      setShowSearchResults(false);
-      setSearchResults([]);
+      searchState.setShowSearchResults(false);
+      searchState.setSearchResults([]);
     }
-  };
+  }, [searchState, allIngredients, formData.ingredients]);
 
-  // 处理搜索键盘事件
-  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && searchValue.trim()) {
+  // 处理搜索键盘事件 - 使用 useCallback 优化
+  const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchState.searchValue.trim()) {
       e.preventDefault();
       
       // 如果有搜索结果，选择第一个结果
-      if (searchResults.length > 0) {
-        handleSearchResultSelect(searchResults[0]);
+      if (searchState.searchResults.length > 0) {
+        handleSearchResultSelect(searchState.searchResults[0]);
         return;
       }
       
       // 如果没有找到匹配的食材，添加为自定义食材
-      const trimmedValue = searchValue.trim();
+      const trimmedValue = searchState.searchValue.trim();
       // 检查是否已经存在相同名称的食材
       const existingIngredient = formData.ingredients.find(
         ingredient => ingredient.name.toLowerCase() === trimmedValue.toLowerCase()
@@ -284,52 +383,28 @@ export const RecipeForm = ({
           name: trimmedValue,
           isCustom: true
         };
-        onFormChange({
-          ...formData,
-          ingredients: [...formData.ingredients, customIngredient]
-        });
+        addIngredient(customIngredient);
       }
       
-      setSearchValue('');
-      setShowSearchResults(false);
+      searchState.clearSearchState();
     } else if (e.key === 'Escape') {
       handleSearchClose();
-    } else if (e.key === 'ArrowDown' && showSearchResults && searchResults.length > 0) {
+    } else if (e.key === 'ArrowDown' && searchState.showSearchResults && searchState.searchResults.length > 0) {
       // 可选：支持方向键导航（暂时注释，如需要可启用）
       e.preventDefault();
-    } else if (e.key === 'ArrowUp' && showSearchResults && searchResults.length > 0) {
+    } else if (e.key === 'ArrowUp' && searchState.showSearchResults && searchState.searchResults.length > 0) {
       // 可选：支持方向键导航（暂时注释，如需要可启用）
       e.preventDefault();
     }
-  };
+  }, [searchState, formData.ingredients, addIngredient, handleSearchResultSelect, handleSearchClose]);
 
-  // 处理搜索框失焦
-  const handleSearchBlur = () => {
+  // 处理搜索框失焦 - 使用 useCallback 优化
+  const handleSearchBlur = useCallback(() => {
     // 延迟隐藏搜索结果，避免点击事件冲突
     setTimeout(() => {
-      setShowSearchResults(false);
-    }, 150);
-  };
-
-  // 处理搜索结果选择
-  const handleSearchResultSelect = (ingredient: Ingredient) => {
-    // 检查是否已经选择了这个食材
-    const isAlreadySelected = formData.ingredients.some(
-      selected => selected.id === ingredient.id
-    );
-    
-    if (!isAlreadySelected) {
-      onFormChange({
-        ...formData,
-        ingredients: [...formData.ingredients, ingredient]
-      });
-    }
-    
-    // 清空搜索状态
-    setSearchValue('');
-    setShowSearchResults(false);
-    setSearchResults([]);
-  };
+      searchState.setShowSearchResults(false);
+    }, SEARCH_CONFIG.BLUR_DELAY);
+  }, [searchState]);
 
   return (
     <div className="w-full flex flex-col gap-2 sm:gap-3">
@@ -345,12 +420,18 @@ export const RecipeForm = ({
           "flex items-center",
           isMobile ? "flex-col gap-3 text-center" : ""
         )}>
-          <h2 className={cn(
-            "font-bold text-secondary dark:text-primary",
-            isMobile ? "text-3xl" : "text-xl"
+          <div className={cn(
+            "relative group",
+            isMobile ? "max-w-xs" : "max-w-md"
           )}>
-            {t('mainTitle')}
-          </h2>
+            {/* 主标题 */}
+            <h2 className={cn(
+              "relative z-10 font-bold text-secondary leading-relaxed px-4 py-2 rounded-2xl transition-all duration-300",
+              isMobile ? "text-2xl" : "text-lg"
+            )}>
+              {t('mainTitle')}
+            </h2>
+          </div>
         </div>
 
         {/* 搜索按钮 - 右侧 */}
@@ -367,7 +448,7 @@ export const RecipeForm = ({
                   className={cn(
                     "flex items-center justify-center transition-all duration-200 relative z-10 px-3 min-w-[60px] max-w-[60px] hover:scale-105",
                     isMobile ? "h-14 w-14" : "h-12",
-                    showSearchInput
+                    searchState.showSearchInput
                       ? "bg-primary text-primary-foreground rounded-l-full shadow-lg shadow-primary/25"
                       : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full hover:shadow-md"
                   )}
@@ -388,7 +469,7 @@ export const RecipeForm = ({
               className={cn(
                 "bg-white dark:bg-gray-800 border border-l-0 rounded-r-full overflow-hidden transition-all duration-300 ease-out relative shadow-lg",
                 isMobile ? "h-14" : "h-12",
-                showSearchInput
+                searchState.showSearchInput
                   ? (isMobile ? "w-full opacity-100" : "w-[260px] opacity-100")
                   : "w-0 opacity-0"
               )}
@@ -401,7 +482,7 @@ export const RecipeForm = ({
                     "h-full pl-4 pr-4 border-0 bg-transparent text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0",
                     isMobile ? "text-base" : "text-sm"
                   )}
-                  value={searchValue}
+                  value={searchState.searchValue}
                   onChange={handleSearchChange}
                   onKeyDown={handleSearchKeyDown}
                   onBlur={handleSearchBlur}
@@ -410,7 +491,7 @@ export const RecipeForm = ({
             </div>
 
             {/* 搜索结果下拉框 - 放在搜索框下方 */}
-            {showSearchInput && showSearchResults && (
+            {searchState.showSearchInput && searchState.showSearchResults && (
               <div className="absolute top-full left-0 right-0 z-50 mt-2">
                 <div
                   className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl shadow-gray-200/40 dark:shadow-gray-900/40 overflow-hidden w-full"
@@ -425,9 +506,9 @@ export const RecipeForm = ({
                     </h3>
                   </div>
 
-                  {searchResults.length > 0 ? (
+                  {searchState.searchResults.length > 0 ? (
                     <div className="max-h-72 overflow-y-auto">
-                      {searchResults.map((ingredient, index) => (
+                      {searchState.searchResults.map((ingredient, index) => (
                         <button
                           key={ingredient.id}
                           onClick={() => handleSearchResultSelect(ingredient)}
@@ -448,10 +529,8 @@ export const RecipeForm = ({
 
                         </button>
                       ))}
-
-
                     </div>
-                  ) : searchValue.trim() ? (
+                  ) : searchState.searchValue.trim() ? (
                     <div>
                       {/* 空状态标题 */}
                       <div className="p-6 text-center">
@@ -487,7 +566,7 @@ export const RecipeForm = ({
           <div className="relative flex-1 min-h-0">
             {/* 左侧背景主体 */}
             <div className={cn(
-              "bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-blue-900/20 rounded-2xl flex flex-col shadow-md border border-blue-100 dark:border-blue-800/30",
+              "bg-white dark:bg-gray-900 rounded-2xl flex flex-col shadow-md border border-gray-200 dark:border-gray-700",
               isMobile ? "p-4 h-[450px]" : "p-6 h-[400px]"
             )}>
 
@@ -514,13 +593,13 @@ export const RecipeForm = ({
                                     className={cn(
                                       "flex items-center justify-center transition-all duration-300 relative group h-12 flex-1",
                                       isActive
-                                        ? "bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-lg shadow-orange-500/30 scale-105 rounded-2xl px-2 gap-2 border-2 border-orange-400/50"
+                                        ? "bg-gradient-to-r from-orange-500 to-amber-600 dark:from-orange-600 dark:to-amber-700 text-white shadow-lg shadow-orange-500/30 dark:shadow-orange-600/40 scale-105 rounded-2xl px-2 gap-2 border-2 border-orange-400/50 dark:border-orange-500/60"
                                         : "text-gray-600 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 hover:scale-105 rounded-xl p-2 gap-2"
                                     )}
                                   >
                                     {/* 选中状态的背景装饰 */}
                                     {isActive && (
-                                      <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-amber-500/20 rounded-2xl" />
+                                      <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-amber-500/20 dark:from-orange-500/30 dark:to-amber-600/30 rounded-2xl" />
                                     )}
 
                                     <span className={cn(
@@ -555,7 +634,7 @@ export const RecipeForm = ({
                     {/* 分类选择器 */}
                     <Select
                       value={activeCategory}
-                      onValueChange={(value) => handleCategoryChange(value as keyof typeof CATEGORIES)}
+                      onValueChange={useCallback((value) => handleCategoryChange(value as keyof typeof CATEGORIES), [handleCategoryChange])}
                     >
                       <SelectTrigger className="w-full h-12 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:border-orange-500/50 focus:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-300">
                         <SelectValue>
@@ -606,22 +685,68 @@ export const RecipeForm = ({
 
               {/* 食材选择器 - 占据剩余高度 */}
               <div className="flex-1 min-h-0">
-                <IngredientSelector
-                  selectedIngredients={formData.ingredients}
-                  onIngredientSelect={(ingredient) => {
-                    onFormChange({ ...formData, ingredients: [...formData.ingredients, ingredient] });
-                  }}
-                  onIngredientRemove={(ingredient) => {
-                    onFormChange({
-                      ...formData,
-                      ingredients: formData.ingredients.filter(item => item.id !== ingredient.id)
-                    });
-                  }}
-                  activeCategory={activeCategory}
-                  onCategoryChange={handleCategoryChange}
-                  allIngredients={allIngredients}
-                  dynamicCategories={dynamicCategories}
-                />
+                {ingredientsLoading ? (
+                  // Loading 状态
+                  <div className="h-full flex flex-col items-center justify-center">
+                    <div className="flex flex-col items-center gap-4">
+                      {/* Loading 动画 */}
+                      <div className="relative">
+                        <div className="w-12 h-12 border-4 border-gray-200 dark:border-gray-700 border-t-primary rounded-full animate-spin"></div>
+                        <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-primary/30 rounded-full animate-ping"></div>
+                      </div>
+                      
+                      {/* Loading 文字 */}
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                          {tIngredientSelector('loadingIngredients') || '正在加载食材...'}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500">
+                          {tIngredientSelector('pleaseWait') || '请稍候'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : ingredientsError ? (
+                  // 错误状态
+                  <div className="h-full flex flex-col items-center justify-center">
+                    <div className="flex flex-col items-center gap-4 max-w-xs text-center">
+                      {/* 错误图标 */}
+                      <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+                        <span className="text-2xl">⚠️</span>
+                      </div>
+                      
+                      {/* 错误信息 */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                          {tIngredientSelector('loadError') || '加载失败'}
+                        </h3>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
+                          {ingredientsError}
+                        </p>
+                        
+                        {/* 重试按钮 */}
+                        <button
+                          onClick={fetchIngredientsData}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:bg-primary/90 transition-colors duration-200"
+                        >
+                          <RotateCcw className="h-3 w-3" />
+                          {tIngredientSelector('retry') || '重试'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // 正常状态 - 显示食材选择器
+                  <IngredientSelector
+                    selectedIngredients={formData.ingredients}
+                    onIngredientSelect={addIngredient}
+                    onIngredientRemove={(ingredient) => removeIngredient(ingredient.id.toString())}
+                    activeCategory={activeCategory}
+                    onCategoryChange={handleCategoryChange}
+                    allIngredients={allIngredients}
+                    dynamicCategories={dynamicCategories}
+                  />
+                )}
               </div>
 
               {/* 左侧底部装饰 */}
@@ -684,7 +809,7 @@ export const RecipeForm = ({
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <button
-                            onClick={() => onFormChange({ ...formData, ingredients: [] })}
+                            onClick={clearIngredients}
                             className={cn(
                               "flex items-center justify-center transition-all duration-300 hover:scale-105",
                               isMobile ? "w-8 h-8" : "w-9 h-9"
@@ -796,12 +921,7 @@ export const RecipeForm = ({
 
                             {/* 删除按钮 */}
                             <button
-                              onClick={() => {
-                                onFormChange({
-                                  ...formData,
-                                  ingredients: formData.ingredients.filter(item => item.id !== ingredient.id)
-                                });
-                              }}
+                              onClick={() => removeIngredient(ingredient.id.toString())}
                               className={cn(
                                 "text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all duration-200 opacity-0 group-hover:opacity-100 ml-auto",
                                 isMobile ? "p-1" : "p-1.5"
@@ -832,7 +952,7 @@ export const RecipeForm = ({
       )}>
         {/* 内容容器 */}
         <div className={cn(
-          "w-full rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800",
+          "w-full rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700",
           "shadow-sm hover:shadow-md transition-all duration-300",
           isMobile ? "p-6" : "p-4"
         )}>
@@ -843,14 +963,14 @@ export const RecipeForm = ({
             {/* 左侧：高级设置选项 */}
             <div className={cn(
               "flex items-center",
-              isMobile ? "flex-col gap-4 w-full" : "flex-wrap gap-4"
+              isMobile ? "flex-col gap-4 w-full" : "flex-nowrap gap-3"
             )}>
               {/* 选项图标按钮 - 默认显示 */}
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
-                      onClick={() => setShowOptions(!showOptions)}
+                      onClick={useCallback(() => setShowOptions(!showOptions), [showOptions])}
                       className={cn(
                         "flex items-center justify-center transition-all duration-200 group relative",
                         showOptions
@@ -877,7 +997,7 @@ export const RecipeForm = ({
                   "overflow-hidden transition-all duration-500 ease-out",
                   isMobile
                     ? "flex flex-col gap-3 w-full"
-                    : "flex flex-wrap items-center gap-4",
+                    : "flex flex-nowrap items-center gap-3",
                   showOptions
                     ? "h-auto opacity-100"
                     : "h-0 opacity-0"
@@ -890,7 +1010,7 @@ export const RecipeForm = ({
                 }}
               >
                 {/* Servings 步进器 */}
-                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[170px]">
+                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px] border border-gray-100 dark:border-gray-700">
                   <Label htmlFor="servings" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                     <span className="text-base">👥</span>
                     <span>{t('servings')}</span>
@@ -901,11 +1021,11 @@ export const RecipeForm = ({
                       variant="ghost"
                       size="sm"
                       className="h-5 w-5 p-0 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
-                      onClick={() => {
+                      onClick={useCallback(() => {
                         if (formData.servings > 1) {
                           onFormChange({ ...formData, servings: formData.servings - 1 })
                         }
-                      }}
+                      }, [formData.servings, onFormChange])}
                       disabled={formData.servings <= 1}
                     >
                       <Minus className="h-2 w-2" />
@@ -918,11 +1038,11 @@ export const RecipeForm = ({
                       variant="ghost"
                       size="sm"
                       className="h-5 w-5 p-0 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
-                      onClick={() => {
+                      onClick={useCallback(() => {
                         if (formData.servings < 8) {
                           onFormChange({ ...formData, servings: formData.servings + 1 })
                         }
-                      }}
+                      }, [formData.servings, onFormChange])}
                       disabled={formData.servings >= 8}
                     >
                       <Plus className="h-2 w-2" />
@@ -931,14 +1051,14 @@ export const RecipeForm = ({
                 </div>
 
                 {/* Cooking Time 选择器 */}
-                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[170px]">
+                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px] border border-gray-100 dark:border-gray-700">
                   <Label htmlFor="cookingTime" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                     <span className="text-base">⏱️</span>
                     <span>{t('cookingTime')}</span>
                   </Label>
                   <Select
                     value={formData.cookingTime}
-                    onValueChange={(value) => onFormChange({ ...formData, cookingTime: value as 'quick' | 'medium' | 'long' })}
+                    onValueChange={useCallback((value) => onFormChange({ ...formData, cookingTime: value as 'quick' | 'medium' | 'long' }), [formData, onFormChange])}
                   >
                     <SelectTrigger id="cookingTime" className="h-7 w-16 sm:w-20 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
                       <SelectValue placeholder={t('selectCookingTime')} />
@@ -952,14 +1072,14 @@ export const RecipeForm = ({
                 </div>
 
                 {/* Difficulty 选择器 */}
-                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[170px]">
+                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px] border border-gray-100 dark:border-gray-700">
                   <Label htmlFor="difficulty" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                     <span className="text-base">🎚️</span>
                     <span>{t('difficulty')}</span>
                   </Label>
                   <Select
                     value={formData.difficulty}
-                    onValueChange={(value: 'easy' | 'medium' | 'hard') => onFormChange({ ...formData, difficulty: value })}
+                    onValueChange={useCallback((value: 'easy' | 'medium' | 'hard') => onFormChange({ ...formData, difficulty: value }), [formData, onFormChange])}
                   >
                     <SelectTrigger id="difficulty" className="h-7 w-16 sm:w-20 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
                       <SelectValue placeholder={t('selectDifficulty')} />
@@ -973,14 +1093,14 @@ export const RecipeForm = ({
                 </div>
 
                 {/* Cuisine 选择器 */}
-                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[170px]">
+                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px] border border-gray-100 dark:border-gray-700">
                   <Label htmlFor="cuisine" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                     <span className="text-base">🌎</span>
                     <span>{t('cuisine')}</span>
                   </Label>
                   <Select
                     value={formData.cuisine}
-                    onValueChange={(value) => onFormChange({ ...formData, cuisine: value })}
+                    onValueChange={useCallback((value) => onFormChange({ ...formData, cuisine: value }), [formData, onFormChange])}
                   >
                     <SelectTrigger id="cuisine" className="h-7 w-16 sm:w-20 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
                       <SelectValue placeholder={t('selectCuisine')} />
@@ -1002,7 +1122,7 @@ export const RecipeForm = ({
 
                 {/* 桌面端：在选项面板末尾添加间距 */}
                 {!isMobile && showOptions && (
-                  <div className="w-16 flex-shrink-0"></div>
+                  <div className="w-8 flex-shrink-0"></div>
                 )}
               </div>
             </div>

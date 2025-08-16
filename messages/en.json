@@ -61,7 +61,7 @@
   "recipeForm": {
     "title": "AI Recipe Generator",
     "subtitle": "Select ingredients, AI creates delicious recipes for you",
-    "mainTitle": "With our recipe maker, you only need to select ingredients,no prompts required",
+    "mainTitle": "No Prompts Needed, Just Select Ingredients 🎉",
     "recipeMaker": "Recipe Maker",
     "cuisine": "Cuisine",
     "cuisinePlaceholder": "Select cuisine style",
@@ -117,6 +117,9 @@
     "confirm": "Confirm",
     "loadingIngredients": "Loading ingredients...",
     "loadingSubtitle": "Preparing delicious ingredients for you...",
+    "pleaseWait": "Please wait",
+    "loadError": "Load failed",
+    "retry": "Retry",
     "noIngredientsFound": "No ingredients found for",
     "pressEnterToAdd": "to add it as a custom ingredient",
     "noIngredientsInCategory": "No ingredients available in this category",

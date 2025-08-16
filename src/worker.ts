@@ -451,7 +451,7 @@ async function handleCuisines(request: Request, db: D1Database, corsHeaders: Rec
   try {
     const { searchParams } = new URL(request.url);
     const language = searchParams.get('lang') || 'en';
-
+    
     const { results } = await db.prepare(`
         SELECT 
         c.id,
@@ -459,7 +459,8 @@ async function handleCuisines(request: Request, db: D1Database, corsHeaders: Rec
         c.slug as cuisine_slug,
         c.css_class,
         COALESCE(c18n.name, c.name) as localized_cuisine_name,
-        COALESCE(c18n.slug, c.slug) as localized_cuisine_slug
+        COALESCE(c18n.slug, c.slug) as localized_cuisine_slug,
+        c18n.language_code
       FROM cuisines c
       LEFT JOIN cuisines_i18n c18n ON c.id = c18n.cuisine_id AND c18n.language_code = ?
       ORDER BY c.id ASC
