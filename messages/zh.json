@@ -57,16 +57,13 @@
     "multiLanguage": "多语言支持",
     "multiLanguageDesc": "支持中英文等多种语言，满足不同用户的需求",
     "responsive": "响应式设计",
-    "responsiveDesc": "针对所有设备进行全面优化 - 桌面电脑、平板和手机，提供跨平台的流畅体验",
-    "weeklyLimit": "积分系统",
-    "weeklyLimitDesc": "智能积分系统用于AI食谱和图片生成，提供平衡的使用限制"
+    "responsiveDesc": "针对所有设备进行全面优化 - 桌面电脑、平板和手机，提供跨平台的流畅体验"
   },
   "recipeForm": {
     "title": "AI菜谱生成器",
     "subtitle": "选择食材，AI为您创造美味菜谱",
     "mainTitle": "使用我们的菜谱生成器，您只需选择食材，无需输入提示",
     "recipeMaker": "菜谱生成器",
-    "mealPlanner": "膳食计划",
     "cuisine": "菜系",
     "cuisinePlaceholder": "选择菜系风格",
     "servings": "份量",
@@ -104,14 +101,8 @@
     "reset": "重置",
     "showOptions": "显示选项",
     "hideOptions": "隐藏选项",
-    "basketSubtitle": {
-      "empty": "至少选择2个食材",
-      "oneMore": "再选一个就够了！",
-      "ready": "准备生成美味菜谱！"
-    },
     "basket": "食材篮",
     "noIngredients": "暂无食材",
-    "selectFromLeftPanel": "从左侧面板选择",
     "itemNumber": "序号",
     "itemName": "食材"
   },
@@ -131,14 +122,11 @@
     "pressEnterToAdd": "按回车键将其添加为自定义食材",
     "noIngredientsInCategory": "此分类中没有可用的食材",
     "tryOtherCategoryOrSearch": "请尝试选择其他分类或搜索其他食材",
-    "noMatchingIngredients": "未找到匹配的食材",
     "selectedIngredients": "我的食材",
-    "pressEnterToAddCustom": "按 Enter 键添加为自定义食材",
     "items": "项",
     "searchIngredients": "搜索食材",
     "searchIconTooltip": "搜索食材",
     "hideSearch": "收起搜索",
-    "pressEnterToQuickSelect": "按回车键快速选择",
     "foundMatchingIngredients": "找到 {count} 个匹配食材",
     "pressEnterToAddCustomIngredient": "按回车键添加为自定义食材",
     "noMatchingIngredientsFound": "未找到匹配的食材",

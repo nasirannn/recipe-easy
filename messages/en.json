@@ -57,16 +57,13 @@
     "multiLanguage": "Multilingual Support",
     "multiLanguageDesc": "Support for multiple languages including English and Chinese to meet diverse user needs",
     "responsive": "Responsive Design",
-    "responsiveDesc": "Fully optimized for all devices - desktop, tablet, and mobile, providing seamless experience across all platforms",
-    "weeklyLimit": "Credits System",
-    "weeklyLimitDesc": "Smart credit system for AI-powered recipe and image generation, providing balanced usage limits"
+    "responsiveDesc": "Fully optimized for all devices - desktop, tablet, and mobile, providing seamless experience across all platforms"
   },
   "recipeForm": {
     "title": "AI Recipe Generator",
     "subtitle": "Select ingredients, AI creates delicious recipes for you",
     "mainTitle": "With our recipe maker, you only need to select ingredients,no prompts required",
     "recipeMaker": "Recipe Maker",
-    "mealPlannerTitle": "Build Your Meal Plan for Up to 7 Days",
     "cuisine": "Cuisine",
     "cuisinePlaceholder": "Select cuisine style",
     "servings": "Servings",
@@ -104,14 +101,8 @@
     "reset": "Reset",
     "showOptions": "Show Options",
     "hideOptions": "Hide Options",
-    "basketSubtitle": {
-      "empty": "Select at least 2 ingredients",
-      "oneMore": "One more to go!",
-      "ready": "Ready to generate delicious recipes!"
-    },
     "basket": "BASKET",
     "noIngredients": "NO INGREDIENTS",
-    "selectFromLeftPanel": "Select from left panel",
     "itemNumber": "NO.",
     "itemName": "ITEM"
   },
@@ -133,12 +124,10 @@
     "tryOtherCategoryOrSearch": "Try selecting another category or search for other ingredients",
     "noMatchingIngredients": "No matching ingredients found",
     "selectedIngredients": "My Ingredients",
-    "pressEnterToAddCustom": "Press Enter key to add as custom ingredient",
     "items": "items",
     "searchIngredients": "Search Ingredients",
     "searchIconTooltip": "Search ingredients",
     "hideSearch": "Hide search",
-    "pressEnterToQuickSelect": "Press Enter to quick select",
     "foundMatchingIngredients": "Found {count} matching ingredients",
     "pressEnterToAddCustomIngredient": "Press Enter to add as custom ingredient",
     "noMatchingIngredientsFound": "No matching ingredients found",
