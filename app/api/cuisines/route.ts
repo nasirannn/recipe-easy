@@ -7,8 +7,15 @@ export const revalidate = 3600; // 1小时缓存
 
 export async function GET(request: NextRequest) {
   try {
+    // 从请求中获取语言参数
+    const { searchParams } = new URL(request.url);
+    const lang = searchParams.get('lang') || 'en';
+    
+    // 构建 Worker API URL，包含语言参数
+    const workerUrl = `${getWorkerApiUrl('/api/cuisines')}?lang=${lang}`;
+    
     // 直接调用云端数据库
-    const response = await fetch(getWorkerApiUrl('/api/cuisines'), {
+    const response = await fetch(workerUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

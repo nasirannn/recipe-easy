@@ -430,7 +430,7 @@ We'd like to thank the following projects and services:
 
 - **Website**: [https://recipe-easy.com](https://recipe-easy.com)
 - **Documentation**: [https://docs.recipe-easy.com](https://docs.recipe-easy.com)
-- **Email Support**: [annnb016@gmail.com](mailto:annnb016@gmail.com)
+- **Email Support**: [contact@recipe-easy.com](mailto:contact@recipe-easy.com.com)
 
 ### 💬 Community
 

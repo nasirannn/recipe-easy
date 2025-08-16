@@ -29,7 +29,7 @@ export const ContactDialog = ({
   onOpenChange,
   title,
   description,
-  email = "annnb016@gmail.com",
+  email = "contact@recipe-easy.com",
   subject,
   body,
   onConfirm,

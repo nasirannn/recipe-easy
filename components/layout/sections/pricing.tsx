@@ -146,7 +146,7 @@ export const PricingSection = () => {
       <ContactDialog
         open={showContactDialog}
         onOpenChange={setShowContactDialog}
-        email="annnb016@gmail.com"
+        email="contact@recipe-easy.com"
         subject={t('enterpriseSubject')}
         body={t('enterpriseBody')}
       />

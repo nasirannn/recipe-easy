@@ -137,7 +137,7 @@ We may update this Privacy Policy from time to time. We will notify you of any m
 ## 13. Contact Us
 
 If you have questions about this Privacy Policy, please contact us at:
-- **Email**: annnb016@gmail.com
+- **Email**: contact@recipe-easy.com
 - **Subject Line**: Privacy Policy Inquiry
 
 ---

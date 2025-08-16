@@ -17,6 +17,8 @@ import { useRecipeGeneration } from "@/hooks/use-recipe-generation";
 import { useImageGeneration } from "@/hooks/use-image-generation";
 import { useRecipeSave } from "@/hooks/use-recipe-save";
 import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 // 合并后的Hero Section Component
 export const HeroSection = () => {
@@ -73,6 +75,10 @@ export const HeroSection = () => {
   
   const [searchedIngredients, setSearchedIngredients] = useState<RecipeFormData['ingredients']>([]);
   const [showRecipe, setShowRecipe] = useState(false);
+
+  // 新增：Tab栏状态
+  const [activeTab, setActiveTab] = useState<'recipe-maker' | 'meal-planner'>('recipe-maker');
+  const [mealPlannerText, setMealPlannerText] = useState('');
 
   // 监听重新生成菜谱事件
   const handleRegenerateRecipe = useCallback(async (event: CustomEvent) => {
@@ -200,6 +206,27 @@ export const HeroSection = () => {
     }
   };
 
+  // 新增：处理tab切换
+  const handleTabChange = (tab: 'recipe-maker' | 'meal-planner') => {
+    setActiveTab(tab);
+  };
+
+  // 新增：处理meal planner文本变更
+  const handleMealPlannerTextChange = (text: string) => {
+    setMealPlannerText(text);
+  };
+
+  // 新增：处理meal planner清空
+  const handleMealPlannerClear = () => {
+    setMealPlannerText('');
+  };
+
+  // 新增：处理meal planner提交
+  const handleMealPlannerSubmit = () => {
+    console.log('Meal Planner submitted:', mealPlannerText);
+    // 这里可以添加实际的提交逻辑
+  };
+
   return (
     <section id="hero" className="w-full bg-primary/5">
       {/* 第一个div: Hero Intro Section */}
@@ -247,6 +274,19 @@ export const HeroSection = () => {
             <p className="text-sm text-muted-foreground max-w-2xl lg:max-w-none leading-relaxed">
               {t('benefitsBadge')}
             </p>
+            
+            {/* 积分信息 Badge */}
+            <div className="flex flex-wrap gap-2 items-center justify-center lg:justify-start mt-4">
+              <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-full text-xs font-medium text-blue-700 dark:text-blue-300">
+                {t('badgeImageCost')}
+              </div>
+              <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700 rounded-full text-xs font-medium text-green-700 dark:text-green-300">
+                {t('badgeRegistrationCredits')}
+              </div>
+              <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 border border-purple-200 dark:border-purple-700 rounded-full text-xs font-medium text-purple-700 dark:text-purple-300">
+                {t('badgePermanentValidity')}
+              </div>
+            </div>
             {/* 按钮组 */}
             <div className="flex flex-col sm:flex-row gap-4 items-center lg:items-start mt-12">
               <Button
@@ -285,8 +325,8 @@ export const HeroSection = () => {
         </div>
       </div>
       {/* 第二个div: Recipe Form Section */}
-      <div id="recipe-form-section" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-8 pb-8">
-        <div className="w-full bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 md:p-12">
+      <div id="recipe-form-section" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-8">
+        <div className="w-full bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-4 md:p-12">
           <RecipeForm
             formData={formData}
             onFormChange={handleFormChange}
@@ -294,9 +334,17 @@ export const HeroSection = () => {
             loading={loading || imageGenerating}
             showRecipe={showRecipe}
             setShowRecipe={setShowRecipe}
+            // 新增：tab相关props
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            mealPlannerText={mealPlannerText}
+            onMealPlannerTextChange={handleMealPlannerTextChange}
+            onMealPlannerClear={handleMealPlannerClear}
+            onMealPlannerSubmit={handleMealPlannerSubmit}
           />
+
           {/* Recipe Display Section */}
-          {showRecipe && (
+          {showRecipe && activeTab === 'recipe-maker' && (
             <div id="loading-animation-container" className="mt-6">
               {loading ? (
                 <LoadingAnimation language={locale as 'en' | 'zh'} />

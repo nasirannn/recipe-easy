@@ -251,9 +251,9 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                     <h2 className="text-4xl font-bold text-gray-900 dark:text-white leading-tight">
                       {recipe.title}
                     </h2>
-                    <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                    <div className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
                       {recipe.description}
-                    </p>
+                    </div>
                     
                     {/* 标签 - 简约性冷淡风格 */}
                     {tags.length > 0 && (

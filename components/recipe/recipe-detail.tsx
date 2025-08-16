@@ -140,9 +140,9 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
               <h1 className="text-4xl font-bold text-gray-900 dark:text-white leading-tight">
                 {recipe.title}
               </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+              <div className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
                 {recipe.description}
-              </p>
+              </div>
               
               {/* 标签 - 移到描述下面 */}
               {tags.length > 0 && (

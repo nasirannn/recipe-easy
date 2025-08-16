@@ -9,6 +9,7 @@ import { Badge } from "./badge";
 import { Input } from "./input";
 import { Button } from "./button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
+import Image from "next/image";
 
 import { useLocale, useTranslations } from 'next-intl';
 import {
@@ -39,6 +40,9 @@ interface IngredientSelectorProps {
   onIngredientRemove?: (ingredient: Ingredient) => void;
   activeCategory?: keyof typeof CATEGORIES;
   onCategoryChange?: (categoryId: keyof typeof CATEGORIES) => void;
+  // 新增：接收食材数据作为 props
+  allIngredients: Ingredient[];
+  dynamicCategories: Record<string, { name: string; icon?: string; color?: string }>;
 }
 
 interface CustomIngredient extends Ingredient {
@@ -51,6 +55,8 @@ export const IngredientSelector = ({
   onIngredientRemove,
   activeCategory: externalActiveCategory,
   onCategoryChange,
+  allIngredients,
+  dynamicCategories,
 }: IngredientSelectorProps) => {
   const locale = useLocale();
   const t = useTranslations('ingredientSelector');
@@ -59,77 +65,20 @@ export const IngredientSelector = ({
   
   // 使用外部传入的分类或内部状态
   const activeCategory = externalActiveCategory || internalActiveCategory;
-  const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
   const [categorizedIngredients, setCategorizedIngredients] = useState<Record<string, Ingredient[]>>({});
-  const [dynamicCategories, setDynamicCategories] = useState<Record<string, { name: string; icon?: string; color?: string }>>({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // 改为 false，因为不再需要加载
   const inputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [showFloatingButton, setShowFloatingButton] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
 
-  // 获取分类数据
-  const fetchCategories = useCallback(async () => {
-    setLoading(true);
-    try {
-      // 获取分类列表
-      const response = await fetch(`/api/categories?lang=${locale}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-
-
-
-      if (data.success && data.results) {
-        // 使用API返回的数据
-        const categoriesMap: Record<string, { name: string; icon?: string; color?: string }> = {};
-        data.results.forEach((category: any) => {
-          const categoryKey = category.slug as keyof typeof CATEGORIES;
-          if (CATEGORIES[categoryKey]) {
-            categoriesMap[categoryKey] = {
-              name: category.name,
-              icon: CATEGORIES[categoryKey].icon,
-              color: CATEGORIES[categoryKey].color
-            };
-          }
-        });
-
-        setDynamicCategories(categoriesMap);
-      } else {
-        console.error('Invalid API response structure:', data); // 添加详细错误信息
-        throw new Error(`Invalid API response: ${JSON.stringify(data)}`);
-      }
-    } catch (error) {
-      console.error("获取分类失败", error);
-      // 显示错误状态，不提供回退数据
-    } finally {
-      setLoading(false);
-    }
-  }, [locale]);
-
-  // 获取所有食材
-  const fetchAllIngredients = useCallback(async () => {
-    setLoading(true);
-    try {
-      // 获取所有食材 - 增加limit确保获取所有食材
-      const response = await fetch(`/api/ingredients?lang=${locale}&limit=200`);
-      const data = await response.json();
-
-
-
-      if (!data.success || !data.results) {
-        console.error('Invalid ingredients API response structure:', data); // 添加详细错误信息
-        throw new Error(`Invalid API response: ${JSON.stringify(data)}`);
-      }
-
-      const ingredientsData = data.results;
-      // 准备所有食材列表
-      setAllIngredients(ingredientsData);
-
+  // 移除食材获取逻辑，直接使用 props 中的数据
+  // 当 allIngredients 或 dynamicCategories 变化时，重新计算分类食材
+  useEffect(() => {
+    if (allIngredients.length > 0) {
       // 按分类分组食材
       const groupedByCategory: Record<string, Ingredient[]> = {
-        all: ingredientsData,
+        all: allIngredients,
         meat: [],
         seafood: [],
         vegetables: [],
@@ -142,7 +91,7 @@ export const IngredientSelector = ({
       };
 
       // 将食材按分类分组
-      ingredientsData.forEach((ingredient: Ingredient) => {
+      allIngredients.forEach((ingredient: Ingredient) => {
         const category = ingredient.category?.slug;
         if (category && groupedByCategory[category]) {
           groupedByCategory[category].push(ingredient);
@@ -152,21 +101,9 @@ export const IngredientSelector = ({
         }
       });
 
-
       setCategorizedIngredients(groupedByCategory);
-
-      // 设置初始过滤的食材
-      // setFilteredIngredients(
-      //   groupedByCategory[activeCategory].filter(
-      //     ingredient => !selectedIngredients.some(selected => selected.id === ingredient.id)
-      //   )
-      // );
-    } catch (error) {
-      console.error("获取食材失败", error);
-    } finally {
-      setLoading(false);
     }
-  }, [locale]);
+  }, [allIngredients]);
 
   // 检测屏幕尺寸
   useEffect(() => {
@@ -202,12 +139,6 @@ export const IngredientSelector = ({
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isMobile]);
-
-  // 初始化数据
-  useEffect(() => {
-    fetchAllIngredients();
-    fetchCategories();
-  }, [locale, fetchAllIngredients, fetchCategories]);
 
   // 使用 useMemo 派生过滤后的食材列表，从根源上解决闪动问题
   const filteredIngredients = useMemo(() => {
@@ -275,8 +206,6 @@ export const IngredientSelector = ({
     }
   };
 
-
-
   // 处理键盘事件
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // 当输入框有内容且按下Enter键时，将输入内容作为搜索条件
@@ -315,133 +244,137 @@ export const IngredientSelector = ({
   };
 
   return (
-    <div className="w-full space-y-4 relative">
-      {/* 食材网格 */}
-      <div className="w-full">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 space-y-4">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 dark:border-gray-700"></div>
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent absolute top-0 left-0"></div>
+    <div className="w-full h-full flex flex-col">
+      {/* 待选食材区域 */}
+      <div className="w-full flex-1 min-h-0">
+        {/* 食材网格 */}
+        <div className="w-full h-full">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16 space-y-4">
+              <div className="relative">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 dark:border-gray-700"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent absolute top-0 left-0"></div>
+              </div>
+              <div className="text-center space-y-2">
+                <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t('loadingIngredients')}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{t('loadingSubtitle')}</div>
+              </div>
             </div>
-            <div className="text-center space-y-2">
-              <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t('loadingIngredients')}</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">{t('loadingSubtitle')}</div>
-            </div>
-          </div>
-        ) : (
-          <ScrollArea className={cn("w-full", isMobile ? "h-80" : "h-64")}>
-            <div className={cn("flex flex-wrap gap-3 p-2", isMobile ? "gap-2" : "gap-3")}>
-              {filteredIngredients && filteredIngredients.map((ingredient) => {
-                // 安全检查：确保 ingredient 对象和必要属性存在
-                if (!ingredient || !ingredient.name) {
-                  return null; // 跳过无效的食材
-                }
-                
-                // 根据食材名称长度动态计算宽度
-                const nameLength = ingredient.name.length;
-                const totalLength = nameLength;
-                
-                // 动态宽度计算 - 移动端优化
-                let cardWidth = isMobile ? 'min-w-[90px] max-w-[160px]' : 'min-w-[100px] max-w-[180px]';
-                if (isMobile) {
-                  if (totalLength <= 6) {
-                    cardWidth = 'min-w-[90px] max-w-[120px]';
-                  } else if (totalLength <= 10) {
-                    cardWidth = 'min-w-[100px] max-w-[140px]';
-                  } else {
-                    cardWidth = 'min-w-[110px] max-w-[160px]';
-                  }
-                } else {
-                  if (totalLength <= 8) {
-                    cardWidth = 'min-w-[100px] max-w-[140px]';
-                  } else if (totalLength <= 12) {
-                    cardWidth = 'min-w-[120px] max-w-[160px]';
-                  } else {
-                    cardWidth = 'min-w-[140px] max-w-[200px]';
-                  }
-                }
-                
-                return (
-                  <button
-                    key={ingredient.id}
-                    onClick={() => handleIngredientSelect(ingredient)}
-                    className={cn(
-                      "group relative rounded-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 hover:from-primary/10 hover:via-primary/5 hover:to-primary/10 text-sm text-center transition-all duration-500 border border-gray-100 dark:border-gray-600 overflow-hidden flex-shrink-0",
-                      isMobile 
-                        ? "p-3 hover:scale-105 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 active:scale-95" 
-                        : "p-4 hover:scale-110 hover:shadow-xl hover:shadow-primary/25 hover:-translate-y-1",
-                      cardWidth
-                    )}
-                  >
-                  {/* 背景装饰效果 */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  
-                  {/* 内容区域 */}
-                  <div className="relative z-10 w-full">
-                    <div className={cn(
-                      "font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary transition-all duration-300 leading-tight break-words",
-                      isMobile ? "text-xs" : "text-sm"
-                    )}>
-                      {ingredient.name}
+          ) : (
+            <ScrollArea className="w-full h-full">
+              {filteredIngredients && filteredIngredients.length > 0 ? (
+                <div className={cn("flex flex-wrap gap-2 p-3", isMobile ? "gap-2 p-3" : "gap-2 p-3")}>
+                  {filteredIngredients.map((ingredient) => {
+                    // 安全检查：确保 ingredient 对象和必要属性存在
+                    if (!ingredient || !ingredient.name) {
+                      return null; // 跳过无效的食材
+                    }
+                    
+                    // 移除固定宽度限制，让文字宽度自适应
+                    const cardWidth = 'w-auto';
+
+                    // 构建图标路径
+                    const iconPath = ingredient.slug 
+                      ? `/images/ingredients-icon/${ingredient.slug}.svg`
+                      : null;
+                    
+                    return (
+                      <button
+                        key={ingredient.id}
+                        onClick={() => handleIngredientSelect(ingredient)}
+                        className={cn(
+                          "group relative rounded-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 hover:from-primary/10 hover:via-primary/5 hover:to-primary/10 text-sm text-center transition-all duration-500 border border-gray-100 dark:border-gray-600 overflow-hidden flex-shrink-0",
+                          isMobile 
+                            ? "px-3 py-2 hover:scale-105 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 active:scale-95" 
+                            : "px-4 py-3 hover:scale-110 hover:shadow-xl hover:shadow-primary/25 hover:-translate-y-1",
+                          cardWidth
+                        )}
+                      >
+                        {/* 背景装饰效果 */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        
+                        {/* 内容区域 */}
+                        <div className="relative z-10 w-full flex items-center justify-center space-x-1">
+                          {/* 图标区域 */}
+                          {iconPath && (
+                            <div className="flex-shrink-0">
+                              <Image
+                                src={iconPath}
+                                alt={ingredient.name}
+                                width={30}
+                                height={30}
+                                className="w-[30px] h-[30px] object-contain transition-transform duration-300 group-hover:scale-110"
+                                onError={(e) => {
+                                  // 如果图标加载失败，隐藏图标元素
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          )}
+                          
+                          {/* 名称区域 */}
+                          <div className={cn(
+                            "font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary transition-all duration-300 leading-tight break-words text-center flex-1 px-1",
+                            isMobile ? "text-xs" : "text-xs",
+                            // 如果没有图标，名称居中显示并占据更多空间
+                            !iconPath ? "flex items-center justify-center h-full text-sm" : ""
+                          )}>
+                            {ingredient.name}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                // 分类为空时的提示 - 移动到食材网格中心
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center py-12 space-y-4">
+                    <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 text-gray-400">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                        {t('noIngredientsInCategory')}
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('tryOtherCategoryOrSearch')}
+                      </div>
                     </div>
                   </div>
-                  
+                </div>
+              )}
+              <ScrollBar orientation="vertical" />
+            </ScrollArea>
+          )}
 
-                </button>
-              );
-            })}
-            </div>
-            <ScrollBar orientation="vertical" />
-          </ScrollArea>
-        )}
-
-        {/* 搜索结果为空时的提示 */}
-        {!loading && filteredIngredients && filteredIngredients.length === 0 && searchValue.trim() && (
-          <div className="text-center py-12 space-y-4">
-            <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-              <div className="w-8 h-8 text-gray-400">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+          {/* 搜索结果为空时的提示 */}
+          {!loading && filteredIngredients && filteredIngredients.length === 0 && searchValue.trim() && (
+            <div className="text-center py-12 space-y-4">
+              <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 text-gray-400">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  {t('noIngredientsFound')} &quot;{searchValue}&quot;
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Press <kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-md text-xs font-mono border border-gray-300 dark:border-gray-600">Enter</kbd> {t('pressEnterToAdd')}
+                </div>
               </div>
             </div>
-            <div className="space-y-2">
-              <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                {t('noIngredientsFound')} &quot;{searchValue}&quot;
-              </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Press <kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-md text-xs font-mono border border-gray-300 dark:border-gray-600">Enter</kbd> {t('pressEnterToAdd')}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 分类为空时的提示 */}
-        {!loading && filteredIngredients && filteredIngredients.length === 0 && !searchValue.trim() && (
-          <div className="text-center py-12 space-y-4">
-            <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-              <div className="w-8 h-8 text-gray-400">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                </svg>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                {t('noIngredientsInCategory')}
-              </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {t('tryOtherCategoryOrSearch')}
-              </div>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-
-
-
-
     </div>
   );
-};
+}; 

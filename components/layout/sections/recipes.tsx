@@ -334,32 +334,32 @@ export const RecipesSection = () => {
               
               {/* 底部信息 - 固定在底部 */}
               <div className="mt-auto pt-2">
-                <p className="text-base sm:text-lg text-muted-foreground mb-0">
-                  {displayRecipes.length > 0 ? (
-                    <div className="flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3">
-                      {displayRecipes[currentImageIndex].cookingTime && (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
-                          <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="text-xs sm:text-sm">{displayRecipes[currentImageIndex].cookingTime}</span>
-                        </span>
-                      )}
-                      {displayRecipes[currentImageIndex].servings && (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
-                          <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="text-xs sm:text-sm">{displayRecipes[currentImageIndex].servings}</span>
-                        </span>
-                      )}
-                      {displayRecipes[currentImageIndex].difficulty && (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
-                          <ChefHat className="h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="text-xs sm:text-sm">{displayRecipes[currentImageIndex].difficulty}</span>
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    t('description3')
-                  )}
-                </p>
+                {displayRecipes.length > 0 ? (
+                  <div className="flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3">
+                    {displayRecipes[currentImageIndex].cookingTime && (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="text-xs sm:text-sm">{displayRecipes[currentImageIndex].cookingTime}</span>
+                      </span>
+                    )}
+                    {displayRecipes[currentImageIndex].servings && (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
+                        <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="text-xs sm:text-sm">{displayRecipes[currentImageIndex].servings}</span>
+                      </span>
+                    )}
+                    {displayRecipes[currentImageIndex].difficulty && (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
+                        <ChefHat className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="text-xs sm:text-sm">{displayRecipes[currentImageIndex].difficulty}</span>
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-base sm:text-lg text-muted-foreground mb-0">
+                    {t('description3')}
+                  </p>
+                )}
               </div>
             </div>
           </div>

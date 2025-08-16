@@ -170,7 +170,7 @@ export const FooterSection = () => {
       <ContactDialog
         open={showContactDialog}
         onOpenChange={setShowContactDialog}
-        email="annnb016@gmail.com"
+        email="contact@recipe-easy.com"
         subject={tContact('defaultSubject')}
         body={tContact('defaultBody')}
       />

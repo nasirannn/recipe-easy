@@ -79,9 +79,9 @@ export const CATEGORY_SLUG_MAP: Record<number, string> = {
 export function formatCuisine(cuisine: any): any {
   return {
     id: cuisine.id,
-    name: cuisine.localized_cuisine_name || cuisine.cuisine_name || `Cuisine ${cuisine.id}`,
-    slug: cuisine.localized_cuisine_slug || cuisine.cuisine_slug || CUISINE_SLUG_MAP[cuisine.id] || `cuisine-${cuisine.id}`,
-    cssClass: cuisine.css_class || 'cuisine-other'
+    name: cuisine.cuisine_name,
+    slug: cuisine.cuisine_slug,
+    cssClass: cuisine.css_class
   };
 }
 

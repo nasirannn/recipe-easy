@@ -1,20 +1,16 @@
 import { useState, useEffect } from 'react';
+import { useLocale } from 'next-intl';
 
 export interface Cuisine {
   id: number;
   name: string;
+  slug?: string;
+  cssClass?: string;
   description?: string;
   created_at?: string;
   updated_at?: string;
 }
 
-interface CuisinesResponse {
-  success: boolean;
-  results?: Cuisine[];
-  data?: Cuisine[];
-  total: number;
-  source: string;
-}
 
 interface UseCuisinesReturn {
   cuisines: Cuisine[];
@@ -24,6 +20,7 @@ interface UseCuisinesReturn {
 }
 
 export function useCuisines(): UseCuisinesReturn {
+  const locale = useLocale();
   const [cuisines, setCuisines] = useState<Cuisine[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +30,7 @@ export function useCuisines(): UseCuisinesReturn {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/cuisines');
+      const response = await fetch(`/api/cuisines?lang=${locale}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -46,7 +43,17 @@ export function useCuisines(): UseCuisinesReturn {
         const cuisinesData = data.results || data.data || [];
         // 过滤掉"Others"菜系，不在前端显示
         const filteredCuisines = cuisinesData.filter((cuisine: any) => cuisine.id !== 9);
-        setCuisines(filteredCuisines);
+        
+        // 确保数据结构正确，Worker 返回的数据已经通过 formatCuisine 处理过
+        // 字段应该是：id, name, slug, cssClass
+        const processedCuisines = filteredCuisines.map((cuisine: any) => ({
+          id: cuisine.id,
+          name: cuisine.name || cuisine.localized_cuisine_name || cuisine.cuisine_name || `Cuisine ${cuisine.id}`,
+          slug: cuisine.slug || cuisine.localized_cuisine_slug || cuisine.cuisine_slug,
+          cssClass: cuisine.cssClass || cuisine.css_class || 'cuisine-other'
+        }));
+        
+        setCuisines(processedCuisines);
       } else {
         throw new Error('Failed to fetch cuisines');
       }
@@ -73,7 +80,7 @@ export function useCuisines(): UseCuisinesReturn {
 
   useEffect(() => {
     fetchCuisines();
-  }, []);
+  }, [locale]); // 添加 locale 依赖，当语言改变时重新获取数据
 
   const refetch = () => {
     fetchCuisines();

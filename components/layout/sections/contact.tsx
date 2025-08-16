@@ -63,7 +63,7 @@ export const ContactSection = () => {
   const handleConfirmSend = () => {
     if (formData) {
       const { firstName, lastName, email, subject, message } = formData;
-      const mailToLink = `mailto:annnb016@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Hello I am ${firstName} ${lastName}, my Email is ${email}. \n\n${message}`)}`;
+      const mailToLink = `mailto:contact@recipe-easy.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Hello I am ${firstName} ${lastName}, my Email is ${email}. \n\n${message}`)}`;
       window.location.href = mailToLink;
     }
     setShowContactDialog(false);
@@ -111,7 +111,7 @@ export const ContactSection = () => {
                 <div className="font-bold">Mail US</div>
               </div>
 
-              <div>annnb016@gmail.com</div>
+              <div>contact@recipe-easy.com</div>
             </div>
 
             <div>
@@ -175,7 +175,7 @@ export const ContactSection = () => {
                         <FormControl>
                           <Input
                             type="email"
-                            placeholder="annnb016@gmail.com"
+                            placeholder="contact@recipe-easy.com"
                             {...field}
                           />
                         </FormControl>
@@ -259,7 +259,7 @@ export const ContactSection = () => {
         onOpenChange={setShowContactDialog}
         title={t('confirmSendTitle')}
         description={t('confirmSendDescription')}
-        email="annnb016@gmail.com"
+        email="contact@recipe-easy.com"
         subject={formData?.subject || "Web Development"}
         body={formData ? `Hello I am ${formData.firstName} ${formData.lastName}, my Email is ${formData.email}. \n\n${formData.message}` : ""}
         onConfirm={handleConfirmSend}

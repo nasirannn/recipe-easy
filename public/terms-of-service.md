@@ -178,7 +178,7 @@ These Terms are governed by the laws of the United States. Any disputes will be 
 ## 16. Contact Information
 
 For questions about these Terms, please contact us at:
-- **Email**: annnb016@gmail.com
+- **Email**: contact@recipe-easy.com
 - **Subject Line**: Terms of Service Inquiry
 
 ## 17. Severability
