@@ -17,13 +17,10 @@ import { useRecipeGeneration } from "@/hooks/use-recipe-generation";
 import { useImageGeneration } from "@/hooks/use-image-generation";
 import { useRecipeSave } from "@/hooks/use-recipe-save";
 import { toast } from "sonner";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
 
 // 合并后的Hero Section Component
 export const HeroSection = () => {
   const t = useTranslations('hero');
-  const tRecipe = useTranslations('recipeDisplay');
   const locale = useLocale();
   const { user, isAdmin } = useAuth();
   const { canGenerate } = useUserUsage();
@@ -42,8 +39,7 @@ export const HeroSection = () => {
   
   const { 
     imageGenerating, 
-    imageLoadingStates, 
-    generateImage, 
+    imageLoadingStates,
     regenerateImage, 
     clearImageLoadingStates 
   } = useImageGeneration();
@@ -271,10 +267,6 @@ export const HeroSection = () => {
                 </>
               )}
             </p>
-            <p className="text-sm text-muted-foreground max-w-2xl lg:max-w-none leading-relaxed">
-              {t('benefitsBadge')}
-            </p>
-            
             {/* 积分信息 Badge */}
             <div className="flex flex-wrap gap-2 items-center justify-center lg:justify-start mt-4">
               <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-full text-xs font-medium text-blue-700 dark:text-blue-300">
