@@ -406,6 +406,40 @@ export const RecipeForm = ({
     }, SEARCH_CONFIG.BLUR_DELAY);
   }, [searchState]);
 
+  // 处理选项面板切换
+  const handleOptionsToggle = useCallback(() => {
+    setShowOptions(!showOptions);
+  }, [showOptions]);
+
+  // 处理份数减少
+  const handleServingsDecrease = useCallback(() => {
+    if (formData.servings > 1) {
+      onFormChange({ ...formData, servings: formData.servings - 1 });
+    }
+  }, [formData, onFormChange]);
+
+  // 处理份数增加
+  const handleServingsIncrease = useCallback(() => {
+    if (formData.servings < 8) {
+      onFormChange({ ...formData, servings: formData.servings + 1 });
+    }
+  }, [formData, onFormChange]);
+
+  // 处理烹饪时间变更
+  const handleCookingTimeChange = useCallback((value: string) => {
+    onFormChange({ ...formData, cookingTime: value as 'quick' | 'medium' | 'long' });
+  }, [formData, onFormChange]);
+
+  // 处理难度变更
+  const handleDifficultyChange = useCallback((value: 'easy' | 'medium' | 'hard') => {
+    onFormChange({ ...formData, difficulty: value });
+  }, [formData, onFormChange]);
+
+  // 处理菜系变更
+  const handleCuisineChange = useCallback((value: string) => {
+    onFormChange({ ...formData, cuisine: value });
+  }, [formData, onFormChange]);
+
   return (
     <div className="w-full flex flex-col gap-2 sm:gap-3">
       {/* Recipe Maker 标题栏 - 最顶部 */}
@@ -634,7 +668,7 @@ export const RecipeForm = ({
                     {/* 分类选择器 */}
                     <Select
                       value={activeCategory}
-                      onValueChange={useCallback((value) => handleCategoryChange(value as keyof typeof CATEGORIES), [handleCategoryChange])}
+                      onValueChange={(value) => handleCategoryChange(value as keyof typeof CATEGORIES)}
                     >
                       <SelectTrigger className="w-full h-12 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:border-orange-500/50 focus:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-300">
                         <SelectValue>
@@ -970,7 +1004,7 @@ export const RecipeForm = ({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
-                      onClick={useCallback(() => setShowOptions(!showOptions), [showOptions])}
+                      onClick={handleOptionsToggle}
                       className={cn(
                         "flex items-center justify-center transition-all duration-200 group relative",
                         showOptions
@@ -1021,11 +1055,7 @@ export const RecipeForm = ({
                       variant="ghost"
                       size="sm"
                       className="h-5 w-5 p-0 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
-                      onClick={useCallback(() => {
-                        if (formData.servings > 1) {
-                          onFormChange({ ...formData, servings: formData.servings - 1 })
-                        }
-                      }, [formData.servings, onFormChange])}
+                      onClick={handleServingsDecrease}
                       disabled={formData.servings <= 1}
                     >
                       <Minus className="h-2 w-2" />
@@ -1038,11 +1068,7 @@ export const RecipeForm = ({
                       variant="ghost"
                       size="sm"
                       className="h-5 w-5 p-0 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
-                      onClick={useCallback(() => {
-                        if (formData.servings < 8) {
-                          onFormChange({ ...formData, servings: formData.servings + 1 })
-                        }
-                      }, [formData.servings, onFormChange])}
+                      onClick={handleServingsIncrease}
                       disabled={formData.servings >= 8}
                     >
                       <Plus className="h-2 w-2" />
@@ -1058,7 +1084,7 @@ export const RecipeForm = ({
                   </Label>
                   <Select
                     value={formData.cookingTime}
-                    onValueChange={useCallback((value) => onFormChange({ ...formData, cookingTime: value as 'quick' | 'medium' | 'long' }), [formData, onFormChange])}
+                    onValueChange={handleCookingTimeChange}
                   >
                     <SelectTrigger id="cookingTime" className="h-7 w-16 sm:w-20 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
                       <SelectValue placeholder={t('selectCookingTime')} />
@@ -1079,7 +1105,7 @@ export const RecipeForm = ({
                   </Label>
                   <Select
                     value={formData.difficulty}
-                    onValueChange={useCallback((value: 'easy' | 'medium' | 'hard') => onFormChange({ ...formData, difficulty: value }), [formData, onFormChange])}
+                    onValueChange={handleDifficultyChange}
                   >
                     <SelectTrigger id="difficulty" className="h-7 w-16 sm:w-20 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
                       <SelectValue placeholder={t('selectDifficulty')} />
@@ -1100,7 +1126,7 @@ export const RecipeForm = ({
                   </Label>
                   <Select
                     value={formData.cuisine}
-                    onValueChange={useCallback((value) => onFormChange({ ...formData, cuisine: value }), [formData, onFormChange])}
+                    onValueChange={handleCuisineChange}
                   >
                     <SelectTrigger id="cuisine" className="h-7 w-16 sm:w-20 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
                       <SelectValue placeholder={t('selectCuisine')} />
