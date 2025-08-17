@@ -2,10 +2,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Recipe, UserLoginStatus } from '@/lib/types';
-import { getImageUrl } from '@/lib/config';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+
 import { 
   Dialog,
   DialogContent,
@@ -20,27 +19,33 @@ import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getImageUrl } from '@/lib/config';
 
 interface RecipeWithMetadata extends Recipe {
   createdAt?: string;
-  imageExpiresAt?: string;
   userStatus?: UserLoginStatus;
 }
 
 export default function MyRecipesPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const t = useTranslations('myRecipes');
   const locale = useLocale();
   const [recipes, setRecipes] = useState<RecipeWithMetadata[]>([]);
   const [loading, setLoading] = useState(false);
-  const [userLoading, setUserLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [recipeToDelete, setRecipeToDelete] = useState<RecipeWithMetadata | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
+  
+  // 处理未登录用户的重定向
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push(`/${locale}`);
+    }
+  }, [authLoading, user, router, locale]);
   
   const loadRecipes = useCallback(async (forceReload = false) => {
     // 如果已经加载过且不是强制重新加载，则跳过
@@ -74,11 +79,8 @@ export default function MyRecipesPage() {
   
   useEffect(() => {
     // 等待用户状态加载完成
-    if (user !== undefined) {
-      setUserLoading(false);
-      if (user?.id && !hasLoaded) {
-        loadRecipes();
-      }
+    if (user?.id && !hasLoaded) {
+      loadRecipes();
     }
   }, [user, loadRecipes, hasLoaded]);
 
@@ -152,60 +154,52 @@ export default function MyRecipesPage() {
     });
   };
   
-  const isImageExpired = (expiresAt?: string) => {
-    if (!expiresAt) return false;
-    return new Date(expiresAt) < new Date();
-  };
-  
-  const getDaysUntilExpiry = (expiresAt?: string) => {
-    if (!expiresAt) return null;
-    const expiryDate = new Date(expiresAt);
-    const now = new Date();
-    const diffTime = expiryDate.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
 
-  // 显示加载状态
-  if (userLoading) {
-    return (
-      <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-        <div className="container mx-auto px-4 py-16">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-6"></div>
-            <p className="text-slate-600 dark:text-slate-400">Loading...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
-  if (!user) {
+  // 显示用户加载状态
+  if (authLoading) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-        <div className="container mx-auto px-4 py-16">
-          <div className="max-w-md mx-auto text-center">
-            <div className="w-20 h-20 bg-linear-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <ChefHat className="h-10 w-10 text-white" />
+      <div className="min-h-screen bg-linear-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-8">
+          {/* Header Section */}
+          <div className="mb-8">
+            <div className="flex items-center gap-4 mb-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push(`/${locale}`)}
+                className="w-10 h-10 rounded-full hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-200"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                {t('title')}
+              </h1>
             </div>
-            <h1 className="text-2xl font-bold mb-3 text-slate-900 dark:text-white">{t('loginRequired.title')}</h1>
-            <p className="text-slate-600 dark:text-slate-400 mb-8">{t('loginRequired.description')}</p>
-            <Button size="lg" className="bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700">
-              {locale === 'zh' ? '立即登录' : 'Sign In Now'}
-            </Button>
+          </div>
+          
+          {/* Loading in center */}
+          <div className="flex items-center justify-center py-32">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-6"></div>
+              <p className="text-slate-600 dark:text-slate-400">Loading...</p>
+            </div>
           </div>
         </div>
       </div>
     );
   }
-  
-  if (loading) {
+
+  // 如果用户未登录，显示加载状态等待重定向
+  if (!authLoading && !user) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-        <div className="container mx-auto px-4 py-16">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-6"></div>
-            <p className="text-slate-600 dark:text-slate-400">{t('loading')}</p>
+      <div className="min-h-screen bg-linear-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-8">
+          <div className="flex items-center justify-center py-32">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-6"></div>
+              <p className="text-slate-600 dark:text-slate-400">Redirecting...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -216,6 +210,57 @@ export default function MyRecipesPage() {
     // 总是返回到当前语言环境的首页，避免语言切换后的路由问题
     router.push(`/${locale}`);
   };
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-linear-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-8">
+          {/* Header Section */}
+          <div className="mb-8">
+            <div className="flex items-center gap-4 mb-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleGoBack}
+                className="w-10 h-10 rounded-full hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-200"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center gap-4">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+                  {t('title')}
+                  <span className="text-lg font-normal text-gray-500 dark:text-gray-400 ml-2 flex items-center">
+                    ({total})
+                  </span>
+                </h1>
+              </div>
+            </div>
+            
+            {/* Image Notice */}
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg rounded-xl p-4 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/40 rounded-full flex items-center justify-center">
+                  <span className="text-lg">📸</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">{t('imageNotice.title')}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{t('imageNotice.description')}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Loading in center */}
+          <div className="flex items-center justify-center py-32">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-6"></div>
+              <p className="text-slate-600 dark:text-slate-400">{t('loading')}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-linear-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
@@ -291,7 +336,8 @@ export default function MyRecipesPage() {
                 <Card key={recipe.id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-2xl transform hover:-translate-y-1">
                   {/* Image Container */}
                   <div className="relative aspect-[3/2] overflow-hidden">
-                    {recipe.imagePath && !isImageExpired(recipe.imageExpiresAt) ? (
+
+                    {recipe.imagePath ? (
                       <Image 
                         src={getImageUrl(recipe.imagePath)} 
                         alt={recipe.title}
@@ -314,17 +360,7 @@ export default function MyRecipesPage() {
                       </div>
                     )}
                     
-                    {/* Expiry Badge - Only show on hover */}
-                    {recipe.imageExpiresAt && getDaysUntilExpiry(recipe.imageExpiresAt) !== null && (
-                      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <Badge className="text-xs bg-black text-white border-0 font-medium">
-                          {getDaysUntilExpiry(recipe.imageExpiresAt)! <= 0 ? 
-                            (locale === 'zh' ? '0' : '0') : 
-                            `${getDaysUntilExpiry(recipe.imageExpiresAt)}`
-                          }
-                        </Badge>
-                      </div>
-                    )}
+
                     
                     {/* Overlay Actions */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all duration-300 flex items-center justify-center">

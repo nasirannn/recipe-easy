@@ -115,7 +115,7 @@ export const FooterSection = () => {
               alt="Featured on Startup Fame" 
               width={224}
               height={36}
-              className="h-9 w-auto"
+              className="h-9 w-auto object-contain"
               unoptimized
             />
           </a>
@@ -130,7 +130,7 @@ export const FooterSection = () => {
               alt="RecipeEasy - AI Recipe Generator - Turn ingredients into recipe instantly | Product Hunt" 
               width={250}
               height={54}
-              className="h-9 w-auto"
+              className="h-9 w-auto object-contain"
               unoptimized
             />
           </a>
@@ -145,7 +145,7 @@ export const FooterSection = () => {
               alt="Fazier badge" 
               width={120}
               height={36}
-              className="h-9 w-auto"
+              className="h-9 w-auto object-contain"
               unoptimized
             />
           </a>
@@ -160,7 +160,7 @@ export const FooterSection = () => {
               alt="TinyLaunch Badge"
               width={202}
               height={36}
-              className="h-9 w-auto"
+              className="h-9 w-auto object-contain"
               unoptimized
             />
           </a>

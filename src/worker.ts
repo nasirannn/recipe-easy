@@ -814,8 +814,7 @@ async function handlePublicRecipes(request: Request, db: D1Database, env: Env, c
       
       imageResults.results.forEach((img: any) => {
         if (img.image_path) {
-          const baseUrl = env.WORKER_URL || 'https://api.recipe-easy.com';
-          imageMap[img.recipe_id] = `${baseUrl}/images/${img.image_path}`;
+          imageMap[img.recipe_id] = img.image_path;
         }
       });
     }
@@ -1785,7 +1784,7 @@ async function handleGetUserRecipes(request: Request, db: D1Database, env: Env, 
         instructions: parseJsonField(hasI18nTable ? getLocalizedField(row.localized_instructions, row.instructions) : row.instructions),
         tags: parseJsonField(hasI18nTable ? getLocalizedField(row.localized_tags, row.tags) : row.tags),
         chefTips: parseJsonField(hasI18nTable ? getLocalizedField(row.localized_chef_tips, row.chef_tips) : row.chef_tips),
-        imagePath: row.image_path ? `${env.WORKER_URL || 'https://api.recipe-easy.com'}/images/${row.image_path}` : null,
+        imagePath: row.image_path || null,
         imageExpiresAt: row.image_expires_at,
         imageModel: row.image_model,
         createdAt: row.created_at
