@@ -15,33 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tool
 import { Input } from "@/components/ui/input";
 import { generateNanoId } from '@/lib/utils/id-generator';
 import Image from "next/image";
-
-// 分类图标映射 - 与数据库slug对应
-const CATEGORIES = {
-  meat: { icon: '🥩', color: 'text-red-600' },
-  seafood: { icon: '🐟', color: 'text-blue-600' },
-  vegetables: { icon: '🥬', color: 'text-green-600' },
-  fruits: { icon: '🍎', color: 'text-yellow-600' },
-  'dairy-eggs': { icon: '🥚', color: 'text-purple-600' },
-  'grains-bread': { icon: '🌾', color: 'text-amber-600' },
-  'nuts-seeds': { icon: '🌰', color: 'text-orange-600' },
-  'herbs-spices': { icon: '🌿', color: 'text-emerald-600' },
-} as const;
-
-// 轮播配置常量
-const CAROUSEL_CONFIG = {
-  TOTAL_ITEMS: 6,
-  INTERVAL_MS: 3000,
-  TRANSITION_DURATION: 1000,
-  ITEM_HEIGHT: 32,
-} as const;
-
-// 搜索配置常量
-const SEARCH_CONFIG = {
-  MAX_RESULTS: 8,
-  BLUR_DELAY: 150,
-  SCROLL_DELAY: 150,
-} as const;
+import { CATEGORIES_CONFIG, CAROUSEL_CONFIG, SEARCH_CONFIG } from '@/lib/config';
 
 interface RecipeFormProps {
   formData: RecipeFormData;
@@ -161,7 +135,7 @@ export const RecipeForm = ({
   const { addIngredient, removeIngredient, clearIngredients } = useIngredientsActions(formData, onFormChange);
   
   // 分类相关状态
-  const [activeCategory, setActiveCategory] = useState<keyof typeof CATEGORIES>('meat');
+  const [activeCategory, setActiveCategory] = useState<keyof typeof CATEGORIES_CONFIG>('meat');
   const [dynamicCategories, setDynamicCategories] = useState<Record<string, { name: string; icon?: string; color?: string }>>({});
   
   // 新增：搜索相关状态
@@ -173,7 +147,7 @@ export const RecipeForm = ({
   const [showOptions, setShowOptions] = useState(true);
 
   // 处理分类变更 - 使用 useCallback 优化
-  const handleCategoryChange = useCallback((categoryId: keyof typeof CATEGORIES) => {
+  const handleCategoryChange = useCallback((categoryId: keyof typeof CATEGORIES_CONFIG) => {
     setActiveCategory(categoryId);
   }, []);
 
@@ -219,14 +193,14 @@ export const RecipeForm = ({
         if (data.success && data.results) {
           const categoriesMap: Record<string, { name: string; icon?: string; color?: string }> = {};
           data.results.forEach((category: any) => {
-            const categoryKey = category.slug as keyof typeof CATEGORIES;
-            if (CATEGORIES[categoryKey]) {
-              categoriesMap[categoryKey] = {
-                name: category.name,
-                icon: CATEGORIES[categoryKey].icon,
-                color: CATEGORIES[categoryKey].color
-              };
-            }
+                  const categoryKey = category.slug as keyof typeof CATEGORIES_CONFIG;
+      if (CATEGORIES_CONFIG[categoryKey]) {
+        categoriesMap[categoryKey] = {
+          name: category.name,
+          icon: CATEGORIES_CONFIG[categoryKey].icon,
+          color: CATEGORIES_CONFIG[categoryKey].color
+        };
+      }
           });
           setDynamicCategories(categoriesMap);
         }
@@ -613,7 +587,7 @@ export const RecipeForm = ({
                       <div className="flex items-center justify-between pb-1">
                         {/* 分类tab */}
                         <div className="flex items-center gap-1 flex-1">
-                          {Object.entries(CATEGORIES).map(([categoryId, category]) => {
+                          {Object.entries(CATEGORIES_CONFIG).map(([categoryId, category]) => {
                             const Icon = category.icon;
                             const isActive = activeCategory === categoryId;
                             // 优先使用动态获取的分类名称，如果没有则使用翻译作为备用
@@ -623,7 +597,7 @@ export const RecipeForm = ({
                               <Tooltip key={categoryId}>
                                 <TooltipTrigger asChild>
                                   <button
-                                    onClick={() => handleCategoryChange(categoryId as keyof typeof CATEGORIES)}
+                                    onClick={() => handleCategoryChange(categoryId as keyof typeof CATEGORIES_CONFIG)}
                                     className={cn(
                                       "flex items-center justify-center transition-all duration-300 relative group h-12 flex-1 cursor-pointer",
                                       isActive
@@ -668,14 +642,14 @@ export const RecipeForm = ({
                     {/* 分类选择器 */}
                     <Select
                       value={activeCategory}
-                      onValueChange={(value) => handleCategoryChange(value as keyof typeof CATEGORIES)}
+                      onValueChange={(value) => handleCategoryChange(value as keyof typeof CATEGORIES_CONFIG)}
                     >
                       <SelectTrigger className="w-full h-12 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-xs hover:border-orange-500/50 focus:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-300 cursor-pointer">
                         <SelectValue>
                           <div className="flex items-center gap-3">
-                            {CATEGORIES[activeCategory] && (() => {
-                              const Icon = CATEGORIES[activeCategory].icon;
-                              return <span className={cn("h-5 w-5 shrink-0", CATEGORIES[activeCategory].color)}>{Icon}</span>;
+                            {CATEGORIES_CONFIG[activeCategory] && (() => {
+                              const Icon = CATEGORIES_CONFIG[activeCategory].icon;
+                              return <span className={cn("h-5 w-5 shrink-0", CATEGORIES_CONFIG[activeCategory].color)}>{Icon}</span>;
                             })()}
                             <span className="font-medium text-gray-900 dark:text-gray-100">
                               {dynamicCategories[activeCategory]?.name || tIngredientSelector(`categories.${activeCategory}`)}
@@ -684,7 +658,7 @@ export const RecipeForm = ({
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px] overflow-y-auto bg-white dark:bg-gray-800 border-2 border-orange-200 dark:border-orange-700 rounded-xl shadow-lg">
-                        {Object.entries(CATEGORIES).map(([categoryId, category]) => {
+                        {Object.entries(CATEGORIES_CONFIG).map(([categoryId, category]) => {
                           const Icon = category.icon;
                           const isActive = activeCategory === categoryId;
 

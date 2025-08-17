@@ -1,6 +1,6 @@
 // ==================== 配置管理系统 ====================
 
-import { ModelConfig, SupportedLocale } from '@/lib/types';
+import { ModelConfig } from '@/lib/types';
 
 // ==================== 环境变量获取 ====================
 
@@ -37,6 +37,36 @@ export const APP_CONFIG = {
   
   // 难度等级
   difficulties: ['Easy', 'Medium', 'Hard'] as const,
+} as const;
+
+// ==================== 分类配置 ====================
+
+export const CATEGORIES_CONFIG = {
+  meat: { icon: '🥩', color: 'text-red-600' },
+  seafood: { icon: '🐟', color: 'text-blue-600' },
+  vegetables: { icon: '🥬', color: 'text-green-600' },
+  fruits: { icon: '🍎', color: 'text-yellow-600' },
+  'dairy-eggs': { icon: '🥚', color: 'text-purple-600' },
+  'grains-bread': { icon: '🌾', color: 'text-amber-600' },
+  'nuts-seeds': { icon: '🌰', color: 'text-orange-600' },
+  'herbs-spices': { icon: '🌿', color: 'text-emerald-600' },
+} as const;
+
+// ==================== 轮播配置 ====================
+
+export const CAROUSEL_CONFIG = {
+  TOTAL_ITEMS: 6,
+  INTERVAL_MS: 3000,
+  TRANSITION_DURATION: 1000,
+  ITEM_HEIGHT: 32,
+} as const;
+
+// ==================== 搜索配置 ====================
+
+export const SEARCH_CONFIG = {
+  MAX_RESULTS: 8,
+  BLUR_DELAY: 150,
+  SCROLL_DELAY: 150,
 } as const;
 
 // ==================== AI模型配置 ====================
