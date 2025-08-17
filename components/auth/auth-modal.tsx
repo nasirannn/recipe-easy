@@ -313,7 +313,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               <button 
                 type="button" 
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="text-sm text-primary hover:text-primary/80"
+                className="text-sm text-primary hover:text-[--color-primary-80]"
               >
                 {isSignUp
                   ? t('alreadyHaveAccount')
@@ -323,7 +323,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
           </div>
           
           <div className="text-center text-xs text-muted-foreground mt-6">
-            By continuing, you agree to our Terms of Service and Privacy Policy
+            {t('termsAgreement')}
           </div>
         </div>
       </DialogContent>

@@ -146,9 +146,35 @@ function capitalizeFirstLetter(str: string): string {
 export function getUserAvatarUrl(user: User | null): string | null {
   if (!user) return null
   
-  return user.user_metadata?.avatar_url || 
-         user.user_metadata?.picture || 
-         null
+  // 添加调试信息
+  console.log('🔍 getUserAvatarUrl - User metadata:', {
+    user_id: user.id,
+    provider: user.app_metadata?.provider,
+    user_metadata: user.user_metadata,
+    avatar_url: user.user_metadata?.avatar_url,
+    picture: user.user_metadata?.picture,
+    image: user.user_metadata?.image,
+    photo: user.user_metadata?.photo
+  });
+  
+  // 扩展头像URL获取逻辑，支持更多可能的字段名
+  // Google OAuth可能使用的字段：picture, avatar_url, image, photo
+  const avatarUrl = user.user_metadata?.avatar_url || 
+                   user.user_metadata?.picture || 
+                   user.user_metadata?.image ||
+                   user.user_metadata?.photo ||
+                   null;
+  
+  console.log('🔍 getUserAvatarUrl - Final avatar URL:', avatarUrl);
+  
+  // 如果没有找到头像URL，尝试生成备用头像
+  if (!avatarUrl && user.email) {
+    const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(getUserDisplayName(user))}&background=0f172a&color=fff&size=150`;
+    console.log('🔍 getUserAvatarUrl - Using fallback avatar URL:', fallbackUrl);
+    return fallbackUrl;
+  }
+  
+  return avatarUrl;
 }
 
 /**

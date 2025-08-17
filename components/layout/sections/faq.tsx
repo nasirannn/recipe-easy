@@ -51,7 +51,7 @@ export const FAQSection = () => {
   };
 
   return (
-    <section id="faq" className="w-full bg-primary/5 py-4 sm:py-12">
+    <section id="faq" className="w-full bg-primary-5 py-4 sm:py-12">
       <div className="container">
         <div className="text-center mb-16 ">
          <h2 className="text-lg text-secondary text-center mb-2 tracking-wider">
@@ -71,8 +71,8 @@ export const FAQSection = () => {
                 onClick={() => toggleItem(value)}
                 className="w-full px-6 py-4 text-left hover:no-underline flex items-center gap-4"
               >
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <div className="shrink-0">
+                  <div className="w-8 h-8 bg-[--color-primary-10] rounded-lg flex items-center justify-center">
                     <span className="text-secondary font-semibold text-sm">
                       {String(index + 1).padStart(2, '0')}
                     </span>
@@ -83,7 +83,7 @@ export const FAQSection = () => {
                     {t(questionKey)}
                   </h3>
                 </div>
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   {isOpen ? (
                                       <ChevronUp className={`h-5 w-5 ${isOpen ? 'text-secondary' : 'text-muted-foreground'}`} />
                 ) : (

@@ -8,8 +8,9 @@ export default async function TermsLayout({
   params
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
   const messages = await getMessages();
 
   return (
@@ -20,7 +21,7 @@ export default async function TermsLayout({
         enableSystem
         disableTransitionOnChange
       >
-        <NextIntlClientProvider locale={params.locale} messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
         </NextIntlClientProvider>
       </ThemeProvider>

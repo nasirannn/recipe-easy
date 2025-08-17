@@ -1,6 +1,5 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
-import { ThemeProvider } from '@/components/layout/theme-provider';
 import { AuthProvider } from '@/contexts/auth-context';
 import { Navbar } from '@/components/layout/navbar';
 import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
@@ -9,9 +8,9 @@ import { PageViewTracker } from '@/components/analytics/page-view-tracker';
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const { locale } = params;
+  const { locale } = await params;
   
   return generateSeoMetadata({
     title: "RecipeEasy - AI Recipe Generator, Random Recipes, Meal Ideas",
@@ -26,24 +25,18 @@ export default async function LocaleLayout({
   params
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
   const messages = await getMessages();
 
   return (
     <AuthProvider>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <NextIntlClientProvider locale={params.locale} messages={messages}>
-          <PageViewTracker />
-          <Navbar />
-          {children}
-        </NextIntlClientProvider>
-      </ThemeProvider>
+      <NextIntlClientProvider locale={locale} messages={messages}>
+        <PageViewTracker />
+        <Navbar />
+        {children}
+      </NextIntlClientProvider>
     </AuthProvider>
   );
 }

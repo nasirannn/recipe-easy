@@ -169,7 +169,7 @@ export default function MyRecipesPage() {
   // 显示加载状态
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="container mx-auto px-4 py-16">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-6"></div>
@@ -182,15 +182,15 @@ export default function MyRecipesPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-md mx-auto text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 bg-linear-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <ChefHat className="h-10 w-10 text-white" />
             </div>
             <h1 className="text-2xl font-bold mb-3 text-slate-900 dark:text-white">{t('loginRequired.title')}</h1>
             <p className="text-slate-600 dark:text-slate-400 mb-8">{t('loginRequired.description')}</p>
-            <Button size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700">
+            <Button size="lg" className="bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700">
               {locale === 'zh' ? '立即登录' : 'Sign In Now'}
             </Button>
           </div>
@@ -201,7 +201,7 @@ export default function MyRecipesPage() {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="container mx-auto px-4 py-16">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-6"></div>
@@ -218,7 +218,7 @@ export default function MyRecipesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-linear-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-8">
         {/* Header Section */}
         <div className="mb-8">
@@ -271,14 +271,14 @@ export default function MyRecipesPage() {
         {recipes.length === 0 ? (
           <div className="text-center py-16">
             <div className="max-w-md mx-auto">
-              <div className="w-24 h-24 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-24 h-24 bg-linear-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <ChefHat className="h-12 w-12 text-gray-400 dark:text-gray-500" />
               </div>
               <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">{t('emptyState.title')}</h2>
               <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
                 {t('emptyState.description')}
               </p>
-              <Button asChild size="lg" className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
+              <Button asChild size="lg" className="bg-linear-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
                 <Link href="/">{t('emptyState.action')}</Link>
               </Button>
             </div>

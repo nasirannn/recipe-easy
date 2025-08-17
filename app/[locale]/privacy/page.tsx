@@ -7,9 +7,9 @@ import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = params;
+  const { locale } = await params;
   
   return generateSeoMetadata({
     title: 'Privacy Policy - Recipe Easy',
@@ -52,8 +52,9 @@ async function getPrivacyPolicy(locale: string) {
   }
 }
 
-export default async function PrivacyPage({ params }: { params: { locale: string } }) {
-  const content = await getPrivacyPolicy(params.locale);
+export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const content = await getPrivacyPolicy(locale);
 
   return (
     <SimpleLayout title="Privacy Policy">

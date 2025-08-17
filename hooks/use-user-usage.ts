@@ -102,7 +102,7 @@ export function useUserUsage() {
       const response = await fetch(`/api/user-usage?userId=${user.id}&isAdmin=${isAdmin}`);
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(`Request failed with status ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();

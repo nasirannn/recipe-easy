@@ -13,9 +13,9 @@ interface TutorialStepProps {
 
 const TutorialStep = ({ step, title, description, icon, imageSrc }: TutorialStepProps) => {
   return (
-    <Card className="bg-card border-2 border-border rounded-xl p-6 h-full">
+    <Card className="bg-card border-2 border-gray-200 dark:border-gray-700 rounded-xl p-6 h-full">
       <div className="flex items-center mb-4">
-        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+        <div className="w-10 h-10 bg-[--color-primary-10] rounded-full flex items-center justify-center mr-3">
           {icon}
         </div>
         <h3 className="text-lg font-semibold text-secondary">

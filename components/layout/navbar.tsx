@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/auth-context";
 import { useUserUsage } from '@/hooks/use-user-usage';
 import { getUserDisplayName } from '@/lib/utils/user-display';
@@ -42,6 +42,30 @@ export const Navbar = () => {
   const t = useTranslations('navigation');
   const tCredits = useTranslations('credits');
   const locale = useLocale();
+
+  // 添加调试信息
+  React.useEffect(() => {
+    if (user) {
+      console.log('🔍 Navbar - User data:', {
+        user_id: user.id,
+        provider: user.app_metadata?.provider,
+        user_metadata: user.user_metadata,
+        avatar_url: user.user_metadata?.avatar_url,
+        picture: user.user_metadata?.picture,
+        image: user.user_metadata?.image,
+        photo: user.user_metadata?.photo,
+        full_name: user.user_metadata?.full_name,
+        name: user.user_metadata?.name,
+        email: user.email
+      });
+      
+      // 检查是否是Google用户
+      if (user.app_metadata?.provider === 'google') {
+        console.log('🔍 Navbar - Google user detected, checking avatar fields...');
+        console.log('🔍 Navbar - All user_metadata keys:', Object.keys(user.user_metadata || {}));
+      }
+    }
+  }, [user]);
 
   // 如果当前路径包含隐私政策或服务条款，不显示导航栏
   if (pathname.includes('/privacy') || pathname.includes('/terms')) {
@@ -93,7 +117,7 @@ export const Navbar = () => {
               <Link
                 key={route.href}
                 href={route.href}
-                className="flex items-center gap-2 transition-colors hover:text-foreground/80 text-foreground/60"
+                className="flex items-center gap-2 transition-colors hover:text-primary text-gray-500"
               >
                 {route.icon}
                 {route.label}
@@ -108,9 +132,13 @@ export const Navbar = () => {
             {/* 桌面版功能区 */}
             <div className="hidden md:flex items-center">
               <div className="flex items-center ml-3">
-                <LanguageSwitcher />
+                <div className="cursor-pointer">
+                  <LanguageSwitcher />
+                </div>
                 <div className="mx-1"></div>
-                <ToggleTheme />
+                <div className="cursor-pointer">
+                  <ToggleTheme />
+                </div>
               </div>
               
               {/* 用户菜单 */}
@@ -121,14 +149,14 @@ export const Navbar = () => {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="ml-2 h-11 w-11 rounded-full overflow-hidden p-0 hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+                        className="ml-2 h-11 w-11 rounded-full overflow-hidden p-0 hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 cursor-pointer"
                       >
                         <UserAvatar user={user} size="md" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent 
                       align="end" 
-                      className="w-52 p-3"
+                      className="w-52 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg"
                       onCloseAutoFocus={(e) => e.preventDefault()}
                     >
                       {/* 用户信息 */}
@@ -144,7 +172,7 @@ export const Navbar = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="absolute right-0 top-0 h-6 w-6 p-0 hover:bg-accent"
+                            className="absolute right-0 top-0 h-6 w-6 p-0 hover:bg-accent cursor-pointer"
                             onClick={() => setShowEditNameDialog(true)}
                           >
                             <ChevronRight className="h-3 w-3" />
@@ -193,7 +221,7 @@ export const Navbar = () => {
                      <div className="flex justify-center">
                        <DropdownMenuItem 
                          onClick={handleLogout} 
-                         className="cursor-pointer w-[90%] justify-center hover:bg-destructive/10"
+                         className="cursor-pointer w-[90%] justify-center hover:bg-[--color-destructive-10]"
                        >
                          <span className="font-medium">{t('signout')}</span>
                        </DropdownMenuItem>
@@ -202,7 +230,7 @@ export const Navbar = () => {
                    </DropdownMenuContent>
                  </DropdownMenu>
                 ) : (
-                  <Button onClick={() => setShowAuthModal(true)} variant="default" size="sm" className="ml-2">
+                  <Button onClick={() => setShowAuthModal(true)} variant="default" size="sm" className="ml-2 cursor-pointer">
                     {t('signin')}
                   </Button>
                 )
@@ -213,7 +241,7 @@ export const Navbar = () => {
             <div className="md:hidden">
               <Sheet open={isOpen} onOpenChange={setIsOpen} modal={false}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-9 w-9">
+                  <Button variant="outline" size="icon" className="h-9 w-9 cursor-pointer">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
@@ -222,6 +250,7 @@ export const Navbar = () => {
                   className="flex flex-col p-0"
                   onCloseAutoFocus={(e) => e.preventDefault()}
                 >
+                  <SheetTitle className="sr-only">导航菜单</SheetTitle>
                   <div className="flex flex-col h-full">
                     {/* 移动版顶部 */}
                     <div className="p-4 border-b">
@@ -244,7 +273,7 @@ export const Navbar = () => {
                     {/* 移动版导航项 */}
                     <div className="p-4 flex-1 overflow-y-auto">
                       {!loading && user && (
-                        <div className="mb-6 pt-2 pb-5 border-b border-border/20">
+                        <div className="mb-6 pt-2 pb-5 border-b border-gray-200 dark:border-gray-700">
                           <div className="flex items-center gap-3 mb-4">
                             <UserAvatar user={user} size="md" />
                             <div className="flex-1">
@@ -255,7 +284,7 @@ export const Navbar = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-5 w-5 p-0 hover:bg-accent"
+                                  className="h-5 w-5 p-0 hover:bg-accent cursor-pointer"
                                   onClick={() => setShowEditNameDialog(true)}
                                 >
                                   <ChevronRight className="h-3 w-3" />
@@ -295,7 +324,7 @@ export const Navbar = () => {
                           <Link
                             key={route.href}
                             href={route.href}
-                            className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent transition-colors"
+                            className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent hover:text-primary transition-colors"
                             onClick={() => setIsOpen(false)}
                           >
                             {route.icon}
@@ -307,36 +336,12 @@ export const Navbar = () => {
                         {!loading && user && (
                           <Link
                             href={`/${locale}/my-recipes`}
-                            className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent transition-colors"
+                            className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent hover:text-primary transition-colors"
                             onClick={() => setIsOpen(false)}
                           >
                             <BookOpen className="mr-2 h-4 w-4" />
                             {t('myRecipes')}
                           </Link>
-                        )}
-                        
-                        {isAdmin && (
-                          <>
-                            <div className="pt-2 pb-1 text-xs uppercase tracking-wider text-muted-foreground px-3">
-                              {t('admin')}
-                            </div>
-                            <Link
-                              href="/admin/dashboard"
-                              className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent transition-colors"
-                              onClick={() => setIsOpen(false)}
-                            >
-                              <Settings className="h-4 w-4" />
-                              <span className="ml-2">{t('dashboard')}</span>
-                            </Link>
-                            <Link
-                              href="/admin/users"
-                              className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent transition-colors"
-                              onClick={() => setIsOpen(false)}
-                            >
-                              <User className="h-4 w-4" />
-                              <span className="ml-2">{t('users')}</span>
-                            </Link>
-                          </>
                         )}
                       </nav>
                     </div>
@@ -356,7 +361,7 @@ export const Navbar = () => {
                       {!loading && user && (
                         <Button
                           variant="outline"
-                          className="w-full justify-center"
+                          className="w-full justify-center cursor-pointer"
                           onClick={() => {
                             handleLogout();
                             setIsOpen(false);
@@ -370,7 +375,7 @@ export const Navbar = () => {
                       {!loading && !user && (
                         <Button
                           variant="default"
-                          className="w-full justify-center"
+                          className="w-full justify-center cursor-pointer"
                           onClick={() => {
                             setShowAuthModal(true);
                             setIsOpen(false);
@@ -398,4 +403,4 @@ export const Navbar = () => {
       />
     </header>
   );
-};
+}

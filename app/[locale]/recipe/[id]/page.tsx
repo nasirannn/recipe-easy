@@ -5,16 +5,16 @@ import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
 import { env } from '@/lib/env';
 
 interface RecipePageProps {
-  params: {
+  params: Promise<{
     locale: string;
     id: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({
   params,
 }: RecipePageProps): Promise<Metadata> {
-  const { locale, id } = params;
+  const { locale, id } = await params;
   
   try {
     // 获取菜谱数据用于SEO - 在服务器端使用完整URL
@@ -79,7 +79,7 @@ async function getRecipe(id: string, locale: string) {
 }
 
 export default async function RecipePage({ params }: RecipePageProps) {
-  const { locale, id } = params;
+  const { locale, id } = await params;
   
   const recipe = await getRecipe(id, locale);
   

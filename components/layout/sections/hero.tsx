@@ -224,7 +224,7 @@ export const HeroSection = () => {
   };
 
   return (
-    <section id="hero" className="w-full bg-primary/5">
+    <section id="hero" className="w-full bg-primary-5">
       {/* 第一个div: Hero Intro Section */}
       <div className="w-full pb-8 lg:pb-0">
         <GridBackground className="absolute inset-0 z-[-1] opacity-50" />
@@ -238,63 +238,47 @@ export const HeroSection = () => {
                   <span>用任意食材，</span>
                   <br />
                   <span>生成</span>
-                  <br />
-                  <span className="text-transparent bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">AI食谱</span>
+                  <span className="text-transparent bg-gradient-to-r from-purple-500 via-pink-500 to-red-400 bg-clip-text">AI食谱</span>
                 </>
               ) : (
                 <>
-                  <span className="text-transparent bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">AI recipes generator</span>
+                  <span className="text-transparent bg-gradient-to-r from-purple-500 via-pink-500 to-red-400 bg-clip-text">AI recipes</span>
+                  <br />
+                  <span className="text-transparent bg-gradient-to-r from-red-500 via-orange-500 to-orange-400 bg-clip-text">generator</span>
                   <span> from any ingredients</span>
                 </>
               )}
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl lg:max-w-none leading-relaxed">
-              {locale === 'zh' ? (
-                <>
-                  只需选择或输入现有食材，AI 即刻为您生成随机搭配、
-                  <br />
-                  创意十足、简单易做的食谱。从此告别&ldquo;今晚吃什么？&rdquo;的烦恼。
-                </>
-              ) : (
-                <>
-                  {t('description').split('. ').map((sentence, index, array) => (
-                    <React.Fragment key={index}>
-                      {sentence}
-                      {index < array.length - 1 ? '. ' : ''}
-                      {index < array.length - 1 && <br />}
-                    </React.Fragment>
-                  ))}
-                </>
-              )}
+            <p className="text-xl text-gray-400 dark:text-gray-300 max-w-2xl lg:max-w-none leading-relaxed">
+              {t('description')}
             </p>
             {/* 特色信息 Badge */}
             <div className="flex flex-wrap gap-2 items-center justify-center lg:justify-start mt-4">
-              <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700 rounded-full text-xs font-medium text-green-700 dark:text-green-300">
-                {locale === 'zh' ? '免费创建食谱' : 'Free Recipe Creation'}
+              <div className="inline-flex items-center px-3 py-1.5 bg-linear-to-r from-green-50 to-emerald-50 dark:from-[--color-green-900-20] dark:to-[--color-emerald-900-20] border border-green-200 dark:border-green-700 rounded-full text-xs font-medium text-green-700 dark:text-green-300">
+                {t('badgeFreeRecipeCreation')}
               </div>
-              <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-full text-xs font-medium text-blue-700 dark:text-blue-300">
-                {locale === 'zh' ? '注册生成图片' : 'Register to Generate Images'}
+              <div className="inline-flex items-center px-3 py-1.5 bg-linear-to-r from-blue-50 to-indigo-50 dark:from-[--color-blue-900-20] dark:to-[--color-indigo-900-20] border border-blue-200 dark:border-blue-700 rounded-full text-xs font-medium text-blue-700 dark:text-blue-300">
+                {t('badgeRegisterForImages')}
               </div>
-              <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 border border-purple-200 dark:border-purple-700 rounded-full text-xs font-medium text-purple-700 dark:text-purple-300">
-                {locale === 'zh' ? '赠送100积分' : 'Start with 100 Free Credits'}
+              <div className="inline-flex items-center px-3 py-1.5 bg-linear-to-r from-purple-50 to-violet-50 dark:from-[--color-purple-900-20] dark:to-[--color-violet-900-20] border border-purple-200 dark:border-purple-700 rounded-full text-xs font-medium text-purple-700 dark:text-purple-300">
+                {t('badgeStartWithCredits')}
               </div>
-              <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border border-orange-200 dark:border-orange-700 rounded-full text-xs font-medium text-orange-700 dark:text-orange-300">
-                {locale === 'zh' ? '每张图片1积分' : '1 Credit per Image'}
+              <div className="inline-flex items-center px-3 py-1.5 bg-linear-to-r from-orange-50 to-amber-50 dark:from-[--color-orange-900-20] dark:to-[--color-amber-900-20] border border-orange-200 dark:border-orange-700 rounded-full text-xs font-medium text-orange-700 dark:text-orange-300">
+                {t('badgeImageCostPerCredit')}
               </div>
             </div>
             {/* 按钮组 */}
             <div className="flex flex-col sm:flex-row gap-4 items-center lg:items-start mt-12">
               <Button
                 size="lg"
-                className="rounded-full px-6"
+                className="rounded-full px-6 cursor-pointer"
                 onClick={() => {
                   const recipeFormElement = document.getElementById('recipe-form-section');
                   if (recipeFormElement) {
-                    const elementRect = recipeFormElement.getBoundingClientRect();
-                    const absoluteElementTop = elementRect.top + window.pageYOffset;
-
+                    const elementTop = recipeFormElement.offsetTop;
+                    const headerHeight = 120; // 导航栏高度
                     window.scrollTo({
-                      top: absoluteElementTop - 100, // 留一些顶部空间
+                      top: elementTop - headerHeight,
                       behavior: 'smooth'
                     });
                   }
@@ -306,7 +290,7 @@ export const HeroSection = () => {
             </div>
           </div>
           {/* 右侧视频区域 */}
-          <div className="flex-shrink-0 w-full lg:w-[500px]" style={{ position: 'relative', paddingBottom: 'calc(52.31292517006803% + 41px)', height: 0 }}>
+          <div className="shrink-0 w-full lg:w-[500px]" style={{ position: 'relative', paddingBottom: 'calc(52.31292517006803% + 41px)', height: 0 }}>
             <iframe
               src="https://demo.arcade.software/S6h2tXiDTTN888NDMfSG?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
               title=""
@@ -321,7 +305,7 @@ export const HeroSection = () => {
       </div>
       {/* 第二个div: Recipe Form Section */}
       <div id="recipe-form-section" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-8">
-        <div className="w-full border-2 border-primary/20 dark:border-primary/30 rounded-3xl md:p-12">
+        <div className="w-full border-2 border-[--color-primary-20] dark:border-[--color-primary-30] rounded-3xl md:p-12">
           <RecipeForm
             formData={formData}
             onFormChange={handleFormChange}

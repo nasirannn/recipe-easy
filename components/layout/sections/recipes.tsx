@@ -41,34 +41,7 @@ export const RecipesSection = () => {
         const data = await response.json();
 
         if (data.success) {
-          // 转换API返回的数据格式以匹配前端期望的格式
-          const transformedRecipes = (data.results || []).map((recipe: any) => ({
-            id: recipe.id,
-            title: recipe.title,
-            imagePath: recipe.image_url || recipe.imagePath,
-            description: recipe.description,
-            tags: recipe.tags || [],
-            cookingTime: recipe.cooking_time || recipe.cookingTime || 30,
-            servings: recipe.servings || 4,
-            difficulty: recipe.difficulty || 'easy',
-            ingredients: recipe.ingredients || [],
-            seasoning: recipe.seasoning || [],
-            instructions: recipe.instructions || [],
-            chefTips: recipe.chef_tips || recipe.chefTips || [],
-            cuisine_id: recipe.cuisine_id,
-            cuisine_name: recipe.cuisine_name || recipe.cuisine?.name || null,
-            cuisine: recipe.cuisine || {
-              id: recipe.cuisine_id,
-              name: recipe.cuisine_name || recipe.cuisine?.name,
-              cssClass: recipe.cuisine?.cssClass || 'cuisine-other'
-            },
-            userId: recipe.user_id // 添加用户ID用于过滤
-          }));
-
-          setRecipes(transformedRecipes);
-          // Debug: 检查菜系数据
-          console.log('Transformed recipes:', transformedRecipes);
-          console.log('First recipe cuisine:', transformedRecipes[0]?.cuisine_name);
+          setRecipes(data.results || []);
         } else {
           console.error('Failed to fetch admin recipes:', data.error);
         }
@@ -85,7 +58,6 @@ export const RecipesSection = () => {
   // 自动轮播效果 - 当用户交互时暂停
   useEffect(() => {
     if (recipes.length === 0 || userInteracting) return;
-    
     const interval = setInterval(() => {
       if (!isTransitioning) {
         const nextIndex = (currentImageIndex + 1) % Math.min(recipes.length, 6);
@@ -148,7 +120,7 @@ export const RecipesSection = () => {
     setTimeout(() => setUserInteracting(false), 2000);
   };
 
-  // 获取要展示的图片（最多6张）
+  // 获取要展示的图片（最多9张）
   const displayRecipes = recipes.slice(0, 9);
 
   if (isLoading) {
@@ -249,7 +221,7 @@ export const RecipesSection = () => {
                 {displayRecipes[currentImageIndex].cuisine_id && (
                   <div className="absolute top-2 sm:top-3 left-2 sm:left-3">
                     <span className={`inline-block px-2 py-1 text-xs font-medium text-white rounded-full ${getCuisineClassName(displayRecipes[currentImageIndex].cuisine)}`}>
-                      {getLocalizedCuisineName(displayRecipes[currentImageIndex].cuisine_name, locale)}
+                      {getLocalizedCuisineName(displayRecipes[currentImageIndex].cuisine?.name, locale)}
                     </span>
                   </div>
                 )}
@@ -293,15 +265,9 @@ export const RecipesSection = () => {
             </h2>
             
             {/* 菜谱内容包装器 - 使用flex-1占满剩余空间，移除底部margin */}
-            <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl p-4 sm:p-6 border border-slate-200/50 dark:border-slate-700/50 shadow-sm flex-1 flex flex-col">
+            <div className="bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl p-4 sm:p-6 border border-slate-200/50 dark:border-slate-700/50 shadow-xs flex-1 flex flex-col">
               <div className="flex-1">
-                <p className="text-base sm:text-lg text-foreground mb-3 sm:mb-4 overflow-hidden" style={{
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  lineHeight: '1.5',
-                  maxHeight: '3rem'
-                }}>
+                <p className="text-base sm:text-lg text-foreground mb-3 sm:mb-4 line-clamp-2">
                   {displayRecipes.length > 0 ? (
                     displayRecipes[currentImageIndex].title
                   ) : (
@@ -310,20 +276,14 @@ export const RecipesSection = () => {
                 </p>
                 
                 {/* 菜系标签 - 放在名称下面 */}
-                {displayRecipes.length > 0 && displayRecipes[currentImageIndex].cuisine_name && displayRecipes[currentImageIndex].cuisine_name.trim() !== '' && (
+                {displayRecipes.length > 0 && displayRecipes[currentImageIndex].cuisine?.name && displayRecipes[currentImageIndex].cuisine.name.trim() !== '' && (
                   <div className="mb-4 sm:mb-6">
-                    <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium text-white rounded-full shadow-sm ${getCuisineClassName(displayRecipes[currentImageIndex].cuisine)}`}>
-                      {getLocalizedCuisineName(displayRecipes[currentImageIndex].cuisine_name, locale)}
+                    <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium text-white rounded-full shadow-xs ${getCuisineClassName(displayRecipes[currentImageIndex].cuisine)}`}>
+                      {getLocalizedCuisineName(displayRecipes[currentImageIndex].cuisine.name, locale)}
                     </span>
                   </div>
                 )}
-                <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 overflow-hidden" style={{
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  lineHeight: '1.5',
-                  maxHeight: '4rem'
-                }}>
+                <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 line-clamp-2">
                   {displayRecipes.length > 0 ? (
                     displayRecipes[currentImageIndex].description || t('description2')
                   ) : (

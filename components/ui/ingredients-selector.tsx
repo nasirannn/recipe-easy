@@ -283,21 +283,21 @@ export const IngredientSelector = ({
                         key={ingredient.id}
                         onClick={() => handleIngredientSelect(ingredient)}
                         className={cn(
-                          "group relative rounded-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 hover:from-primary/10 hover:via-primary/5 hover:to-primary/10 text-sm text-center transition-all duration-500 border border-gray-100 dark:border-gray-600 overflow-hidden flex-shrink-0",
+                          "group relative rounded-2xl bg-linear-to-br from-white via-gray-50 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 hover:from-[--color-primary-10] hover:via-[--color-primary-5] hover:to-[--color-primary-10] text-sm text-center transition-all duration-500 border border-gray-100 dark:border-gray-600 overflow-hidden shrink-0",
                           isMobile 
-                            ? "px-3 py-2 hover:scale-105 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 active:scale-95" 
-                            : "px-4 py-3 hover:scale-110 hover:shadow-xl hover:shadow-primary/25 hover:-translate-y-1",
+                            ? "px-3 py-2 hover:scale-105 hover:shadow-lg hover:shadow-[--color-primary-20] hover:-translate-y-0.5 active:scale-95" 
+                            : "px-4 py-3 hover:scale-110 hover:shadow-xl hover:shadow-[--color-primary-25] hover:-translate-y-1",
                           cardWidth
                         )}
                       >
                         {/* 背景装饰效果 */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div className="absolute inset-0 bg-linear-to-br from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         
                         {/* 内容区域 */}
                         <div className="relative z-10 w-full flex items-center justify-center space-x-1">
                           {/* 图标区域 */}
                           {iconPath && (
-                            <div className="flex-shrink-0">
+                            <div className="shrink-0">
                               <Image
                                 src={iconPath}
                                 alt={ingredient.name}

@@ -7,15 +7,14 @@ import { TestimonialSection } from "@/components/layout/sections/testimonial";
 import { TutorialSection } from "@/components/layout/sections/tutorial";
 import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
 import { IntroductionSection } from "@/components/layout/sections/introduction";
-import { AnchorHandler } from "@/components/layout/anchor-handler";  
-
+import { AnchorHandler } from "@/components/layout/anchor-handler";
 
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const { locale } = params;
+  const { locale } = await params;
   
   return generateSeoMetadata({
     title: "RecipeEasy - AI Recipe Generator, Random Recipes, Meal Ideas",

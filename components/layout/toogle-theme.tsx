@@ -9,7 +9,7 @@ export const ToggleTheme = () => {
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
       size="sm"
       variant="ghost"
-      className="justify-start"
+      className="justify-start cursor-pointer"
       style={{ transform: 'translateZ(0)', willChange: 'transform' }}
     >
       <div className="flex gap-2 dark:hidden">

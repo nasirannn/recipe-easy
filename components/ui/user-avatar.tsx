@@ -48,8 +48,18 @@ export function UserAvatar({
     }
 
     const newAvatarUrl = getUserAvatarUrl(user)
-    setAvatarUrl(newAvatarUrl)
-    setImageError(false)
+    console.log('🔍 UserAvatar - Avatar URL from getUserAvatarUrl:', newAvatarUrl)
+    
+    // 如果获取到头像URL，设置它
+    if (newAvatarUrl) {
+      setAvatarUrl(newAvatarUrl)
+      setImageError(false)
+    } else {
+      // 如果没有头像URL，设置错误状态以显示备用头像
+      console.log('🔍 UserAvatar - No avatar URL found, showing fallback')
+      setAvatarUrl(null)
+      setImageError(true)
+    }
   }, [user])
 
   // 监听积分扣减事件
@@ -72,10 +82,12 @@ export function UserAvatar({
   }, [])
 
   const handleImageError = () => {
+    console.log('❌ UserAvatar - Image load error for URL:', avatarUrl)
     setImageError(true)
   }
 
   const handleImageLoad = () => {
+    console.log('✅ UserAvatar - Image loaded successfully for URL:', avatarUrl)
     setImageError(false)
   }
 
@@ -90,11 +102,10 @@ export function UserAvatar({
             onLoad={handleImageLoad}
           />
         ) : null}
-        {showFallback && (
-          <AvatarFallback className="bg-primary/10 text-primary">
-            <UserIcon className={iconSizes[size]} />
-          </AvatarFallback>
-        )}
+        {/* 始终显示备用头像，如果没有头像URL或图片加载失败 */}
+        <AvatarFallback className="bg-[--color-primary-10] text-primary">
+          <UserIcon className={iconSizes[size]} />
+        </AvatarFallback>
       </Avatar>
       
       {/* 积分扣减气泡 */}

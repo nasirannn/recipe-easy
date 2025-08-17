@@ -7,9 +7,9 @@ import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = params;
+  const { locale } = await params;
   
   return generateSeoMetadata({
     title: 'Terms of Service - Recipe Easy',
@@ -51,8 +51,9 @@ async function getTermsOfService(locale: string) {
   }
 }
 
-export default async function TermsPage({ params }: { params: { locale: string } }) {
-  const content = await getTermsOfService(params.locale);
+export default async function TermsPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const content = await getTermsOfService(locale);
 
   return (
     <SimpleLayout title="Terms of Service">

@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getWorkerApiUrl } from '@/lib/config';
 
+// 标记为动态路由以支持查询参数
+export const dynamic = 'force-dynamic';
 // 启用缓存以提高性能
 export const revalidate = 3600; // 1小时缓存
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+    const searchParams = request.nextUrl.searchParams;
     const language = searchParams.get('lang') || 'en';
 
     // 直接调用云端数据库

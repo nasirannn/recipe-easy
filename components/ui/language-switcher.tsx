@@ -49,7 +49,7 @@ export function LanguageSwitcher() {
         <Button
           variant="ghost"
           size="sm"
-          className="gap-2 hover:bg-accent/50 px-3 py-2"
+          className="gap-2 hover:bg-accent/50 px-3 py-2 cursor-pointer"
         >
           <Globe className="h-4 w-4 text-muted-foreground" />
           <span className="hidden sm:inline font-medium">
@@ -59,7 +59,7 @@ export function LanguageSwitcher() {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-40 p-2 bg-background/95 backdrop-blur-md border shadow-xl rounded-xl"
+        className="w-40 p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-xl"
         sideOffset={8}
         onMouseLeave={() => setHoveredCode(null)}
         onCloseAutoFocus={(e) => e.preventDefault()}

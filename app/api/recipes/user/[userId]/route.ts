@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const { searchParams } = new URL(request.url);
@@ -10,9 +10,10 @@ export async function GET(
     const limit = parseInt(searchParams.get('limit') || '10');
     const lang = searchParams.get('lang') || 'en';
     const offset = (page - 1) * limit;
+    const { userId } = await params;
     
     const response = await fetch(
-      `${process.env.WORKER_URL || 'https://api.recipe-easy.com'}/api/recipes/user/${params.userId}?page=${page}&limit=${limit}&lang=${lang}`,
+      `${process.env.WORKER_URL || 'https://api.recipe-easy.com'}/api/recipes/user/${userId}?page=${page}&limit=${limit}&lang=${lang}`,
       {
         headers: {
           'Content-Type': 'application/json',

@@ -3,19 +3,12 @@
     "home": "Home",
     "explore": "Explore",
     "features": "Features",
-    "tutorial": "Tutorial",
     "faq": "FAQ",
     "signin": "Sign In",
-    "signup": "Sign Up",
     "signout": "Sign Out",
-    "profile": "Profile",
     "credits": "Credits",
-    "usage": "Usage",
-    "loading": "Loading...",
     "totalEarned": "Total Earned",
     "myRecipes": "My Recipes",
-    "admin": "Admin",
-    "dashboard": "Dashboard",
     "users": "Users",
     "settings": "Settings",
     "appearance": "Appearance",
@@ -32,15 +25,13 @@
     "updateSuccess": "Display name updated successfully"
   },
   "hero": {
-    "title": "Free Online AI Recipe Generator",
-    "mainTitle": "AI recipes generator from any ingredients",
+    "title": "AI recipes generator from any ingredients",
     "description": "Simply select or enter ingredients, and our AI will create random, creative, and easy-to-follow recipes for you. No more \"what can i make with these ingredients\" stress.",
     "tryNow": "Try Now",
-    "freeRecipeGenerator": "Free Recipe Generator",
-    "badgeImageCost": "Image Generation Costs 1 Credit",
-    "badgeRegistrationCredits": "Get 100 Credits on Registration",
-    "badgePermanentValidity": "Permanent Validity",
-    "aiPoweredBy": "AI Powered by"
+    "badgeFreeRecipeCreation": "Free Recipe Creation",
+    "badgeRegisterForImages": "Register to Generate Images",
+    "badgeStartWithCredits": "Start with 100 Free Credits",
+    "badgeImageCostPerCredit": "1 Credit per Image"
   },
   "features": {
     "title": "Smart AI-Powered Culinary Features",
@@ -130,11 +121,9 @@
     "searchIngredients": "Search Ingredients",
     "searchIconTooltip": "Search ingredients",
     "hideSearch": "Hide search",
-    "foundMatchingIngredients": "Found {count} matching ingredients",
     "pressEnterToAddCustomIngredient": "Press Enter to add as custom ingredient",
     "noMatchingIngredientsFound": "No matching ingredients found",
     "searchResults": "Search Results",
-    "quickSelect": "Quick Select",
     "addCustomIngredient": "Add Custom Ingredient",
     "categories": {
       "meat": "Meat",
@@ -177,16 +166,14 @@
     "insufficientCredits": "Insufficient credits to generate image"
   },
   "recipes": {
-    "title": "Get Inspired",
-    "subtitle": "Delicious recipes from around the world",
-    "allRecipesSubtitle": "Discover delicious recipes from around the world",
+    "title": "Explore Recipes",
+    "subtitle": "Discover delicious recipes from around the world",
     "loadingRecipes": "Loading recipes...",
     "loadMore": "Load More",
-    "loading": "Loading...",
     "allRecipesDisplayed": "All recipes displayed",
-    "description1": "Explore delicious recipes from around the world, each carefully selected to provide you with cooking inspiration.",
-    "description2": "From simple quick dishes to complex gourmet creations, our recipe collection covers various difficulty levels and styles to meet different cooking skill requirements.",
-    "description3": "Each recipe includes detailed cooking time, serving size, and difficulty level, making it easy for you to choose the most suitable dish."
+    "description1": "",
+    "description2": "",
+    "description3": ""
   },
   "myRecipes": {
     "title": "My Recipes",
@@ -328,14 +315,6 @@
     "confirmSendTitle": "Confirm Send Email",
     "confirmSendDescription": "Are you sure you want to open your email client to send an email?"
   },
-  "ingredients": {
-    "loading": "Loading ingredients...",
-    "noResults": "No ingredients found for",
-    "addCustom": "Press Enter to add it as a custom ingredient",
-    "noCategory": "No ingredients available in this category",
-    "placeholder": "select or enter ingredients...",
-    "addMore": "Add more ingredients..."
-  },
   "auth": {
     "signIn": "Sign In",
     "signUp": "Sign Up",
@@ -367,30 +346,16 @@
     "resetPasswordSuccess": "Password reset email sent. Please check your inbox.",
     "resetPasswordError": "Failed to send password reset email",
     "signInNotInitialized": "Sign in function not properly initialized",
-    "generalError": "An error occurred during sign in"
+    "generalError": "An error occurred during sign in",
+    "termsAgreement": "By continuing, you agree to our Terms of Service and Privacy Policy"
   },
-  "Theme": {
-    "light": "Light",
-    "dark": "Dark",
-    "system": "System"
-  },
-  "Language": {
-    "toggle": "Toggle language"
-  },
-  "imagePlaceholder": {
-    "signInTitle": "✨ Sign in to generate image",
-    "generateTitle": "✨ Generate Picture",
-    "signInSubtitle": "Sign in to generate images",
-    "generateSubtitle": "Click to generate image (1 credit)",
-    "signInAction": "Click to sign in",
-    "generateAction": "Click to generate"
-  },
+
   "introduction": {
     "title": "Introduction",
-    "heading": "Why I built this AI recipe generator?",
-    "description1": "I'm an unemployed product manager, and I'm currently without job, so I have limited income sources and cook at home every day. The question I must think about before bed is always: \"What should I eat tomorrow?\" I constantly rack my brain trying to figure out how to make the most of the leftover ingredients in my fridge.",
-    "description2": "Cooking at home is not only more cost-effective than ordering takeout, but also healthier and more nutritious(I'm a good cook, and I've lost almost 10kg by cooking at home). This pain point inspired me to develop this product. Compared to similar alternatives, I believe this product offers a superior user experience - users primarily complete tasks through clicking rather than typing, significantly lowering the barrier to entry.",
-    "description3": "Although the features are still relatively simple, I'm proud to have successfully launched it. This represents not just a breakthrough in my technical skills, but a milestone of developing a complete product from zero to one. I hope this product can help more people like me solve the daily dilemma of \"what to eat tomorrow,\" allowing everyone to enjoy healthy, affordable, and delicious homemade meals.",
+    "heading": "Why was this AI recipe generator created?",
+    "description1": "In today's fast-paced world, many people face the daily challenge of deciding what to cook with the ingredients they have available. Whether it's leftover vegetables in the fridge, pantry staples, or seasonal produce, the question \"What should I cook today?\" is a universal dilemma that affects home cooks everywhere.",
+    "description2": "Home cooking offers significant advantages over takeout - it's more cost-effective, healthier, and allows for better control over ingredients and nutrition. However, the barrier to creative cooking often lies in recipe discovery and meal planning. This AI recipe generator was designed to solve this exact problem by providing intelligent, personalized recipe suggestions based on available ingredients.",
+    "description3": "The platform focuses on user experience, making recipe generation accessible through intuitive clicking rather than complex typing. By leveraging AI technology, it helps users transform everyday ingredients into delicious, creative meals, making home cooking more enjoyable and less daunting for everyone.",
     "imageAlt": "AI Recipe Generator Introduction"
   }
 }

@@ -110,7 +110,7 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
 
   if (isLoading && page === 1) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen bg-linear-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center">
             <Spinner className="h-8 w-8 mx-auto" />
@@ -124,15 +124,15 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-linear-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
       {/* 页面标题 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="text-center">
           <h2 className="text-4xl font-bold text-primary text-primary-dark mb-4">
-            {t('allRecipes')}
+            {t('title')}
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300">
-            {t('allRecipesSubtitle')}
+            {t('subtitle')}
           </p>
         </div>
       </div>
@@ -219,7 +219,7 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
             <button
               onClick={loadMore}
               disabled={isLoading}
-              className="inline-flex items-center px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-[--color-primary-90] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>

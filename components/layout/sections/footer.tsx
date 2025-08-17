@@ -40,7 +40,7 @@ export const FooterSection = () => {
           <div className="md:col-span-1">
             <div className="flex gap-6 md:gap-8 justify-center md:justify-end">
               {/* About section */}
-              <div className="flex flex-col gap-2 flex-shrink-0 text-center md:text-left">
+              <div className="flex flex-col gap-2 shrink-0 text-center md:text-left">
                 <h3 className="font-bold text-lg">{t('about')}</h3>
                 <div>
                   <Link href="#features" className="opacity-60 hover:opacity-100">
@@ -50,7 +50,7 @@ export const FooterSection = () => {
               </div>
 
               {/* Help section */}
-              <div className="flex flex-col gap-2 flex-shrink-0 text-center md:text-left">
+              <div className="flex flex-col gap-2 shrink-0 text-center md:text-left">
                 <h3 className="font-bold text-lg">{t('help')}</h3>
                 <div>
                   <button 
@@ -68,7 +68,7 @@ export const FooterSection = () => {
               </div>
 
               {/* Friend section */}
-              <div className="flex flex-col gap-2 flex-shrink-0 text-center md:text-left">
+              <div className="flex flex-col gap-2 shrink-0 text-center md:text-left">
                 <h3 className="font-bold text-lg">{t('friends')}</h3>
                 <div>
                   <a 

@@ -66,8 +66,8 @@ export const FeaturesSection = () => {
               key={feature.id} 
               className="flex gap-4 p-6 rounded-xl hover:bg-muted/50 transition-colors"
             >
-              <div className="flex-shrink-0">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="shrink-0">
+                <div className="h-12 w-12 rounded-full bg-[--color-primary-10] flex items-center justify-center">
                   {feature.icon}
                 </div>
               </div>

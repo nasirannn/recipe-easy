@@ -4,6 +4,7 @@ import "./globals.css";
 import Script from "next/script";
 import { generateMetadata, websiteStructuredData, organizationStructuredData, SITE_URL } from "@/lib/seo";
 import { Toaster } from "sonner";
+import { ThemeProvider } from "@/components/layout/theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -67,6 +68,12 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
         {/* Google Analytics 4 - 只在环境变量存在时加载 */}
         {GA_ID && (
           <>
@@ -122,6 +129,7 @@ export default function RootLayout({
         
         {children}
         <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

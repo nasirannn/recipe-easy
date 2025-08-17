@@ -3,15 +3,15 @@ import { RecipesList } from '@/components/recipe/recipes-list';
 import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
 
 interface RecipesPageProps {
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({
   params,
 }: RecipesPageProps): Promise<Metadata> {
-  const { locale } = params;
+  const { locale } = await params;
   
   return generateSeoMetadata({
     title: 'All Recipes - RecipeEasy',
@@ -21,8 +21,8 @@ export async function generateMetadata({
   });
 }
 
-export default function RecipesPage({ params }: RecipesPageProps) {
-  const { locale } = params;
+export default async function RecipesPage({ params }: RecipesPageProps) {
+  const { locale } = await params;
   
   return <RecipesList locale={locale} />;
 }

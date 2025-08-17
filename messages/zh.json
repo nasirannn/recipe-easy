@@ -3,15 +3,10 @@
     "home": "首页",
     "explore": "探索",
     "features": "功能",
-    "tutorial": "教程",
     "faq": "常见问题",
     "signin": "登录",
-    "signup": "注册",
     "signout": "退出",
-    "profile": "个人资料",
     "credits": "积分",
-    "usage": "用量",
-    "loading": "加载中...",
     "totalEarned": "累计获得",
     "myRecipes": "我的菜谱",
     "admin": "管理",
@@ -32,15 +27,14 @@
     "updateSuccess": "显示名称更新成功"
   },
   "hero": {
-    "title": "免费在线AI食谱生成器",
-    "mainTitle": "万能食材AI食谱生成器",
-    "description": "只需选择或输入食材，我们的 AI 就会为您制作随机、创意且易于跟随的食谱。再也不用为\"晚餐吃什么？\"而烦恼。",
+    "title": "用任意食材，生成AI食谱",
+    "mainTitle": "用任意食材，生成AI食谱",
+    "description": "只需选择或输入现有食材，AI 即刻为您生成随机搭配、创意十足、简单易做的食谱。从此告别\"今晚吃什么？\"的烦恼。",
     "tryNow": "立即试用",
-    "freeRecipeGenerator": "免费食谱生成器",
-    "badgeImageCost": "生成图片消耗1积分",
-    "badgeRegistrationCredits": "注册送100积分",
-    "badgePermanentValidity": "永久有效",
-    "aiPoweredBy": "AI 技术支持"
+    "badgeFreeRecipeCreation": "免费创建食谱",
+    "badgeRegisterForImages": "注册生成图片",
+    "badgeStartWithCredits": "赠送100积分",
+    "badgeImageCostPerCredit": "每张图片1积分"
   },
   "features": {
     "title": "智能AI烹饪功能",
@@ -129,11 +123,9 @@
     "searchIngredients": "搜索食材",
     "searchIconTooltip": "搜索食材",
     "hideSearch": "收起搜索",
-    "foundMatchingIngredients": "找到 {count} 个匹配食材",
     "pressEnterToAddCustomIngredient": "按回车键添加为自定义食材",
     "noMatchingIngredientsFound": "未找到匹配的食材",
     "searchResults": "搜索结果",
-    "quickSelect": "快速选择",
     "addCustomIngredient": "添加自定义食材",
     "categories": {
       "meat": "肉类",
@@ -176,16 +168,11 @@
     "insufficientCredits": "积分不足，无法生成图片"
   },
   "recipes": {
-    "title": "获取灵感",
+    "title": "探索菜谱",
     "subtitle": "来自世界各地的美味食谱",
-    "allRecipesSubtitle": "发现来自世界各地的美味菜谱",
     "loadingRecipes": "加载菜谱中...",
     "loadMore": "加载更多",
-    "loading": "加载中...",
-    "allRecipesDisplayed": "已显示所有菜谱",
-    "description1": "探索来自世界各地的美味食谱，每一道菜都经过精心挑选，为您提供烹饪灵感。",
-    "description2": "从简单快手菜到复杂精致料理，我们的食谱集合涵盖各种难度和风格，满足不同烹饪水平的需求。",
-    "description3": "每个食谱都包含详细的烹饪时间、适合的份量和难度等级，让您轻松选择最适合的菜品。"
+    "allRecipesDisplayed": "已显示所有菜谱"
   },
   "myRecipes": {
     "title": "我的菜谱",
@@ -327,14 +314,6 @@
     "confirmSendTitle": "确认发送邮件",
     "confirmSendDescription": "您确定要打开邮件客户端发送邮件吗？"
   },
-  "ingredients": {
-    "loading": "正在加载食材...",
-    "noResults": "未找到食材",
-    "addCustom": "按回车键添加为自定义食材",
-    "noCategory": "此分类下暂无食材",
-    "placeholder": "选择或输入食材...",
-    "addMore": "添加更多食材..."
-  },
   "auth": {
     "signIn": "登录",
     "signUp": "注册",
@@ -366,24 +345,10 @@
     "resetPasswordSuccess": "密码重置邮件已发送，请查看您的收件箱。",
     "resetPasswordError": "发送密码重置邮件失败",
     "signInNotInitialized": "登录功能未正确初始化",
-    "generalError": "登录过程中发生错误"
+    "generalError": "登录过程中发生错误",
+    "termsAgreement": "继续使用即表示您同意我们的服务条款和隐私政策"
   },
-  "Theme": {
-    "light": "浅色",
-    "dark": "深色",
-    "system": "系统"
-  },
-  "Language": {
-    "toggle": "切换语言"
-  },
-  "imagePlaceholder": {
-    "signInTitle": "✨ 登录生成精美图片",
-    "generateTitle": "✨ 生成精美图片",
-    "signInSubtitle": "登录后即可生成图片",
-    "generateSubtitle": "点击生成图片，消耗1积分",
-    "signInAction": "点击登录",
-    "generateAction": "点击生成"
-  },
+
   "introduction": {
     "title": "介绍",
     "heading": "为什么要开发这个AI菜谱生成器？",

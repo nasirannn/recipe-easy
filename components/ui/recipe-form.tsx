@@ -483,17 +483,17 @@ export const RecipeForm = ({
                     "flex items-center justify-center transition-all duration-200 relative z-10 px-3 min-w-[60px] max-w-[60px] hover:scale-105",
                     isMobile ? "h-14 w-14" : "h-12",
                     searchState.showSearchInput
-                      ? "bg-primary text-primary-foreground rounded-l-full shadow-lg shadow-primary/25"
+                      ? "bg-primary text-primary-foreground rounded-l-full shadow-lg shadow-[--color-primary-25]"
                       : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full hover:shadow-md"
                   )}
                 >
                   <Search className={cn(
-                    "flex-shrink-0 transition-colors duration-300",
+                    "shrink-0 transition-colors duration-300",
                     isMobile ? "h-6 w-6" : "h-5 w-5"
                   )} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
                 <p>{tIngredientSelector('searchIconTooltip')}</p>
               </TooltipContent>
             </Tooltip>
@@ -513,7 +513,7 @@ export const RecipeForm = ({
                   type="text"
                   placeholder={formData.ingredients.length > 0 ? tIngredientSelector('addMoreIngredients') : tIngredientSelector('selectOrEnterIngredients')}
                   className={cn(
-                    "h-full pl-4 pr-4 border-0 bg-transparent text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0",
+                    "h-full pl-4 pr-4 border-0 bg-transparent text-gray-900 dark:text-gray-100 focus:outline-hidden focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0",
                     isMobile ? "text-base" : "text-sm"
                   )}
                   value={searchState.searchValue}
@@ -524,11 +524,11 @@ export const RecipeForm = ({
               </div>
             </div>
 
-            {/* 搜索结果下拉框 - 放在搜索框下方 */}
+            {/* 搜索结果下拉框 */}
             {searchState.showSearchInput && searchState.showSearchResults && (
               <div className="absolute top-full left-0 right-0 z-50 mt-2">
                 <div
-                  className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl shadow-gray-200/40 dark:shadow-gray-900/40 overflow-hidden w-full"
+                  className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl shadow-[--color-gray-200-40] dark:shadow-[--color-gray-900-40] overflow-hidden w-full"
                   style={{
                     minHeight: '200px',
                   }}
@@ -546,7 +546,7 @@ export const RecipeForm = ({
                         <button
                           key={ingredient.id}
                           onClick={() => handleSearchResultSelect(ingredient)}
-                          className="w-full px-4 py-3 text-left hover:bg-gradient-to-r hover:from-primary/5 hover:to-primary/10 dark:hover:from-primary/10 dark:hover:to-primary/5 transition-all duration-200 border-b border-gray-100/50 dark:border-gray-700/50 last:border-b-0 group"
+                          className="w-full px-4 py-3 text-left hover:bg-linear-to-r hover:from-[--color-primary-5] hover:to-[--color-primary-10] dark:hover:from-[--color-primary-10] dark:hover:to-[--color-primary-5] transition-all duration-200 border-b border-[--color-gray-100-50] dark:border-[--color-gray-700-50] last:border-b-0 group"
                         >
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-3">
@@ -568,15 +568,15 @@ export const RecipeForm = ({
                     <div>
                       {/* 空状态标题 */}
                       <div className="p-6 text-center">
-                        <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-full mx-auto mb-3 flex items-center justify-center">
+                        <div className="w-16 h-16 mx-auto mb-3 flex items-center justify-center">
                           <span className="text-2xl">🔍</span>
                         </div>
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                          {tIngredientSelector('noMatchingIngredients')}
+                          {tIngredientSelector('noMatchingIngredientsFound')}
                         </p>
                       </div>
                       {/* 底部提示 */}
-                      <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 px-4 py-3">
+                      <div className="bg-linear-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 px-4 py-3">
                         <div className="flex items-center justify-center gap-2 text-xs text-amber-600 dark:text-amber-400">
                           <div className="w-4 h-4 bg-amber-100 dark:bg-amber-800 rounded-full flex items-center justify-center">
                             <span className="text-[10px] font-bold">+</span>
@@ -606,7 +606,7 @@ export const RecipeForm = ({
 
 
               {/* 食材分类tab - 固定高度 */}
-              <div className="flex-shrink-0 mb-3">
+              <div className="shrink-0 mb-3">
                 {!isMobile ? (
                   <TooltipProvider>
                     <div className="w-full">
@@ -625,27 +625,27 @@ export const RecipeForm = ({
                                   <button
                                     onClick={() => handleCategoryChange(categoryId as keyof typeof CATEGORIES)}
                                     className={cn(
-                                      "flex items-center justify-center transition-all duration-300 relative group h-12 flex-1",
+                                      "flex items-center justify-center transition-all duration-300 relative group h-12 flex-1 cursor-pointer",
                                       isActive
-                                        ? "bg-gradient-to-r from-orange-500 to-amber-600 dark:from-orange-600 dark:to-amber-700 text-white shadow-lg shadow-orange-500/30 dark:shadow-orange-600/40 scale-105 rounded-2xl px-2 gap-2 border-2 border-orange-400/50 dark:border-orange-500/60"
+                                        ? "bg-linear-to-r from-orange-500 to-amber-600 dark:from-orange-600 dark:to-amber-700 text-white shadow-lg shadow-orange-500/30 dark:shadow-orange-600/40 scale-105 rounded-2xl px-2 gap-2"
                                         : "text-gray-600 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 hover:scale-105 rounded-xl p-2 gap-2"
                                     )}
                                   >
                                     {/* 选中状态的背景装饰 */}
                                     {isActive && (
-                                      <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-amber-500/20 dark:from-orange-500/30 dark:to-amber-600/30 rounded-2xl" />
+                                      <div className="absolute inset-0 bg-linear-to-r from-orange-500/10 to-amber-600/10 dark:from-orange-600/15 dark:to-amber-700/15 rounded-2xl" />
                                     )}
 
                                     <span className={cn(
-                                      "h-5 w-5 flex-shrink-0 transition-all duration-300 relative z-10",
-                                      isActive ? "text-white drop-shadow-sm" : category.color,
+                                      "h-5 w-5 shrink-0 transition-all duration-300 relative z-10",
+                                      isActive ? "text-white drop-shadow-xs" : category.color,
                                       !isActive && "group-hover:scale-125"
                                     )}>
                                       {Icon}
                                     </span>
 
                                     {isActive && (
-                                      <span className="text-sm font-semibold whitespace-nowrap relative z-10 drop-shadow-sm">
+                                      <span className="text-sm font-semibold whitespace-nowrap relative z-10 drop-shadow-xs">
                                         {categoryName}
                                       </span>
                                     )}
@@ -653,7 +653,7 @@ export const RecipeForm = ({
 
                                   </button>
                                 </TooltipTrigger>
-                                <TooltipContent>
+                                <TooltipContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
                                   <p>{categoryName}</p>
                                 </TooltipContent>
                               </Tooltip>
@@ -670,12 +670,12 @@ export const RecipeForm = ({
                       value={activeCategory}
                       onValueChange={(value) => handleCategoryChange(value as keyof typeof CATEGORIES)}
                     >
-                      <SelectTrigger className="w-full h-12 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:border-orange-500/50 focus:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-300">
+                      <SelectTrigger className="w-full h-12 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-xs hover:border-orange-500/50 focus:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-300 cursor-pointer">
                         <SelectValue>
                           <div className="flex items-center gap-3">
                             {CATEGORIES[activeCategory] && (() => {
                               const Icon = CATEGORIES[activeCategory].icon;
-                              return <span className={cn("h-5 w-5 flex-shrink-0", CATEGORIES[activeCategory].color)}>{Icon}</span>;
+                              return <span className={cn("h-5 w-5 shrink-0", CATEGORIES[activeCategory].color)}>{Icon}</span>;
                             })()}
                             <span className="font-medium text-gray-900 dark:text-gray-100">
                               {dynamicCategories[activeCategory]?.name || tIngredientSelector(`categories.${activeCategory}`)}
@@ -696,12 +696,12 @@ export const RecipeForm = ({
                               className={cn(
                                 "flex items-center gap-3 py-3 px-4 cursor-pointer transition-all duration-200",
                                 isActive
-                                  ? "bg-gradient-to-r from-orange-500/10 to-amber-500/10 text-orange-600 dark:text-orange-400 font-semibold border-l-2 border-orange-500"
+                                  ? "bg-linear-to-r from-orange-500/10 to-amber-500/10 text-orange-600 dark:text-orange-400 font-semibold border-l-2 border-orange-500"
                                   : "hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400"
                               )}
                             >
                               <div className="flex items-center gap-3 w-full">
-                                <span className={cn("h-5 w-5 flex-shrink-0", category.color)}>{Icon}</span>
+                                <span className={cn("h-5 w-5 shrink-0", category.color)}>{Icon}</span>
                                 <span className="font-medium">
                                   {dynamicCategories[categoryId]?.name || tIngredientSelector(`categories.${categoryId}`)}
                                 </span>
@@ -726,7 +726,7 @@ export const RecipeForm = ({
                       {/* Loading 动画 */}
                       <div className="relative">
                         <div className="w-12 h-12 border-4 border-gray-200 dark:border-gray-700 border-t-primary rounded-full animate-spin"></div>
-                        <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-primary/30 rounded-full animate-ping"></div>
+                        <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-[--color-primary-30] rounded-full animate-ping"></div>
                       </div>
                       
                       {/* Loading 文字 */}
@@ -761,7 +761,7 @@ export const RecipeForm = ({
                         {/* 重试按钮 */}
                         <button
                           onClick={fetchIngredientsData}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:bg-primary/90 transition-colors duration-200"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:bg-[--color-primary-90] transition-colors duration-200"
                         >
                           <RotateCcw className="h-3 w-3" />
                           {tIngredientSelector('retry') || '重试'}
@@ -784,11 +784,11 @@ export const RecipeForm = ({
               </div>
 
               {/* 左侧底部装饰 */}
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-500 to-transparent rounded-full"></div>
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-linear-to-r from-transparent via-gray-300 dark:via-gray-500 to-transparent rounded-full"></div>
             </div>
 
             {/* 左侧阴影效果 */}
-            <div className="absolute -bottom-2 left-2 right-2 h-2 bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent rounded-full blur-sm"></div>
+            <div className="absolute -bottom-2 left-2 right-2 h-2 bg-linear-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent rounded-full blur-sm"></div>
           </div>
         </div>
 
@@ -799,11 +799,11 @@ export const RecipeForm = ({
           <div className="relative">
             {/* 小票主体 */}
             <div className={cn(
-              "bg-white dark:bg-gray-900 rounded-2xl shadow-lg shadow-gray-200/50 dark:shadow-gray-900/50 flex flex-col border-2 border-gray-200 dark:border-gray-700",
+              "bg-white dark:bg-gray-900 rounded-2xl shadow-lg shadow-[--color-gray-200-50] dark:shadow-[--color-gray-900-50] flex flex-col border-2 border-gray-200 dark:border-gray-700",
               isMobile ? "p-4 h-[400px]" : "p-6 h-[400px]"
             )}>
               {/* 小票顶部装饰 - 模拟小票撕口 */}
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-20 h-2 bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-500 to-transparent rounded-full"></div>
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-20 h-2 bg-linear-to-r from-transparent via-gray-300 dark:via-gray-500 to-transparent rounded-full"></div>
 
               {/* 小票头部信息 */}
               <div className="mb-4 pb-3 border-b-2 border-dashed border-gray-300 dark:border-gray-600">
@@ -855,7 +855,7 @@ export const RecipeForm = ({
                             )} />
                           </button>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
                           <p>{t('reset')}</p>
                         </TooltipContent>
                       </Tooltip>
@@ -920,7 +920,7 @@ export const RecipeForm = ({
                             <div className="flex items-center gap-3 flex-1 min-w-0 ml-8">
                               {/* 食材图标 */}
                               {iconPath && (
-                                <div className="flex-shrink-0">
+                                <div className="shrink-0">
                                   <Image
                                     src={iconPath}
                                     alt={ingredient.name}
@@ -946,7 +946,7 @@ export const RecipeForm = ({
                                       {ingredient.name.toUpperCase()}
                                     </span>
                                   </TooltipTrigger>
-                                  <TooltipContent>
+                                  <TooltipContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
                                     <p className="font-mono">{ingredient.name.toUpperCase()}</p>
                                   </TooltipContent>
                                 </Tooltip>
@@ -981,13 +981,13 @@ export const RecipeForm = ({
       </div>
       {/* 生成按钮和高级设置 */}
       <div className={cn(
-        "flex items-center pt-2 pb-4 border-t border-muted/20",
+        "flex items-center pt-2 pb-4",
         isMobile ? "justify-center" : "justify-between"
       )}>
         {/* 内容容器 */}
         <div className={cn(
           "w-full rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700",
-          "shadow-sm hover:shadow-md transition-all duration-300",
+          "shadow-xs hover:shadow-md transition-all duration-300",
           isMobile ? "p-6" : "p-4"
         )}>
           <div className={cn(
@@ -1019,7 +1019,7 @@ export const RecipeForm = ({
                       )} />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
                     <p>{showOptions ? t('hideOptions') || '隐藏选项' : t('showOptions') || '显示选项'}</p>
                   </TooltipContent>
                 </Tooltip>
@@ -1089,7 +1089,7 @@ export const RecipeForm = ({
                     <SelectTrigger id="cookingTime" className="h-7 w-16 sm:w-20 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
                       <SelectValue placeholder={t('selectCookingTime')} />
                     </SelectTrigger>
-                    <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()}>
+                    <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
                       <SelectItem value="quick">{t('quick')}</SelectItem>
                       <SelectItem value="medium">{t('mediumTime')}</SelectItem>
                       <SelectItem value="long">{t('long')}</SelectItem>
@@ -1110,7 +1110,7 @@ export const RecipeForm = ({
                     <SelectTrigger id="difficulty" className="h-7 w-16 sm:w-20 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
                       <SelectValue placeholder={t('selectDifficulty')} />
                     </SelectTrigger>
-                    <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()}>
+                    <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
                       <SelectItem value="easy">{t('easy')}</SelectItem>
                       <SelectItem value="medium">{t('mediumDifficulty')}</SelectItem>
                       <SelectItem value="hard">{t('hard')}</SelectItem>
@@ -1131,7 +1131,7 @@ export const RecipeForm = ({
                     <SelectTrigger id="cuisine" className="h-7 w-16 sm:w-20 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
                       <SelectValue placeholder={t('selectCuisine')} />
                     </SelectTrigger>
-                    <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()}>
+                    <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
                       <SelectItem value="any">{t('anyCuisine')}</SelectItem>
                       {cuisinesLoading ? (
                         <SelectItem value="loading" disabled>{t('loadingCuisines')}</SelectItem>
@@ -1148,14 +1148,14 @@ export const RecipeForm = ({
 
                 {/* 桌面端：在选项面板末尾添加间距 */}
                 {!isMobile && showOptions && (
-                  <div className="w-8 flex-shrink-0"></div>
+                  <div className="w-8 shrink-0"></div>
                 )}
               </div>
             </div>
 
             {/* 右侧：生成按钮 */}
             <div className={cn(
-              "flex items-center flex-shrink-0",
+              "flex items-center shrink-0",
               isMobile ? "w-full justify-center mt-6" : "ml-auto"
             )}>
               <Button
@@ -1163,7 +1163,7 @@ export const RecipeForm = ({
                 className={cn(
                   "font-medium transition-all duration-300 hover:scale-105",
                   isMobile
-                    ? "w-full h-14 text-lg shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
+                    ? "w-full h-14 text-lg shadow-lg shadow-[--color-primary-25] hover:shadow-xl hover:shadow-[--color-primary-30]"
                     : "px-3 sm:px-6"
                 )}
                 size="sm"

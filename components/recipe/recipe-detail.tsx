@@ -108,7 +108,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-linear-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* 左侧：图片和基本信息 */}
@@ -165,7 +165,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {recipe.cookingTime && (
                     <div className="flex items-center gap-3">
-                      <div className="p-3 bg-secondary/10 rounded-xl">
+                      <div className="p-3 bg-[--color-secondary-10] rounded-xl">
                         <Clock className="h-6 w-6 text-secondary" />
                       </div>
                       <div>
@@ -179,7 +179,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                   
                   {recipe.servings && (
                     <div className="flex items-center gap-3">
-                      <div className="p-3 bg-secondary/10 rounded-xl">
+                      <div className="p-3 bg-[--color-secondary-10] rounded-xl">
                         <Users className="h-6 w-6 text-secondary" />
                       </div>
                       <div>
@@ -193,7 +193,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                   
                   {recipe.difficulty && (
                     <div className="flex items-center gap-3">
-                      <div className="p-3 bg-secondary/10 rounded-xl">
+                      <div className="p-3 bg-[--color-secondary-10] rounded-xl">
                         <ChefHat className="h-6 w-6 text-secondary" />
                       </div>
                       <div>
@@ -212,7 +212,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* 食材 */}
               {ingredients.length > 0 && (
-                <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-0 shadow-lg">
+                <Card className="bg-linear-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-0 shadow-lg">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -224,7 +224,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                     <ul className="space-y-2">
                       {ingredients?.map((ingredient, i) => (
                         <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                          <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0" />
+                          <div className="w-2 h-2 bg-green-500 rounded-full shrink-0" />
                           <span>{ingredient}</span>
                         </li>
                       ))}
@@ -235,7 +235,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
 
               {/* 调料 */}
               {seasoning.length > 0 && (
-                <Card className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-0 shadow-lg">
+                <Card className="bg-linear-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-0 shadow-lg">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -247,7 +247,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                     <ul className="space-y-2">
                       {seasoning?.map((season, i) => (
                         <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                          <div className="w-2 h-2 bg-amber-500 rounded-full flex-shrink-0" />
+                          <div className="w-2 h-2 bg-amber-500 rounded-full shrink-0" />
                           <span>{season}</span>
                         </li>
                       ))}
@@ -259,7 +259,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
 
             {/* 烹饪步骤 */}
             {instructions.length > 0 && (
-              <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-0 shadow-lg">
+              <Card className="bg-linear-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-0 shadow-lg">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -271,7 +271,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                   <div className="space-y-6">
                     {instructions?.map((step, i) => (
                       <div key={i} className="flex gap-4">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white flex items-center justify-center font-semibold text-sm">
+                        <div className="shrink-0 w-8 h-8 rounded-full bg-linear-to-r from-blue-500 to-indigo-500 text-white flex items-center justify-center font-semibold text-sm">
                           {i + 1}
                         </div>
                         <div className="flex-1">
@@ -286,7 +286,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
 
             {/* 厨师小贴士 */}
             {chefTips.length > 0 && (
-              <Card className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-0 shadow-lg">
+              <Card className="bg-linear-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-0 shadow-lg">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2">
@@ -299,7 +299,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                                           <div className="space-y-3">
                           {chefTips?.map((tip, i) => (
                             <div key={i} className="flex gap-3">
-                              <div className="flex-shrink-0 w-2 h-2 bg-orange-500 rounded-full mt-2" />
+                              <div className="shrink-0 w-2 h-2 bg-orange-500 rounded-full mt-2" />
                               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{tip}</p>
                             </div>
                           ))}

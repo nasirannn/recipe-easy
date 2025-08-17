@@ -92,7 +92,7 @@ export const LoadingAnimation = ({ className, language = 'en' }: LoadingAnimatio
               {message}
             </Typography>
           </div>
-          <Typography variant="inline" className="text-muted-foreground font-mono text-xs flex-shrink-0">
+          <Typography variant="inline" className="text-muted-foreground font-mono text-xs shrink-0">
             {Math.round(progress)}%
           </Typography>
         </div>

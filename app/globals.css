@@ -1,78 +1,197 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* *=========== Default theme =========== */
-@layer base {
-  :root {
-    /* 浅色模式 */
-    --background: 0 0% 100%;         /* 纯白背景 */
-    --foreground: 240 10% 3.9%;      /* 深灰文字（AA 级对比度） */
+/* Tailwind CSS v4 黑暗模式配置 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tailwind CSS v4 主题配置 - 使用现代 OKLCH 颜色空间 */
+@theme {
+  /* 字体系列 */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+
+  /* 容器配置 */
+  --container-center: true;
+  --container-padding: 1.5rem;
   
-    --muted: 240 4.8% 95.9%;         /* 淡灰背景 */
-    --muted-foreground: 240 3.8% 46.1%; /* 中灰文字 */
+  /* 响应式断点 */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* 标准灰色调色板 - 使用 OKLCH */
+  --color-gray-50: oklch(0.98 0 0);
+  --color-gray-100: oklch(0.95 0 0);
+  --color-gray-200: oklch(0.9 0 0);
+  --color-gray-300: oklch(0.82 0 0);
+  --color-gray-400: oklch(0.64 0 0);
+  --color-gray-500: oklch(0.45 0 0);
+  --color-gray-600: oklch(0.33 0 0);
+  --color-gray-700: oklch(0.25 0 0);
+  --color-gray-800: oklch(0.15 0 0);
+  --color-gray-900: oklch(0.09 0 0);
+  --color-gray-950: oklch(0.03 0 0);
   
-    --popover: 0 0% 100%;            /* 弹窗背景 */
-    --popover-foreground: 240 10% 3.9%; /* 弹窗文字 */
+  /* 带透明度的灰色变量 */
+  --color-gray-100-50: oklch(0.95 0 0 / 0.5);
+  --color-gray-200-40: oklch(0.9 0 0 / 0.4);
+  --color-gray-200-50: oklch(0.9 0 0 / 0.5);
+  --color-gray-700-50: oklch(0.25 0 0 / 0.5);
+  --color-gray-900-40: oklch(0.09 0 0 / 0.4);
+  --color-gray-900-50: oklch(0.09 0 0 / 0.5);
+
+  /* 带透明度的绿色变量 */
+  --color-green-900-20: oklch(0.15 0.15 142 / 0.2);
+  --color-emerald-900-20: oklch(0.15 0.15 160 / 0.2);
+
+  /* 带透明度的蓝色变量 */
+  --color-blue-900-20: oklch(0.15 0.15 240 / 0.2);
+  --color-indigo-900-20: oklch(0.15 0.15 260 / 0.2);
+
+  /* 带透明度的紫色变量 */
+  --color-purple-900-20: oklch(0.15 0.15 280 / 0.2);
+  --color-violet-900-20: oklch(0.15 0.15 300 / 0.2);
+
+  /* 带透明度的橙色变量 */
+  --color-orange-900-20: oklch(0.15 0.15 60 / 0.2);
+  --color-amber-900-20: oklch(0.15 0.15 80 / 0.2);
+
+  /* 设计系统颜色 - 浅色模式 */
+  --color-background: oklch(1 0 0);                    /* 纯白背景 */
+  --color-foreground: oklch(0.2 0 0);                  /* 深灰文字（AA 级对比度） */
   
-    --card: 0 0% 100%;               /* 卡片背景 */
-    --card-foreground: 240 10% 3.9%; /* 卡片文字 */
+  --color-muted: oklch(0.96 0 0);                      /* 淡灰背景 */
+  --color-muted-foreground: oklch(0.46 0 0);           /* 中灰文字 */
   
-    --border: 240 5.9% 90%;          /* 边框颜色 */
-    --input: 240 5.9% 90%;           /* 输入框边框 */
+  --color-popover: oklch(1 0 0);                       /* 弹窗背景 */
+  --color-popover-foreground: oklch(0.2 0 0);          /* 弹窗文字 */
   
-    /* 品牌主色 - 暖橙色（食欲刺激） */
-    --primary: 25 100% 50%;          /* 主按钮/链接 */
-    --primary-foreground: 0 0% 98%;  /* 主按钮文字 */
+  --color-card: oklch(1 0 0);                          /* 卡片背景 */
+  --color-card-foreground: oklch(0.2 0 0);             /* 卡片文字 */
   
-    /* 辅助色 - 蒲公英黄绿（自然健康） */
-    --secondary: 35 80% 50%;         /* 图标/标签 */
-    --secondary-foreground: 0 0% 98%; /* 辅助按钮文字 */
+  --color-border: oklch(0.9 0 0);                      /* 边框颜色 */
+  --color-input: oklch(0.9 0 0);                       /* 输入框边框 */
   
-    --accent: 240 4.8% 95.9%;        /* 强调色 */
-    --accent-foreground: 240 5.9% 10%; /* 强调文字 */
+  /* 品牌主色 - 暖橙色（食欲刺激）- 使用 RGB */
+  --color-primary: rgb(255 106 0);                      /* 主按钮/链接 */
+  --color-primary-foreground: oklch(0.98 0 0);         /* 主按钮文字 */
   
-    --destructive: 0 84.2% 60.2%;   /* 危险操作（如删除） */
-    --destructive-foreground: 0 0% 98%; /* 危险文字 */
+  /* 带透明度的主色变量 - 支持 v4 语法 */
+  --color-primary-5: rgb(255 106 0 / 0.05);
+  --color-primary-10: rgb(255 106 0 / 0.1);
+  --color-primary-20: rgb(255 106 0 / 0.2);
+  --color-primary-25: rgb(255 106 0 / 0.25);
+  --color-primary-30: rgb(255 106 0 / 0.3);
+  --color-primary-50: rgb(255 106 0 / 0.5);
+  --color-primary-80: rgb(255 106 0 / 0.8);
+  --color-primary-90: rgb(255 106 0 / 0.9);
   
-    --ring: 25 100% 50%;             /* 聚焦轮廓 */
-    --radius: 0.5rem;                /* 圆角半径 */
-  }
+  /* 辅助色 - 蒲公英黄绿（自然健康） */
+  --color-secondary: oklch(0.8 0.15 72);               /* 图标/标签 */
+  --color-secondary-foreground: oklch(0.98 0 0);       /* 辅助按钮文字 */
   
+  /* 带透明度的辅助色变量 */
+  --color-secondary-10: oklch(0.8 0.15 72 / 0.1);
+  --color-secondary-80: oklch(0.8 0.15 72 / 0.8);
+  
+  --color-accent: oklch(0.96 0 0);                     /* 强调色 */
+  --color-accent-foreground: oklch(0.1 0 0);           /* 强调文字 */
+  
+  --color-destructive: oklch(0.602 0.237 25.331);      /* 危险操作（如删除） */
+  --color-destructive-foreground: oklch(0.98 0 0);     /* 危险文字 */
+  
+  /* 带透明度的危险色变量 */
+  --color-destructive-10: oklch(0.602 0.237 25.331 / 0.1);
+  --color-destructive-80: oklch(0.602 0.237 25.331 / 0.8);
+  --color-destructive-90: oklch(0.602 0.237 25.331 / 0.9);
+  
+  --color-ring: rgb(255 106 0);                         /* 聚焦轮廓 */
+  
+  /* 圆角半径 */
+  --radius: 0.5rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
 
-  .dark {
-    --background: 210 10% 15%;     /* 深蓝灰背景（护眼） */
-    --foreground: 0 0% 95%;        /* 浅白文字（AAA 级对比度） */
+/* 深色模式主题变量 - 使用 OKLCH */
+.dark {
+  --color-background: oklch(0.15 0.01 240);            /* 深蓝灰背景（护眼） */
+  --color-foreground: oklch(0.95 0 0);                 /* 浅白文字（AAA 级对比度） */
 
-    --muted: 210 10% 25%;          /* 暗卡片背景 */
-    --muted-foreground: 210 10% 65%; /* 中灰文字 */
+  --color-muted: oklch(0.25 0.01 240);                 /* 暗卡片背景 */
+  --color-muted-foreground: oklch(0.65 0.01 240);      /* 中灰文字 */
 
-    --popover: 210 10% 20%;        /* 弹窗背景 */
-    --popover-foreground: 0 0% 95%; /* 弹窗文字 */
+  --color-popover: oklch(0.2 0.01 240);                /* 弹窗背景 */
+  --color-popover-foreground: oklch(0.95 0 0);         /* 弹窗文字 */
 
-    --card: 210 10% 25%;           /* 卡片背景 */
-    --card-foreground: 0 0% 95%;   /* 卡片文字 */
+  --color-card: oklch(0.25 0.01 240);                  /* 卡片背景 */
+  --color-card-foreground: oklch(0.95 0 0);            /* 卡片文字 */
 
-    --border: 210 10% 30%;         /* 边框 */
-    --input: 210 10% 30%;          /* 输入框边框 */
+  --color-border: oklch(0.3 0.01 240);                 /* 边框 */
+  --color-input: oklch(0.3 0.01 240);                  /* 输入框边框 */
 
-    /* 品牌主色 - 暖橙色（亮度提升20%） */
-    --primary: 25 100% 60%;        /* 主按钮/链接 */
-    --primary-foreground: 240 10% 3.9%; /* 主按钮文字（深灰） */
+  /* 品牌主色 - 暖橙色（亮度提升） */
+  --color-primary: rgb(255 106 0);                      /* 主按钮/链接 */
+  --color-primary-foreground: oklch(0.2 0 0);          /* 主按钮文字（深灰） */
 
-    /* 辅助色 - 蒲公英黄绿（亮度提升20%） */
-    --secondary: 35 80% 60%;       /* 图标/标签 */
-    --secondary-foreground: 240 10% 3.9%; /* 辅助按钮文字 */
+  /* 带透明度的主色变量 - 深色模式 */
+  --color-primary-5: rgb(255 106 0 / 0.05);
+  --color-primary-10: rgb(255 106 0 / 0.1);
+  --color-primary-20: rgb(255 106 0 / 0.2);
+  --color-primary-25: rgb(255 106 0 / 0.25);
+  --color-primary-30: rgb(255 106 0 / 0.3);
+  --color-primary-50: rgb(255 106 0 / 0.5);
+  --color-primary-80: rgb(255 106 0 / 0.8);
+  --color-primary-90: rgb(255 106 0 / 0.9);
 
-    --accent: 210 10% 25%;   /* 强调色 */
-    --accent-foreground: 210 10% 65%; /* 强调文字 */
+  /* 辅助色 - 蒲公英黄绿（亮度提升） */
+  --color-secondary: oklch(0.85 0.15 72);              /* 图标/标签 */
+  --color-secondary-foreground: oklch(0.2 0 0);        /* 辅助按钮文字 */
+  
+  /* 带透明度的辅助色变量 - 深色模式 */
+  --color-secondary-10: oklch(0.85 0.15 72 / 0.1);
+  --color-secondary-80: oklch(0.85 0.15 72 / 0.8);
 
-    --destructive: 0 84.2% 60.2%; /* 危险操作 */
-    --destructive-foreground: 0 0% 98%; /* 危险文字 */
+  --color-accent: oklch(0.25 0.01 240);                /* 强调色 */
+  --color-accent-foreground: oklch(0.65 0.01 240);     /* 强调文字 */
 
-    --ring: 25 100% 70%;           /* 聚焦轮廓（亮橙色） */
-    --radius: 0.5rem;              /* 圆角半径 */
-  }
+  --color-destructive: oklch(0.602 0.237 25.331);      /* 危险操作 */
+  --color-destructive-foreground: oklch(0.98 0 0);     /* 危险文字 */
+  
+  /* 带透明度的危险色变量 - 深色模式 */
+  --color-destructive-10: oklch(0.602 0.237 25.331 / 0.1);
+  --color-destructive-80: oklch(0.602 0.237 25.331 / 0.8);
+  --color-destructive-90: oklch(0.602 0.237 25.331 / 0.9);
+  
+  --color-ring: oklch(0.8 0.213 25.331);               /* 聚焦轮廓（亮橙色） */
+  
+  /* 带透明度的灰色变量 - 深色模式 */
+  --color-gray-100-50: oklch(0.95 0 0 / 0.5);
+  --color-gray-200-40: oklch(0.9 0 0 / 0.4);
+  --color-gray-200-50: oklch(0.9 0 0 / 0.5);
+  --color-gray-700-50: oklch(0.25 0 0 / 0.5);
+  --color-gray-900-40: oklch(0.09 0 0 / 0.4);
+  --color-gray-900-50: oklch(0.09 0 0 / 0.5);
+
+  /* 带透明度的绿色变量 - 深色模式 */
+  --color-green-900-20: oklch(0.15 0.15 142 / 0.2);
+  --color-emerald-900-20: oklch(0.15 0.15 160 / 0.2);
+
+  /* 带透明度的蓝色变量 - 深色模式 */
+  --color-blue-900-20: oklch(0.15 0.15 240 / 0.2);
+  --color-indigo-900-20: oklch(0.15 0.15 260 / 0.2);
+
+  /* 带透明度的紫色变量 - 深色模式 */
+  --color-purple-900-20: oklch(0.15 0.15 280 / 0.2);
+  --color-violet-900-20: oklch(0.15 0.15 300 / 0.2);
+
+  /* 带透明度的橙色变量 - 深色模式 */
+  --color-orange-900-20: oklch(0.15 0.15 60 / 0.2);
+  --color-amber-900-20: oklch(0.15 0.15 80 / 0.2);
 }
 
 /* Grid background pattern */
@@ -123,57 +242,98 @@
   box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.141);
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
+/* 基础样式 */
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+
+/* 容器样式 */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
   }
 }
 
-/* Cuisine color styles */
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .container {
+    max-width: 1536px;
+  }
+}
+
+/* Cuisine color styles - 使用 OKLCH */
 .cuisine-chinese {
-  background-color: hsl(12, 45%, 70%);
+  background-color: oklch(0.7 0.12 12);
   color: white;
 }
 .cuisine-italian {
-  background-color: hsl(50, 25%, 85%);
-  color: hsl(50, 25%, 25%);
+  background-color: oklch(0.85 0.05 50);
+  color: oklch(0.25 0.05 50);
 }
 .cuisine-french {
-  background-color: hsl(260, 15%, 80%);
-  color: hsl(260, 15%, 20%);
+  background-color: oklch(0.8 0.03 260);
+  color: oklch(0.2 0.03 260);
 }
 .cuisine-indian {
-  background-color: hsl(38, 30%, 75%);
-  color: hsl(38, 30%, 15%);
+  background-color: oklch(0.75 0.06 38);
+  color: oklch(0.15 0.06 38);
 }
 .cuisine-japanese {
-  background-color: hsl(340, 20%, 88%);
-  color: hsl(340, 20%, 28%);
+  background-color: oklch(0.88 0.04 340);
+  color: oklch(0.28 0.04 340);
 }
 .cuisine-mediterranean {
-  background-color: hsl(200, 18%, 82%);
-  color: hsl(200, 18%, 22%);
+  background-color: oklch(0.82 0.04 200);
+  color: oklch(0.22 0.04 200);
 }
 .cuisine-thai {
-  background-color: hsl(100, 22%, 80%);
-  color: hsl(100, 22%, 20%);
+  background-color: oklch(0.8 0.05 100);
+  color: oklch(0.2 0.05 100);
 }
 .cuisine-mexican {
-  background-color: hsl(14, 35%, 78%);
-  color: hsl(14, 35%, 18%);
+  background-color: oklch(0.78 0.08 14);
+  color: oklch(0.18 0.08 14);
 }
 .cuisine-other {
-  background-color: hsl(220, 10%, 80%);
-  color: hsl(220, 10%, 20%);
+  background-color: oklch(0.8 0.02 220);
+  color: oklch(0.2 0.02 220);
 }
 
 /* Line clamp utility */
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -181,6 +341,7 @@
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -195,12 +356,12 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted));
+  background: var(--color-muted);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground));
+  background: var(--color-muted-foreground);
 }
 
 /* Smooth transitions */
