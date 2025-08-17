@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getWorkerApiUrl } from '@/lib/config';
 
+// 配置 Edge Runtime 以支持 Cloudflare Pages
+export const runtime = 'edge';
+
 /**
  * GET /api/recipes/admin
  * 获取管理员创建的菜谱列表

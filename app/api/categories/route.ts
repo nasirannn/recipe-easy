@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getWorkerApiUrl } from '@/lib/config';
 
+// 配置 Edge Runtime 以支持 Cloudflare Pages
+export const runtime = 'edge';
+
 // 标记为动态路由以支持查询参数
 export const dynamic = 'force-dynamic';
 // 启用缓存以提高性能

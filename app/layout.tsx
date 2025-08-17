@@ -15,7 +15,7 @@ const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID;
 export const metadata: Metadata = {
   ...generateMetadata({
     title: "RecipeEasy - AI Recipe Generator, Random Recipes, Meal Ideas",
-    description: "Stuck on what to cook? Enter your ingredients and get random, AI-generated recipes based on what you have — with easy cooking steps.",
+    description: "Stuck on what to cook? Enter your ingredients and get random, AI-generated recipes based on what you have — solve your 'what can I use' problem.",
     path: "/",
   }),
   icons: {

@@ -9,8 +9,6 @@
     "credits": "Credits",
     "totalEarned": "Total Earned",
     "myRecipes": "My Recipes",
-    "users": "Users",
-    "settings": "Settings",
     "appearance": "Appearance",
     "language": "Language"
   },
@@ -108,7 +106,6 @@
     "confirm": "Confirm",
     "loadingIngredients": "Loading ingredients...",
     "loadingSubtitle": "Preparing delicious ingredients for you...",
-    "pleaseWait": "Please wait",
     "loadError": "Load failed",
     "retry": "Retry",
     "noIngredientsFound": "No ingredients found for",
@@ -352,9 +349,9 @@
 
   "introduction": {
     "title": "Introduction",
-    "heading": "Why was this AI recipe generator created?",
+    "heading": "What's in my fridge?",
     "description1": "In today's fast-paced world, many people face the daily challenge of deciding what to cook with the ingredients they have available. Whether it's leftover vegetables in the fridge, pantry staples, or seasonal produce, the question \"What should I cook today?\" is a universal dilemma that affects home cooks everywhere.",
-    "description2": "Home cooking offers significant advantages over takeout - it's more cost-effective, healthier, and allows for better control over ingredients and nutrition. However, the barrier to creative cooking often lies in recipe discovery and meal planning. This AI recipe generator was designed to solve this exact problem by providing intelligent, personalized recipe suggestions based on available ingredients.",
+    "description2": "Home cooking offers significant advantages over takeout - it's more cost-effective, healthier, and allows for better control over ingredients and nutrition. However, the barrier to creative cooking often lies in recipe discovery and meal planning. This random food generator was designed to solve this exact problem by providing intelligent, personalized recipe suggestions based on available ingredients.",
     "description3": "The platform focuses on user experience, making recipe generation accessible through intuitive clicking rather than complex typing. By leveraging AI technology, it helps users transform everyday ingredients into delicious, creative meals, making home cooking more enjoyable and less daunting for everyone.",
     "imageAlt": "AI Recipe Generator Introduction"
   }

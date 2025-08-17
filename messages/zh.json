@@ -9,10 +9,6 @@
     "credits": "积分",
     "totalEarned": "累计获得",
     "myRecipes": "我的菜谱",
-    "admin": "管理",
-    "dashboard": "控制台",
-    "users": "用户管理",
-    "settings": "设置",
     "appearance": "外观",
     "language": "语言"
   },
@@ -172,7 +168,10 @@
     "subtitle": "来自世界各地的美味食谱",
     "loadingRecipes": "加载菜谱中...",
     "loadMore": "加载更多",
-    "allRecipesDisplayed": "已显示所有菜谱"
+    "allRecipesDisplayed": "已显示所有菜谱",
+    "description1": "",
+    "description2": "",
+    "description3": ""
   },
   "myRecipes": {
     "title": "我的菜谱",
