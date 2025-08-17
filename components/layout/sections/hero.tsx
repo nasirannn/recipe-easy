@@ -305,26 +305,38 @@ export const HeroSection = () => {
       </div>
       {/* 第二个div: Recipe Form Section */}
       <div id="recipe-form-section" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-8">
-        <div className="w-full border-2 border-[--color-primary-20] dark:border-[--color-primary-30] rounded-3xl md:p-12">
-          <RecipeForm
-            formData={formData}
-            onFormChange={handleFormChange}
-            onSubmit={handleSubmit}
-            loading={loading || imageGenerating}
-            showRecipe={showRecipe}
-            setShowRecipe={setShowRecipe}
-            // 新增：tab相关props
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-            mealPlannerText={mealPlannerText}
-            onMealPlannerTextChange={handleMealPlannerTextChange}
-            onMealPlannerClear={handleMealPlannerClear}
-            onMealPlannerSubmit={handleMealPlannerSubmit}
-          />
+        <div className="relative w-full bg-gradient-to-br from-orange-50/60 via-amber-50/40 to-white/90 dark:from-orange-900/40 dark:via-amber-900/60 dark:to-gray-900/90 backdrop-blur-sm rounded-3xl md:p-12 shadow-xl shadow-orange-500/10 dark:shadow-orange-600/20 overflow-hidden">
+          {/* 装饰性背景元素 */}
+          <div className="absolute -top-4 -left-4 w-40 h-40 bg-gradient-to-br from-orange-400/20 to-amber-400/15 rounded-full blur-2xl"></div>
+          <div className="absolute top-0 left-1/4 w-24 h-24 bg-gradient-to-br from-orange-300/10 to-amber-300/8 rounded-full blur-xl"></div>
+          <div className="absolute bottom-4 right-8 w-16 h-16 bg-gradient-to-r from-orange-200/6 to-amber-100/4 rounded-full blur-lg"></div>
+          
+          {/* 微妙的边框高光 */}
+          <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-transparent via-white/20 to-transparent p-px">
+            <div className="w-full h-full rounded-3xl bg-transparent"></div>
+          </div>
+          {/* 内容区域 */}
+          <div className="relative z-10">
+            <RecipeForm
+              formData={formData}
+              onFormChange={handleFormChange}
+              onSubmit={handleSubmit}
+              loading={loading || imageGenerating}
+              showRecipe={showRecipe}
+              setShowRecipe={setShowRecipe}
+              // 新增：tab相关props
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              mealPlannerText={mealPlannerText}
+              onMealPlannerTextChange={handleMealPlannerTextChange}
+              onMealPlannerClear={handleMealPlannerClear}
+              onMealPlannerSubmit={handleMealPlannerSubmit}
+            />
+          </div>
 
           {/* Recipe Display Section */}
           {showRecipe && activeTab === 'recipe-maker' && (
-            <div id="loading-animation-container" className="mt-6">
+            <div id="loading-animation-container" className="relative z-10 mt-6">
               {loading ? (
                 <LoadingAnimation language={locale as 'en' | 'zh'} />
               ) : (

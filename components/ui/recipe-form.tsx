@@ -416,7 +416,6 @@ export const RecipeForm = ({
 
   return (
     <div className="w-full flex flex-col gap-2 sm:gap-3">
-      {/* Recipe Maker 标题栏 - 最顶部 */}
       <div className={cn(
         "pb-2 pt-1",
         isMobile
@@ -428,14 +427,11 @@ export const RecipeForm = ({
           "flex items-center",
           isMobile ? "flex-col gap-3 text-center" : ""
         )}>
-          <div className={cn(
-            "relative group",
-            isMobile ? "max-w-xs" : "max-w-md"
-          )}>
+          <div className="relative group">
             {/* 主标题 */}
             <h2 className={cn(
               "relative z-10 font-bold text-secondary leading-relaxed px-4 py-2 rounded-2xl transition-all duration-300",
-              isMobile ? "text-xl" : "text-lg"
+              isMobile ? "text-xl" : "text-2xl"
             )}>
               {t('mainTitle')}
             </h2>
@@ -567,14 +563,14 @@ export const RecipeForm = ({
         </TooltipProvider>
       </div>
 
-      {/* 食材选择与输入集成区域 */}
+      {/* 食材选择区域 */}
       <div className={cn("gap-4", isMobile ? "flex flex-col gap-5 px-4" : "flex")}>
         {/* 左侧：食材分类tab和食材选择器 */}
         <div className={cn("flex flex-col", isMobile ? "w-full" : "flex-1")}>
           <div className="relative flex-1 min-h-0">
             {/* 左侧背景主体 */}
             <div className={cn(
-              "bg-white dark:bg-gray-900 rounded-2xl flex flex-col shadow-md border border-gray-200 dark:border-gray-700",
+              "bg-gradient-to-br from-white via-blue-50/30 to-purple-50/40 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/30 rounded-2xl flex flex-col shadow-md",
               isMobile ? "p-4 h-[420px]" : "p-6 h-[400px]"
             )}>
 
@@ -770,7 +766,7 @@ export const RecipeForm = ({
           <div className="relative">
             {/* 小票主体 */}
             <div className={cn(
-              "bg-white dark:bg-gray-900 rounded-2xl shadow-lg shadow-[--color-gray-200-50] dark:shadow-[--color-gray-900-50] flex flex-col border-2 border-gray-200 dark:border-gray-700",
+              "bg-gradient-to-br from-white via-orange-50/20 to-amber-50/30 dark:from-gray-900 dark:via-orange-900/15 dark:to-amber-900/25 rounded-2xl shadow-lg shadow-[--color-gray-200-50] dark:shadow-[--color-gray-900-50] flex flex-col border-2 border-gray-200 dark:border-gray-700",
               isMobile ? "p-4 h-[380px]" : "p-6 h-[400px]"
             )}>
               {/* 小票顶部装饰 - 模拟小票撕口 */}
@@ -957,7 +953,7 @@ export const RecipeForm = ({
       )}>
         {/* 内容容器 */}
         <div className={cn(
-          "w-full rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700",
+          "w-full rounded-2xl bg-gradient-to-r from-white via-green-50/20 to-emerald-50/30 dark:from-gray-900 dark:via-green-900/15 dark:to-emerald-900/25",
           "shadow-xs hover:shadow-md transition-all duration-300",
           "p-4"
         )}>
@@ -1009,7 +1005,13 @@ export const RecipeForm = ({
                 {/* Servings 步进器 */}
                 <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px] border border-gray-100 dark:border-gray-700">
                   <Label htmlFor="servings" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                    <span className="text-base">👥</span>
+                    <Image
+                      src="/images/options-icon/serving.svg"
+                      alt="Servings"
+                      width={16}
+                      height={16}
+                      className="w-4 h-4 object-contain"
+                    />
                     <span>{t('servings')}</span>
                   </Label>
                   <div className="flex items-center gap-1 rounded-md p-1 ml-auto">
@@ -1042,7 +1044,13 @@ export const RecipeForm = ({
                 {/* Cooking Time 选择器 */}
                 <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px] border border-gray-100 dark:border-gray-700">
                   <Label htmlFor="cookingTime" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                    <span className="text-base">⏱️</span>
+                    <Image
+                      src="/images/options-icon/cooking_time.svg"
+                      alt="Cooking Time"
+                      width={16}
+                      height={16}
+                      className="w-4 h-4 object-contain"
+                    />
                     <span>{t('cookingTime')}</span>
                   </Label>
                   <Select
@@ -1063,7 +1071,13 @@ export const RecipeForm = ({
                 {/* Difficulty 选择器 */}
                 <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px] border border-gray-100 dark:border-gray-700">
                   <Label htmlFor="difficulty" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                    <span className="text-base">🎚️</span>
+                    <Image
+                      src="/images/options-icon/difficulty.svg"
+                      alt="Difficulty"
+                      width={16}
+                      height={16}
+                      className="w-4 h-4 object-contain"
+                    />
                     <span>{t('difficulty')}</span>
                   </Label>
                   <Select
@@ -1084,7 +1098,13 @@ export const RecipeForm = ({
                 {/* Cuisine 选择器 */}
                 <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px] border border-gray-100 dark:border-gray-700">
                   <Label htmlFor="cuisine" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                    <span className="text-base">🌎</span>
+                    <Image
+                      src="/images/options-icon/cuisine.svg"
+                      alt="Cuisine"
+                      width={16}
+                      height={16}
+                      className="w-4 h-4 object-contain"
+                    />
                     <span>{t('cuisine')}</span>
                   </Label>
                   <Select
@@ -1183,7 +1203,13 @@ export const RecipeForm = ({
                 {/* Servings 步进器 */}
                 <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full border border-gray-100 dark:border-gray-700">
                   <Label htmlFor="servings" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                    <span className="text-base">👥</span>
+                    <Image
+                      src="/images/options-icon/serving.svg"
+                      alt="Servings"
+                      width={16}
+                      height={16}
+                      className="w-4 h-4 object-contain"
+                    />
                     <span>{t('servings')}</span>
                   </Label>
                   <div className="flex items-center gap-1 rounded-md p-1 ml-auto">
@@ -1216,7 +1242,13 @@ export const RecipeForm = ({
                 {/* Cooking Time 选择器 */}
                 <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full border border-gray-100 dark:border-gray-700">
                   <Label htmlFor="cookingTime" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                    <span className="text-base">⏱️</span>
+                    <Image
+                      src="/images/options-icon/cooking_time.svg"
+                      alt="Cooking Time"
+                      width={16}
+                      height={16}
+                      className="w-4 h-4 object-contain"
+                    />
                     <span>{t('cookingTime')}</span>
                   </Label>
                   <Select
@@ -1237,7 +1269,13 @@ export const RecipeForm = ({
                 {/* Difficulty 选择器 */}
                 <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full border border-gray-100 dark:border-gray-700">
                   <Label htmlFor="difficulty" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                    <span className="text-base">🎚️</span>
+                    <Image
+                      src="/images/options-icon/difficulty.svg"
+                      alt="Difficulty"
+                      width={16}
+                      height={16}
+                      className="w-4 h-4 object-contain"
+                    />
                     <span>{t('difficulty')}</span>
                   </Label>
                   <Select
@@ -1258,7 +1296,13 @@ export const RecipeForm = ({
                 {/* Cuisine 选择器 */}
                 <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full border border-gray-100 dark:border-gray-700">
                   <Label htmlFor="cuisine" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                    <span className="text-base">🌎</span>
+                    <Image
+                      src="/images/options-icon/cuisine.svg"
+                      alt="Cuisine"
+                      width={16}
+                      height={16}
+                      className="w-4 h-4 object-contain"
+                    />
                     <span>{t('cuisine')}</span>
                   </Label>
                   <Select
