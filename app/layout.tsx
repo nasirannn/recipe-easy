@@ -49,25 +49,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              // 动态设置lang属性
-              (function() {
-                var path = window.location.pathname;
-                var lang = 'en'; // 默认语言
-                if (path.includes('/zh')) {
-                  lang = 'zh';
-                }
-                document.documentElement.lang = lang;
-              })();
-            `,
-          }}
-        />
-      </head>
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <head></head>
+      <body className={inter.className} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -134,3 +118,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+export const runtime = 'edge';

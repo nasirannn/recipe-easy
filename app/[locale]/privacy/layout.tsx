@@ -1,7 +1,5 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
-import { ThemeProvider } from '@/components/layout/theme-provider';
-import { AuthProvider } from '@/contexts/auth-context';
 
 export default async function PrivacyLayout({
   children,
@@ -14,18 +12,9 @@ export default async function PrivacyLayout({
   const messages = await getMessages();
 
   return (
-    <AuthProvider>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          {children}
-        </NextIntlClientProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      {children}
+    </NextIntlClientProvider>
   );
 }
 // 移除 Edge Runtime 以启用静态生成

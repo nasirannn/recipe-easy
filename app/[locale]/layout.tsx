@@ -40,4 +40,5 @@ export default async function LocaleLayout({
     </AuthProvider>
   );
 }
-// 移除 Edge Runtime 以启用静态生成
+
+export const runtime = 'edge';

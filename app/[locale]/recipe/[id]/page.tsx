@@ -90,4 +90,4 @@ export default async function RecipePage({ params }: RecipePageProps) {
   return <RecipeDetail recipe={recipe} locale={locale} />;
 }
 
-// 移除 Edge Runtime 以启用静态生成 
+export const runtime = 'edge';
