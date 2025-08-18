@@ -13,9 +13,9 @@ export default function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // 排除根路径，只匹配带语言前缀的路径和其他页面
+  // 完全排除根路径，只处理有语言前缀的路径
   matcher: [
     '/(en|zh)/:path*',
-    '/((?!api|_next|_vercel|auth|.*\\..*)(?!$).*)'
+    '/((?!api|_next|_vercel|auth|favicon.ico|index.html|.*\\..*)(?!$).*)'
   ]
 };
