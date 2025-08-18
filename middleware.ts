@@ -13,5 +13,9 @@ export default function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/((?!api|_next|_vercel|auth|.*\\..*).*)']
+  // 排除根路径，只匹配带语言前缀的路径和其他页面
+  matcher: [
+    '/(en|zh)/:path*',
+    '/((?!api|_next|_vercel|auth|.*\\..*)(?!$).*)'
+  ]
 };
