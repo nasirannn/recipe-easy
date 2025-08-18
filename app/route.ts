@@ -1,0 +1,17 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function HEAD(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600',
+      'Content-Language': 'en',
+    },
+  });
+}
+
+export async function GET() {
+  // 重定向到默认语言页面
+  return NextResponse.redirect('/en');
+} 
