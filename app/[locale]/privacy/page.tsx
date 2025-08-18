@@ -3,6 +3,8 @@ import { remark } from 'remark';
 import html from 'remark-html';
 import { SimpleLayout } from '@/components/layout/simple-layout';
 import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
+import fs from 'fs';
+import path from 'path';
 
 export async function generateMetadata({
   params,
@@ -23,16 +25,10 @@ async function getPrivacyPolicy(locale: string) {
   try {
     // 根据语言选择对应的文件
     const fileName = locale === 'zh' ? 'privacy-policy-zh.md' : 'privacy-policy.md';
-    
-    // 使用相对路径从public目录获取文件
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://recipe-easy.com';
-    const response = await fetch(`${baseUrl}/${fileName}`);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch privacy policy: ${response.status}`);
-    }
-    
-    const content = await response.text();
+
+    // 使用文件系统读取文件内容
+    const filePath = path.join(process.cwd(), 'public', fileName);
+    const content = fs.readFileSync(filePath, 'utf8');
 
     // 使用remark渲染Markdown
     const processedContent = await remark()

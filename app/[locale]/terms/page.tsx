@@ -3,6 +3,8 @@ import { remark } from 'remark';
 import html from 'remark-html';
 import { SimpleLayout } from '@/components/layout/simple-layout';
 import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
+import fs from 'fs';
+import path from 'path';
 
 export async function generateMetadata({
   params,
@@ -23,30 +25,25 @@ async function getTermsOfService(locale: string) {
   try {
     // 根据语言选择对应的文件
     const fileName = locale === 'zh' ? 'terms-of-service-zh.md' : 'terms-of-service.md';
-    
-    // 在Edge Runtime中使用fetch获取文件内容
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/${fileName}`);
-    
-    if (response.ok) {
-      const content = await response.text();
-      
-      // 使用remark渲染Markdown
-      const processedContent = await remark()
-        .use(html)
-        .process(content);
 
-      return processedContent.toString();
-    } else {
-      throw new Error(`Terms file not found: ${fileName}`);
-    }
+    // 使用文件系统读取文件内容
+    const filePath = path.join(process.cwd(), 'public', fileName);
+    const content = fs.readFileSync(filePath, 'utf8');
+
+    // 使用remark渲染Markdown
+    const processedContent = await remark()
+      .use(html)
+      .process(content);
+
+    return processedContent.toString();
   } catch (error) {
     console.error('Error loading terms of service:', error);
-    
+
     // 如果加载失败，返回默认内容
-    const defaultContent = locale === 'zh' ? 
+    const defaultContent = locale === 'zh' ?
       '<h1>服务条款</h1><p>服务条款加载失败，请稍后重试。</p>' :
       '<h1>Terms of Service</h1><p>Terms of service failed to load, please try again later.</p>';
-    
+
     return defaultContent;
   }
 }
