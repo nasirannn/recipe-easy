@@ -7,6 +7,21 @@ const nextConfig = {
   // 控制末尾斜杠行为 - false表示不添加末尾斜杠
   trailingSlash: false,
   
+  // 允许静态文件优先级
+  async rewrites() {
+    return {
+      beforeFiles: [
+        // 让 public/index.html 处理根路径
+        {
+          source: '/',
+          destination: '/index.html',
+        },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
+  
   // 添加安全头部
   async headers() {
     return [
