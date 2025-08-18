@@ -6,11 +6,17 @@ export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://recipe-easy.
 // 生成 canonical URL
 export function generateCanonicalUrl(path: string = '', locale?: string): string {
   const cleanPath = path.replace(/^\/+|\/+$/g, '');
-  
+
+  // 对于英文（默认语言），始终使用根路径，不带语言前缀
   if (locale === 'en' || !locale) {
-    return cleanPath ? `${SITE_URL}/${cleanPath}` : SITE_URL;
+    // 如果是根路径，直接返回网站根URL
+    if (!cleanPath || cleanPath === '' || cleanPath === '/') {
+      return SITE_URL;
+    }
+    return `${SITE_URL}/${cleanPath}`;
   }
-  
+
+  // 对于其他语言，使用语言前缀
   return cleanPath ? `${SITE_URL}/${locale}/${cleanPath}` : `${SITE_URL}/${locale}`;
 }
 

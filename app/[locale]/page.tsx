@@ -15,12 +15,12 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  
+
   return generateSeoMetadata({
     title: "RecipeEasy - AI Recipe Generator, Random Recipes, Meal Ideas",
     description: "Stuck on what to cook? Enter your ingredients and get random, AI-generated recipes based on what you have — solve your 'what can I use' problem.",
     path: "/",
-    locale,
+    locale: locale === 'en' ? undefined : locale, // 英文页面不传递locale，确保canonical指向根路径
   });
 }
 
