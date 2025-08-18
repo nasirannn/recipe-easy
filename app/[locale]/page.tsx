@@ -39,4 +39,5 @@ export default function Home() {
     </>
   );
 }
-// 移除 Edge Runtime 以启用静态生成
+
+export const runtime = 'edge';

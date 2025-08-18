@@ -27,4 +27,4 @@ export default async function RecipesPage({ params }: RecipesPageProps) {
   return <RecipesList locale={locale} />;
 }
 
-// 移除 Edge Runtime 以启用静态生成 
+export const runtime = 'edge';

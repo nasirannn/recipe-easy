@@ -24,7 +24,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createSupabaseClient()
+
+  // 检查是否在客户端环境
+  const isClient = typeof window !== 'undefined'
+
+  // 只在客户端创建 Supabase 客户端
+  const supabase = isClient ? createSupabaseClient() : null
 
   const saveUserDisplayName = useCallback(async (user: User) => {
     try {
@@ -39,6 +44,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const refreshUser = useCallback(async () => {
+    if (!supabase) return
+
     try {
       const { data: { user: refreshedUser }, error } = await supabase.auth.getUser()
       if (error) {
@@ -48,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         return
       }
-      
+
       setUser(refreshedUser)
     } catch (error) {
       // 对于AuthSessionMissingError，这是正常的，不需要记录错误
@@ -56,26 +63,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Failed to refresh user:', error)
       }
     }
-  }, [supabase.auth])
+  }, [supabase])
 
-  const handleAuthStateChange = useCallback(async (event: string, session: any) => {
+  const handleAuthStateChange = useCallback(async (_event: string, session: any) => {
     try {
       if (session?.user) {
         // 先设置用户
         setUser(session.user)
-        // 然后保存显示名称
-        await saveUserDisplayName(session.user)
-        // 保存后重新获取最新用户数据
-        setTimeout(async () => {
+        // 然后保存显示名称并获取最新用户数据
+        if (supabase) {
           try {
+            await saveUserDisplayName(session.user)
+            // 保存后重新获取最新用户数据 - 移除 setTimeout，直接执行
             const { data: { user: latestUser } } = await supabase.auth.getUser()
             if (latestUser) {
               setUser(latestUser)
             }
           } catch (error) {
-            console.error('Error getting latest user:', error)
+            console.error('Error updating user data:', error)
+            // 即使更新失败，也保持当前用户状态
           }
-        }, 500)
+        }
       } else {
         setUser(null)
       }
@@ -83,13 +91,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Error in auth state change:', error)
       setUser(null)
     }
-    
+
     setLoading(false)
-  }, [])
+  }, [saveUserDisplayName, supabase])
 
   useEffect(() => {
+    // 只在客户端环境中初始化认证
+    if (!isClient || !supabase) {
+      setLoading(false)
+      return
+    }
+
     let mounted = true
-    
+
     const initializeAuth = async () => {
       try {
         const { data: { user }, error } = await supabase.auth.getUser()
@@ -102,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(false)
           return
         }
-        
+
         if (mounted) {
           if (user) {
             setUser(user)
@@ -134,9 +148,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       mounted = false
       subscription.unsubscribe()
     }
-  }, [supabase.auth, handleAuthStateChange])
+  }, [isClient, supabase, handleAuthStateChange, saveUserDisplayName])
 
   const signUp = async (email: string, password: string) => {
+    if (!supabase) {
+      throw new Error('Authentication is only available on the client side')
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -150,6 +168,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signIn = async (email: string, password: string) => {
+    if (!supabase) {
+      throw new Error('Authentication is only available on the client side')
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -158,35 +180,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
+    if (!supabase) {
+      throw new Error('Authentication is only available on the client side')
+    }
+
     const { error } = await supabase.auth.signOut()
     if (error) throw error
   }
 
   const signInWithGoogle = async () => {
+    if (!isClient || !supabase) {
+      throw new Error('Google sign-in is only available on the client side')
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
       },
     })
-    
+
     if (error) {
       throw error
     }
   }
 
   const signInWithEmail = async (email: string, password: string) => {
+    if (!supabase) {
+      throw new Error('Authentication is only available on the client side')
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
-    
+
     if (error) {
       throw error
     }
   }
 
   const signUpWithEmail = async (email: string, password: string) => {
+    if (!supabase) {
+      throw new Error('Authentication is only available on the client side')
+    }
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -204,10 +242,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const resetPassword = async (email: string) => {
+    if (!isClient || !supabase) {
+      throw new Error('Password reset is only available on the client side')
+    }
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset-password`,
     })
-    
+
     if (error) {
       throw error
     }
