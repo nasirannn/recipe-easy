@@ -6,7 +6,7 @@
     "dev": "next dev -p 3000",
     "dev:cf": "wrangler dev --local --compatibility-date=2024-03-20 --port 8787",
     "build": "next build",
-    "build:cf": "next build && npx @cloudflare/next-on-pages",
+    "build:cf": "next build && npx @cloudflare/next-on-pages --outdir dist",
     "start": "next start",
     "lint": "next lint",
     "check-compatibility": "node scripts/check-compatibility.js",
@@ -15,7 +15,7 @@
     "db:migrate": "wrangler d1 migrations apply recipe-easy-db --remote",
     "deploy:vercel": "npm run build && vercel --prod",
     "deploy:worker": "wrangler deploy",
-    "deploy:cf": "npm run build:cf && wrangler pages deploy .vercel/output/static --project-name=recipe-easy-frontend",
+    "deploy:cf": "npm run build:cf && wrangler pages deploy dist --project-name=recipe-easy-frontend",
     "versions:upload": "wrangler versions upload"
   },
   "dependencies": {
