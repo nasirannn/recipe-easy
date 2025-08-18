@@ -4,8 +4,8 @@ import { NextRequest } from 'next/server';
 const intlMiddleware = createMiddleware({
   locales: ['en', 'zh'],
   defaultLocale: 'en',
-  localeDetection: false,
-  localePrefix: 'as-needed'
+  localeDetection: true,
+  localePrefix: 'always'
 });
 
 export default function middleware(request: NextRequest) {
@@ -13,9 +13,8 @@ export default function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // 完全排除根路径，只处理有语言前缀的路径
+  // 处理所有路径，包括根路径，但排除 API 和静态文件
   matcher: [
-    '/(en|zh)/:path*',
-    '/((?!api|_next|_vercel|auth|favicon.ico|index.html|.*\\..*)(?!$).*)'
+    '/((?!api|_next|_vercel|favicon.ico|.*\\..*).*)'
   ]
 };
