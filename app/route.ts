@@ -14,4 +14,6 @@ export async function HEAD(request: NextRequest) {
 export async function GET() {
   // 重定向到默认语言页面
   return NextResponse.redirect(new URL('/en', process.env.NEXT_PUBLIC_APP_URL || 'https://recipe-easy.com'));
-} 
+}
+
+export const runtime = 'edge';
