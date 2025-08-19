@@ -17,5 +17,11 @@ export function getSupabase() {
   return supabaseClient;
 }
 
-// 为了兼容性，保留原来的导出
-export const supabase = getSupabase();
+// 创建一个代理对象，延迟初始化
+export const supabase = new Proxy({} as any, {
+  get(target, prop) {
+    const client = getSupabase();
+    const value = client[prop];
+    return typeof value === 'function' ? value.bind(client) : value;
+  }
+});

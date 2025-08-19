@@ -50,8 +50,6 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.52.2",
-    "remark": "^15.0.1",
-    "remark-html": "^16.0.1",
     "sonner": "^2.0.6",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
