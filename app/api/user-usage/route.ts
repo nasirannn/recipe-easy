@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateUserId } from '@/lib/utils/validation';
 
 // 配置 Edge Runtime 以支持 Cloudflare Pages
-export const runtime = 'edge';
 
 // 强制动态渲染
 // 启用缓存以提高性能

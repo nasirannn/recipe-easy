@@ -37,5 +37,3 @@ export default async function RootPage() {
     </NextIntlClientProvider>
   );
 }
-
-export const runtime = 'edge';

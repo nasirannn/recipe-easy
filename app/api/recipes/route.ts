@@ -8,7 +8,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getWorkerApiUrl } from '@/lib/config';
 
 // 强制动态渲染
-export const runtime = 'edge';
 
 // 注意：此API路由现在完全依赖Worker API获取数据
 // 不再使用本地静态数据

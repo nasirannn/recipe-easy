@@ -5,7 +5,6 @@ import { getLanguageConfig } from '@/lib/config';
 import { generateRecipeId } from '@/lib/utils/id-generator';
 
 // 强制动态渲染
-export const runtime = 'edge';
 
 // 记录模型使用情况的函数（已禁用，Worker已删除）
 async function recordModelUsage(modelName: string, modelResponseId: string, requestDetails: string) {

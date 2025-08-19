@@ -94,3 +94,14 @@ const nextConfig = {
 };
 
 export default withNextIntl(nextConfig);
+
+// 开发环境初始化 - 用于 @opennextjs/cloudflare
+if (process.env.NODE_ENV === 'development') {
+  try {
+    const { initOpenNextCloudflareForDev } = await import('@opennextjs/cloudflare');
+    initOpenNextCloudflareForDev();
+  } catch (error) {
+    // 如果包未安装或在构建时，忽略错误
+    console.warn('OpenNext Cloudflare dev initialization skipped:', error.message);
+  }
+}

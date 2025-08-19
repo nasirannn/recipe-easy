@@ -9,7 +9,6 @@ import { getWorkerApiUrl } from '@/lib/config';
 import { submitUrlToIndexNow } from '@/lib/indexnow';
 
 // 强制动态渲染
-export const runtime = 'edge';
 
 /**
  * POST /api/recipes/save

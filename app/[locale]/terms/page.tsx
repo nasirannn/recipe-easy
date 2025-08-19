@@ -2,8 +2,6 @@ import { Metadata } from 'next';
 import { SimpleLayout } from '@/components/layout/simple-layout';
 import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
 
-export const runtime = 'edge';
-
 export async function generateMetadata({
   params,
 }: {

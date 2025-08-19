@@ -4,19 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "dev:cf": "wrangler dev --local --compatibility-date=2024-03-20 --port 8787",
     "build": "next build",
-    "build:cf": "next build && npx @cloudflare/next-on-pages --outdir dist",
     "start": "next start",
     "lint": "next lint",
+    "preview": "npx @opennextjs/cloudflare build && npx @opennextjs/cloudflare preview",
+    "deploy": "npx @opennextjs/cloudflare build && npx @opennextjs/cloudflare deploy",
+    "upload": "npx @opennextjs/cloudflare build && npx @opennextjs/cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "check-compatibility": "node scripts/check-compatibility.js",
     "db:query": "wrangler d1 execute recipe-easy-db --remote --command",
     "db:backup": "wrangler d1 export recipe-easy-db --remote --output=db-backup/remote.sql",
     "db:migrate": "wrangler d1 migrations apply recipe-easy-db --remote",
-    "deploy:vercel": "npm run build && vercel --prod",
-    "deploy:worker": "wrangler deploy",
-    "deploy:cf": "npm run build:cf && wrangler pages deploy dist --project-name=recipe-easy-frontend",
-    "versions:upload": "wrangler versions upload",
     "indexnow": "node scripts/submit-indexnow.js",
     "indexnow:submit": "node scripts/submit-indexnow.js"
   },
@@ -41,7 +39,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cookie": "^1.0.2",
-    "esbuild": "0.14.47",
+    "esbuild": "^0.25.4",
     "lucide-react": "^0.539.0",
     "next": "^15.4.6",
     "next-intl": "^4.3.4",
@@ -59,6 +57,7 @@
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.13",
     "@cloudflare/workers-types": "^4.20250816.0",
+    "@opennextjs/cloudflare": "^1.6.5",
     "@types/node": "^24.3.0",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18",
@@ -66,7 +65,7 @@
     "eslint-config-next": "15.1.0",
     "tailwindcss": "^4.1.12",
     "typescript": "^5",
-    "wrangler": "^3.95.1"
+    "wrangler": "^4.31.0"
   },
   "browserslist": [
     "> 1%",

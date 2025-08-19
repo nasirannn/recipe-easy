@@ -40,5 +40,3 @@ export default async function LocaleLayout({
     </AuthProvider>
   );
 }
-
-export const runtime = 'edge';

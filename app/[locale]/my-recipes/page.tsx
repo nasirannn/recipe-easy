@@ -524,5 +524,3 @@ export default function MyRecipesPage() {
     </div>
   );
 }
-
-export const runtime = 'edge';

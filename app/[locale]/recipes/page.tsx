@@ -26,5 +26,3 @@ export default async function RecipesPage({ params }: RecipesPageProps) {
   
   return <RecipesList locale={locale} />;
 }
-
-export const runtime = 'edge';
