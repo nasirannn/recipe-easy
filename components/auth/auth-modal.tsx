@@ -11,14 +11,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Mail, AlertCircle, Loader2, Eye } from "lucide-react";
+import { Mail, AlertCircle, Loader2, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { GoogleIcon } from "@/components/icons/google-icon";
 import { useTranslations } from 'next-intl';
-import { trackUserSignup, trackUserLogin } from "@/lib/gtag";
-
-
 
 interface AuthModalProps {
   open: boolean;
@@ -27,303 +25,184 @@ interface AuthModalProps {
 
 export function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const t = useTranslations('auth');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [showResetPassword, setShowResetPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword } = useAuth();
-  const [signupEmailError, setSignupEmailError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
-  const handleGoogleSignIn = async () => {
-    setIsGoogleLoading(true);
-    setError(null);
-    
+  const { signInWithGoogle } = useAuth();
+
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+
+    setLoading(true);
+
     try {
-      if (typeof signInWithGoogle !== 'function') {
-        throw new Error(t('signInNotInitialized'));
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (error) throw error;
+        toast.success(t('signUpSuccess'));
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        toast.success(t('signInSuccess'));
+        onOpenChange(false);
       }
+    } catch (error: any) {
+      toast.error(error.message || (isSignUp ? t('signUpError') : t('signInError')));
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const handleGoogleAuth = async () => {
+    setGoogleLoading(true);
+    try {
       await signInWithGoogle();
-      // 跟踪 Google 登录事件
-      trackUserLogin('google');
-      
-      // 触发登录成功事件（Google登录会跳转页面，所以这里可能不会立即执行）
-      const event = new CustomEvent('loginSuccess');
-      window.dispatchEvent(event);
-      
-      // 成功时不重置 loading 状态，因为页面会跳转
-      // 保持加载状态直到页面跳转完成
-    } catch (error) {
-      console.error("Google sign in error:", error);
-      setError(error instanceof Error ? error.message : t('generalError'));
-      toast.error(t('signInFailed'));
-      setIsGoogleLoading(false); // 只在出错时重置加载状态
+      // Google 登录会重定向，所以不需要关闭模态框
+    } catch (error: any) {
+      toast.error(error.message || t('googleSignInError'));
+      setGoogleLoading(false);
     }
   };
 
-  const handleEmailSignIn = async () => {
-    if (!email || !password) return;
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      await signInWithEmail(email, password);
-      // 跟踪邮箱登录事件
-      trackUserLogin('email');
-      toast.success(t('signInSuccess'));
-      onOpenChange(false);
-      
-      // 触发登录成功事件
-      const event = new CustomEvent('loginSuccess');
-      window.dispatchEvent(event);
-    } catch (error) {
-      console.error("Email sign in error:", error);
-      setError(error instanceof Error ? error.message : t('signInError'));
-    } finally {
-      setIsLoading(false);
-    }
+  const resetForm = () => {
+    setEmail("");
+    setPassword("");
+    setShowPassword(false);
+    setLoading(false);
+    setGoogleLoading(false);
   };
 
-  const handleEmailSignUp = async () => {
-    if (!email || !password) return;
-    // 移除邮箱域名验证
-    setSignupEmailError(null);
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      await signUpWithEmail(email, password);
-      // 跟踪邮箱注册事件
-      trackUserSignup('email');
-      toast.success(t('signUpSuccess'));
-      onOpenChange(false);
-      
-      // 触发登录成功事件
-      const event = new CustomEvent('loginSuccess');
-      window.dispatchEvent(event);
-    } catch (error) {
-      console.error("Email sign up error:", error);
-      setError(error instanceof Error ? error.message : t('signUpError'));
-    } finally {
-      setIsLoading(false);
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      resetForm();
     }
+    onOpenChange(newOpen);
   };
-
-  const handleResetPassword = async () => {
-    if (!email) return;
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      await resetPassword(email);
-      toast.success(t('resetPasswordSuccess'));
-      setShowResetPassword(false);
-    } catch (error) {
-      console.error("Password reset error:", error);
-      setError(error instanceof Error ? error.message : t('resetPasswordError'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (showResetPassword) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md p-0 overflow-hidden">
-          <div className="p-6">
-            <DialogHeader className="text-center mb-4">
-              <DialogTitle className="text-2xl font-bold">
-                {t('resetPassword')}
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground">
-                {t('resetPasswordDescription')}
-              </DialogDescription>
-            </DialogHeader>
-
-            {error && (
-              <div className="flex items-center gap-2 p-3 mb-4 text-sm bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-md text-red-600 dark:text-red-400">
-                <AlertCircle className="h-4 w-4" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email-reset">{t('email')}</Label>
-                <Input
-                  id="email-reset"
-                  type="email"
-                  placeholder={t('enterYourEmail')}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 rounded-md"
-                />
-              </div>
-              
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => setShowResetPassword(false)}
-                  variant="outline"
-                  className="w-1/2 h-12"
-                  disabled={isLoading}
-                >
-                  {t('back')}
-                </Button>
-                
-                <Button
-                  onClick={handleResetPassword}
-                  disabled={isLoading || !email}
-                  className="w-1/2 h-12"
-                >
-                  {isLoading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Mail className="mr-2 h-4 w-4" />
-                  )}
-                  {t('sendResetEmail')}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden">
         <div className="p-6">
-          <DialogHeader className="text-center mb-4">
-            <DialogTitle className="text-2xl font-bold text-center">
+          <DialogHeader className="text-center mb-6">
+            <DialogTitle className="text-2xl font-bold">
               {isSignUp ? t('signUpTitle') : t('signInTitle')}
             </DialogTitle>
-            <DialogDescription className="text-muted-foreground text-center">
+            <DialogDescription className="text-muted-foreground">
               {isSignUp ? t('signUpDescription') : t('signInDescription')}
             </DialogDescription>
           </DialogHeader>
 
-          {error && (
-            <div className="flex items-center gap-2 p-3 mb-4 text-sm bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-md text-red-600 dark:text-red-400">
-              <AlertCircle className="h-4 w-4" />
-              <span>{error}</span>
-            </div>
-          )}
-
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">{t('email')}</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder={t('emailPlaceholder')}
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  // 移除邮箱域名验证
-                  setSignupEmailError(null);
-                }}
-                className="h-12 rounded-md"
-              />
-              {isSignUp && signupEmailError && (
-                <div className="text-xs text-red-500 mt-1">{signupEmailError}</div>
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">
-                  {t('password')}
-                </Label>
-              </div>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder={t('passwordPlaceholder')}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="h-12 rounded-md pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
-                >
-                  <Eye className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-            
+            {/* Google 登录按钮 */}
             <Button
-              onClick={isSignUp ? handleEmailSignUp : handleEmailSignIn}
-              disabled={isGoogleLoading || !email || !password || (isSignUp && !!signupEmailError)}
-              className="w-full h-12"
+              type="button"
+              variant="outline"
+              className="w-full h-11"
+              onClick={handleGoogleAuth}
+              disabled={loading || googleLoading}
             >
-              {isLoading ? (
+              {googleLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
-              {isSignUp ? t('signUp') : t('signIn')}
+              ) : (
+                <GoogleIcon className="mr-2 h-4 w-4" />
+              )}
+              {t('continueWithGoogle')}
             </Button>
 
-            {!isSignUp && (
-              <div className="flex justify-start mt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowResetPassword(true)}
-                  className="text-xs text-primary hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
-                >
-                  {t('forgotPassword')}
-                </button>
-              </div>
-            )}
-            
-            <div className="relative my-4">
+            <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
+                <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  {t('or')}
+                  {t('orContinueWith')}
                 </span>
               </div>
             </div>
-            
-            <Button
-              onClick={handleGoogleSignIn}
-              disabled={isLoading}
-              className="w-full h-12 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-white dark:border-gray-600"
-              variant="outline"
-            >
-              {isGoogleLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin mr-2" />
-              ) : (
-                <GoogleIcon className="h-5 w-5 mr-2" />
-              )}
-              {isGoogleLoading ? t('signingIn') : t('continueWithGoogle')}
-            </Button>
-            
-            <div className="text-center mt-4">
-              <button 
-                type="button" 
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-sm text-primary hover:text-[--color-primary-80]"
+
+            {/* 邮箱登录表单 */}
+            <form onSubmit={handleEmailAuth} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">{t('email')}</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder={t('emailPlaceholder')}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10"
+                    required
+                    disabled={loading || googleLoading}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">{t('password')}</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder={t('passwordPlaceholder')}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pr-10"
+                    required
+                    disabled={loading || googleLoading}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={loading || googleLoading}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full h-11"
+                disabled={loading || googleLoading || !email || !password}
               >
-                {isSignUp
-                  ? t('alreadyHaveAccount')
-                  : t('dontHaveAccount')}
-              </button>
+                {loading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                {isSignUp ? t('createAccount') : t('signIn')}
+              </Button>
+            </form>
+
+            <div className="text-center">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsSignUp(!isSignUp)}
+                disabled={loading || googleLoading}
+                className="text-sm"
+              >
+                {isSignUp ? t('alreadyHaveAccount') : t('dontHaveAccount')}
+              </Button>
             </div>
-          </div>
-          
-          <div className="text-center text-xs text-muted-foreground mt-6">
-            {t('termsAgreement')}
           </div>
         </div>
       </DialogContent>

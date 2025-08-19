@@ -12,16 +12,14 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const rawUserId = searchParams.get('userId');
-    const rawIsAdmin = searchParams.get('isAdmin');
-
     // 🔒 安全修复：严格验证用户输入
     const userValidation = validateUserId(rawUserId);
     if (!userValidation.isValid) {
       return NextResponse.json({ error: userValidation.error }, { status: 400 });
     }
-    
+
     const userId = userValidation.userId!;
-    const isAdmin = rawIsAdmin === 'true';
+    const isAdmin = false; // 暂时禁用管理员功能
 
     // 构建查询参数
     const params = new URLSearchParams();

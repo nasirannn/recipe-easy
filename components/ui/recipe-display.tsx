@@ -24,7 +24,8 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
   const t = useTranslations('recipeDisplay');
   const tRecipeForm = useTranslations('recipeForm');
   const locale = useLocale();
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
+  const isAdmin = false; // 暂时禁用管理员功能
   const { canGenerate } = useUserUsage();
   
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});

@@ -20,7 +20,8 @@ export function useRecipeGeneration(): UseRecipeGenerationReturn {
   const [error, setError] = useState<string | null>(null);
   
   const locale = useLocale();
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
+  const isAdmin = false; // 暂时禁用管理员功能
 
   /**
    * 生成食谱

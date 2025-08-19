@@ -1,5 +1,5 @@
 import { User } from '@supabase/supabase-js'
-import { createSupabaseClient } from '../supabase'
+import { supabase } from '../supabase'
 
 /**
  * 获取用户友好的显示名称
@@ -39,10 +39,6 @@ export async function updateUserDisplayName(user: User | null, displayName: stri
   if (!user) return false
   
   try {
-    const supabase = createSupabaseClient()
-    
-
-    
     const { data, error } = await supabase.auth.updateUser({
       data: {
         display_name: displayName

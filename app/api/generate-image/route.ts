@@ -42,9 +42,9 @@ export async function POST(request: NextRequest) {
       recipeDescription,
       recipeIngredients,
       userId,
-      isAdmin,
       language = 'en'
     } = body;
+    const isAdmin = false; // 暂时禁用管理员功能
 
     if (!userId) {
       return Response.json({

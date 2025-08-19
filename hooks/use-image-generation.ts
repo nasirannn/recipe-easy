@@ -18,7 +18,8 @@ export function useImageGeneration(): UseImageGenerationReturn {
   const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({});
   
   const locale = useLocale();
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
+  const isAdmin = false; // 暂时禁用管理员功能
 
   /**
    * 设置单个食谱的图片加载状态

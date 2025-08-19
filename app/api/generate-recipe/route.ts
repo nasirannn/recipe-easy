@@ -36,11 +36,12 @@ function transformRecipeData(recipe: any, finalLanguageModel: string, language: 
 }
 
 export async function POST(request: NextRequest) {
-  let ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel, userId, isAdmin, finalLanguageModel;
+  let ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel, userId, finalLanguageModel;
+  const isAdmin = false; // 暂时禁用管理员功能
   
   try {
     const body = await request.json();
-    ({ ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel, userId, isAdmin } = body);
+    ({ ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel, userId } = body);
 
     // 验证必要参数
     if (!ingredients || ingredients.length < 2) {

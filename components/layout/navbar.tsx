@@ -36,7 +36,7 @@ export const Navbar = () => {
   const pathname = usePathname();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showEditNameDialog, setShowEditNameDialog] = useState(false);
-  const { user, loading, signOut, isAdmin, refreshUser } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const { credits } = useUserUsage();
   const [isOpen, setIsOpen] = React.useState(false);
   const t = useTranslations('navigation');
@@ -45,6 +45,13 @@ export const Navbar = () => {
 
   // 添加调试信息
   React.useEffect(() => {
+    console.log('🔍 Navbar - 认证状态变化:', { 
+      hasUser: !!user, 
+      loading, 
+      userEmail: user?.email,
+      provider: user?.app_metadata?.provider 
+    })
+    
     if (user) {
       console.log('🔍 Navbar - User data:', {
         user_id: user.id,
@@ -64,8 +71,10 @@ export const Navbar = () => {
         console.log('🔍 Navbar - Google user detected, checking avatar fields...');
         console.log('🔍 Navbar - All user_metadata keys:', Object.keys(user.user_metadata || {}));
       }
+    } else {
+      console.log('🔍 Navbar - 没有用户数据')
     }
-  }, [user]);
+  }, [user, loading]);
 
   // 如果当前路径包含隐私政策或服务条款，不显示导航栏
   if (pathname.includes('/privacy') || pathname.includes('/terms')) {
@@ -90,8 +99,7 @@ export const Navbar = () => {
 
   // 处理编辑名称成功后的回调 - 简化版本
   const handleEditNameSuccess = () => {
-    // 立即刷新用户数据
-    refreshUser();
+    // 用户数据会通过认证状态变化自动更新
   };
 
   return (

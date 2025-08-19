@@ -334,17 +334,14 @@
     "enterYourEmail": "Enter your email",
     "back": "Back",
     "sendResetEmail": "Send Reset Email",
-    "or": "or",
+    "orContinueWith": "or continue with",
+    "createAccount": "Create Account",
     "signInSuccess": "Signed in successfully",
-    "signInFailed": "Sign in failed, please try again later",
     "signInError": "Sign in failed, please check your credentials",
     "signUpSuccess": "Verification email sent. Please check your inbox.",
     "signUpError": "Sign up failed, please try again",
-    "resetPasswordSuccess": "Password reset email sent. Please check your inbox.",
-    "resetPasswordError": "Failed to send password reset email",
-    "signInNotInitialized": "Sign in function not properly initialized",
-    "generalError": "An error occurred during sign in",
-    "termsAgreement": "By continuing, you agree to our Terms of Service and Privacy Policy"
+    "googleSignInError": "Google sign in failed, please try again",
+    "unexpectedError": "An unexpected error occurred"
   },
 
   "introduction": {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerRouteClient } from '../../../lib/supabase-server';
+import { supabase } from '../../../lib/supabase';
 
 // 配置 Edge Runtime 以支持 Cloudflare Pages
 export const runtime = 'edge';
@@ -11,19 +11,17 @@ export const revalidate = 3600; // 1小时缓存
 // 检查用户是否为管理员
 async function isAdmin(request: NextRequest): Promise<boolean> {
   try {
-    const supabase = createSupabaseServerRouteClient();
-    
     // 从Authorization头获取令牌
     const authHeader = request.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return false;
     }
-    
+
     const token = authHeader.split(' ')[1];
     const { data, error } = await supabase.auth.getUser(token);
-    
+
     if (error || !data.user) return false;
-    
+
     return data.user.user_metadata?.role === 'admin';
   } catch (error) {
     console.error('检查管理员权限失败:', error);

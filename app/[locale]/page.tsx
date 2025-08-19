@@ -9,6 +9,7 @@ import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
 import { IntroductionSection } from "@/components/layout/sections/introduction";
 import { AnchorHandler } from "@/components/layout/anchor-handler";
 
+
 export async function generateMetadata({
   params,
 }: {

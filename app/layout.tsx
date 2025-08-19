@@ -5,6 +5,7 @@ import Script from "next/script";
 import { generateMetadata, websiteStructuredData, organizationStructuredData, SITE_URL } from "@/lib/seo";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/layout/theme-provider";
+import { AuthProvider } from "@/contexts/auth-context";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -58,6 +59,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <AuthProvider>
         {/* Google Analytics 4 - 只在环境变量存在时加载 */}
         {GA_ID && (
           <>
@@ -111,8 +113,9 @@ export default function RootLayout({
           }}
         />
         
-        {children}
-        <Toaster />
+            {children}
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

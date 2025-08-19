@@ -335,17 +335,14 @@
     "enterYourEmail": "请输入您的邮箱",
     "back": "返回",
     "sendResetEmail": "发送重置邮件",
-    "or": "或",
+    "orContinueWith": "或者使用",
+    "createAccount": "创建账户",
     "signInSuccess": "登录成功",
-    "signInFailed": "登录失败，请稍后重试",
     "signInError": "登录失败，请检查您的凭据",
     "signUpSuccess": "验证邮件已发送，请查看您的收件箱。",
     "signUpError": "注册失败，请重试",
-    "resetPasswordSuccess": "密码重置邮件已发送，请查看您的收件箱。",
-    "resetPasswordError": "发送密码重置邮件失败",
-    "signInNotInitialized": "登录功能未正确初始化",
-    "generalError": "登录过程中发生错误",
-    "termsAgreement": "继续使用即表示您同意我们的服务条款和隐私政策"
+    "googleSignInError": "Google 登录失败，请重试",
+    "unexpectedError": "发生了意外错误"
   },
 
   "introduction": {
