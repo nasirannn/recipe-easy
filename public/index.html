@@ -7,13 +7,128 @@
     <meta name="description" content="Stuck on what to cook? Enter your ingredients and get random, AI-generated recipes based on what you have — solve your 'what can I use' problem.">
     <link rel="canonical" href="https://recipe-easy.com">
     <script>
-        // 重定向到默认语言页面
-        if (window.location.pathname === '/') {
-            window.location.replace('/en');
-        }
+        // 智能语言检测和重定向
+        (function() {
+            // 支持的语言列表
+            const supportedLocales = ['en', 'zh'];
+            const defaultLocale = 'en';
+            
+            // 获取用户浏览器语言偏好
+            function getPreferredLocale() {
+                // 方法1: 从navigator.languages获取（推荐）
+                if (navigator.languages && navigator.languages.length > 0) {
+                    for (let lang of navigator.languages) {
+                        // 提取主要语言代码（如 'zh-CN' -> 'zh'）
+                        const primaryLang = lang.split('-')[0].toLowerCase();
+                        if (supportedLocales.includes(primaryLang)) {
+                            return primaryLang;
+                        }
+                    }
+                }
+                
+                // 方法2: 从navigator.language获取（备用）
+                if (navigator.language) {
+                    const primaryLang = navigator.language.split('-')[0].toLowerCase();
+                    if (supportedLocales.includes(primaryLang)) {
+                        return primaryLang;
+                    }
+                }
+                
+                // 方法3: 从navigator.userLanguage获取（IE兼容）
+                if (navigator.userLanguage) {
+                    const primaryLang = navigator.userLanguage.split('-')[0].toLowerCase();
+                    if (supportedLocales.includes(primaryLang)) {
+                        return primaryLang;
+                    }
+                }
+                
+                // 默认返回英文
+                return defaultLocale;
+            }
+            
+            // 检查是否需要重定向
+            function checkRedirect() {
+                const currentPath = window.location.pathname;
+                
+                // 如果已经在根路径，则进行智能重定向
+                if (currentPath === '/') {
+                    const preferredLocale = getPreferredLocale();
+                    const targetUrl = '/' + preferredLocale;
+                    
+                    console.log('🌍 检测到用户语言偏好:', preferredLocale);
+                    console.log('🔄 重定向到:', targetUrl);
+                    
+                    // 使用replace避免在浏览器历史中留下记录
+                    window.location.replace(targetUrl);
+                }
+            }
+            
+            // 页面加载完成后执行重定向检查
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', checkRedirect);
+            } else {
+                checkRedirect();
+            }
+        })();
     </script>
 </head>
 <body>
-    <p>Redirecting...</p>
+    <div style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-align: center;
+    ">
+        <div style="
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 1rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        ">
+            <h1 style="margin: 0 0 1rem 0; font-size: 2rem;">🍳 RecipeEasy</h1>
+            <p style="margin: 0; font-size: 1.1rem; opacity: 0.9;">
+                <span id="loading-text">正在检测您的语言偏好...</span>
+            </p>
+            <div style="
+                margin-top: 1.5rem;
+                width: 40px;
+                height: 40px;
+                border: 3px solid rgba(255, 255, 255, 0.3);
+                border-top: 3px solid white;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            "></div>
+        </div>
+    </div>
+    
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    
+    <script>
+        // 更新加载文本
+        setTimeout(() => {
+            const loadingText = document.getElementById('loading-text');
+            if (loadingText) {
+                loadingText.textContent = '正在为您选择最合适的语言版本...';
+            }
+        }, 1000);
+        
+        setTimeout(() => {
+            const loadingText = document.getElementById('loading-text');
+            if (loadingText) {
+                loadingText.textContent = '即将完成，请稍候...';
+            }
+        }, 2000);
+    </script>
 </body>
 </html> 
