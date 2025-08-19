@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '../../../lib/supabase';
+import { supabase } from 'lib/supabase';
 
 // 配置 Edge Runtime 以支持 Cloudflare Pages
 export const runtime = 'edge';
