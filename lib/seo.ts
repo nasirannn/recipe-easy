@@ -9,9 +9,9 @@ export function generateCanonicalUrl(path: string = '', locale?: string): string
 
   // 对于英文（默认语言），始终使用根路径，不带语言前缀
   if (locale === 'en' || !locale) {
-    // 如果是根路径，直接返回网站根URL
+    // 如果是根路径，返回带尾部斜杠的网站根URL
     if (!cleanPath || cleanPath === '' || cleanPath === '/') {
-      return SITE_URL;
+      return `${SITE_URL}/`;
     }
     return `${SITE_URL}/${cleanPath}`;
   }

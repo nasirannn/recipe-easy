@@ -16,7 +16,9 @@
     "deploy:vercel": "npm run build && vercel --prod",
     "deploy:worker": "wrangler deploy",
     "deploy:cf": "npm run build:cf && wrangler pages deploy dist --project-name=recipe-easy-frontend",
-    "versions:upload": "wrangler versions upload"
+    "versions:upload": "wrangler versions upload",
+    "indexnow": "node scripts/submit-indexnow.js",
+    "indexnow:submit": "node scripts/submit-indexnow.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
