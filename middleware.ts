@@ -13,8 +13,8 @@ export default function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // 处理所有路径，包括根路径，但排除 API 和静态文件
+  // 处理所有路径，包括根路径，但排除 API、auth 和静态文件
   matcher: [
-    '/((?!api|_next|_vercel|favicon.ico|.*\\..*).*)'
+    '/((?!api|auth|_next|_vercel|favicon.ico|.*\\..*).*)'
   ]
 };
