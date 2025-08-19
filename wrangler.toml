@@ -8,6 +8,7 @@ compatibility_flags = ["nodejs_compat"]
 # 环境变量配置
 [vars]
 WORKER_URL = "https://api.recipe-easy.com"
+NEXT_PUBLIC_SUPABASE_URL=https://dgjrrwviswykejihagnn.supabase.co
 
 # D1 Database binding
 [[d1_databases]]
