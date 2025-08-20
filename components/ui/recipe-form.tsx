@@ -162,7 +162,7 @@ export const RecipeForm = ({
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json();
+      const data = await response.json() as any;
       if (data.success && data.results) {
         setAllIngredients(data.results);
       } else {
@@ -189,7 +189,7 @@ export const RecipeForm = ({
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data = await response.json();
+        const data = await response.json() as any;
 
         if (data.success && data.results) {
           const categoriesMap: Record<string, { name: string; icon?: string; color?: string }> = {};

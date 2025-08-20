@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateUserId } from '@/lib/utils/validation';
-import { getD1DatabaseFromRequest } from '@/lib/utils/database-utils';
-import { D1Database } from '@cloudflare/workers-types';
 
-// 强制动态渲染
-export const dynamic = 'force-dynamic';
+// 检查是否有数据库绑定
+function hasDatabaseBinding(): boolean {
+  try {
+    return typeof process.env.RECIPE_EASY_DB !== 'undefined' || 
+           typeof (globalThis as any).RECIPE_EASY_DB !== 'undefined';
+  } catch {
+    return false;
+  }
+}
 
 // 获取系统配置
-async function getSystemConfig(db: D1Database, key: string, defaultValue: any): Promise<any> {
+async function getSystemConfig(db: any, key: string, defaultValue: any): Promise<any> {
   try {
     const result = await db.prepare(`
       SELECT value FROM system_configs WHERE key = ?
@@ -47,11 +52,11 @@ export async function GET(request: NextRequest) {
     const userId = userValidation.userId!;
     const isAdmin = searchParams.get('isAdmin') === 'true';
 
-    // 获取数据库实例
-    const db = getD1DatabaseFromRequest(request);
+    // 检查是否有数据库绑定
+    const hasDb = hasDatabaseBinding();
     
     // 在本地开发环境中，如果没有数据库绑定，返回模拟数据
-    if (!db) {
+    if (!hasDb) {
       console.log('Database not available in development environment, returning mock data');
       const mockCredits = isAdmin ? 999999 : 100;
       return NextResponse.json({
@@ -68,6 +73,12 @@ export async function GET(request: NextRequest) {
         canGenerate: true,
         availableCredits: mockCredits,
       });
+    }
+
+    // 获取数据库实例
+    const db = (globalThis as any).RECIPE_EASY_DB;
+    if (!db) {
+      throw new Error('数据库绑定不可用');
     }
 
     // 检查表是否存在
@@ -98,7 +109,7 @@ export async function GET(request: NextRequest) {
         VALUES (?, ?, ?, ?, 0, DATETIME('now'), DATETIME('now'))
         RETURNING *
       `).bind(creditId, userId, initialCredits, initialCredits).first();
-
+      
       return NextResponse.json({
         success: true,
         credits: newCredits,
@@ -107,9 +118,9 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // 检查是否可以生成
-    const adminUnlimited = await getSystemConfig(db, 'admin_unlimited', true);
-    const canGenerate = (isAdmin && adminUnlimited) || (userCredits.credits as number) > 0;
+    // 获取系统配置
+    const minCreditsForGeneration = await getSystemConfig(db, 'min_credits_for_generation', 1);
+    const canGenerate = userCredits.credits >= minCreditsForGeneration;
 
     return NextResponse.json({
       success: true,
@@ -119,15 +130,23 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('API Error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-    return NextResponse.json({ error: 'Failed to process request', details: errorMessage }, { status: 500 });
+    console.error('Error fetching user usage:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch user usage' },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json() as {
+      userId: string;
+      action: string;
+      amount?: number;
+      description?: string;
+      isAdmin?: boolean;
+    };
     const { userId: bodyUserId, action, amount, description, isAdmin: bodyIsAdmin } = body;
 
     // 🔒 安全修复：严格验证用户输入
@@ -138,11 +157,11 @@ export async function POST(request: NextRequest) {
     
     const userId = userValidation.userId!;
 
-    // 获取数据库实例
-    const db = getD1DatabaseFromRequest(request);
+    // 检查是否有数据库绑定
+    const hasDb = hasDatabaseBinding();
     
     // 在本地开发环境中，如果没有数据库绑定，返回模拟数据
-    if (!db) {
+    if (!hasDb) {
       console.log('Database not available in development environment, returning mock data for POST');
       const isAdmin = bodyIsAdmin === true;
       const mockCredits = isAdmin ? 999998 : 99; // 管理员消费1积分后剩余999998
@@ -165,6 +184,11 @@ export async function POST(request: NextRequest) {
           transactionId: 'mock-transaction-id' 
         }
       });
+    }
+
+    const db = (globalThis as any).RECIPE_EASY_DB;
+    if (!db) {
+      throw new Error('数据库绑定不可用');
     }
 
     if (action === 'spend') {

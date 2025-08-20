@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error getting system configs:', error);
@@ -84,7 +84,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { key, value, description } = await request.json();
+    const { key, value, description } = await request.json() as {
+      key: string;
+      value: any;
+      description?: string;
+    };
 
     if (!key || value === undefined) {
       return NextResponse.json(
@@ -117,7 +121,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error updating system config:', error);

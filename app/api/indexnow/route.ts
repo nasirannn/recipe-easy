@@ -4,7 +4,11 @@ import { submitUrlToIndexNow, submitUrlsToIndexNow, submitMainPagesToIndexNow } 
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json() as {
+      url?: string;
+      urls?: string[];
+      type?: string;
+    };
     const { url, urls, type } = body;
 
     let success = false;

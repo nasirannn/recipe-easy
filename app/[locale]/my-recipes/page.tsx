@@ -65,9 +65,9 @@ export default function MyRecipesPage() {
         throw new Error('Failed to fetch recipes');
       }
       
-      const data = await response.json();
-      setRecipes(data.results || []);
-      setTotal(data.total || 0);
+      const data = await response.json() as any;
+      setRecipes(data.recipes || []);
+      setTotal(data.pagination?.total || 0);
       setHasLoaded(true);
     } catch (error) {
       console.error('Failed to load recipes:', error);

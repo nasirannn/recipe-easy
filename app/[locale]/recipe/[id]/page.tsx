@@ -20,7 +20,7 @@ export async function generateMetadata({
     // 获取菜谱数据用于SEO - 在服务器端使用完整URL
     const apiUrl = env.IS_DEVELOPMENT ? `http://localhost:3000/api/recipes/${id}?lang=${locale}` : `${env.APP_URL}/api/recipes/${id}?lang=${locale}`;
     const response = await fetch(apiUrl);
-    const data = await response.json();
+    const data = await response.json() as any;
     
     if (!data.success || !data.recipe) {
       return generateSeoMetadata({
@@ -64,7 +64,7 @@ async function getRecipe(id: string, locale: string) {
       return null;
     }
     
-    const data = await response.json();
+    const data = await response.json() as any;
     
     if (!data.success) {
       console.error('Recipe API returned error:', data.error);

@@ -8,9 +8,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getWorkerApiUrl } from '@/lib/config';
 import { Recipe, DatabaseRecipe, RecipeInput } from '@/lib/types';
 
-
-
-
 // 注意：此API路由现在完全依赖Worker API获取数据
 // 不再使用本地静态数据
 
@@ -43,11 +40,11 @@ export async function GET(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json() as any;
       return NextResponse.json(errorData, { status: response.status });
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
     return NextResponse.json(data);
 
   } catch (error) {
@@ -86,11 +83,11 @@ export async function PUT(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json() as any;
       return NextResponse.json(errorData, { status: response.status });
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error updating recipe:', error);
@@ -111,7 +108,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const body = await req.json();
+    const body = await req.json() as { userId: string };
     const { userId } = body;
     
     if (!userId) {
@@ -131,7 +128,7 @@ export async function DELETE(
       throw new Error('Failed to delete recipe');
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error deleting recipe:', error);

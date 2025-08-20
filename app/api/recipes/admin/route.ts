@@ -5,130 +5,128 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getD1Database } from '@/lib/utils/database-utils';
-import { createCorsHeaders } from '@/lib/utils/cors';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
-// 强制动态渲染
-export const dynamic = 'force-dynamic';
-
-export async function GET(request: NextRequest) {
+// 直接从数据库获取数据
+async function getDataFromDatabase(request: NextRequest) {
   try {
-    console.log('Admin API: Starting request');
-    
-    const db = getD1Database();
+    // 使用 getCloudflareContext 获取数据库绑定
+    const { env } = getCloudflareContext();
+    const db = env.RECIPE_EASY_DB;
     if (!db) {
-      console.error('Admin API: Database not available');
-      return NextResponse.json({ error: 'Database not available' }, { status: 500 });
+      throw new Error('数据库绑定不可用');
     }
     
-    console.log('Admin API: Database connected successfully');
-    
-    // 使用硬编码的管理员ID
-    const adminId = '157b6650-29b8-4613-87d9-ce0997106151';
-    console.log('Admin API: Using admin ID:', adminId);
-    
-    const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const offset = parseInt(searchParams.get('offset') || '0');
-    const lang = searchParams.get('lang') || 'en';
-    
-    console.log('Admin API: Query parameters:', { limit, offset, lang });
-    
-    // 获取管理员菜谱总数
-    const countQuery = `
-      SELECT COUNT(*) as total
-      FROM recipes r
-      WHERE r.user_id = ?
-    `;
-    
-    const countResult = await db.prepare(countQuery).bind(adminId).first();
-    const total = countResult?.total || 0;
-    
-    console.log('Admin API: Total recipes found:', total);
-    
-    // 获取管理员菜谱列表，支持国际化
-    const recipesQuery = `
-      SELECT 
-        r.id,
-        r.title,
-        r.description,
-        r.cooking_time as cookingTime,
-        r.servings,
-        r.difficulty,
-        r.tags,
-        r.ingredients,
-        r.seasoning,
-        r.instructions,
-        r.chef_tips as chefTips,
-        r.created_at as createdAt,
-        r.updated_at as updatedAt,
-        c.id as cuisine_id,
-        c.name as cuisine_name,
-        ri.image_path as imagePath,
-        COALESCE(ri18n.title, r.title) as localized_title,
-        COALESCE(ri18n.description, r.description) as localized_description,
-        COALESCE(ri18n.ingredients, r.ingredients) as localized_ingredients,
-        COALESCE(ri18n.seasoning, r.seasoning) as localized_seasoning,
-        COALESCE(ri18n.instructions, r.instructions) as localized_instructions,
-        COALESCE(ri18n.chef_tips, r.chef_tips) as localized_chef_tips,
-        COALESCE(ri18n.tags, r.tags) as localized_tags,
-        COALESCE(ri18n.difficulty, r.difficulty) as localized_difficulty
-      FROM recipes r
-      LEFT JOIN cuisines c ON r.cuisine_id = c.id
-      LEFT JOIN recipe_images ri ON r.id = ri.recipe_id
-      LEFT JOIN recipes_i18n ri18n ON r.id = ri18n.recipe_id AND ri18n.language_code = ?
-      WHERE r.user_id = ?
-      ORDER BY r.created_at DESC
-      LIMIT ? OFFSET ?
-    `;
-    
-    const recipesResult = await db.prepare(recipesQuery).bind(lang, adminId, limit, offset).all();
-    const recipes = recipesResult.results || [];
-    
-    console.log('Admin API: Recipes fetched:', recipes.length);
-    
-    // 转换数据格式
-    const transformedRecipes = recipes.map((recipe: any) => ({
-      id: recipe.id,
-      title: recipe.localized_title || recipe.title,
-      description: recipe.localized_description || recipe.description,
-      imagePath: recipe.imagePath,
-      cookingTime: recipe.cookingTime,
-      servings: recipe.servings,
-      difficulty: recipe.localized_difficulty || recipe.difficulty,
-      tags: recipe.localized_tags ? JSON.parse(recipe.localized_tags) : (recipe.tags ? JSON.parse(recipe.tags) : []),
-      ingredients: recipe.localized_ingredients ? JSON.parse(recipe.localized_ingredients) : (recipe.ingredients ? JSON.parse(recipe.ingredients) : []),
-      seasoning: recipe.localized_seasoning ? JSON.parse(recipe.localized_seasoning) : (recipe.seasoning ? JSON.parse(recipe.seasoning) : []),
-      instructions: recipe.localized_instructions ? JSON.parse(recipe.localized_instructions) : (recipe.instructions ? JSON.parse(recipe.instructions) : []),
-      chefTips: recipe.localized_chef_tips ? JSON.parse(recipe.localized_chef_tips) : (recipe.chefTips ? JSON.parse(recipe.chefTips) : []),
-      createdAt: recipe.createdAt,
-      updatedAt: recipe.updatedAt,
-      cuisine: recipe.cuisine_id ? {
-        id: recipe.cuisine_id,
-        name: recipe.cuisine_name
-      } : null
-    }));
-    
-    console.log('Admin API: Successfully processed recipes');
-    
-    return NextResponse.json({
-      success: true,
-      data: {
-        recipes: transformedRecipes,
-        pagination: {
-          total,
-          limit,
-          offset,
-          hasMore: offset + limit < (total as number)
-        }
+    // 根据请求方法处理不同的操作
+    if (request.method === 'GET') {
+      const { searchParams } = new URL(request.url);
+      const page = parseInt(searchParams.get('page') || '1');
+      const limit = parseInt(searchParams.get('limit') || '10');
+      const lang = searchParams.get('lang') || 'en';
+      const offset = (page - 1) * limit;
+      
+      // 获取管理员用户ID
+      const adminConfig = await db.prepare(`
+        SELECT value FROM system_configs WHERE key = 'admin_id'
+      `).first();
+
+      if (!adminConfig || !adminConfig.value) {
+        return NextResponse.json(
+          { error: '管理员用户ID未配置' },
+          { status: 404 }
+        );
       }
-    });
+
+      const adminUserId = adminConfig.value;
+      
+      if (lang === 'zh') {
+        // 中文查询管理员食谱
+        const recipes = await db.prepare(`
+          SELECT 
+            r.id, r.title, r.description, r.cooking_time as cookingTime,
+            r.servings, r.difficulty,
+            rim.image_path as imagePath,
+            r.ingredients, r.seasoning, r.instructions, r.chef_tips as chefTips,
+            r.created_at as createdAt, r.updated_at as updatedAt,
+            c.name as cuisine_name, c.slug as cuisine_slug,
+            ri.title as title_zh, ri.description as description_zh,
+            ri.ingredients as ingredients_zh, ri.seasoning as seasoning_zh,
+            ri.instructions as instructions_zh, ri.chef_tips as chefTips_zh
+          FROM recipes r
+          LEFT JOIN cuisines c ON r.cuisine_id = c.id
+          LEFT JOIN recipes_i18n ri ON r.id = ri.recipe_id AND ri.lang = 'zh'
+          LEFT JOIN recipe_images rim ON r.id = rim.recipe_id
+          WHERE r.user_id = ?
+          ORDER BY r.created_at DESC
+          LIMIT ? OFFSET ?
+        `).bind(adminUserId, limit, offset).all();
+        
+        const totalResult = await db.prepare(`
+          SELECT COUNT(*) as total FROM recipes WHERE user_id = ?
+        `).bind(adminUserId).first();
+        
+        const total = Number(totalResult?.total) || 0;
+        
+        return NextResponse.json({
+          success: true,
+          results: recipes,
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit)
+          }
+        });
+      } else {
+        // 英文查询管理员食谱
+        const recipes = await db.prepare(`
+          SELECT 
+            r.id, r.title, r.description, r.cooking_time as cookingTime,
+            r.servings, r.difficulty,
+            rim.image_path as imagePath,
+            r.ingredients, r.seasoning, r.instructions, r.chef_tips as chefTips,
+            r.created_at as createdAt, r.updated_at as updatedAt,
+            c.name as cuisine_name, c.slug as cuisine_slug
+          FROM recipes r
+          LEFT JOIN cuisines c ON r.cuisine_id = c.id
+          LEFT JOIN recipe_images rim ON r.id = rim.recipe_id
+          WHERE r.user_id = ?
+          ORDER BY r.created_at DESC
+          LIMIT ? OFFSET ?
+        `).bind(adminUserId, limit, offset).all();
+        
+        const totalResult = await db.prepare(`
+          SELECT COUNT(*) as total FROM recipes WHERE user_id = ?
+        `).bind(adminUserId).first();
+        
+        const total = Number(totalResult?.total) || 0;
+        
+        return NextResponse.json({
+          success: true,
+          results: recipes,
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit)
+          }
+        });
+      }
+    }
     
+    return NextResponse.json({ error: '不支持的请求方法' }, { status: 405 });
   } catch (error) {
-    console.error('Admin API Error:', error);
+    console.error('❌ 数据库查询失败:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch admin recipes', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: '数据库查询失败' },
       { status: 500 }
     );
   }
+}
+
+export async function GET(request: NextRequest) {
+  console.log('📊 获取管理员食谱列表');
+  
+  // 直接尝试查询数据库
+  return await getDataFromDatabase(request);
 } 

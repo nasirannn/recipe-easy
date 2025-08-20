@@ -60,8 +60,8 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
     const fetchRecipes = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/recipes?limit=20&offset=${(page - 1) * 20}&lang=${locale}`);
-        const data = await response.json();
+        const response = await fetch(`/api/recipes?type=all&page=${page}&limit=20&lang=${locale}`);
+        const data = await response.json() as any;
 
         if (data.success) {
           // 转换API返回的数据格式以匹配前端期望的格式

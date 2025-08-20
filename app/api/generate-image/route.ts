@@ -35,7 +35,7 @@ function getServerUrl(request: NextRequest): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json() as any;
     const { 
       recipeTitle,
       recipeDescription,
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         }, { status: 500 });
       }
       
-      const userData = await userResponse.json();
+      const userData = await userResponse.json() as { credits: number };
       
       if (userData.credits < 1) {
         return Response.json({
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
         throw new Error(`Wanx API error: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
-      const result = await response.json();
+      const result = await response.json() as any;
 
       
       if (result.output?.task_id) {
@@ -148,13 +148,18 @@ export async function POST(request: NextRequest) {
           });
           
           if (statusResponse.ok) {
-            const statusResult = await statusResponse.json();
+                      const statusResult = await statusResponse.json() as {
+            output?: {
+              task_status?: string;
+              results?: Array<{ url?: string }>;
+            };
+          };
 
-            
-            if (statusResult.output?.task_status === 'SUCCEEDED' && statusResult.output?.results?.[0]?.url) {
-              imageUrl = statusResult.output.results[0].url;
-              break;
-            } else if (statusResult.output?.task_status === 'FAILED') {
+          
+          if (statusResult.output?.task_status === 'SUCCEEDED' && statusResult.output?.results?.[0]?.url) {
+            imageUrl = statusResult.output.results[0].url;
+            break;
+          } else if (statusResult.output?.task_status === 'FAILED') {
               throw new Error('Wanx image generation failed');
             }
           }
@@ -204,7 +209,7 @@ export async function POST(request: NextRequest) {
         throw new Error(`Flux API error: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
-      const prediction = await response.json();
+      const prediction = await response.json() as any;
 
 
       if (prediction.error) {

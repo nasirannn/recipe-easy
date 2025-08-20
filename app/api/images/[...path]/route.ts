@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getR2Bucket } from '@/lib/utils/database-utils';
+
+// 检查是否有 R2 绑定
+function hasR2Binding(): boolean {
+  try {
+    return typeof (globalThis as any).RECIPE_IMAGES !== 'undefined';
+  } catch {
+    return false;
+  }
+}
 
 export async function GET(
   request: NextRequest,
@@ -16,8 +24,17 @@ export async function GET(
       );
     }
 
+    // 检查是否有 R2 绑定
+    const hasR2 = hasR2Binding();
+    if (!hasR2) {
+      return NextResponse.json(
+        { error: 'R2 bucket not available in development environment' },
+        { status: 503 }
+      );
+    }
+
     // 获取 R2 存储桶
-    const bucket = getR2Bucket();
+    const bucket = (globalThis as any).RECIPE_IMAGES;
     if (!bucket) {
       return NextResponse.json(
         { error: 'R2 bucket not available' },
@@ -68,7 +85,7 @@ export async function OPTIONS() {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     },
   });

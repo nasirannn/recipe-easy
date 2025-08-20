@@ -5,7 +5,7 @@ export const env = {
            (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://recipe-easy.com'),
   
   // Worker URL
-  WORKER_URL: process.env.WORKER_URL || 'https://api.recipe-easy.com',
+  WORKER_URL: process.env.WORKER_URL || 'https://recipe-easy.com',
   
   // 环境检测
   IS_DEVELOPMENT: process.env.NODE_ENV === 'development',

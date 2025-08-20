@@ -3,7 +3,6 @@ import { Recipe } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
 import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
-import { env } from '@/lib/env';
 
 export const useRecipeSave = () => {
   const { user } = useAuth();
@@ -17,9 +16,8 @@ export const useRecipeSave = () => {
     }
     
     try {
-      // 调用worker API保存菜谱
-      const workerUrl = env.WORKER_URL;
-      const response = await fetch(`${workerUrl}/api/recipes/save`, {
+      // 调用本地 Next.js API 路由，它会转发到 Worker API
+      const response = await fetch('/api/recipes/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

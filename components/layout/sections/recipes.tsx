@@ -31,17 +31,17 @@ export const RecipesSection = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [userInteracting, setUserInteracting] = useState(false);
 
-  // 从本地 API 获取食谱数据 - 只获取管理员最近创建的5个菜谱
+  // 从本地 API 获取食谱数据 - 只获取管理员最近创建的6个菜谱
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
         setIsLoading(true);
-        // 调用管理员菜谱接口，限制为最近创建的5个菜谱
-        const response = await fetch(`/api/recipes/admin?limit=5&lang=${locale}`);
-        const data = await response.json();
+        // 调用管理员菜谱接口，限制为最近创建的6个菜谱
+        const response = await fetch(`/api/recipes?type=admin_recent&limit=6&lang=${locale}`);
+        const data = await response.json() as any;
 
         if (data.success) {
-          setRecipes(data.data?.recipes || []);
+          setRecipes(data.results || []);
         } else {
           console.error('Failed to fetch admin recipes:', data.error);
         }
@@ -166,7 +166,7 @@ export const RecipesSection = () => {
             <div className="relative">
               <div className="relative aspect-[4/3] sm:aspect-[3/2] overflow-hidden rounded-lg shadow-lg min-h-[280px] sm:min-h-[320px] lg:min-h-[400px]">
                 {/* 底层图片 - 当前显示的图片 */}
-                <Link href={`/${locale}/recipe/${displayRecipes[currentImageIndex].id}`}>
+                <Link href={`/${locale}/recipe/${displayRecipes[currentImageIndex].id}`} className="relative block w-full h-full">
                   <Image
                     key={`current-${currentImageIndex}`}
                     src={getImageUrl(displayRecipes[currentImageIndex].imagePath) || '/images/recipe-placeholder-bg.png'}
@@ -194,7 +194,7 @@ export const RecipesSection = () => {
                 
                 {/* 顶层图片 - 下一张图片，通过透明度渐变显示 */}
                 {isTransitioning && (
-                  <Link href={`/${locale}/recipe/${displayRecipes[nextImageIndex].id}`}>
+                  <Link href={`/${locale}/recipe/${displayRecipes[nextImageIndex].id}`} className="relative block w-full h-full">
                     <Image
                       key={`next-${nextImageIndex}`}
                       src={getImageUrl(displayRecipes[nextImageIndex].imagePath) || '/images/recipe-placeholder-bg.png'}

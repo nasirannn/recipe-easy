@@ -39,7 +39,17 @@ export async function POST(request: NextRequest) {
   const isAdmin = false; // 暂时禁用管理员功能
   
   try {
-    const body = await request.json();
+    const body = await request.json() as {
+      ingredients: any[];
+      servings: number;
+      recipeCount?: number;
+      cookingTime: number;
+      difficulty: string;
+      cuisine: string;
+      language: string;
+      languageModel?: string;
+      userId?: string;
+    };
     ({ ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel, userId } = body);
 
     // 验证必要参数
@@ -107,7 +117,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'GPT-4o mini API 调用失败' }, { status: 500 });
       }
 
-      const prediction = await response.json();
+      const prediction = await response.json() as any;
 
 
       // 轮询等待结果

@@ -1,186 +1,178 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getD1Database, isCloudflareWorkers } from '@/lib/utils/database-utils';
-import { createCorsHeaders } from '@/lib/utils/cors';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
-// 强制动态渲染
-export const dynamic = 'force-dynamic';
-
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ userId: string }> }
-) {
+// 直接从数据库获取数据
+async function getDataFromDatabase(request: NextRequest, userId: string) {
   try {
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const lang = searchParams.get('lang') || 'en';
-    const offset = (page - 1) * limit;
-    const { userId } = await params;
+    console.log('🗄️ 直接查询数据库');
+    // 在 Cloudflare Worker 环境中，通过 globalThis 访问环境变量
+    let db: any;
     
-    console.log('User recipes API called with params:', { userId, page, limit, lang, offset });
-
-    // 检查是否在 Cloudflare Workers 环境中
-    const isWorker = isCloudflareWorkers();
-    console.log('Is Cloudflare Workers environment:', isWorker);
-
-    if (isWorker) {
-      // 在 Cloudflare Workers 环境中，直接查询数据库
-      console.log('Using database directly');
-      return await getUserRecipesFromDatabase(userId, page, limit, lang);
-    } else {
-      // 在本地开发环境中，调用 Cloudflare Worker API
-      console.log('Using Worker API');
-      return await getUserRecipesFromWorker(userId, page, limit, lang);
+    try {
+      // 使用已导入的 getCloudflareContext
+      const { env } = await getCloudflareContext();
+      db = env.RECIPE_EASY_DB;
+    } catch (error) {
+      console.log('⚠️ @opennextjs/cloudflare 不可用，尝试直接访问环境');
+      // 如果 @opennextjs/cloudflare 不可用，尝试直接访问环境
+      // @ts-ignore - 在 Cloudflare Worker 环境中，env 可能直接可用
+      db = (globalThis as any).env?.RECIPE_EASY_DB || (globalThis as any).RECIPE_EASY_DB;
     }
     
+    if (!db) {
+      throw new Error('数据库绑定不可用 - 请检查 Cloudflare Worker 配置');
+    }
+    
+    console.log('✅ 数据库连接成功');
+    
+    if (request.method === 'GET') {
+      const { searchParams } = new URL(request.url);
+      const page = parseInt(searchParams.get('page') || '1');
+      const limit = parseInt(searchParams.get('limit') || '10');
+      const offset = (page - 1) * limit;
+      const lang = searchParams.get('lang') || 'en';
+      
+      console.log('📋 查询用户食谱参数:', { userId, page, limit, offset, lang });
+      
+      let recipes: any;
+      let totalResult: any;
+
+      if (lang === 'zh') {
+        // 中文查询用户食谱
+        recipes = await db.prepare(`
+          SELECT 
+            r.id, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
+            rim.image_path as imagePath,
+            r.ingredients, r.seasoning, r.instructions, r.chef_tips,
+            r.created_at, r.updated_at,
+            c.name as cuisine_name, c.slug as cuisine_slug, c.id as cuisine_id,
+            ri.title as title_zh, ri.description as description_zh,
+            ri.ingredients as ingredients_zh, ri.seasoning as seasoning_zh,
+            ri.instructions as instructions_zh, ri.chef_tips as chef_tips_zh
+          FROM recipes r
+          LEFT JOIN cuisines c ON r.cuisine_id = c.id
+          LEFT JOIN recipes_i18n ri ON r.id = ri.recipe_id AND ri.language_code = 'zh'
+          LEFT JOIN recipe_images rim ON r.id = rim.recipe_id
+          WHERE r.user_id = ?
+          ORDER BY r.created_at DESC
+          LIMIT ? OFFSET ?
+        `).bind(userId, limit, offset).all();
+      } else {
+        // 英文查询用户食谱
+        recipes = await db.prepare(`
+          SELECT 
+            r.id, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
+            rim.image_path as imagePath,
+            r.ingredients, r.seasoning, r.instructions, r.chef_tips,
+            r.created_at, r.updated_at,
+            c.name as cuisine_name, c.slug as cuisine_slug, c.id as cuisine_id
+          FROM recipes r
+          LEFT JOIN cuisines c ON r.cuisine_id = c.id
+          LEFT JOIN recipe_images rim ON r.id = rim.recipe_id
+          WHERE r.user_id = ?
+          ORDER BY r.created_at DESC
+          LIMIT ? OFFSET ?
+        `).bind(userId, limit, offset).all();
+      }
+      
+      // 获取用户食谱总数
+      totalResult = await db.prepare('SELECT COUNT(*) as total FROM recipes WHERE user_id = ?').bind(userId).first();
+      const total = Number(totalResult?.total) || 0;
+      
+      // 转换数据格式以匹配前端期望的格式
+      const transformedRecipes = (recipes?.results || []).map((recipe: any) => ({
+        id: recipe.id,
+        title: lang === 'zh' && recipe.title_zh ? recipe.title_zh : recipe.title,
+        description: lang === 'zh' && recipe.description_zh ? recipe.description_zh : recipe.description,
+        cookingTime: recipe.cooking_time || 30,
+        servings: recipe.servings || 4,
+        difficulty: recipe.difficulty || 'easy',
+        imagePath: recipe.imagePath,
+        ingredients: lang === 'zh' && recipe.ingredients_zh ? JSON.parse(recipe.ingredients_zh) : JSON.parse(recipe.ingredients || '[]'),
+        seasoning: lang === 'zh' && recipe.seasoning_zh ? JSON.parse(recipe.seasoning_zh) : JSON.parse(recipe.seasoning || '[]'),
+        instructions: lang === 'zh' && recipe.instructions_zh ? JSON.parse(recipe.instructions_zh) : JSON.parse(recipe.instructions || '[]'),
+        chefTips: lang === 'zh' && recipe.chef_tips_zh ? JSON.parse(recipe.chef_tips_zh) : JSON.parse(recipe.chef_tips || '[]'),
+        createdAt: recipe.created_at,
+        updatedAt: recipe.updated_at,
+        cuisine: recipe.cuisine_name ? {
+          id: recipe.cuisine_id,
+          name: recipe.cuisine_name,
+          slug: recipe.cuisine_slug
+        } : undefined
+      }));
+      
+      return NextResponse.json({
+        success: true,
+        recipes: transformedRecipes,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit)
+        }
+      });
+    }
+    
+    return NextResponse.json({ error: '不支持的请求方法' }, { status: 405 });
   } catch (error) {
-    console.error('Get user recipes error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to fetch user recipes',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    console.error('❌ 数据库查询失败:', error);
+    return NextResponse.json(
+      { error: '数据库查询失败', details: error.message },
+      { status: 500 }
+    );
   }
 }
 
-/**
- * 从数据库直接获取用户菜谱
- */
-async function getUserRecipesFromDatabase(userId: string, page: number, limit: number, lang: string) {
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ userId: string }> }
+) {
+  const { userId } = await context.params;
+  console.log('👤 获取用户食谱列表:', userId);
+  
   try {
-    const db = getD1Database();
-    if (!db) {
-      throw new Error('Database not available');
-    }
-
-    const offset = (page - 1) * limit;
-
-    // 获取用户菜谱总数
-    const countQuery = `
-      SELECT COUNT(*) as total
-      FROM recipes r
-      WHERE r.user_id = ?
-    `;
+    // 直接查询数据库
+    return await getDataFromDatabase(request, userId);
+  } catch (error) {
+    console.error('❌ 获取用户食谱失败:', error);
+    console.log('Database not available in development environment, returning mock data');
     
-    const countResult = await db.prepare(countQuery).bind(userId).first();
-    const total = countResult?.total || 0;
-
-    // 获取用户菜谱列表，支持国际化
-    const recipesQuery = `
-      SELECT 
-        r.id,
-        r.title,
-        r.description,
-        r.cooking_time as cookingTime,
-        r.servings,
-        r.difficulty,
-        r.tags,
-        r.ingredients,
-        r.seasoning,
-        r.instructions,
-        r.chef_tips as chefTips,
-        r.created_at as createdAt,
-        r.updated_at as updatedAt,
-        c.id as cuisine_id,
-        c.name as cuisine_name,
-        ri.image_path as imagePath,
-        COALESCE(ri18n.title, r.title) as localized_title,
-        COALESCE(ri18n.description, r.description) as localized_description,
-        COALESCE(ri18n.ingredients, r.ingredients) as localized_ingredients,
-        COALESCE(ri18n.seasoning, r.seasoning) as localized_seasoning,
-        COALESCE(ri18n.instructions, r.instructions) as localized_instructions,
-        COALESCE(ri18n.chef_tips, r.chef_tips) as localized_chef_tips,
-        COALESCE(ri18n.tags, r.tags) as localized_tags,
-        COALESCE(ri18n.difficulty, r.difficulty) as localized_difficulty
-      FROM recipes r
-      LEFT JOIN cuisines c ON r.cuisine_id = c.id
-      LEFT JOIN recipe_images ri ON r.id = ri.recipe_id
-      LEFT JOIN recipes_i18n ri18n ON r.id = ri18n.recipe_id AND ri18n.language_code = ?
-      WHERE r.user_id = ?
-      ORDER BY r.created_at DESC
-      LIMIT ? OFFSET ?
-    `;
+    // 在本地开发环境返回 mock 数据
+    const { searchParams } = new URL(request.url);
+    const lang = searchParams.get('lang') || 'en';
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '12');
     
-    const recipesResult = await db.prepare(recipesQuery).bind(lang, userId, limit, offset).all();
-    const recipes = recipesResult.results || [];
-    
-    console.log('User recipes fetched from database:', recipes.length);
-    
-    // 转换数据格式
-    const transformedRecipes = recipes.map((recipe: any) => ({
-      id: recipe.id,
-      title: recipe.localized_title || recipe.title,
-      description: recipe.localized_description || recipe.description,
-      imagePath: recipe.imagePath,
-      cookingTime: recipe.cookingTime,
-      servings: recipe.servings,
-      difficulty: recipe.localized_difficulty || recipe.difficulty,
-      tags: recipe.localized_tags ? JSON.parse(recipe.localized_tags) : (recipe.tags ? JSON.parse(recipe.tags) : []),
-      ingredients: recipe.localized_ingredients ? JSON.parse(recipe.localized_ingredients) : (recipe.ingredients ? JSON.parse(recipe.ingredients) : []),
-      seasoning: recipe.localized_seasoning ? JSON.parse(recipe.localized_seasoning) : (recipe.seasoning ? JSON.parse(recipe.seasoning) : []),
-      instructions: recipe.localized_instructions ? JSON.parse(recipe.localized_instructions) : (recipe.instructions ? JSON.parse(recipe.instructions) : []),
-      chefTips: recipe.localized_chef_tips ? JSON.parse(recipe.localized_chef_tips) : (recipe.chefTips ? JSON.parse(recipe.chefTips) : []),
-      createdAt: recipe.createdAt,
-      updatedAt: recipe.updatedAt,
-      cuisine: recipe.cuisine_id ? {
-        id: recipe.cuisine_id,
-        name: recipe.cuisine_name
-      } : null
+    const mockRecipes = Array.from({ length: Math.min(limit, 3) }, (_, i) => ({
+      id: `user-recipe-${i + 1}`,
+      title: lang === 'zh' ? `我的菜谱 ${i + 1}` : `My Recipe ${i + 1}`,
+      description: lang === 'zh' ? `这是我创建的菜谱 ${i + 1}` : `This is my created recipe ${i + 1}`,
+      cookingTime: 30,
+      servings: 4,
+      difficulty: 'medium',
+      imagePath: `/images/recipe-placeholder.jpg`,
+      ingredients: lang === 'zh' ? ['食材1', '食材2'] : ['Ingredient 1', 'Ingredient 2'],
+      seasoning: lang === 'zh' ? ['调料1', '调料2'] : ['Seasoning 1', 'Seasoning 2'],
+      instructions: lang === 'zh' ? ['步骤1', '步骤2'] : ['Step 1', 'Step 2'],
+      chefTips: lang === 'zh' ? ['小贴士1'] : ['Tip 1'],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      cuisine: {
+        id: 1,
+        name: lang === 'zh' ? '中式' : 'Chinese',
+        slug: 'chinese'
+      }
     }));
     
     return NextResponse.json({
       success: true,
-      results: transformedRecipes,
-      total,
-      page,
-      limit,
-      hasMore: offset + limit < (total as number)
-    }, {
-      headers: createCorsHeaders()
+      recipes: mockRecipes,
+      pagination: {
+        page,
+        limit,
+        total: mockRecipes.length,
+        totalPages: 1
+      }
     });
-
-  } catch (error) {
-    console.error('Database error:', error);
-    throw error;
-  }
-}
-
-/**
- * 从 Cloudflare Worker API 获取用户菜谱
- */
-async function getUserRecipesFromWorker(userId: string, page: number, limit: number, lang: string) {
-  try {
-    // 构建查询参数
-    const params = new URLSearchParams();
-    params.append('page', page.toString());
-    params.append('limit', limit.toString());
-    params.append('lang', lang);
-
-    const workerUrl = `${process.env.WORKER_URL || 'https://recipe-easy.com'}/api/recipes/user/${userId}?${params}`;
-    console.log('Calling Worker API:', workerUrl);
-
-    // 调用 Cloudflare Worker API
-    const response = await fetch(workerUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    console.log('Worker API response status:', response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Worker error response:', errorText);
-      throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
-    }
-
-    const data = await response.json();
-    console.log('Worker API response data:', data);
-    return NextResponse.json(data, {
-      headers: createCorsHeaders()
-    });
-  } catch (error) {
-    console.error('Error calling Worker API:', error);
-    throw error;
   }
 } 

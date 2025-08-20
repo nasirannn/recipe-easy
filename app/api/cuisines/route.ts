@@ -5,85 +5,72 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getD1Database } from '@/lib/utils/database-utils';
-import { createCorsHeaders } from '@/lib/utils/cors';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
-// 强制动态渲染
-export const dynamic = 'force-dynamic';
-
-/**
- * OPTIONS /api/cuisines
- * 处理预检请求
- */
-export async function OPTIONS(req: NextRequest) {
-  return new NextResponse(null, {
-    status: 200,
-    headers: createCorsHeaders()
-  });
-}
-
-/**
- * GET /api/cuisines
- * 获取菜系列表
- */
-export async function GET(req: NextRequest) {
+// 直接从数据库获取数据
+async function getDataFromDatabase(request: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const lang = searchParams.get('lang') || 'en';
-
-    // 获取数据库实例
-    const db = getD1Database();
+    console.log('🗄️ 直接查询数据库');
+    
+    const { env } = await getCloudflareContext();
+    const db = env.RECIPE_EASY_DB;
     
     if (!db) {
-      return NextResponse.json(
-        { success: false, error: 'Database not available' },
-        { 
-          status: 500,
-          headers: createCorsHeaders()
-        }
-      );
+      throw new Error('数据库绑定不可用');
     }
-
-    // 查询菜系数据
-    const { results } = await db.prepare(`
-      SELECT 
-        c.id,
-        c.name as cuisine_name,
-        c.slug as cuisine_slug,
-        c.css_class,
-        COALESCE(c18n.name, c.name) as localized_cuisine_name,
-        COALESCE(c18n.slug, c.slug) as localized_cuisine_slug,
-        c18n.language_code
-      FROM cuisines c
-      LEFT JOIN cuisines_i18n c18n ON c.id = c18n.cuisine_id AND c18n.language_code = ?
-      ORDER BY c.id ASC
-    `).bind(lang).all();
-
-    const cuisines = results || [];
-    const formattedCuisines = cuisines.map((cuisine: any) => ({
-      id: cuisine.id,
-      name: cuisine.localized_cuisine_name || cuisine.cuisine_name,
-      slug: cuisine.localized_cuisine_slug || cuisine.cuisine_slug,
-      cssClass: cuisine.css_class
-    }));
-
+    
+    if (request.method === 'GET') {
+      const { searchParams } = new URL(request.url);
+      const lang = searchParams.get('lang') || 'en';
+      
+      // 查询菜系和国际化信息
+      const sql = `
+        SELECT 
+          c.id,
+          c.slug,
+          COALESCE(c18n.name, c.name) as cuisine_name
+        FROM cuisines c
+        LEFT JOIN cuisines_i18n c18n ON c.id = c18n.cuisine_id AND c18n.language_code = ?
+        ORDER BY c.name ASC
+      `;
+      
+      const cuisines = await db.prepare(sql).bind(lang).all();
+      
+      const formattedCuisines = cuisines.results.map((cuisine: any) => ({
+        id: cuisine.id,
+        slug: cuisine.slug,
+        name: cuisine.cuisine_name
+      }));
+      
       return NextResponse.json({
-      success: true,
-      results: formattedCuisines,
-      total: formattedCuisines.length,
-      language: lang
-    }, {
-      headers: createCorsHeaders()
-    });
-
+        success: true,
+        results: formattedCuisines,
+        total: formattedCuisines.length,
+        language: lang
+      });
+    }
+    
+    return NextResponse.json({ error: '不支持的请求方法' }, { status: 405 });
   } catch (error) {
-    console.error('Error fetching cuisines:', error);
+    console.error('❌ 数据库查询失败:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch cuisines' },
-      { 
-        status: 500,
-        headers: createCorsHeaders()
-      }
+      { error: '数据库查询失败' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(request: NextRequest) {
+  console.log('🍜 获取菜系列表');
+  
+  try {
+    // 直接查询数据库
+    return await getDataFromDatabase(request);
+  } catch (error) {
+    console.error('❌ 获取菜系失败:', error);
+    return NextResponse.json(
+      { error: '数据库服务不可用' },
+      { status: 503 }
     );
   }
 } 

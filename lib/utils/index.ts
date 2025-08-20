@@ -42,7 +42,6 @@ export * from './user-display';
 export * from './cors';
 export * from './response-helpers';
 export * from './image-utils';
-export * from './database-utils';
 export * from './data-transform';
 export * from './validation';
  

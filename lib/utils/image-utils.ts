@@ -68,15 +68,13 @@ export async function uploadImageToR2(
     userId?: string;
     recipeId?: string;
     imageModel?: string;
-    expiresAt?: Date;
   } = {}
 ): Promise<void> {
   const {
     contentType = 'image/jpeg',
     userId,
     recipeId,
-    imageModel = 'unknown',
-    expiresAt
+    imageModel = 'unknown'
   } = options;
 
   await bucket.put(path, imageData, {
@@ -87,7 +85,6 @@ export async function uploadImageToR2(
       userId,
       recipeId,
       imageModel,
-      expiresAt: expiresAt?.toISOString() || '',
       uploadedAt: new Date().toISOString()
     }
   });
@@ -103,7 +100,6 @@ export async function saveImageRecord(
     userId: string;
     recipeId: string;
     imagePath: string;
-    expiresAt?: Date;
     imageModel?: string;
   }
 ): Promise<void> {
@@ -112,20 +108,18 @@ export async function saveImageRecord(
     userId,
     recipeId,
     imagePath,
-    expiresAt,
     imageModel = 'unknown'
   } = options;
 
   await db.prepare(`
     INSERT INTO recipe_images (
-      id, user_id, recipe_id, image_path, expires_at, image_model, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      id, user_id, recipe_id, image_path, image_model, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?)
   `).bind(
     imageId,
     userId,
     recipeId,
     imagePath,
-    expiresAt?.toISOString() || null,
     imageModel,
     new Date().toISOString()
   ).run();
@@ -183,47 +177,4 @@ export function isValidImageUrl(url: string): boolean {
   }
 }
 
-/**
- * 清理过期图片
- */
-export async function cleanupExpiredImages(
-  db: any,
-  bucket: R2Bucket
-): Promise<{ deleted: number; errors: number }> {
-  let deleted = 0;
-  let errors = 0;
-
-  try {
-    // 1. 查找过期的图片记录
-    const expiredImages = await db.prepare(`
-      SELECT id, image_path FROM recipe_images 
-      WHERE expires_at IS NOT NULL AND expires_at < ?
-    `).bind(new Date().toISOString()).all();
-    
-    // 2. 从 R2 删除过期图片
-    for (const image of expiredImages.results) {
-      try {
-        const imagePath = image.image_path as string;
-        const success = await deleteImageFromR2(bucket, imagePath);
-        if (success) {
-          deleted++;
-        }
-      } catch (error) {
-        console.error(`Failed to delete image ${image.image_path}:`, error);
-        errors++;
-      }
-    }
-    
-    // 3. 从数据库删除过期记录
-    await db.prepare(`
-      DELETE FROM recipe_images 
-      WHERE expires_at IS NOT NULL AND expires_at < ?
-    `).bind(new Date().toISOString()).run();
-    
-  } catch (error) {
-    console.error('Cleanup error:', error);
-    errors++;
-  }
-
-  return { deleted, errors };
-} 
+// 过期图片清理功能已移除 
