@@ -1,6 +1,8 @@
 import { Metadata } from 'next';
 import { SimpleLayout } from '@/components/layout/simple-layout';
 import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
+import fs from 'fs';
+import path from 'path';
 
 export async function generateMetadata({
   params,
@@ -19,15 +21,16 @@ export async function generateMetadata({
 
 async function getPrivacyPolicy(locale: string) {
   try {
-    // 通过fetch获取markdown文件内容
+    // 直接从文件系统读取markdown文件
     const fileName = locale === 'zh' ? 'privacy-policy-zh.md' : 'privacy-policy.md';
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${fileName}`);
+    const filePath = path.join(process.cwd(), 'public', fileName);
     
-    if (!response.ok) {
-      throw new Error(`Failed to fetch: ${response.status}`);
+    // 检查文件是否存在
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`File not found: ${fileName}`);
     }
     
-    const content = await response.text();
+    const content = fs.readFileSync(filePath, 'utf8');
     
     // 简单处理markdown：移除front matter，转换基本markdown语法
     const cleanContent = content
