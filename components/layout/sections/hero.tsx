@@ -23,7 +23,7 @@ export const HeroSection = () => {
   const t = useTranslations('hero');
   const locale = useLocale();
   const { user } = useAuth();
-  const isAdmin = false; // 暂时禁用管理员功能
+  const isAdmin = user?.user_metadata?.role === 'admin';
   const { canGenerate } = useUserUsage();
 
   

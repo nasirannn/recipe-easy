@@ -21,7 +21,7 @@ export function useRecipeGeneration(): UseRecipeGenerationReturn {
   
   const locale = useLocale();
   const { user } = useAuth();
-  const isAdmin = false; // 暂时禁用管理员功能
+  const isAdmin = user?.user_metadata?.role === 'admin';
 
   /**
    * 生成食谱

@@ -69,7 +69,7 @@ export const useCreditsStore = create<CreditsStore>((set) => ({
 
 export function useUserUsage() {
   const { user } = useAuth();
-  const isAdmin = false; // 暂时禁用管理员功能
+  const isAdmin = user?.user_metadata?.role === 'admin';
   // 使用全局状态
   const { 
     credits, 
@@ -144,6 +144,7 @@ export function useUserUsage() {
           userId: user.id,
           action: 'spend',
           amount,
+          isAdmin,
         }),
       });
 

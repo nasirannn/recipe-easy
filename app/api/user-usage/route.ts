@@ -52,19 +52,20 @@ export async function GET(request: NextRequest) {
     // 在本地开发环境中，如果没有数据库绑定，返回模拟数据
     if (!db) {
       console.log('Database not available in development environment, returning mock data');
+      const mockCredits = isAdmin ? 999999 : 100;
       return NextResponse.json({
         success: true,
         credits: {
           id: 'mock-credit-id',
           user_id: userId,
-          credits: 100,
-          total_earned: 100,
+          credits: mockCredits,
+          total_earned: mockCredits,
           total_spent: 0,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         },
         canGenerate: true,
-        availableCredits: 100,
+        availableCredits: mockCredits,
       });
     }
 
@@ -126,7 +127,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId: bodyUserId, action, amount, description } = body;
+    const { userId: bodyUserId, action, amount, description, isAdmin: bodyIsAdmin } = body;
 
     // 🔒 安全修复：严格验证用户输入
     const userValidation = validateUserId(bodyUserId);
@@ -142,6 +143,11 @@ export async function POST(request: NextRequest) {
     // 在本地开发环境中，如果没有数据库绑定，返回模拟数据
     if (!db) {
       console.log('Database not available in development environment, returning mock data for POST');
+      const isAdmin = bodyIsAdmin === true;
+      const mockCredits = isAdmin ? 999998 : 99; // 管理员消费1积分后剩余999998
+      const mockTotalEarned = isAdmin ? 999999 : 100;
+      const mockTotalSpent = 1;
+      
       return NextResponse.json({
         success: true,
         message: 'Mock operation completed',
@@ -149,9 +155,9 @@ export async function POST(request: NextRequest) {
           credits: {
             id: 'mock-credit-id',
             user_id: userId,
-            credits: 99,
-            total_earned: 100,
-            total_spent: 1,
+            credits: mockCredits,
+            total_earned: mockTotalEarned,
+            total_spent: mockTotalSpent,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }, 

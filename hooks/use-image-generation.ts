@@ -19,7 +19,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
   
   const locale = useLocale();
   const { user } = useAuth();
-  const isAdmin = false; // 暂时禁用管理员功能
+  const isAdmin = user?.user_metadata?.role === 'admin';
 
   /**
    * 设置单个食谱的图片加载状态
