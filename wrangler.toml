@@ -7,12 +7,10 @@ compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 directory = ".open-next/assets"
 binding = "ASSETS"
 
-[[services]]
-binding = "WORKER_SELF_REFERENCE"
-service = "recipe-easy"
+
 
 [[r2_buckets]]
-binding = "NEXT_INC_CACHE_R2_BUCKET"
+binding = "RECIPE_IMAGES"
 bucket_name = "recipe-images"
 
 [[d1_databases]]
@@ -21,5 +19,5 @@ database_name = "recipe-easy-db"
 database_id = "1b73b4ba-f095-4151-8f5c-489b59917156"
 
 [vars]
-WORKER_URL = "https://api.recipe-easy.com"
+WORKER_URL = "https://recipe-easy.com"
 

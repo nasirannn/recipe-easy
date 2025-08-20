@@ -14,7 +14,7 @@ export const APP_CONFIG = {
   name: 'RecipeEasy',
   version: '1.0.0',
   url: getEnv('NEXT_PUBLIC_APP_URL', 'https://recipe-easy.com'),
-  workerUrl: getEnv('WORKER_URL', 'https://api.recipe-easy.com'),
+  workerUrl: getEnv('WORKER_URL', 'https://recipe-easy.com'),
   
   // 应用限制
   minIngredients: 2,
@@ -165,7 +165,7 @@ export function getImageUrl(imagePath: string): string {
   }
   
   // 如果是相对路径，拼接基础URL
-  return `${APP_CONFIG.workerUrl}/images/${imagePath}`;
+  return `${APP_CONFIG.workerUrl}/api/images/${imagePath}`;
 }
 
 // ==================== 环境检测 ====================

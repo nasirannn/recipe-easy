@@ -1,51 +1,89 @@
+/**
+ * 菜系API路由
+ * 
+ * 处理菜系列表的获取
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
-import { getWorkerApiUrl } from '@/lib/config';
+import { getD1Database } from '@/lib/utils/database-utils';
+import { createCorsHeaders } from '@/lib/utils/cors';
 
-// 配置 Edge Runtime 以支持 Cloudflare Pages
-
-// 标记为动态路由以支持查询参数
+// 强制动态渲染
 export const dynamic = 'force-dynamic';
-// 启用缓存以提高性能
-export const revalidate = 3600; // 1小时缓存
 
-export async function GET(request: NextRequest) {
+/**
+ * OPTIONS /api/cuisines
+ * 处理预检请求
+ */
+export async function OPTIONS(req: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: createCorsHeaders()
+  });
+}
+
+/**
+ * GET /api/cuisines
+ * 获取菜系列表
+ */
+export async function GET(req: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const language = searchParams.get('lang') || 'en';
+    const { searchParams } = new URL(req.url);
+    const lang = searchParams.get('lang') || 'en';
 
-    // 直接调用云端数据库 - 与categories API保持一致的URL构建方式
-    const response = await fetch(getWorkerApiUrl(`/api/cuisines?lang=${language}`), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    // 获取数据库实例
+    const db = getD1Database();
+    
+    if (!db) {
+      return NextResponse.json(
+        { success: false, error: 'Database not available' },
+        { 
+          status: 500,
+          headers: createCorsHeaders()
+        }
+      );
+    }
+
+    // 查询菜系数据
+    const { results } = await db.prepare(`
+      SELECT 
+        c.id,
+        c.name as cuisine_name,
+        c.slug as cuisine_slug,
+        c.css_class,
+        COALESCE(c18n.name, c.name) as localized_cuisine_name,
+        COALESCE(c18n.slug, c.slug) as localized_cuisine_slug,
+        c18n.language_code
+      FROM cuisines c
+      LEFT JOIN cuisines_i18n c18n ON c.id = c18n.cuisine_id AND c18n.language_code = ?
+      ORDER BY c.id ASC
+    `).bind(lang).all();
+
+    const cuisines = results || [];
+    const formattedCuisines = cuisines.map((cuisine: any) => ({
+      id: cuisine.id,
+      name: cuisine.localized_cuisine_name || cuisine.cuisine_name,
+      slug: cuisine.localized_cuisine_slug || cuisine.cuisine_slug,
+      cssClass: cuisine.css_class
+    }));
+
+      return NextResponse.json({
+      success: true,
+      results: formattedCuisines,
+      total: formattedCuisines.length,
+      language: lang
+    }, {
+      headers: createCorsHeaders()
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    // 修复数据结构：将data字段转换为results字段以匹配前端期望（与categories API一致）
-    if (data.success && data.data) {
-      return NextResponse.json({
-        ...data,
-        results: data.data
-      });
-    }
-    
-    return NextResponse.json(data);
-
   } catch (error) {
-    console.error('❌ 获取菜系数据失败:', error);
+    console.error('Error fetching cuisines:', error);
     return NextResponse.json(
+      { success: false, error: 'Failed to fetch cuisines' },
       { 
-        success: false, 
-        error: '获取菜系数据失败',
-        details: error instanceof Error ? error.message : '未知错误'
-      },
-      { status: 500 }
+        status: 500,
+        headers: createCorsHeaders()
+      }
     );
   }
-}
+} 

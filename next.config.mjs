@@ -7,20 +7,7 @@ const nextConfig = {
   // 控制末尾斜杠行为 - false表示不添加末尾斜杠
   trailingSlash: false,
   
-  // 允许静态文件优先级
-  async rewrites() {
-    return {
-      beforeFiles: [
-        // 让 public/index.html 处理根路径
-        {
-          source: '/',
-          destination: '/index.html',
-        },
-      ],
-      afterFiles: [],
-      fallback: [],
-    };
-  },
+  // 移除重写规则，使用 Next.js 默认路由
   
   // 添加安全头部
   async headers() {
@@ -69,12 +56,12 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "api.recipe-easy.com",
+        hostname: "recipe-easy.com",
       },
     ],
   },
   // 优化webpack配置
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, webpack }) => {
     // 减少包大小
     if (!isServer) {
       config.resolve.fallback = {
@@ -84,6 +71,15 @@ const nextConfig = {
         tls: false,
       };
     }
+    
+    // 添加全局变量定义，解决 __name 未定义的问题
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        __name: JSON.stringify(''),
+        __filename: JSON.stringify(''),
+        __dirname: JSON.stringify(''),
+      })
+    );
     
     return config;
   },

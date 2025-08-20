@@ -55,7 +55,7 @@ async function getPrivacyPolicy(locale: string) {
     return `<div class="prose prose-lg max-w-none">
       <h1>隐私政策</h1>
       <p>抱歉，隐私政策内容暂时无法加载。请稍后再试。</p>
-    </div>`;
+     </div>`;
   }
 }
 

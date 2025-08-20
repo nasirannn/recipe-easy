@@ -1,15 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
-
-export interface Cuisine {
-  id: number;
-  name: string;
-  slug?: string;
-  cssClass?: string;
-  description?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+import { Cuisine } from '@/lib/types';
+import { getWorkerApiUrl } from '@/lib/config';
 
 interface UseCuisinesReturn {
   cuisines: Cuisine[];
@@ -30,7 +22,7 @@ export function useCuisines(): UseCuisinesReturn {
       setError(null);
 
       console.log('🔍 开始获取菜系数据，语言:', locale);
-      const response = await fetch(`/api/cuisines?lang=${locale}`);
+      const response = await fetch(getWorkerApiUrl(`/api/cuisines?lang=${locale}`));
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -62,29 +54,29 @@ export function useCuisines(): UseCuisinesReturn {
         throw new Error('Failed to fetch cuisines');
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      const errorMessage = err instanceof Error ? err.message : '获取菜系数据失败';
       setError(errorMessage);
       console.error('Error fetching cuisines:', err);
       
       // 设置备用数据（不包含Others菜系）
-      const fallbackCuisines = locale === 'zh' ? [
-        { id: 1, name: '中式' },
-        { id: 2, name: '意式' },
-        { id: 3, name: '法式' },
-        { id: 4, name: '印式' },
-        { id: 5, name: '日式' },
-        { id: 6, name: '地中海' },
-        { id: 7, name: '泰式' },
-        { id: 8, name: '墨西哥' },
+      const fallbackCuisines: Cuisine[] = locale === 'zh' ? [
+        { id: 1, name: '中式', slug: 'chinese', cssClass: 'cuisine-chinese' },
+        { id: 2, name: '意式', slug: 'italian', cssClass: 'cuisine-italian' },
+        { id: 3, name: '法式', slug: 'french', cssClass: 'cuisine-french' },
+        { id: 4, name: '印式', slug: 'indian', cssClass: 'cuisine-indian' },
+        { id: 5, name: '日式', slug: 'japanese', cssClass: 'cuisine-japanese' },
+        { id: 6, name: '地中海', slug: 'mediterranean', cssClass: 'cuisine-mediterranean' },
+        { id: 7, name: '泰式', slug: 'thai', cssClass: 'cuisine-thai' },
+        { id: 8, name: '墨西哥', slug: 'mexican', cssClass: 'cuisine-mexican' },
       ] : [
-        { id: 1, name: 'Chinese' },
-        { id: 2, name: 'Italian' },
-        { id: 3, name: 'French' },
-        { id: 4, name: 'Indian' },
-        { id: 5, name: 'Japanese' },
-        { id: 6, name: 'Mediterranean' },
-        { id: 7, name: 'Thai' },
-        { id: 8, name: 'Mexican' },
+        { id: 1, name: 'Chinese', slug: 'chinese', cssClass: 'cuisine-chinese' },
+        { id: 2, name: 'Italian', slug: 'italian', cssClass: 'cuisine-italian' },
+        { id: 3, name: 'French', slug: 'french', cssClass: 'cuisine-french' },
+        { id: 4, name: 'Indian', slug: 'indian', cssClass: 'cuisine-indian' },
+        { id: 5, name: 'Japanese', slug: 'japanese', cssClass: 'cuisine-japanese' },
+        { id: 6, name: 'Mediterranean', slug: 'mediterranean', cssClass: 'cuisine-mediterranean' },
+        { id: 7, name: 'Thai', slug: 'thai', cssClass: 'cuisine-thai' },
+        { id: 8, name: 'Mexican', slug: 'mexican', cssClass: 'cuisine-mexican' },
       ];
       setCuisines(fallbackCuisines);
     } finally {

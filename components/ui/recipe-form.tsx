@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { generateNanoId } from '@/lib/utils/id-generator';
 import Image from "next/image";
 import { CATEGORIES_CONFIG, CAROUSEL_CONFIG, SEARCH_CONFIG } from '@/lib/config';
+import { getWorkerApiUrl } from '@/lib/config';
 
 interface RecipeFormProps {
   formData: RecipeFormData;
@@ -157,7 +158,7 @@ export const RecipeForm = ({
     setIngredientsError(null);
     
     try {
-      const response = await fetch(`/api/ingredients?lang=${locale}&limit=200`);
+      const response = await fetch(getWorkerApiUrl(`/api/ingredients?lang=${locale}&limit=200`));
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -184,7 +185,7 @@ export const RecipeForm = ({
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch(`/api/categories?lang=${locale}`);
+        const response = await fetch(getWorkerApiUrl(`/api/categories?lang=${locale}`));
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

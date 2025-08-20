@@ -109,8 +109,8 @@ export function useUserUsage() {
       const data = await response.json();
 
       if (data.success) {
-        setCredits(data.data.credits);
-        setCanGenerate(data.data.canGenerate);
+        setCredits(data.credits);
+        setCanGenerate(data.canGenerate);
         setInitialized(true);
       } else {
         // 检查是否是配置错误
@@ -150,8 +150,8 @@ export function useUserUsage() {
       const data = await response.json();
 
       if (data.success) {
-        setCredits(data.data.credits);
-        setCanGenerate(data.data.credits.credits >= 1);
+        setCredits(data.credits);
+        setCanGenerate(data.credits.credits >= 1);
         return true;
       } else {
         setError(data.error || 'Failed to spend credits');
