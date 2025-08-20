@@ -110,7 +110,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
   return (
     <div className="min-h-screen bg-linear-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           {/* 左侧：图片和基本信息 */}
           <div className="lg:col-span-2 space-y-6">
 
@@ -310,9 +310,9 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
           </div>
 
           {/* 右侧：快速信息 */}
-          <div className="space-y-6">
+          <div className="space-y-6 h-fit">
             {/* 快速信息卡片 */}
-            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg sticky top-24">
+            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg sticky top-24 self-start">
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                   {locale === 'zh' ? '快速信息' : 'Quick Info'}

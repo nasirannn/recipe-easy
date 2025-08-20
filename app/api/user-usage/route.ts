@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateUserId } from '@/lib/utils/validation';
+import { getD1DatabaseFromRequest } from '@/lib/utils/database-utils';
 import { D1Database } from '@cloudflare/workers-types';
 
 // 强制动态渲染
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
     const isAdmin = searchParams.get('isAdmin') === 'true';
 
     // 获取数据库实例
-    let db = (request as any).env?.RECIPE_EASY_DB;
+    const db = getD1DatabaseFromRequest(request);
     
     // 在本地开发环境中，如果没有数据库绑定，返回模拟数据
     if (!db) {
@@ -138,7 +139,7 @@ export async function POST(request: NextRequest) {
     const userId = userValidation.userId!;
 
     // 获取数据库实例
-    let db = (request as any).env?.RECIPE_EASY_DB;
+    const db = getD1DatabaseFromRequest(request);
     
     // 在本地开发环境中，如果没有数据库绑定，返回模拟数据
     if (!db) {

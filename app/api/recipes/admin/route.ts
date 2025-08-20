@@ -5,109 +5,48 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getD1Database, isCloudflareWorkers } from '@/lib/utils/database-utils';
-import { getWorkerApiUrl } from '@/lib/config';
+import { getD1Database } from '@/lib/utils/database-utils';
 import { createCorsHeaders } from '@/lib/utils/cors';
 
 // 强制动态渲染
 export const dynamic = 'force-dynamic';
 
-/**
- * OPTIONS /api/recipes/admin
- * 处理预检请求
- */
-export async function OPTIONS(req: NextRequest) {
-  return new NextResponse(null, {
-    status: 200,
-    headers: createCorsHeaders()
-  });
-}
-
-/**
- * GET /api/recipes/admin
- * 获取管理员创建的菜谱列表
- */
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+    console.log('Admin API: Starting request');
+    
+    const db = getD1Database();
+    if (!db) {
+      console.error('Admin API: Database not available');
+      return NextResponse.json({ error: 'Database not available' }, { status: 500 });
+    }
+    
+    console.log('Admin API: Database connected successfully');
+    
+    // 使用硬编码的管理员ID
+    const adminId = '157b6650-29b8-4613-87d9-ce0997106151';
+    console.log('Admin API: Using admin ID:', adminId);
+    
+    const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = parseInt(searchParams.get('offset') || '0');
     const lang = searchParams.get('lang') || 'en';
-    const search = searchParams.get('search');
-    const cuisineId = searchParams.get('cuisineId');
-
-    console.log('Admin recipes API called with params:', { limit, offset, lang, search, cuisineId });
-
-    // 检查是否在 Cloudflare Workers 环境中
-    const isWorker = isCloudflareWorkers();
-    console.log('Is Cloudflare Workers environment:', isWorker);
-
-    if (isWorker) {
-      // 在 Cloudflare Workers 环境中，直接查询数据库
-      console.log('Using database directly');
-      return await getAdminRecipesFromDatabase(req);
-    } else {
-      // 在本地开发环境中，调用 Cloudflare Worker API
-      console.log('Using Worker API');
-      return await getAdminRecipesFromWorker(req);
-    }
-
-  } catch (error) {
-    console.error('Error fetching admin recipes:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch admin recipes', details: error instanceof Error ? error.message : 'Unknown error' },
-      { 
-        status: 500,
-        headers: createCorsHeaders()
-      }
-    );
-  }
-}
-
-/**
- * 从数据库直接获取管理员菜谱
- */
-async function getAdminRecipesFromDatabase(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const limit = parseInt(searchParams.get('limit') || '10');
-  const offset = parseInt(searchParams.get('offset') || '0');
-  const lang = searchParams.get('lang') || 'en';
-  const search = searchParams.get('search');
-  const cuisineId = searchParams.get('cuisineId');
-
-  try {
-    const db = getD1Database();
-    if (!db) {
-      throw new Error('Database not available');
-    }
-
-    // 构建查询条件 - 暂时获取所有食谱，不使用 is_admin 列
-    let whereConditions = ['1=1']; // 获取所有食谱
-    let params: any[] = [];
-
-    if (search) {
-      whereConditions.push('(r.title LIKE ? OR r.description LIKE ?)');
-      params.push(`%${search}%`, `%${search}%`);
-    }
-
-    if (cuisineId) {
-      whereConditions.push('r.cuisine_id = ?');
-      params.push(cuisineId);
-    }
-
-    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
-
-    // 获取总数
+    
+    console.log('Admin API: Query parameters:', { limit, offset, lang });
+    
+    // 获取管理员菜谱总数
     const countQuery = `
       SELECT COUNT(*) as total
       FROM recipes r
-      ${whereClause}
+      WHERE r.user_id = ?
     `;
     
-    const countResult = await db.prepare(countQuery).bind(...params).first();
+    const countResult = await db.prepare(countQuery).bind(adminId).first();
     const total = countResult?.total || 0;
-
-    // 获取菜谱列表
+    
+    console.log('Admin API: Total recipes found:', total);
+    
+    // 获取管理员菜谱列表，支持国际化
     const recipesQuery = `
       SELECT 
         r.id,
@@ -125,32 +64,43 @@ async function getAdminRecipesFromDatabase(req: NextRequest) {
         r.updated_at as updatedAt,
         c.id as cuisine_id,
         c.name as cuisine_name,
-        ri.image_path as imagePath
+        ri.image_path as imagePath,
+        COALESCE(ri18n.title, r.title) as localized_title,
+        COALESCE(ri18n.description, r.description) as localized_description,
+        COALESCE(ri18n.ingredients, r.ingredients) as localized_ingredients,
+        COALESCE(ri18n.seasoning, r.seasoning) as localized_seasoning,
+        COALESCE(ri18n.instructions, r.instructions) as localized_instructions,
+        COALESCE(ri18n.chef_tips, r.chef_tips) as localized_chef_tips,
+        COALESCE(ri18n.tags, r.tags) as localized_tags,
+        COALESCE(ri18n.difficulty, r.difficulty) as localized_difficulty
       FROM recipes r
       LEFT JOIN cuisines c ON r.cuisine_id = c.id
       LEFT JOIN recipe_images ri ON r.id = ri.recipe_id
-      ${whereClause}
+      LEFT JOIN recipes_i18n ri18n ON r.id = ri18n.recipe_id AND ri18n.language_code = ?
+      WHERE r.user_id = ?
       ORDER BY r.created_at DESC
       LIMIT ? OFFSET ?
     `;
-
-    const recipesResult = await db.prepare(recipesQuery).bind(...params, limit, offset).all();
+    
+    const recipesResult = await db.prepare(recipesQuery).bind(lang, adminId, limit, offset).all();
     const recipes = recipesResult.results || [];
-
+    
+    console.log('Admin API: Recipes fetched:', recipes.length);
+    
     // 转换数据格式
     const transformedRecipes = recipes.map((recipe: any) => ({
       id: recipe.id,
-      title: recipe.title,
-      description: recipe.description,
+      title: recipe.localized_title || recipe.title,
+      description: recipe.localized_description || recipe.description,
       imagePath: recipe.imagePath,
       cookingTime: recipe.cookingTime,
       servings: recipe.servings,
-      difficulty: recipe.difficulty,
-      tags: recipe.tags ? JSON.parse(recipe.tags) : [],
-      ingredients: recipe.ingredients ? JSON.parse(recipe.ingredients) : [],
-      seasoning: recipe.seasoning ? JSON.parse(recipe.seasoning) : [],
-      instructions: recipe.instructions ? JSON.parse(recipe.instructions) : [],
-      chefTips: recipe.chefTips ? JSON.parse(recipe.chefTips) : [],
+      difficulty: recipe.localized_difficulty || recipe.difficulty,
+      tags: recipe.localized_tags ? JSON.parse(recipe.localized_tags) : (recipe.tags ? JSON.parse(recipe.tags) : []),
+      ingredients: recipe.localized_ingredients ? JSON.parse(recipe.localized_ingredients) : (recipe.ingredients ? JSON.parse(recipe.ingredients) : []),
+      seasoning: recipe.localized_seasoning ? JSON.parse(recipe.localized_seasoning) : (recipe.seasoning ? JSON.parse(recipe.seasoning) : []),
+      instructions: recipe.localized_instructions ? JSON.parse(recipe.localized_instructions) : (recipe.instructions ? JSON.parse(recipe.instructions) : []),
+      chefTips: recipe.localized_chef_tips ? JSON.parse(recipe.localized_chef_tips) : (recipe.chefTips ? JSON.parse(recipe.chefTips) : []),
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
       cuisine: recipe.cuisine_id ? {
@@ -158,63 +108,27 @@ async function getAdminRecipesFromDatabase(req: NextRequest) {
         name: recipe.cuisine_name
       } : null
     }));
-
+    
+    console.log('Admin API: Successfully processed recipes');
+    
     return NextResponse.json({
       success: true,
-      results: transformedRecipes,
-      total,
-      language: lang
-    }, {
-      headers: createCorsHeaders()
+      data: {
+        recipes: transformedRecipes,
+        pagination: {
+          total,
+          limit,
+          offset,
+          hasMore: offset + limit < (total as number)
+        }
+      }
     });
-
+    
   } catch (error) {
-    console.error('Database error:', error);
-    throw error;
-  }
-}
-
-/**
- * 从 Cloudflare Worker API 获取管理员菜谱
- */
-async function getAdminRecipesFromWorker(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  
-  // 构建查询参数
-  const params = new URLSearchParams();
-  params.append('limit', searchParams.get('limit') || '10');
-  params.append('offset', searchParams.get('offset') || '0');
-  params.append('lang', searchParams.get('lang') || 'en');
-  if (searchParams.get('search')) params.append('search', searchParams.get('search')!);
-  if (searchParams.get('cuisineId')) params.append('cuisineId', searchParams.get('cuisineId')!);
-
-  const workerUrl = getWorkerApiUrl(`/api/recipes/admin?${params}`);
-  console.log('Calling Worker API:', workerUrl);
-
-  try {
-    // 调用 Cloudflare Worker API
-    const response = await fetch(workerUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    console.log('Worker API response status:', response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Worker error response:', errorText);
-      throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
-    }
-
-    const data = await response.json();
-    console.log('Worker API response data:', data);
-    return NextResponse.json(data, {
-      headers: createCorsHeaders()
-    });
-  } catch (error) {
-    console.error('Error calling Worker API:', error);
-    throw error;
+    console.error('Admin API Error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch admin recipes', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
   }
 } 

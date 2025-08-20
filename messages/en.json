@@ -205,7 +205,7 @@
       "confirm": "Delete Recipe",
       "deleting": "Deleting..."
     },
-    "noMoreData": "No more recipe data"
+    "allRecipesDisplayed": "All recipes displayed"
   },
   "credits": {
     "credits": "Credits",

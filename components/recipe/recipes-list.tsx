@@ -235,8 +235,8 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
 
         {/* 没有更多数据 */}
         {!hasMore && recipes.length > 0 && (
-          <div className="text-center mt-12">
-            <p className="text-gray-600 dark:text-gray-400">
+          <div className="text-center mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
+            <p className="text-slate-500 dark:text-slate-400 text-sm">
               {t('allRecipesDisplayed')}
             </p>
           </div>

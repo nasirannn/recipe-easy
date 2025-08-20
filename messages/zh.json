@@ -206,7 +206,7 @@
       "confirm": "删除菜谱",
       "deleting": "删除中..."
     },
-    "noMoreData": "没有更多菜谱数据了"
+    "allRecipesDisplayed": "所有菜谱已显示"
   },
   "credits": {
     "credits": "积分",

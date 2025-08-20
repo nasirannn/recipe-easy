@@ -439,7 +439,7 @@ export default function MyRecipesPage() {
             {recipes.length > 0 && (
               <div className="text-center mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
                 <p className="text-slate-500 dark:text-slate-400 text-sm">
-                  {t('noMoreData')}
+                  {t('allRecipesDisplayed')}
                 </p>
               </div>
             )}

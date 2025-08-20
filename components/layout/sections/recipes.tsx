@@ -31,17 +31,17 @@ export const RecipesSection = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [userInteracting, setUserInteracting] = useState(false);
 
-  // 从本地 API 获取食谱数据 - 只获取管理员添加的菜谱
+  // 从本地 API 获取食谱数据 - 只获取管理员最近创建的5个菜谱
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
         setIsLoading(true);
-        // 调用管理员菜谱接口
-        const response = await fetch(`/api/recipes/admin?limit=20&lang=${locale}`);
+        // 调用管理员菜谱接口，限制为最近创建的5个菜谱
+        const response = await fetch(`/api/recipes/admin?limit=5&lang=${locale}`);
         const data = await response.json();
 
         if (data.success) {
-          setRecipes(data.results || []);
+          setRecipes(data.data?.recipes || []);
         } else {
           console.error('Failed to fetch admin recipes:', data.error);
         }

@@ -113,7 +113,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
             const tags = parseJsonArray(recipe.tags);
 
             return (
-              <div key={recipe.id || `recipe-${index}`} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div key={recipe.id || `recipe-${index}`} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 {/* 左侧：图片和基本信息 */}
                 <div className="lg:col-span-2 space-y-6">
                   {/* 主图片 - 悬浮交互完整恢复 */}
@@ -429,9 +429,9 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                 </div>
 
                 {/* 右侧：快速信息和保存按钮 */}
-                <div className="space-y-6">
+                <div className="space-y-6 h-fit">
                   {/* 快速信息卡片 */}
-                  <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg sticky top-24">
+                  <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg sticky top-24 self-start">
                     <CardContent className="p-6">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                         {t('quickInfo')}

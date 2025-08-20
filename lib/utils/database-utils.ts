@@ -17,6 +17,11 @@ export function getD1Database(): D1Database | null {
       return cfContext.env.RECIPE_EASY_DB;
     }
 
+    // 尝试从全局环境获取
+    if ((globalThis as any).RECIPE_EASY_DB) {
+      return (globalThis as any).RECIPE_EASY_DB;
+    }
+
     // 然后尝试 Next.js API 路由环境
     if (typeof globalThis !== 'undefined' && (globalThis as any).__NEXT_DATA__) {
       // 在 Next.js 环境中，我们可能需要通过其他方式访问数据库
@@ -27,6 +32,30 @@ export function getD1Database(): D1Database | null {
     return null;
   } catch (error) {
     console.error('Error getting D1 database:', error);
+    return null;
+  }
+}
+
+/**
+ * 从请求对象获取 D1 数据库实例
+ * 用于 API 路由中获取数据库绑定
+ */
+export function getD1DatabaseFromRequest(request: any): D1Database | null {
+  try {
+    // 尝试从请求环境获取
+    if (request?.env?.RECIPE_EASY_DB) {
+      return request.env.RECIPE_EASY_DB;
+    }
+    
+    // 尝试从 Cloudflare Workers 环境获取
+    const cfContext = (globalThis as any)[Symbol.for('__cloudflare-context__')];
+    if (cfContext?.env?.RECIPE_EASY_DB) {
+      return cfContext.env.RECIPE_EASY_DB;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error getting D1 database from request:', error);
     return null;
   }
 }

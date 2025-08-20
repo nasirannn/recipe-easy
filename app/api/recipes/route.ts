@@ -74,6 +74,10 @@ async function getRecipesFromDatabase(req: NextRequest) {
   const lang = searchParams.get('lang') || 'en';
   const search = searchParams.get('search');
   const cuisineId = searchParams.get('cuisineId');
+  const explore = searchParams.get('explore') === 'true';
+  
+  console.log('Raw explore parameter:', searchParams.get('explore'));
+  console.log('Parsed explore value:', explore);
 
   try {
     const db = getD1Database();
@@ -81,8 +85,8 @@ async function getRecipesFromDatabase(req: NextRequest) {
       throw new Error('Database not available');
     }
 
-    // 构建查询条件
-    let whereConditions = ['1=1']; // 获取所有食谱
+    // 查询所有菜谱
+    let whereConditions: string[] = ['1=1'];
     let params: any[] = [];
 
     if (search) {
@@ -106,6 +110,12 @@ async function getRecipesFromDatabase(req: NextRequest) {
     
     const countResult = await db.prepare(countQuery).bind(...params).first();
     const total = countResult?.total || 0;
+
+    // 确定查询限制
+    const queryLimit = limit;
+    const queryOffset = offset;
+    
+    console.log('Query parameters:', { limit, queryLimit, queryOffset });
 
     // 获取菜谱列表
     const recipesQuery = `
@@ -134,7 +144,7 @@ async function getRecipesFromDatabase(req: NextRequest) {
       LIMIT ? OFFSET ?
     `;
 
-    const recipesResult = await db.prepare(recipesQuery).bind(...params, limit, offset).all();
+    const recipesResult = await db.prepare(recipesQuery).bind(...params, queryLimit, queryOffset).all();
     const recipes = recipesResult.results || [];
 
     // 转换数据格式
