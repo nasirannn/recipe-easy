@@ -1,9 +1,3 @@
-/**
- * 食材API路由
- * 
- * 处理食材列表的获取
- */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 

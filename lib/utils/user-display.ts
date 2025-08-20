@@ -139,38 +139,38 @@ function capitalizeFirstLetter(str: string): string {
 /**
  * 获取用户头像URL
  */
-export function getUserAvatarUrl(user: User | null): string | null {
-  if (!user) return null
+export function getUserAvatarUrl(user: any): string | null {
+  if (!user) return null;
+
+  // 1. 首先检查用户元数据中的 avatar_url 字段
+  const userMetadata = user.user_metadata || {};
   
-  // 添加调试信息
-  console.log('🔍 getUserAvatarUrl - User metadata:', {
-    user_id: user.id,
-    provider: user.app_metadata?.provider,
-    user_metadata: user.user_metadata,
-    avatar_url: user.user_metadata?.avatar_url,
-    picture: user.user_metadata?.picture,
-    image: user.user_metadata?.image,
-    photo: user.user_metadata?.photo
-  });
-  
-  // 扩展头像URL获取逻辑，支持更多可能的字段名
-  // Google OAuth可能使用的字段：picture, avatar_url, image, photo
-  const avatarUrl = user.user_metadata?.avatar_url || 
-                   user.user_metadata?.picture || 
-                   user.user_metadata?.image ||
-                   user.user_metadata?.photo ||
-                   null;
-  
-  console.log('🔍 getUserAvatarUrl - Final avatar URL:', avatarUrl);
-  
-  // 如果没有找到头像URL，尝试生成备用头像
-  if (!avatarUrl && user.email) {
-    const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(getUserDisplayName(user))}&background=0f172a&color=fff&size=150`;
-    console.log('🔍 getUserAvatarUrl - Using fallback avatar URL:', fallbackUrl);
-    return fallbackUrl;
+  if (userMetadata.avatar_url) {
+    return userMetadata.avatar_url;
+  }
+
+  // 2. 检查用户元数据中的 picture 字段（Google OAuth）
+  if (userMetadata.picture) {
+    return userMetadata.picture;
+  }
+
+  // 3. 如果是Google用户，尝试从identities中获取
+  if (user.identities) {
+    const googleIdentity = user.identities.find((identity: any) => 
+      identity.provider === 'google'
+    );
+    
+    if (googleIdentity?.identity_data?.picture) {
+      return googleIdentity.identity_data.picture;
+    }
+  }
+
+  // 4. 生成回退头像URL
+  if (user.email) {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(getUserDisplayName(user))}&background=0f172a&color=fff&size=150`;
   }
   
-  return avatarUrl;
+  return null;
 }
 
 /**

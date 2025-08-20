@@ -45,34 +45,13 @@ export const Navbar = () => {
 
   // 添加调试信息
   React.useEffect(() => {
-    console.log('🔍 Navbar - 认证状态变化:', { 
-      hasUser: !!user, 
-      loading, 
-      userEmail: user?.email,
-      provider: user?.app_metadata?.provider 
-    })
+    if (loading) return;
     
     if (user) {
-      console.log('🔍 Navbar - User data:', {
-        user_id: user.id,
-        provider: user.app_metadata?.provider,
-        user_metadata: user.user_metadata,
-        avatar_url: user.user_metadata?.avatar_url,
-        picture: user.user_metadata?.picture,
-        image: user.user_metadata?.image,
-        photo: user.user_metadata?.photo,
-        full_name: user.user_metadata?.full_name,
-        name: user.user_metadata?.name,
-        email: user.email
-      });
-      
       // 检查是否是Google用户
       if (user.app_metadata?.provider === 'google') {
-        console.log('🔍 Navbar - Google user detected, checking avatar fields...');
-        console.log('🔍 Navbar - All user_metadata keys:', Object.keys(user.user_metadata || {}));
       }
     } else {
-      console.log('🔍 Navbar - 没有用户数据')
     }
   }, [user, loading]);
 

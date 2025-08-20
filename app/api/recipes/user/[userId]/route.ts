@@ -4,26 +4,20 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 // 直接从数据库获取数据
 async function getDataFromDatabase(request: NextRequest, userId: string) {
   try {
-    console.log('🗄️ 直接查询数据库');
-    // 在 Cloudflare Worker 环境中，通过 globalThis 访问环境变量
-    let db: any;
+    let env: any;
     
     try {
-      // 使用已导入的 getCloudflareContext
-      const { env } = await getCloudflareContext();
-      db = env.RECIPE_EASY_DB;
+      const { env: cloudflareEnv } = await getCloudflareContext();
+      env = cloudflareEnv;
     } catch (error) {
-      console.log('⚠️ @opennextjs/cloudflare 不可用，尝试直接访问环境');
-      // 如果 @opennextjs/cloudflare 不可用，尝试直接访问环境
-      // @ts-ignore - 在 Cloudflare Worker 环境中，env 可能直接可用
-      db = (globalThis as any).env?.RECIPE_EASY_DB || (globalThis as any).RECIPE_EASY_DB;
+      env = process.env;
     }
+
+    const db = env.RECIPE_EASY_DB;
     
     if (!db) {
-      throw new Error('数据库绑定不可用 - 请检查 Cloudflare Worker 配置');
+      throw new Error('数据库绑定不可用');
     }
-    
-    console.log('✅ 数据库连接成功');
     
     if (request.method === 'GET') {
       const { searchParams } = new URL(request.url);
@@ -31,8 +25,6 @@ async function getDataFromDatabase(request: NextRequest, userId: string) {
       const limit = parseInt(searchParams.get('limit') || '10');
       const offset = (page - 1) * limit;
       const lang = searchParams.get('lang') || 'en';
-      
-      console.log('📋 查询用户食谱参数:', { userId, page, limit, offset, lang });
       
       let recipes: any;
       let totalResult: any;
@@ -74,24 +66,36 @@ async function getDataFromDatabase(request: NextRequest, userId: string) {
           LIMIT ? OFFSET ?
         `).bind(userId, limit, offset).all();
       }
-      
-      // 获取用户食谱总数
-      totalResult = await db.prepare('SELECT COUNT(*) as total FROM recipes WHERE user_id = ?').bind(userId).first();
-      const total = Number(totalResult?.total) || 0;
-      
-      // 转换数据格式以匹配前端期望的格式
-      const transformedRecipes = (recipes?.results || []).map((recipe: any) => ({
+
+      // 获取总数
+      totalResult = await db.prepare(`
+        SELECT COUNT(*) as count FROM recipes WHERE user_id = ?
+      `).bind(userId).first();
+
+      const total = totalResult?.count || 0;
+
+      // 转换数据格式
+      const recipeList = recipes?.results || recipes || [];
+      const transformedRecipes = (Array.isArray(recipeList) ? recipeList : []).map((recipe: any) => ({
         id: recipe.id,
         title: lang === 'zh' && recipe.title_zh ? recipe.title_zh : recipe.title,
         description: lang === 'zh' && recipe.description_zh ? recipe.description_zh : recipe.description,
-        cookingTime: recipe.cooking_time || 30,
-        servings: recipe.servings || 4,
-        difficulty: recipe.difficulty || 'easy',
+        cookingTime: recipe.cooking_time,
+        servings: recipe.servings,
+        difficulty: recipe.difficulty,
         imagePath: recipe.imagePath,
-        ingredients: lang === 'zh' && recipe.ingredients_zh ? JSON.parse(recipe.ingredients_zh) : JSON.parse(recipe.ingredients || '[]'),
-        seasoning: lang === 'zh' && recipe.seasoning_zh ? JSON.parse(recipe.seasoning_zh) : JSON.parse(recipe.seasoning || '[]'),
-        instructions: lang === 'zh' && recipe.instructions_zh ? JSON.parse(recipe.instructions_zh) : JSON.parse(recipe.instructions || '[]'),
-        chefTips: lang === 'zh' && recipe.chef_tips_zh ? JSON.parse(recipe.chef_tips_zh) : JSON.parse(recipe.chef_tips || '[]'),
+        ingredients: lang === 'zh' && recipe.ingredients_zh ? 
+          JSON.parse(recipe.ingredients_zh) : 
+          JSON.parse(recipe.ingredients || '[]'),
+        seasoning: lang === 'zh' && recipe.seasoning_zh ? 
+          JSON.parse(recipe.seasoning_zh) : 
+          JSON.parse(recipe.seasoning || '[]'),
+        instructions: lang === 'zh' && recipe.instructions_zh ? 
+          JSON.parse(recipe.instructions_zh) : 
+          JSON.parse(recipe.instructions || '[]'),
+        chefTips: lang === 'zh' && recipe.chef_tips_zh ? 
+          JSON.parse(recipe.chef_tips_zh) : 
+          JSON.parse(recipe.chef_tips || '[]'),
         createdAt: recipe.created_at,
         updatedAt: recipe.updated_at,
         cuisine: recipe.cuisine_name ? {
@@ -114,7 +118,7 @@ async function getDataFromDatabase(request: NextRequest, userId: string) {
     }
     
     return NextResponse.json({ error: '不支持的请求方法' }, { status: 405 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ 数据库查询失败:', error);
     return NextResponse.json(
       { error: '数据库查询失败', details: error.message },
@@ -128,15 +132,12 @@ export async function GET(
   context: { params: Promise<{ userId: string }> }
 ) {
   const { userId } = await context.params;
-  console.log('👤 获取用户食谱列表:', userId);
   
   try {
     // 直接查询数据库
     return await getDataFromDatabase(request, userId);
   } catch (error) {
     console.error('❌ 获取用户食谱失败:', error);
-    console.log('Database not available in development environment, returning mock data');
-    
     // 在本地开发环境返回 mock 数据
     const { searchParams } = new URL(request.url);
     const lang = searchParams.get('lang') || 'en';

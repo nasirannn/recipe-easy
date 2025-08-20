@@ -8,13 +8,7 @@ export const useRecipeSave = () => {
   const { user } = useAuth();
   const locale = useLocale();
 
-  const saveRecipe = useCallback(async (recipe: Recipe, imageModel: string) => {
-    console.log('Saving recipe to database:', recipe.title);
-    
-    if (!user?.id) {
-      throw new Error('User not logged in');
-    }
-    
+  const saveRecipe = useCallback(async (recipe: Recipe, userId?: string) => {
     try {
       // 调用本地 Next.js API 路由，它会转发到 Worker API
       const response = await fetch('/api/recipes/save', {
@@ -23,40 +17,29 @@ export const useRecipeSave = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          recipe: {
-            ...recipe,
-            imageModel: imageModel
-          },
-          userId: user.id
+          recipe,
+          userId: userId || user?.id,
         }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save recipe');
+        throw new Error('Failed to save recipe');
       }
 
-      const result = await response.json();
-      console.log('Recipe saved successfully:', result);
+      const result = await response.json() as any;
       
-      // 根据返回的状态显示不同的提示
-      if (result.alreadyExists) {
-        if (result.hasUpdatedImage) {
-          toast.success(locale === 'zh' ? '菜谱图片已更新！' : 'Recipe image updated successfully!');
-        } else {
-          toast.info(locale === 'zh' ? '菜谱已存在，无需重复保存' : 'Recipe already exists, no need to save again');
-        }
-      } else {
-        toast.success(locale === 'zh' ? '菜谱保存成功！' : 'Recipe saved successfully!');
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save recipe');
       }
 
       return result;
     } catch (error) {
       console.error('Save recipe error:', error);
-      toast.error(locale === 'zh' ? '保存菜谱失败' : 'Failed to save recipe');
       throw error;
+    } finally {
+      // setLoading(false); // This line was removed from the new_code, so it's removed here.
     }
-  }, [user?.id, locale]);
+  }, [user?.id]);
 
   return { saveRecipe };
 }; 

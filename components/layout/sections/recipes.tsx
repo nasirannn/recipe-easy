@@ -37,7 +37,7 @@ export const RecipesSection = () => {
       try {
         setIsLoading(true);
         // 调用管理员菜谱接口，限制为最近创建的6个菜谱
-        const response = await fetch(`/api/recipes?type=admin_recent&limit=6&lang=${locale}`);
+        const response = await fetch(`/api/recipes/admin?limit=6&lang=${locale}`);
         const data = await response.json() as any;
 
         if (data.success) {

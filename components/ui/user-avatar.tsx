@@ -41,26 +41,13 @@ export function UserAvatar({
 
   // 获取头像URL
   useEffect(() => {
-    if (!user) {
-      setAvatarUrl(null)
-      setImageError(false)
-      return
-    }
-
-    const newAvatarUrl = getUserAvatarUrl(user)
-    console.log('🔍 UserAvatar - Avatar URL from getUserAvatarUrl:', newAvatarUrl)
-    
-    // 如果获取到头像URL，设置它
-    if (newAvatarUrl) {
-      setAvatarUrl(newAvatarUrl)
-      setImageError(false)
+    if (user) {
+      const newAvatarUrl = getUserAvatarUrl(user);
+      setAvatarUrl(newAvatarUrl);
     } else {
-      // 如果没有头像URL，设置错误状态以显示备用头像
-      console.log('🔍 UserAvatar - No avatar URL found, showing fallback')
-      setAvatarUrl(null)
-      setImageError(true)
+      setAvatarUrl(null);
     }
-  }, [user])
+  }, [user]);
 
   // 监听积分扣减事件
   useEffect(() => {
@@ -82,7 +69,7 @@ export function UserAvatar({
   }, [])
 
   const handleImageError = () => {
-    console.log('❌ UserAvatar - Image load error for URL:', avatarUrl)
+    console.error('❌ UserAvatar - Image load error for URL:', avatarUrl)
     setImageError(true)
   }
 

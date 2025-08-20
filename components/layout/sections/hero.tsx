@@ -220,7 +220,6 @@ export const HeroSection = () => {
 
   // 新增：处理meal planner提交
   const handleMealPlannerSubmit = () => {
-    console.log('Meal Planner submitted:', mealPlannerText);
     // 这里可以添加实际的提交逻辑
   };
 

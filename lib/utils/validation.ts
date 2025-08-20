@@ -33,20 +33,19 @@ export function validateSearchParam(search: string | null): string | null {
  * @param userId 用户ID
  * @returns 验证结果
  */
-export function validateUserId(userId: string | null): { isValid: boolean; userId?: string; error?: string } {
-  if (!userId || typeof userId !== 'string') {
-    console.log('Invalid user ID', userId);
-    return { isValid: false, error: 'Invalid user ID' };
+export function validateUserId(userId: string | undefined): boolean {
+  if (!userId) {
+    return false;
   }
   
-  // 验证Supabase用户ID格式 - 标准UUID格式: 8-4-4-4-12
-  // 例如: 157b6650-29b8-4613-87d9-ce0997106151
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (uuidRegex.test(userId)) {
-    return { isValid: true, userId };
+  // Check for UUID v4 format
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  
+  if (!uuidRegex.test(userId)) {
+    return false;
   }
   
-  return { isValid: false, error: 'Invalid user ID format. Expected UUID format like: 157b6650-29b8-4613-87d9-ce0997106151' };
+  return true;
 }
 
 /**

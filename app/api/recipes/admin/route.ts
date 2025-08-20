@@ -10,9 +10,17 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 // 直接从数据库获取数据
 async function getDataFromDatabase(request: NextRequest) {
   try {
-    // 使用 getCloudflareContext 获取数据库绑定
-    const { env } = getCloudflareContext();
+    let env: any;
+    
+    try {
+      const { env: cloudflareEnv } = await getCloudflareContext();
+      env = cloudflareEnv;
+    } catch (error) {
+      env = process.env;
+    }
+
     const db = env.RECIPE_EASY_DB;
+    
     if (!db) {
       throw new Error('数据库绑定不可用');
     }
@@ -43,8 +51,7 @@ async function getDataFromDatabase(request: NextRequest) {
         // 中文查询管理员食谱
         const recipes = await db.prepare(`
           SELECT 
-            r.id, r.title, r.description, r.cooking_time as cookingTime,
-            r.servings, r.difficulty,
+            r.id, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
             rim.image_path as imagePath,
             r.ingredients, r.seasoning, r.instructions, r.chef_tips as chefTips,
             r.created_at as createdAt, r.updated_at as updatedAt,
@@ -54,7 +61,7 @@ async function getDataFromDatabase(request: NextRequest) {
             ri.instructions as instructions_zh, ri.chef_tips as chefTips_zh
           FROM recipes r
           LEFT JOIN cuisines c ON r.cuisine_id = c.id
-          LEFT JOIN recipes_i18n ri ON r.id = ri.recipe_id AND ri.lang = 'zh'
+          LEFT JOIN recipes_i18n ri ON r.id = ri.recipe_id AND ri.language_code = 'zh'
           LEFT JOIN recipe_images rim ON r.id = rim.recipe_id
           WHERE r.user_id = ?
           ORDER BY r.created_at DESC
@@ -67,9 +74,40 @@ async function getDataFromDatabase(request: NextRequest) {
         
         const total = Number(totalResult?.total) || 0;
         
+        // 转换数据格式，解析JSON字段
+        const recipeList = recipes?.results || recipes || [];
+        const transformedRecipes = (Array.isArray(recipeList) ? recipeList : []).map((recipe: any) => ({
+          id: recipe.id,
+          title: recipe.title_zh || recipe.title,
+          description: recipe.description_zh || recipe.description,
+          cookingTime: recipe.cooking_time,
+          servings: recipe.servings,
+          difficulty: recipe.difficulty,
+          imagePath: recipe.imagePath,
+          ingredients: recipe.ingredients_zh ? 
+            JSON.parse(recipe.ingredients_zh) : 
+            JSON.parse(recipe.ingredients || '[]'),
+          seasoning: recipe.seasoning_zh ? 
+            JSON.parse(recipe.seasoning_zh) : 
+            JSON.parse(recipe.seasoning || '[]'),
+          instructions: recipe.instructions_zh ? 
+            JSON.parse(recipe.instructions_zh) : 
+            JSON.parse(recipe.instructions || '[]'),
+          chefTips: recipe.chefTips_zh ? 
+            JSON.parse(recipe.chefTips_zh) : 
+            JSON.parse(recipe.chefTips || '[]'),
+          createdAt: recipe.createdAt,
+          updatedAt: recipe.updatedAt,
+          cuisine: recipe.cuisine_name ? {
+            id: recipe.cuisine_id,
+            name: recipe.cuisine_name,
+            slug: recipe.cuisine_slug
+          } : undefined
+        }));
+        
         return NextResponse.json({
           success: true,
-          results: recipes,
+          results: transformedRecipes,
           pagination: {
             page,
             limit,
@@ -101,9 +139,32 @@ async function getDataFromDatabase(request: NextRequest) {
         
         const total = Number(totalResult?.total) || 0;
         
+        // 转换数据格式，解析JSON字段
+        const recipeList = recipes?.results || recipes || [];
+        const transformedRecipes = (Array.isArray(recipeList) ? recipeList : []).map((recipe: any) => ({
+          id: recipe.id,
+          title: recipe.title,
+          description: recipe.description,
+          cookingTime: recipe.cookingTime,
+          servings: recipe.servings,
+          difficulty: recipe.difficulty,
+          imagePath: recipe.imagePath,
+          ingredients: JSON.parse(recipe.ingredients || '[]'),
+          seasoning: JSON.parse(recipe.seasoning || '[]'),
+          instructions: JSON.parse(recipe.instructions || '[]'),
+          chefTips: JSON.parse(recipe.chefTips || '[]'),
+          createdAt: recipe.createdAt,
+          updatedAt: recipe.updatedAt,
+          cuisine: recipe.cuisine_name ? {
+            id: recipe.cuisine_id,
+            name: recipe.cuisine_name,
+            slug: recipe.cuisine_slug
+          } : undefined
+        }));
+        
         return NextResponse.json({
           success: true,
-          results: recipes,
+          results: transformedRecipes,
           pagination: {
             page,
             limit,

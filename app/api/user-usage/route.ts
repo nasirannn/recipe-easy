@@ -44,12 +44,11 @@ export async function GET(request: NextRequest) {
     const rawUserId = searchParams.get('userId');
     
     // 🔒 安全修复：严格验证用户输入
-    const userValidation = validateUserId(rawUserId);
-    if (!userValidation.isValid) {
-      return NextResponse.json({ error: userValidation.error }, { status: 400 });
+    if (!validateUserId(rawUserId)) {
+      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
 
-    const userId = userValidation.userId!;
+    const userId = rawUserId!;
     const isAdmin = searchParams.get('isAdmin') === 'true';
 
     // 检查是否有数据库绑定
@@ -150,12 +149,11 @@ export async function POST(request: NextRequest) {
     const { userId: bodyUserId, action, amount, description, isAdmin: bodyIsAdmin } = body;
 
     // 🔒 安全修复：严格验证用户输入
-    const userValidation = validateUserId(bodyUserId);
-    if (!userValidation.isValid) {
-      return NextResponse.json({ error: userValidation.error }, { status: 400 });
+    if (!validateUserId(bodyUserId)) {
+      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
     
-    const userId = userValidation.userId!;
+    const userId = bodyUserId!;
 
     // 检查是否有数据库绑定
     const hasDb = hasDatabaseBinding();
