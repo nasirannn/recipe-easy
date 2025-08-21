@@ -19,34 +19,33 @@ export function useCuisines(): UseCuisinesReturn {
   const fetchCuisines = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       
-      const response = await fetch(`/api/cuisines?lang=${locale}`);
+      // 使用 getWorkerApiUrl 确保正确的 API 路径
+      const response = await fetch(getWorkerApiUrl(`/api/cuisines?lang=${locale}`));
       const data = await response.json() as any;
       
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch cuisines');
       }
 
-      const cuisinesData = data.cuisines || [];
+      // 检查数据结构 - 适配新的 API 响应格式
+      const cuisinesData = data.results || data.cuisines || [];
+      
+      if (!Array.isArray(cuisinesData)) {
+        throw new Error('Invalid cuisines data format');
+      }
       
       // 过滤掉 "Others" 菜系
       const filteredCuisines = cuisinesData.filter((cuisine: Cuisine) => 
         cuisine.slug !== 'others'
       );
       
-      // 添加 "全部" 选项
-      const processedCuisines = [
-        { 
-          id: 0, 
-          name: locale === 'zh' ? '全部菜系' : 'All Cuisines', 
-          slug: 'all' 
-        },
-        ...filteredCuisines
-      ];
-      
-      setCuisines(processedCuisines);
+      setCuisines(filteredCuisines);
     } catch (err) {
-      // Error fetching cuisines
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch cuisines';
+      setError(errorMessage);
+      console.error('Error fetching cuisines:', err);
     } finally {
       setLoading(false);
     }
@@ -54,7 +53,7 @@ export function useCuisines(): UseCuisinesReturn {
 
   useEffect(() => {
     fetchCuisines();
-  }, [fetchCuisines]); // 添加 locale 依赖，当语言改变时重新获取数据
+  }, [fetchCuisines]);
 
   const refetch = () => {
     fetchCuisines();
