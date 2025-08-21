@@ -45,9 +45,14 @@ async function getDataFromDatabase(request: NextRequest) {
         const searchPattern = `%${search}%`;
         bindParams.push(searchPattern, searchPattern, searchPattern, searchPattern);
       } else {
-        whereClause += ` AND (r.title LIKE ? OR r.description LIKE ?)`;
+        whereClause += ` AND (
+          r.title LIKE ? OR 
+          r.description LIKE ? OR 
+          ri.title LIKE ? OR 
+          ri.description LIKE ?
+        )`;
         const searchPattern = `%${search}%`;
-        bindParams.push(searchPattern, searchPattern);
+        bindParams.push(searchPattern, searchPattern, searchPattern, searchPattern);
       }
     }
     
@@ -83,16 +88,21 @@ async function getDataFromDatabase(request: NextRequest) {
         ${whereClause}
       `).bind(...bindParams).first();
     } else {
-      // 英文查询
+      // 英文查询 - 需要 JOIN recipes_i18n 表获取英文版本
       const enQuery = `
         SELECT 
           r.id, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
           rim.image_path as imagePath,
           r.ingredients, r.seasoning, r.instructions, r.chef_tips,
           r.created_at, r.updated_at,
-          c.name as cuisine_name, c.slug as cuisine_slug, c.id as cuisine_id
+          c.name as cuisine_name, c.slug as cuisine_slug, c.id as cuisine_id,
+          ri.title as title_en, ri.description as description_en,
+          ri.ingredients as ingredients_en, ri.seasoning as seasoning_en,
+          ri.instructions as instructions_en, ri.chef_tips as chef_tips_en,
+          ri.difficulty as difficulty_en, ri.tags as tags_en
         FROM recipes r
         LEFT JOIN cuisines c ON r.cuisine_id = c.id
+        LEFT JOIN recipes_i18n ri ON r.id = ri.recipe_id AND ri.language_code = 'en'
         LEFT JOIN recipe_images rim ON r.id = rim.recipe_id
         ${whereClause}
         ${orderBy}
@@ -103,6 +113,7 @@ async function getDataFromDatabase(request: NextRequest) {
       // 获取英文总数
       totalResult = await db.prepare(`
         SELECT COUNT(*) as count FROM recipes r
+        LEFT JOIN recipes_i18n ri ON r.id = ri.recipe_id AND ri.language_code = 'en'
         ${whereClause}
       `).bind(...bindParams).first();
     }
@@ -113,23 +124,34 @@ async function getDataFromDatabase(request: NextRequest) {
     const recipeList = recipes?.results || recipes || [];
     const transformedRecipes = (Array.isArray(recipeList) ? recipeList : []).map((recipe: any) => ({
       id: recipe.id,
-      title: lang === 'zh' && recipe.title_zh ? recipe.title_zh : recipe.title,
-      description: lang === 'zh' && recipe.description_zh ? recipe.description_zh : recipe.description,
+      title: lang === 'zh' && recipe.title_zh ? recipe.title_zh : 
+             lang === 'en' && recipe.title_en ? recipe.title_en : recipe.title,
+      description: lang === 'zh' && recipe.description_zh ? recipe.description_zh : 
+                  lang === 'en' && recipe.description_en ? recipe.description_en : recipe.description,
       cookingTime: recipe.cooking_time,
       servings: recipe.servings,
-      difficulty: recipe.difficulty,
+      difficulty: lang === 'zh' && recipe.difficulty_zh ? recipe.difficulty_zh :
+                 lang === 'en' && recipe.difficulty_en ? recipe.difficulty_en : recipe.difficulty,
       imagePath: recipe.imagePath,
       ingredients: lang === 'zh' && recipe.ingredients_zh ? 
         JSON.parse(recipe.ingredients_zh) : 
+        lang === 'en' && recipe.ingredients_en ?
+        JSON.parse(recipe.ingredients_en) :
         JSON.parse(recipe.ingredients || '[]'),
       seasoning: lang === 'zh' && recipe.seasoning_zh ? 
         JSON.parse(recipe.seasoning_zh) : 
+        lang === 'en' && recipe.seasoning_en ?
+        JSON.parse(recipe.seasoning_en) :
         JSON.parse(recipe.seasoning || '[]'),
       instructions: lang === 'zh' && recipe.instructions_zh ? 
         JSON.parse(recipe.instructions_zh) : 
+        lang === 'en' && recipe.instructions_en ?
+        JSON.parse(recipe.instructions_en) :
         JSON.parse(recipe.instructions || '[]'),
       chefTips: lang === 'zh' && recipe.chef_tips_zh ? 
         JSON.parse(recipe.chef_tips_zh) : 
+        lang === 'en' && recipe.chef_tips_en ?
+        JSON.parse(recipe.chef_tips_en) :
         JSON.parse(recipe.chef_tips || '[]'),
       createdAt: recipe.created_at,
       updatedAt: recipe.updated_at,
