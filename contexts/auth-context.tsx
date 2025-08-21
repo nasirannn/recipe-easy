@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     })
     if (error) {
-      console.error('Error signing in with Google:', error)
+      // Error signing in with Google
       throw error
     }
   }
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     const { error } = await supabase.auth.signOut()
     if (error) {
-      console.error('Error signing out:', error)
+      // Error signing out
       throw error
     }
   }

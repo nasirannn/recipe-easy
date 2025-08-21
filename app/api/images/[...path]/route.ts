@@ -1,11 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 // 检查是否有 R2 绑定
-function hasR2Binding(): boolean {
+async function hasR2Binding(): Promise<boolean> {
   try {
-    return typeof (globalThis as any).RECIPE_IMAGES !== 'undefined';
+    // 尝试获取 Cloudflare 环境
+    try {
+      const { env: cloudflareEnv } = await getCloudflareContext();
+      return typeof cloudflareEnv.RECIPE_IMAGES !== 'undefined';
+    } catch (error) {
+      // 如果无法获取 Cloudflare 环境，回退到全局检查
+      return typeof (globalThis as any).RECIPE_IMAGES !== 'undefined';
+    }
   } catch {
     return false;
+  }
+}
+
+// 获取 R2 存储桶
+async function getR2Bucket(): Promise<any> {
+  try {
+    // 尝试获取 Cloudflare 环境
+    try {
+      const { env: cloudflareEnv } = await getCloudflareContext();
+      return cloudflareEnv.RECIPE_IMAGES;
+    } catch (error) {
+      // 如果无法获取 Cloudflare 环境，回退到全局检查
+      return (globalThis as any).RECIPE_IMAGES;
+    }
+  } catch (error) {
+    return null;
   }
 }
 
@@ -25,16 +49,16 @@ export async function GET(
     }
 
     // 检查是否有 R2 绑定
-    const hasR2 = hasR2Binding();
+    const hasR2 = await hasR2Binding();
     if (!hasR2) {
       return NextResponse.json(
-        { error: 'R2 bucket not available in development environment' },
+        { error: 'R2 bucket not available' },
         { status: 503 }
       );
     }
 
     // 获取 R2 存储桶
-    const bucket = (globalThis as any).RECIPE_IMAGES;
+    const bucket = await getR2Bucket();
     if (!bucket) {
       return NextResponse.json(
         { error: 'R2 bucket not available' },
@@ -71,7 +95,7 @@ export async function GET(
     });
 
   } catch (error) {
-    console.error('Error serving image:', error);
+    // Error serving image
     return NextResponse.json(
       { error: 'Failed to serve image' },
       { status: 500 }

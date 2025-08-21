@@ -34,7 +34,7 @@ export const useRecipeSave = () => {
 
       return result;
     } catch (error) {
-      console.error('Save recipe error:', error);
+      // Save recipe error
       throw error;
     } finally {
       // setLoading(false); // This line was removed from the new_code, so it's removed here.

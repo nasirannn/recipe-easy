@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error('IndexNow API error:', error);
+    // IndexNow API error
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -66,7 +66,7 @@ export async function GET() {
       );
     }
   } catch (error) {
-    console.error('IndexNow GET API error:', error);
+    // IndexNow GET API error
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

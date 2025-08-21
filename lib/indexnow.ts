@@ -44,14 +44,14 @@ export async function submitUrlToIndexNow(url: string): Promise<boolean> {
         });
 
         if (response.ok) {
-          console.log(`✅ IndexNow submitted to ${endpoint}: ${fullUrl}`);
+          // IndexNow submitted successfully
           return true;
         } else {
-          console.warn(`⚠️ IndexNow failed for ${endpoint}: ${response.status}`);
+          // IndexNow failed
           return false;
         }
       } catch (error) {
-        console.error(`❌ IndexNow error for ${endpoint}:`, error);
+        // IndexNow error
         return false;
       }
     });
@@ -59,7 +59,7 @@ export async function submitUrlToIndexNow(url: string): Promise<boolean> {
     const results = await Promise.all(promises);
     return results.some(result => result); // 至少一个成功就返回 true
   } catch (error) {
-    console.error('IndexNow submission error:', error);
+    // IndexNow submission error
     return false;
   }
 }
@@ -92,14 +92,14 @@ export async function submitUrlsToIndexNow(urls: string[]): Promise<boolean> {
         });
 
         if (response.ok) {
-          console.log(`✅ IndexNow batch submitted to ${endpoint}: ${fullUrls.length} URLs`);
+          // IndexNow batch submitted successfully
           return true;
         } else {
-          console.warn(`⚠️ IndexNow batch failed for ${endpoint}: ${response.status}`);
+          // IndexNow batch failed
           return false;
         }
       } catch (error) {
-        console.error(`❌ IndexNow batch error for ${endpoint}:`, error);
+        // IndexNow batch error
         return false;
       }
     });
@@ -107,7 +107,7 @@ export async function submitUrlsToIndexNow(urls: string[]): Promise<boolean> {
     const results = await Promise.all(promises);
     return results.some(result => result);
   } catch (error) {
-    console.error('IndexNow batch submission error:', error);
+    // IndexNow batch submission error
     return false;
   }
 }

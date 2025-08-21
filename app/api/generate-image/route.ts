@@ -16,11 +16,6 @@ function getServerUrl(request: NextRequest): string {
     return 'http://localhost:3000';
   }
   
-  // 在生产环境中，使用环境变量或从请求中推断
-  if (process.env.FRONTEND_URL) {
-    return process.env.FRONTEND_URL;
-  }
-  
   // 从请求headers中获取host
   const host = request.headers.get('host');
   const protocol = request.headers.get('x-forwarded-proto') || 'https';
@@ -124,7 +119,7 @@ export async function POST(request: NextRequest) {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Wanx API Error Details:', errorText);
+        // Wanx API Error Details
         throw new Error(`Wanx API error: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
@@ -205,7 +200,7 @@ export async function POST(request: NextRequest) {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Flux API Error Details:', errorText);
+        // Flux API Error Details
         throw new Error(`Flux API error: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
@@ -266,7 +261,7 @@ export async function POST(request: NextRequest) {
       });
       
       if (!deductResponse.ok) {
-        console.error('Failed to deduct credits, but image was generated');
+        // 扣除积分失败，但图片已生成
         // 继续返回图片，但记录错误
       }
     }
@@ -279,7 +274,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Image generation error:', error);
+    // 图片生成错误
     return Response.json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to generate image'

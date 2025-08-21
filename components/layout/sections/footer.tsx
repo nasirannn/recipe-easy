@@ -4,12 +4,14 @@ import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { useState } from 'react';
 import { ContactDialog } from '@/components/ui/contact-dialog';
 
 export const FooterSection = () => {
   const t = useTranslations('footer');
   const tContact = useTranslations('contactDialog');
+  const locale = useLocale();
   const [showContactDialog, setShowContactDialog] = useState(false);
 
   return (
@@ -92,10 +94,10 @@ export const FooterSection = () => {
             {t('copyright')}
           </h3>
           <div className="flex gap-6 text-sm">
-            <Link href="/privacy" className="text-gray-500 hover:text-gray-700 transition-colors">
+            <Link href={`/${locale}/privacy`} className="text-gray-500 hover:text-gray-700 transition-colors">
               {t('privacy')}
             </Link>
-            <Link href="/terms" className="text-gray-500 hover:text-gray-700 transition-colors">
+            <Link href={`/${locale}/terms`} className="text-gray-500 hover:text-gray-700 transition-colors">
               {t('terms')}
             </Link>
           </div>

@@ -101,6 +101,6 @@ if (process.env.NODE_ENV === 'development') {
     initOpenNextCloudflareForDev();
   } catch (error) {
     // 如果包未安装或在构建时，忽略错误
-    console.warn('OpenNext Cloudflare dev initialization skipped:', error.message);
+    // OpenNext Cloudflare dev initialization skipped
   }
 }

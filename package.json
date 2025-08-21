@@ -15,6 +15,7 @@
     "db:query": "wrangler d1 execute recipe-easy-db --remote --command",
     "db:backup": "wrangler d1 export recipe-easy-db --remote --output=db-backup/remote.sql",
     "db:migrate": "wrangler d1 migrations apply recipe-easy-db --remote",
+    "db:init": "node scripts/init-db.js",
     "indexnow": "node scripts/submit-indexnow.js",
     "indexnow:submit": "node scripts/submit-indexnow.js"
   },

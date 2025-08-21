@@ -116,14 +116,14 @@ export function useUserUsage() {
         // 检查是否是配置错误
         if (data.setup_required) {
           setError(`配置错误: ${data.details}`);
-          console.error('🔧 Database setup required:', data.details);
+          // Database setup required
         } else {
           setError(data.error || 'Failed to fetch credits');
         }
       }
     } catch (err) {
       setError('Network error');
-      console.error('Error fetching credits:', err);
+      // Error fetching credits
     } finally {
       setLoading(false);
       setRequestInProgress(false);
@@ -160,7 +160,7 @@ export function useUserUsage() {
       }
     } catch (err) {
       setError('Network error');
-      console.error('Error spending credits:', err);
+      // Error spending credits
       return false;
     }
   }, [user?.id, setCredits, setCanGenerate, setError]);

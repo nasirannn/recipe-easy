@@ -177,7 +177,7 @@ async function getDataFromDatabase(request: NextRequest) {
     
     return NextResponse.json({ error: '不支持的请求方法' }, { status: 405 });
   } catch (error) {
-    console.error('❌ 数据库查询失败:', error);
+    // 数据库查询失败
     return NextResponse.json(
       { error: '数据库查询失败' },
       { status: 500 }
@@ -186,7 +186,7 @@ async function getDataFromDatabase(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  console.log('📊 获取管理员食谱列表');
+  // 获取管理员食谱列表
   
   // 直接尝试查询数据库
   return await getDataFromDatabase(request);

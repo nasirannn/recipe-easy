@@ -65,11 +65,11 @@ export function useImageGeneration(): UseImageGenerationReturn {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json() as { error?: string };
         throw new Error(errorData.error || '图片生成失败');
       }
 
-      const data = await response.json();
+      const data = await response.json() as { success?: boolean; imageUrl?: string; error?: string };
       
       if (!data.success || !data.imageUrl) {
         throw new Error(data.error || '图片生成失败');
@@ -78,7 +78,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
       // 调用成功回调
       onSuccess(data.imageUrl);
     } catch (error) {
-      console.error('Image generation failed:', error);
+      // Image generation failed
       throw error;
     } finally {
       setImageLoadingState(recipeId, false);
@@ -99,7 +99,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
       await generateImageInternal(recipeId, recipe, imageModel, onSuccess);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '图片生成失败，请稍后重试';
-      console.error('Generate image error:', errorMessage);
+      // Generate image error
       throw error;
     }
   }, [generateImageInternal]);
@@ -117,7 +117,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
       await generateImageInternal(recipeId, recipe, imageModel, onSuccess);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '图片生成失败，请稍后重试';
-      console.error('Regenerate image error:', errorMessage);
+      // Regenerate image error
       throw error;
     }
   }, [generateImageInternal]);
@@ -174,13 +174,13 @@ export function useImageGeneration(): UseImageGenerationReturn {
             });
 
             if (response.ok) {
-              const data = await response.json();
+              const data = await response.json() as { success?: boolean; imageUrl?: string };
               if (data.success && data.imageUrl) {
                 onRecipeImageGenerated(recipe.id, data.imageUrl);
               }
             }
           } catch (error) {
-            console.error(`Failed to generate image for recipe ${recipe.id}:`, error);
+            // 单个图片生成失败
             // 单个图片生成失败不影响其他图片
           } finally {
             setImageLoadingState(recipe.id, false);
@@ -191,7 +191,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '批量图片生成失败，请稍后重试';
-      console.error('Batch image generation error:', errorMessage);
+      // 批量图片生成错误
       throw error;
     } finally {
       setImageGenerating(false);

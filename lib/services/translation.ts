@@ -35,11 +35,7 @@ export async function translateRecipe(
   env?: any
 ): Promise<TranslationResult> {
   try {
-    console.log('🔧 Translation config check:', {
-      hasEnv: !!env,
-      hasApiKey: !!(env?.QWENPLUS_API_KEY || process.env.QWENPLUS_API_KEY),
-      apiKeyLength: (env?.QWENPLUS_API_KEY || process.env.QWENPLUS_API_KEY || '').length
-    });
+    // Translation config check
     
     // 获取Qwen Plus配置
     const qwenConfig = {
@@ -51,7 +47,7 @@ export async function translateRecipe(
     };
 
     if (!qwenConfig.apiKey) {
-      console.error('❌ Qwen Plus API key not configured');
+      // Qwen Plus API key not configured
       throw new Error('Qwen Plus API key not configured');
     }
 
@@ -96,8 +92,7 @@ export async function translateRecipe(
     try {
       translationData = JSON.parse(content);
     } catch (e) {
-      console.error('Translation JSON parsing failed:', e);
-      console.error('Raw content:', content);
+      // Translation JSON parsing failed
       throw new Error('Failed to parse translation response');
     }
 
@@ -120,7 +115,7 @@ export async function translateRecipe(
     return translationData as TranslationResult;
 
   } catch (error) {
-    console.error('Translation failed:', error);
+    // Translation failed
     throw error;
   }
 }
@@ -192,10 +187,10 @@ export async function saveTranslationToDatabase(
       ).run();
     }
 
-    console.log(`✅ Translation saved for recipe ${recipeId} in ${language}`);
+    // Translation saved successfully
 
   } catch (error) {
-    console.error('Error saving translation to database:', error);
+    // Error saving translation to database
     throw error;
   }
 }
@@ -210,35 +205,20 @@ export async function translateRecipeAsync(
   env?: any
 ): Promise<void> {
   try {
-    console.log(`🔄 Starting translation for recipe ${recipe.id} to ${targetLanguage}`);
-    console.log(`🔑 API Key available: ${!!env?.QWENPLUS_API_KEY}`);
-    console.log(`📝 Recipe data:`, {
-      id: recipe.id,
-      title: recipe.title,
-      ingredientsCount: recipe.ingredients?.length,
-      instructionsCount: recipe.instructions?.length
-    });
+    // Starting translation for recipe
     
     // 执行翻译
     const translation = await translateRecipe(recipe, targetLanguage, env);
     
-    console.log(`📄 Translation result:`, {
-      title: translation.title,
-      ingredientsCount: translation.ingredients?.length,
-      instructionsCount: translation.instructions?.length
-    });
+    // Translation result processed
     
     // 保存到数据库
     await saveTranslationToDatabase(db, recipe.id, targetLanguage, translation);
     
-    console.log(`✅ Translation completed for recipe ${recipe.id} to ${targetLanguage}`);
+    // Translation completed successfully
 
   } catch (error) {
-    console.error(`❌ Async translation failed for recipe ${recipe.id} to ${targetLanguage}:`, error);
-    console.error(`🔍 Error details:`, {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
-    });
+    // Async translation failed
     // 不抛出错误，避免影响主流程
   }
 } 

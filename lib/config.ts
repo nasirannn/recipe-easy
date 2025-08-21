@@ -189,6 +189,6 @@ export function validateConfig(): void {
   const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
   
   if (missingVars.length > 0 && isProduction()) {
-    console.warn(`Missing environment variables: ${missingVars.join(', ')}`);
+    // Missing environment variables
   }
 } 

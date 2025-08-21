@@ -71,7 +71,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
         setCopiedSection(null);
       }, 3000);
     } catch (err) {
-      console.error('Failed to copy: ', err);
+      // Failed to copy
     }
   };
 
@@ -89,7 +89,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
         const parsed = JSON.parse(data);
         return Array.isArray(parsed) ? parsed : [];
       } catch (e) {
-        console.error('Failed to parse JSON:', e);
+        // Failed to parse JSON
         return [];
       }
     }
@@ -130,7 +130,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                           unoptimized={true}
                           onClick={() => openImageDialog(getImageUrl(recipe.imagePath!))}
                           onError={(e) => {
-                            console.error('Image load error for recipe:', recipe.id, e);
+                            // Image load error for recipe
                             setImageErrors(prev => ({ ...prev, [recipe.id]: true }));
                           }}
                         />
@@ -481,7 +481,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
                                 await onSaveRecipe(recipe);
                                 // 成功提示将在 onSaveRecipe 内部处理
                               } catch (error) {
-                                console.error('Save recipe error:', error);
+                                // 保存菜谱错误
                               } finally {
                                 setSavingStates(prev => ({ ...prev, [recipe.id]: false }));
                               }

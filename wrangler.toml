@@ -7,11 +7,13 @@ compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 directory = ".open-next/assets"
 binding = "ASSETS"
 
-
-
 [[r2_buckets]]
 binding = "RECIPE_IMAGES"
 bucket_name = "recipe-images"
+
+[[r2_buckets]]
+binding = "RECIPE_DOC"
+bucket_name = "recipe-doc"
 
 [[d1_databases]]
 binding = "RECIPE_EASY_DB"
@@ -20,4 +22,9 @@ database_id = "1b73b4ba-f095-4151-8f5c-489b59917156"
 
 [vars]
 WORKER_URL = "https://recipe-easy.com"
+R2_PUBLIC_URL = "https://doc.recipe-easy.com"
 
+[env.production.vars]
+CLOUDFLARE_ACCOUNT_ID="45571c06599d4a3908b459baec8c0fc2"
+CLOUDFLARE_ACCESS_KEY_ID="91988ffcf427b24bf50879e3615a6c7aa1b131ea1e522c7ea47cad03678c0b07"
+CLOUDFLARE_SECRET_ACCESS_KEY="b0f568fc472d5b8b43f5a4002a724bce"

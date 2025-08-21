@@ -69,12 +69,12 @@ export function UserAvatar({
   }, [])
 
   const handleImageError = () => {
-    console.error('❌ UserAvatar - Image load error for URL:', avatarUrl)
+    // Image load error
     setImageError(true)
   }
 
   const handleImageLoad = () => {
-    console.log('✅ UserAvatar - Image loaded successfully for URL:', avatarUrl)
+    // Image loaded successfully
     setImageError(false)
   }
 

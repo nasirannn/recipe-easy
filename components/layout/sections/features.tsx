@@ -1,6 +1,6 @@
 "use client";
 import { useTranslations } from 'next-intl';
-import { GridBackground } from "@/components/ui/grid-background";
+
 import { Globe, Sparkles, Image as ImageIcon, Utensils, Pizza, Smartphone } from "lucide-react";
 
 export const FeaturesSection = () => {

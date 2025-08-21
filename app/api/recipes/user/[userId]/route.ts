@@ -119,7 +119,7 @@ async function getDataFromDatabase(request: NextRequest, userId: string) {
     
     return NextResponse.json({ error: '不支持的请求方法' }, { status: 405 });
   } catch (error: any) {
-    console.error('❌ 数据库查询失败:', error);
+    // 数据库查询失败
     return NextResponse.json(
       { error: '数据库查询失败', details: error.message },
       { status: 500 }
@@ -137,7 +137,7 @@ export async function GET(
     // 直接查询数据库
     return await getDataFromDatabase(request, userId);
   } catch (error) {
-    console.error('❌ 获取用户食谱失败:', error);
+    // 获取用户食谱失败
     // 在本地开发环境返回 mock 数据
     const { searchParams } = new URL(request.url);
     const lang = searchParams.get('lang') || 'en';

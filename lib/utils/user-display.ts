@@ -46,7 +46,7 @@ export async function updateUserDisplayName(user: User | null, displayName: stri
     })
     
     if (error) {
-      console.error('Failed to update display name:', error)
+      // Failed to update display name
       return false
     }
     
@@ -54,7 +54,7 @@ export async function updateUserDisplayName(user: User | null, displayName: stri
     
     return true
   } catch (error) {
-    console.error('Error updating display name:', error)
+    // Error updating display name
     return false
   }
 }

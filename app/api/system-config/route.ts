@@ -23,7 +23,7 @@ async function isAdmin(request: NextRequest): Promise<boolean> {
 
     return data.user.user_metadata?.role === 'admin';
   } catch (error) {
-    console.error('检查管理员权限失败:', error);
+    // 检查管理员权限失败
     return false;
   }
 }
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json() as any;
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error getting system configs:', error);
+    // Error getting system configs
     return NextResponse.json(
       { error: '获取系统配置失败', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json() as any;
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error updating system config:', error);
+          // 更新系统配置错误
     return NextResponse.json(
       { error: '更新系统配置失败', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

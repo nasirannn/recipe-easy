@@ -46,7 +46,7 @@ export function useCuisines(): UseCuisinesReturn {
       
       setCuisines(processedCuisines);
     } catch (err) {
-      console.error('Error fetching cuisines:', err);
+      // Error fetching cuisines
     } finally {
       setLoading(false);
     }

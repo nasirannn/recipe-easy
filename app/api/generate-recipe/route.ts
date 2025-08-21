@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
       });
 
       if (!response.ok) {
-        console.error('GPT-4o mini API 错误:', response.statusText);
+        // GPT-4o mini API 错误
         return NextResponse.json({ error: 'GPT-4o mini API 调用失败' }, { status: 500 });
       }
 
@@ -175,8 +175,7 @@ export async function POST(request: NextRequest) {
         const parsedResult = JSON.parse(content);
         recipes = parsedResult.recipes || [];
       } catch (e) {
-        console.error('GPT-4o mini 返回内容解析失败:', e);
-        console.error('原始输出:', output);
+        // GPT-4o mini 返回内容解析失败
         return NextResponse.json({ error: 'GPT-4o mini 返回内容解析失败' }, { status: 500 });
       }
 
@@ -230,8 +229,7 @@ export async function POST(request: NextRequest) {
     try {
       parsedContent = JSON.parse(content);
     } catch (e) {
-      console.error('JSON解析失败:', e);
-      console.error('返回内容:', content);
+      // JSON解析失败
       return NextResponse.json({ error: 'API返回内容格式无效' }, { status: 500 });
     }
 
@@ -250,7 +248,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ recipes: recipesWithDefaults });
 
   } catch (error) {
-    console.error('食谱生成错误:', error);
+    // 食谱生成错误
     return NextResponse.json({ 
       error: error instanceof Error ? error.message : '食谱生成失败' 
     }, { status: 500 });

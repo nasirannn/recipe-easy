@@ -169,7 +169,7 @@ export const RecipeForm = ({
         throw new Error(data.message || '获取食材数据失败');
       }
     } catch (error) {
-      console.error("获取食材失败", error);
+      // 获取食材失败
       setIngredientsError(error instanceof Error ? error.message : '获取食材数据失败');
     } finally {
       setIngredientsLoading(false);
@@ -206,7 +206,7 @@ export const RecipeForm = ({
           setDynamicCategories(categoriesMap);
         }
       } catch (error) {
-        console.error("获取分类失败", error);
+        // 获取分类失败
       }
     };
     fetchCategories();
@@ -1012,6 +1012,7 @@ export const RecipeForm = ({
                       width={16}
                       height={16}
                       className="w-4 h-4 object-contain"
+                      unoptimized={true}
                     />
                     <span>{t('servings')}</span>
                   </Label>
@@ -1051,6 +1052,7 @@ export const RecipeForm = ({
                       width={16}
                       height={16}
                       className="w-4 h-4 object-contain"
+                      unoptimized={true}
                     />
                     <span>{t('cookingTime')}</span>
                   </Label>
@@ -1061,7 +1063,7 @@ export const RecipeForm = ({
                     <SelectTrigger id="cookingTime" className="h-8 w-20 sm:w-24 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
                       <SelectValue placeholder={t('selectCookingTime')} />
                     </SelectTrigger>
-                    <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
+                    <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 z-50">
                       <SelectItem value="quick">{t('quick')}</SelectItem>
                       <SelectItem value="medium">{t('mediumTime')}</SelectItem>
                       <SelectItem value="long">{t('long')}</SelectItem>
@@ -1078,6 +1080,7 @@ export const RecipeForm = ({
                       width={16}
                       height={16}
                       className="w-4 h-4 object-contain"
+                      unoptimized={true}
                     />
                     <span>{t('difficulty')}</span>
                   </Label>
@@ -1088,7 +1091,7 @@ export const RecipeForm = ({
                     <SelectTrigger id="difficulty" className="h-8 w-20 sm:w-24 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
                       <SelectValue placeholder={t('selectDifficulty')} />
                     </SelectTrigger>
-                    <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
+                    <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 z-50">
                       <SelectItem value="easy">{t('easy')}</SelectItem>
                       <SelectItem value="medium">{t('mediumDifficulty')}</SelectItem>
                       <SelectItem value="hard">{t('hard')}</SelectItem>
@@ -1105,6 +1108,7 @@ export const RecipeForm = ({
                       width={16}
                       height={16}
                       className="w-4 h-4 object-contain"
+                      unoptimized={true}
                     />
                     <span>{t('cuisine')}</span>
                   </Label>
@@ -1115,7 +1119,7 @@ export const RecipeForm = ({
                     <SelectTrigger id="cuisine" className="h-8 w-20 sm:w-24 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
                       <SelectValue placeholder={t('selectCuisine')} />
                     </SelectTrigger>
-                    <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
+                    <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 z-50">
                       <SelectItem value="any">{t('anyCuisine')}</SelectItem>
                       {cuisinesLoading ? (
                         <SelectItem value="loading" disabled>{t('loadingCuisines')}</SelectItem>
@@ -1210,6 +1214,7 @@ export const RecipeForm = ({
                       width={16}
                       height={16}
                       className="w-4 h-4 object-contain"
+                      unoptimized={true}
                     />
                     <span>{t('servings')}</span>
                   </Label>
@@ -1249,6 +1254,7 @@ export const RecipeForm = ({
                       width={16}
                       height={16}
                       className="w-4 h-4 object-contain"
+                      unoptimized={true}
                     />
                     <span>{t('cookingTime')}</span>
                   </Label>
@@ -1259,7 +1265,7 @@ export const RecipeForm = ({
                     <SelectTrigger id="cookingTime" className="h-8 w-20 sm:w-24 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
                       <SelectValue placeholder={t('selectCookingTime')} />
                     </SelectTrigger>
-                    <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
+                    <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 z-50">
                       <SelectItem value="quick">{t('quick')}</SelectItem>
                       <SelectItem value="medium">{t('mediumTime')}</SelectItem>
                       <SelectItem value="long">{t('long')}</SelectItem>
@@ -1276,6 +1282,7 @@ export const RecipeForm = ({
                       width={16}
                       height={16}
                       className="w-4 h-4 object-contain"
+                      unoptimized={true}
                     />
                     <span>{t('difficulty')}</span>
                   </Label>
@@ -1286,7 +1293,7 @@ export const RecipeForm = ({
                     <SelectTrigger id="difficulty" className="h-8 w-20 sm:w-24 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
                       <SelectValue placeholder={t('selectDifficulty')} />
                     </SelectTrigger>
-                    <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
+                    <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 z-50">
                       <SelectItem value="easy">{t('easy')}</SelectItem>
                       <SelectItem value="medium">{t('mediumDifficulty')}</SelectItem>
                       <SelectItem value="hard">{t('hard')}</SelectItem>
@@ -1303,6 +1310,7 @@ export const RecipeForm = ({
                       width={16}
                       height={16}
                       className="w-4 h-4 object-contain"
+                      unoptimized={true}
                     />
                     <span>{t('cuisine')}</span>
                   </Label>
@@ -1313,7 +1321,7 @@ export const RecipeForm = ({
                     <SelectTrigger id="cuisine" className="h-8 w-20 sm:w-24 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
                       <SelectValue placeholder={t('selectCuisine')} />
                     </SelectTrigger>
-                    <SelectContent position="popper" sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
+                    <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 z-50">
                       <SelectItem value="any">{t('anyCuisine')}</SelectItem>
                       {cuisinesLoading ? (
                         <SelectItem value="loading" disabled>{t('loadingCuisines')}</SelectItem>

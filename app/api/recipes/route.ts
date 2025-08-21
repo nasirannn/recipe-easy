@@ -151,8 +151,7 @@ async function getDataFromDatabase(request: NextRequest) {
       }
     });
   } catch (error: any) {
-    console.error('❌ 数据库查询失败:', error);
-    console.error('❌ 错误堆栈:', error.stack);
+    // 数据库查询失败
     return NextResponse.json(
       { error: '数据库查询失败', details: error.message, stack: error.stack },
       { status: 500 }
@@ -165,7 +164,7 @@ export async function GET(request: NextRequest) {
     // 直接查询数据库
     return await getDataFromDatabase(request);
   } catch (error) {
-    console.error('❌ 获取食谱失败:', error);
+    // 获取食谱失败
     // 本地开发环境返回模拟数据
     const { searchParams } = new URL(request.url);
     const lang = searchParams.get('lang') || 'en';
@@ -213,7 +212,7 @@ export async function POST(request: NextRequest) {
     // 创建新菜谱的逻辑
     return NextResponse.json({ success: true, id: 'new-recipe-id' });
   } catch (error) {
-    console.error('❌ 创建食谱失败:', error);
+    // 创建食谱失败
     return NextResponse.json({ error: '创建食谱失败' }, { status: 500 });
   }
 }

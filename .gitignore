@@ -189,6 +189,22 @@ temp/
 .Trashes
 ehthumbs.db
 Thumbs.db
+.db
 
 # SQL
 .sql
+
+# Development environment files
+local-database.db
+local-schema.sql
+.dev.vars
+
+# Additional build outputs
+dist/
+.vercel/
+.wrangler/
+
+# Worker files
+worker/
+_worker.js/
+*.worker.js

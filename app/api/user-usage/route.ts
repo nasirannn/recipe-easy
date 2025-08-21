@@ -33,7 +33,7 @@ async function getSystemConfig(db: any, key: string, defaultValue: any): Promise
     
     return value;
   } catch (error) {
-    console.error(`Error getting system config ${key}:`, error);
+    // Error getting system config
     return defaultValue;
   }
 }
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     
     // 在本地开发环境中，如果没有数据库绑定，返回模拟数据
     if (!hasDb) {
-      console.log('Database not available in development environment, returning mock data');
+      // Database not available in development environment, returning mock data
       const mockCredits = isAdmin ? 999999 : 100;
       return NextResponse.json({
         success: true,
@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error fetching user usage:', error);
+    // Error fetching user usage
     return NextResponse.json(
       { success: false, error: 'Failed to fetch user usage' },
       { status: 500 }
@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
     
     // 在本地开发环境中，如果没有数据库绑定，返回模拟数据
     if (!hasDb) {
-      console.log('Database not available in development environment, returning mock data for POST');
+      // Database not available in development environment, returning mock data for POST
       const isAdmin = bodyIsAdmin === true;
       const mockCredits = isAdmin ? 999998 : 99; // 管理员消费1积分后剩余999998
       const mockTotalEarned = isAdmin ? 999999 : 100;
@@ -292,7 +292,7 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('API Error:', error);
+    // API Error
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     return NextResponse.json({ error: 'Failed to process request', details: errorMessage }, { status: 500 });
   }

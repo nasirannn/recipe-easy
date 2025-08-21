@@ -70,7 +70,7 @@ export default function MyRecipesPage() {
       setTotal(data.pagination?.total || 0);
       setHasLoaded(true);
     } catch (error) {
-      console.error('Failed to load recipes:', error);
+      // Failed to load recipes
       toast.error(t('loadError'));
     } finally {
       setLoading(false);
@@ -124,7 +124,7 @@ export default function MyRecipesPage() {
       toast.success(t('deleteSuccess'));
       await loadRecipes(true); // 强制重新加载
     } catch (error) {
-      console.error('Failed to delete recipe:', error);
+      // Failed to delete recipe
       toast.error(t('deleteError'));
     } finally {
       setDeleting(null);
@@ -343,6 +343,7 @@ export default function MyRecipesPage() {
                         alt={recipe.title}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        unoptimized={true}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
@@ -356,6 +357,7 @@ export default function MyRecipesPage() {
                           alt="Recipe placeholder background"
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          unoptimized={true}
                         />
                       </div>
                     )}

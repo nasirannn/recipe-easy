@@ -43,10 +43,10 @@ export const RecipesSection = () => {
         if (data.success) {
           setRecipes(data.results || []);
         } else {
-          console.error('Failed to fetch admin recipes:', data.error);
+          // Failed to fetch admin recipes
         }
       } catch (error) {
-        console.error('Error fetching admin recipes:', error);
+        // Error fetching admin recipes
       } finally {
         setIsLoading(false);
       }
@@ -180,6 +180,7 @@ export const RecipesSection = () => {
                       animation: isTransitioning ? 'fade-out 0.6s ease-in-out' : 'none',
                       zIndex: isTransitioning ? 5 : 10
                     }}
+                    unoptimized={true}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.onerror = null;
@@ -206,6 +207,7 @@ export const RecipesSection = () => {
                         animation: 'fade-in 0.6s ease-in-out',
                         zIndex: 10
                       }}
+                      unoptimized={true}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.onerror = null;

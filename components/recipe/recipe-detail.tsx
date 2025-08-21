@@ -40,7 +40,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
         const parsed = JSON.parse(data);
         return Array.isArray(parsed) ? parsed : [];
       } catch (e) {
-        console.error('Failed to parse JSON:', e);
+        // Failed to parse JSON
         return [];
       }
     }
@@ -60,7 +60,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
       setCopiedSection(type);
       setTimeout(() => setCopiedSection(null), 2000);
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      // Failed to copy text
     }
   };
 
@@ -73,7 +73,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
           url: window.location.href,
         });
       } catch (err) {
-        console.error('Error sharing:', err);
+        // Error sharing
       }
     } else {
       // Fallback: copy URL to clipboard
@@ -113,8 +113,6 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           {/* 左侧：图片和基本信息 */}
           <div className="lg:col-span-2 space-y-6">
-
-
             {/* 主图片 */}
             {/* 菜谱图片 - 只在有图片时显示 */}
             {recipe.imagePath && (
@@ -126,6 +124,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="object-cover"
                   priority
+                  unoptimized={true}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
@@ -143,6 +142,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
               <div className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
                 {recipe.description}
               </div>
+              
               
               {/* 标签 - 移到描述下面 */}
               {tags.length > 0 && (

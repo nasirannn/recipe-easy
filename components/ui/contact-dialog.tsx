@@ -57,7 +57,7 @@ export const ContactDialog = ({
       try {
         window.location.href = mailToLink;
       } catch (error) {
-        console.error('Failed to open email client:', error);
+        // Failed to open email client
       }
     }
     

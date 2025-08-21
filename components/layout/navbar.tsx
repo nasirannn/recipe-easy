@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, LogOut, User, Settings, BookOpen, Home, Search, Star, HelpCircle, ChevronRight } from "lucide-react";
+import { Menu, LogOut, User, Settings, BookOpen, Home, Search, Star, HelpCircle, ChevronRight, Compass } from "lucide-react";
 import React, { useState } from "react";
 import {
   DropdownMenu,
@@ -62,7 +62,7 @@ export const Navbar = () => {
 
   const routeList: RouteProps[] = [
     { href: `/${locale}`, label: t('home'), icon: <Home className="h-4 w-4" /> },
-    { href: `/${locale}/recipes`, label: t('explore'), icon: <Search className="h-4 w-4" /> },
+    { href: `/${locale}/recipes`, label: t('explore'), icon: <Compass className="h-4 w-4" /> },
     { href: `/${locale}#features`, label: t('features'), icon: <Star className="h-4 w-4" /> },
     { href: `/${locale}#faq`, label: t('faq'), icon: <HelpCircle className="h-4 w-4" /> },
   ];
@@ -72,7 +72,7 @@ export const Navbar = () => {
       await signOut();
       router.push(`/${locale}`);
     } catch (error) {
-      console.error('Logout error:', error);
+      // Logout error
     }
   };
 
@@ -82,7 +82,7 @@ export const Navbar = () => {
   };
 
   return (
-    <header className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="w-full border-b border-transparent bg-transparent backdrop-blur-sm">
       <div className="container flex h-14 items-center">
         <div className="mr-4 hidden md:flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">

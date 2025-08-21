@@ -1,10 +1,11 @@
 "use client";
-import { GridBackground } from "@/components/ui/grid-background";
+
 import { Button } from "@/components/ui/button";
 import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from "react";
-import { Rocket } from "lucide-react";
+import { Rocket, Compass } from "lucide-react";
 import { Recipe, RecipeFormData } from "@/lib/types";
 import { LanguageModel, ImageModel } from "@/lib/types";
 import { RecipeForm } from "@/components/ui/recipe-form";
@@ -22,6 +23,7 @@ import { toast } from "sonner";
 export const HeroSection = () => {
   const t = useTranslations('hero');
   const locale = useLocale();
+  const router = useRouter();
   const { user } = useAuth();
   const isAdmin = user?.user_metadata?.role === 'admin';
   const { canGenerate } = useUserUsage();
@@ -104,7 +106,7 @@ export const HeroSection = () => {
         setShowRecipe(true);
       }
     } catch (error) {
-      console.error('Regenerate recipe error:', error);
+      // Regenerate recipe error
     }
   }, [regenerateRecipe, locale]);
 
@@ -158,7 +160,7 @@ export const HeroSection = () => {
         (locale === 'zh' ? '图片重新生成失败，请稍后重试' : 'Failed to regenerate image, please try again');
       
       toast.error(errorMessage);
-      console.error('Regenerate image error:', error);
+      // Regenerate image error
     }
   };
 
@@ -191,7 +193,7 @@ export const HeroSection = () => {
         setShowRecipe(true);
       }
     } catch (error) {
-      console.error('Recipe generation failed:', error);
+      // Recipe generation failed
     }
   };
 
@@ -199,7 +201,7 @@ export const HeroSection = () => {
     try {
       await saveRecipe(recipe, formData.imageModel);
     } catch (error) {
-      console.error('Error saving recipe:', error);
+      // Error saving recipe
     }
   };
 
@@ -226,59 +228,70 @@ export const HeroSection = () => {
   return (
     <section id="hero" className="w-full bg-primary-5">
       {/* 第一个div: Hero Intro Section */}
-      <div className="w-full pb-8 lg:pb-0">
-        <GridBackground className="absolute inset-0 z-[-1] opacity-50" />
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center lg:items-start gap-8 lg:gap-12">
-          {/* 左侧内容 */}
-          <div className="text-center lg:text-left space-y-8 flex-1 max-w-2xl lg:max-w-none pt-20">
+      <div className="w-full pb-8 lg:pb-0 h-[calc(100vh-3.5rem)] flex items-center relative">
+        {/* 背景图片容器 */}
+        <div 
+          className="absolute inset-0 z-[-1] bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/images/hero-background.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+        {/* 模糊遮罩 */}
+        <div className="absolute inset-0 z-[-1] bg-white/10 backdrop-blur-sm" />
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center w-full">
+          {/* 居中内容 */}
+          <div className="space-y-12 max-w-3xl">
             {/* 标题和描述 */}
-            <h1 className="text-5xl md:text-7xl font-bold">
+            <h1 className="mx-auto mb-6 mt-8 max-w-3xl text-balance text-7xl font-bold lg:mb-10 lg:text-7xl text-white drop-shadow-lg">
               {locale === 'zh' ? (
                 <>
                   <span>用任意食材，</span>
                   <br />
                   <span>生成</span>
-                  <span className="text-transparent bg-gradient-to-r from-purple-500 via-pink-500 to-red-400 bg-clip-text">AI食谱</span>
+                  <span className="text-transparent bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 bg-clip-text drop-shadow-none font-extrabold">AI食谱</span>
                 </>
               ) : (
                 <>
-                  <span className="text-transparent bg-gradient-to-r from-purple-500 via-pink-500 to-red-400 bg-clip-text">AI recipes</span>
+                  <span className="text-transparent bg-gradient-to-r from-orange-400 via-amber-500 to-orange-600 bg-clip-text drop-shadow-none font-extrabold">Free Online AI</span>
+                  <span className="text-transparent bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 bg-clip-text drop-shadow-none font-extrabold"> Recipes Generator</span>
                   <br />
-                  <span className="text-transparent bg-gradient-to-r from-red-500 via-orange-500 to-orange-400 bg-clip-text">generator</span>
-                  <span> from any ingredients</span>
+                  <span className="text-white"> From Any Ingredients</span>
                 </>
               )}
             </h1>
-            <p className="text-xl text-gray-400 dark:text-gray-300 max-w-2xl lg:max-w-none leading-relaxed">
+            <p className="m mx-auto max-w-3xl text-white/90 lg:text-xl drop-shadow-md mb-8">
               {t('description')}
             </p>
             {/* 特色信息 Badge */}
-            <div className="flex flex-wrap gap-2 items-center justify-center lg:justify-start mt-4">
-              <div className="inline-flex items-center px-3 py-1.5 bg-linear-to-r from-green-50 to-emerald-50 dark:from-[--color-green-900-20] dark:to-[--color-emerald-900-20] border border-green-200 dark:border-green-700 rounded-full text-xs font-medium text-green-700 dark:text-green-300">
+            <div className="flex flex-wrap gap-2 items-center justify-center mt-8 mb-8">
+              <div className="inline-flex items-center px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-xs font-medium text-white drop-shadow-sm">
                 {t('badgeFreeRecipeCreation')}
               </div>
-              <div className="inline-flex items-center px-3 py-1.5 bg-linear-to-r from-blue-50 to-indigo-50 dark:from-[--color-blue-900-20] dark:to-[--color-indigo-900-20] border border-blue-200 dark:border-blue-700 rounded-full text-xs font-medium text-blue-700 dark:text-blue-300">
+              <div className="inline-flex items-center px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-xs font-medium text-white drop-shadow-sm">
                 {t('badgeRegisterForImages')}
               </div>
-              <div className="inline-flex items-center px-3 py-1.5 bg-linear-to-r from-purple-50 to-violet-50 dark:from-[--color-purple-900-20] dark:to-[--color-violet-900-20] border border-purple-200 dark:border-purple-700 rounded-full text-xs font-medium text-purple-700 dark:text-purple-300">
+              <div className="inline-flex items-center px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-xs font-medium text-white drop-shadow-sm">
                 {t('badgeStartWithCredits')}
               </div>
-              <div className="inline-flex items-center px-3 py-1.5 bg-linear-to-r from-orange-50 to-amber-50 dark:from-[--color-orange-900-20] dark:to-[--color-amber-900-20] border border-orange-200 dark:border-orange-700 rounded-full text-xs font-medium text-orange-700 dark:text-orange-300">
+              <div className="inline-flex items-center px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-xs font-medium text-white drop-shadow-sm">
                 {t('badgeImageCostPerCredit')}
               </div>
             </div>
             {/* 按钮组 */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center lg:items-start mt-12">
+            <div className="mt-12 flex flex-col justify-center gap-4 sm:flex-row">
               <Button
                 size="lg"
-                className="rounded-full px-6 cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 h-11 rounded-full px-8 w-full sm:w-auto"
                 onClick={() => {
                   const recipeFormElement = document.getElementById('recipe-form-section');
                   if (recipeFormElement) {
                     const elementTop = recipeFormElement.offsetTop;
-                    const headerHeight = 120; // 导航栏高度
+                    // 滚动到第一屏完全消失的位置，即recipe-form-section的顶部减去一个小的偏移量
                     window.scrollTo({
-                      top: elementTop - headerHeight,
+                      top: elementTop, // 减去20px确保第一屏完全消失
                       behavior: 'smooth'
                     });
                   }
@@ -287,25 +300,24 @@ export const HeroSection = () => {
                 <Rocket className="w-4 h-4 mr-2" />
                 {t('tryNow')}
               </Button>
+              <Button
+                size="lg"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-black/40 text-white hover:bg-black/60 h-11 rounded-full px-8 w-full sm:w-auto backdrop-blur-md shadow-lg"
+                onClick={() => {
+                  // 跳转到导航栏中 Explore 对应的页面
+                  router.push(`/${locale}/recipes`);
+                }}
+              >
+                <Compass className="w-4 h-4 mr-2" />
+                {locale === 'zh' ? '探索食谱' : 'Explore Recipes'}
+              </Button>
             </div>
-          </div>
-          {/* 右侧视频区域 */}
-          <div className="shrink-0 w-full lg:w-[500px]" style={{ position: 'relative', paddingBottom: 'calc(52.31292517006803% + 41px)', height: 0 }}>
-            <iframe
-              src="https://demo.arcade.software/S6h2tXiDTTN888NDMfSG?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
-              title=""
-              frameBorder="0"
-              loading="lazy"
-              allowFullScreen
-              allow="clipboard-write"
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', colorScheme: 'light' }}
-            />
           </div>
         </div>
       </div>
       {/* 第二个div: Recipe Form Section */}
-      <div id="recipe-form-section" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-8">
-        <div className="relative w-full bg-gradient-to-br from-orange-50/60 via-amber-50/40 to-white/90 dark:from-orange-900/40 dark:via-amber-900/60 dark:to-gray-900/90 backdrop-blur-sm rounded-3xl md:p-12 shadow-xl shadow-orange-500/10 dark:shadow-orange-600/20 overflow-hidden">
+      <div id="recipe-form-section" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-16 pb-16">
+        <div className="relative w-full">
           {/* 装饰性背景元素 */}
           <div className="absolute -top-4 -left-4 w-40 h-40 bg-gradient-to-br from-orange-400/20 to-amber-400/15 rounded-full blur-2xl"></div>
           <div className="absolute top-0 left-1/4 w-24 h-24 bg-gradient-to-br from-orange-300/10 to-amber-300/8 rounded-full blur-xl"></div>

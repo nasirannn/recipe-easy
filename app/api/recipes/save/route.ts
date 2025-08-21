@@ -51,7 +51,7 @@ function normalizeRecipeForDatabase(recipe: any) {
 // 保存菜谱到数据库
 async function saveRecipeToDatabase(request: NextRequest) {
   try {
-    console.log('🗄️ 保存菜谱到数据库');
+    // 保存菜谱到数据库
     
     // 获取Cloudflare环境
     const { env } = await getCloudflareContext();
@@ -134,7 +134,7 @@ async function saveRecipeToDatabase(request: NextRequest) {
               });
             }
           } catch (error) {
-            console.error(`Failed to update image for recipe ${recipeData.id}:`, error);
+            // Failed to update image for recipe
           }
         }
         
@@ -171,7 +171,7 @@ async function saveRecipeToDatabase(request: NextRequest) {
       // 如果菜谱有图片且有R2存储桶，保存图片
       if (recipeData.imagePath && imagesBucket) {
         try {
-          console.log(`📸 处理图片: ${recipeData.imagePath}`);
+          // 处理图片
           
           // 下载图片
           const imageData = await downloadImageFromUrl(recipeData.imagePath);
@@ -194,10 +194,10 @@ async function saveRecipeToDatabase(request: NextRequest) {
                imageModel: recipeData.imageModel || 'unknown'
              });
             
-            console.log(`✅ 图片保存成功: ${path}`);
+            // 图片保存成功
           }
         } catch (error) {
-          console.error(`❌ 图片保存失败 ${recipeData.id}:`, error);
+          // 图片保存失败
           // 图片保存失败不影响菜谱保存
         }
       }
@@ -206,7 +206,7 @@ async function saveRecipeToDatabase(request: NextRequest) {
       savedRecipes.push(normalizeRecipeForDatabase(recipeData));
     }
 
-    console.log(`✅ 成功保存 ${savedRecipes.length} 个菜谱`);
+    // 成功保存菜谱
 
     return NextResponse.json({
       success: true,
@@ -217,7 +217,7 @@ async function saveRecipeToDatabase(request: NextRequest) {
     });
     
   } catch (error) {
-    console.error('❌ 保存菜谱失败:', error);
+    // 保存菜谱失败
     return NextResponse.json(
       { 
         success: false, 
@@ -234,12 +234,12 @@ async function saveRecipeToDatabase(request: NextRequest) {
  * 保存菜谱到数据库
  */
 export async function POST(req: NextRequest) {
-  console.log('💾 保存菜谱API调用');
+  // 保存菜谱API调用
   
   try {
     return await saveRecipeToDatabase(req);
   } catch (error) {
-    console.error('❌ 保存菜谱API错误:', error);
+    // 保存菜谱API错误
     return NextResponse.json(
       { 
         success: false, 

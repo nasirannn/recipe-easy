@@ -10,7 +10,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 // 直接从数据库获取数据
 async function getDataFromDatabase(request: NextRequest) {
   try {
-    console.log('🗄️ 直接查询数据库');
+    // 直接查询数据库
     
     const { env } = await getCloudflareContext();
     const db = env.RECIPE_EASY_DB;
@@ -52,7 +52,7 @@ async function getDataFromDatabase(request: NextRequest) {
     
     return NextResponse.json({ error: '不支持的请求方法' }, { status: 405 });
   } catch (error) {
-    console.error('❌ 数据库查询失败:', error);
+    // 数据库查询失败
     return NextResponse.json(
       { error: '数据库查询失败' },
       { status: 500 }
@@ -61,13 +61,13 @@ async function getDataFromDatabase(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  console.log('🍜 获取菜系列表');
+  // 获取菜系列表
   
   try {
     // 直接查询数据库
     return await getDataFromDatabase(request);
   } catch (error) {
-    console.error('❌ 获取菜系失败:', error);
+    // 获取菜系失败
     return NextResponse.json(
       { error: '数据库服务不可用' },
       { status: 503 }

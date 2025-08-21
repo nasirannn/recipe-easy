@@ -142,7 +142,7 @@ export async function deleteImageFromR2(
     }
     return false;
   } catch (error) {
-    console.error(`Failed to delete image ${imagePath}:`, error);
+    // Failed to delete image
     return false;
   }
 }

@@ -42,6 +42,9 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  other: {
+    'google-adsense-account': 'ca-pub-4929701767055366',
+  },
 };
 
 export default function RootLayout({
@@ -96,6 +99,14 @@ export default function RootLayout({
             }}
           />
         )}
+        
+        {/* Google AdSense */}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4929701767055366"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         
         {/* 结构化数据 */}
         <Script

@@ -23,7 +23,7 @@
     "updateSuccess": "Display name updated successfully"
   },
   "hero": {
-    "title": "AI recipes generator from any ingredients",
+    "title": "AI Recipes Generator From Any Ingredients",
     "description": "Simply select or enter ingredients, and our AI will create random, creative, and easy-to-follow recipes for you. No more \"what can i make with these ingredients\" stress.",
     "tryNow": "Try Now",
     "badgeFreeRecipeCreation": "Free Recipe Creation",
@@ -50,7 +50,7 @@
   "recipeForm": {
     "title": "AI Recipe Generator",
     "subtitle": "Select ingredients, AI creates delicious recipes for you",
-    "mainTitle": "No Prompts Needed, Just Select Ingredients 🎉",
+    "mainTitle": "🎉 No Prompts Needed, Just Select Ingredients",
     "recipeMaker": "Recipe Maker",
     "cuisine": "Cuisine",
     "cuisinePlaceholder": "Select cuisine style",

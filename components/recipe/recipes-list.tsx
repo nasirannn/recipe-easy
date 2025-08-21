@@ -92,10 +92,10 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
           
           setHasMore(transformedRecipes.length === 20);
         } else {
-          console.error('Failed to fetch recipes:', data.error);
+          // Failed to fetch recipes
         }
       } catch (error) {
-        console.error('Error fetching recipes:', error);
+        // Error fetching recipes
       } finally {
         setIsLoading(false);
       }
@@ -155,11 +155,12 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    unoptimized={true}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.onerror = null;
                       target.src = '/images/recipe-placeholder-bg.png';
-                      target.className = 'object-cover group-hover:scale-105 transition-transform duration-300';
+                      target.className = 'object-optimized';
                     }}
                   />
 

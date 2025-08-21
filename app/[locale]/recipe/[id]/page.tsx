@@ -40,7 +40,7 @@ export async function generateMetadata({
       type: 'article'
     });
   } catch (error) {
-    console.error('Error generating metadata:', error);
+    // Error generating metadata
     return generateSeoMetadata({
       title: 'Recipe - RecipeEasy',
       description: 'Discover delicious recipes on RecipeEasy.',
@@ -60,20 +60,20 @@ async function getRecipe(id: string, locale: string) {
     });
     
     if (!response.ok) {
-      console.error(`Failed to fetch recipe: ${response.status} ${response.statusText}`);
+      // Failed to fetch recipe
       return null;
     }
     
     const data = await response.json() as any;
     
     if (!data.success) {
-      console.error('Recipe API returned error:', data.error);
+      // Recipe API returned error
       return null;
     }
     
     return data.recipe;
   } catch (error) {
-    console.error('Error fetching recipe:', error);
+    // Error fetching recipe
     return null;
   }
 }

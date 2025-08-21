@@ -6,18 +6,10 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get('code')
   const error = requestUrl.searchParams.get('error')
 
-  console.log('Auth callback received:', {
-    code: !!code,
-    error,
-    url: requestUrl.toString(),
-    origin: requestUrl.origin,
-    pathname: requestUrl.pathname,
-    search: requestUrl.search,
-    hash: requestUrl.hash
-  })
+  // Auth callback received
 
   if (error) {
-    console.error('OAuth error:', error)
+    // OAuth error
     // 重定向到首页，不带任何fragment
     return NextResponse.redirect(new URL('/', requestUrl.origin))
   }
@@ -26,17 +18,17 @@ export async function GET(request: NextRequest) {
     try {
       const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
       if (exchangeError) {
-        console.error('Exchange error:', exchangeError)
+        // Exchange error
         return NextResponse.redirect(new URL('/?error=auth_failed', requestUrl.origin))
       }
     } catch (err) {
-      console.error('Unexpected error:', err)
+      // Unexpected error
       return NextResponse.redirect(new URL('/?error=unexpected', requestUrl.origin))
     }
   }
 
   // 确保重定向到干净的URL，不带fragment
   const redirectUrl = new URL('/', requestUrl.origin)
-  console.log('Redirecting to:', redirectUrl.toString())
+  // Redirecting to home
   return NextResponse.redirect(redirectUrl)
 }
