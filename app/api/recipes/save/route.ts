@@ -52,13 +52,9 @@ function normalizeRecipeForDatabase(recipe: any) {
 // 异步翻译菜谱（不等待结果）
 async function triggerRecipeTranslation(recipe: any, targetLanguage: string, db: any, env: any): Promise<void> {
   try {
-    console.log(`🔄 Starting translation for recipe ${recipe.id} to ${targetLanguage}`);
-    
     // 使用翻译服务进行翻译
     const { translateRecipeAsync } = await import('@/lib/services/translation');
     await translateRecipeAsync(recipe, targetLanguage, db, env);
-    
-    console.log(`✅ Translation completed for recipe ${recipe.id}`);
   } catch (error) {
     console.error(`❌ Recipe translation failed for ${recipe.id} to ${targetLanguage}:`, error);
     // 不抛出错误，避免影响主要业务逻辑
@@ -229,20 +225,9 @@ async function saveRecipeToDatabase(request: NextRequest) {
     let translationPromise: Promise<void> | null = null;
     
     if (newlySavedRecipes.length > 0) {
-      console.log(`🔄 Starting translation for ${newlySavedRecipes.length} newly saved recipes...`);
-      console.log(`📝 Newly saved recipes:`, newlySavedRecipes.map(r => ({ id: r.id, title: r.title })));
-      
-      // 添加环境变量检查
-      console.log(`🔑 Environment check:`);
-      console.log(`   - QWENPLUS_API_KEY: ${(env as any)?.QWENPLUS_API_KEY ? 'Configured' : 'NOT CONFIGURED'}`);
-      console.log(`   - NODE_ENV: ${process.env.NODE_ENV || 'undefined'}`);
-      console.log(`   - Request language: ${language || 'undefined'}`);
-      
       // 创建翻译 Promise
       translationPromise = (async () => {
         try {
-          console.log(`🔄 Processing translation for ${newlySavedRecipes.length} recipes...`);
-          
           // 为每个新保存的菜谱触发翻译
           const translationPromises = [];
           
@@ -250,13 +235,6 @@ async function saveRecipeToDatabase(request: NextRequest) {
             // 使用传递的语言参数，如果没有则默认为英文
             const sourceLanguage = language || 'en';
             const targetLanguage = sourceLanguage === 'zh' ? 'en' : 'zh';
-            
-            console.log(`🔄 Translating recipe ${savedRecipe.id}:`);
-            console.log(`   - Title: "${savedRecipe.title}"`);
-            console.log(`   - Source language: ${sourceLanguage}`);
-            console.log(`   - Target language: ${targetLanguage}`);
-            console.log(`   - Ingredients count: ${(savedRecipe.ingredients || []).length}`);
-            console.log(`   - Instructions count: ${(savedRecipe.instructions || []).length}`);
             
             // 创建翻译 Promise
             const translationPromise = triggerRecipeTranslation(
@@ -277,9 +255,7 @@ async function saveRecipeToDatabase(request: NextRequest) {
               targetLanguage,
               db,
               env
-            ).then(() => {
-              console.log(`✅ Translation completed for recipe ${savedRecipe.id}`);
-            }).catch((error) => {
+            ).catch((error) => {
               console.error(`❌ Translation failed for recipe ${savedRecipe.id}:`, error);
               // 添加更详细的错误信息
               if (error instanceof Error) {
@@ -292,27 +268,21 @@ async function saveRecipeToDatabase(request: NextRequest) {
           }
           
           // 等待所有翻译完成
-          console.log(`⏳ Waiting for ${translationPromises.length} translations to complete...`);
           const results = await Promise.allSettled(translationPromises);
           
           // 统计翻译结果
           const succeeded = results.filter(r => r.status === 'fulfilled').length;
           const failed = results.filter(r => r.status === 'rejected').length;
-          console.log(`📊 Translation results: ${succeeded} succeeded, ${failed} failed`);
           
           if (failed > 0) {
             console.error(`❌ Failed translations:`, results.filter(r => r.status === 'rejected').map(r => r.reason));
           }
-          
-          console.log(`✅ All translations processed for ${newlySavedRecipes.length} recipes`);
           
         } catch (error) {
           console.error('Translation processing failed:', error);
           // 翻译失败不影响保存流程
         }
       })();
-    } else {
-      console.log(`ℹ️ No newly saved recipes to translate`);
     }
 
     // 准备响应
@@ -328,7 +298,7 @@ async function saveRecipeToDatabase(request: NextRequest) {
     if (translationPromise && ctx?.waitUntil) {
       ctx.waitUntil(translationPromise);
     } else if (translationPromise) {
-      console.log('⚠️ waitUntil not available, translation may be interrupted');
+      // waitUntil not available, translation may be interrupted
     }
 
     return response;

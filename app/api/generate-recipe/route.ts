@@ -19,7 +19,6 @@ async function recordModelUsage(
     const context = getCloudflareContext();
     const db = context?.env?.RECIPE_EASY_DB;
     if (!db) {
-      console.log('Database not available, skipping model usage recording');
       return;
     }
     const recordId = crypto.randomUUID();
@@ -37,7 +36,7 @@ async function recordModelUsage(
       userId
     ).run();
     
-    console.log(`Model usage recorded: ${modelName} - ${recordId} for user ${userId}`);
+
   } catch (error) {
     console.error('Failed to record model usage:', error);
     // 不要因为记录失败而影响主要功能
