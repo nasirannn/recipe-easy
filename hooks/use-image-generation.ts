@@ -8,6 +8,7 @@ import {
   UseImageGenerationReturn
 } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
+import { useUserUsage } from './use-user-usage';
 
 /**
  * 图片生成相关的自定义Hook
@@ -20,6 +21,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
   const locale = useLocale();
   const { user } = useAuth();
   const isAdmin = user?.user_metadata?.role === 'admin';
+  const { updateCreditsLocally } = useUserUsage();
 
   /**
    * 设置单个食谱的图片加载状态
@@ -75,6 +77,11 @@ export function useImageGeneration(): UseImageGenerationReturn {
         throw new Error(data.error || '图片生成失败');
       }
 
+      // 图片生成成功，立即更新前端积分状态（仅非管理员用户）
+      if (!isAdmin) {
+        updateCreditsLocally(1);
+      }
+
       // 调用成功回调
       onSuccess(data.imageUrl);
     } catch (error) {
@@ -84,7 +91,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
       setImageLoadingState(recipeId, false);
       setImageGenerating(false);
     }
-  }, [locale, user?.id, isAdmin, setImageLoadingState]);
+  }, [locale, user?.id, isAdmin, setImageLoadingState, updateCreditsLocally]);
 
   /**
    * 生成食谱图片

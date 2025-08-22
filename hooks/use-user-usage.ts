@@ -106,7 +106,7 @@ export function useUserUsage() {
         throw new Error(`Request failed with status ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const data = await response.json() as any;
 
       if (data.success) {
         setCredits(data.credits);
@@ -148,7 +148,7 @@ export function useUserUsage() {
         }),
       });
 
-      const data = await response.json();
+      const data = await response.json() as any;
 
       if (data.success) {
         setCredits(data.credits);

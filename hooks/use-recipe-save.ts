@@ -19,6 +19,7 @@ export const useRecipeSave = () => {
         body: JSON.stringify({
           recipe,
           userId: userId || user?.id,
+          language: locale, // 传递当前语言
         }),
       });
 

@@ -79,6 +79,24 @@ export const HeroSection = () => {
   const [activeTab, setActiveTab] = useState<'recipe-maker' | 'meal-planner'>('recipe-maker');
   const [mealPlannerText, setMealPlannerText] = useState('');
 
+  // 监听loading状态变化，当loading结束且有recipe时，自动滚动到recipe-display顶部
+  useEffect(() => {
+    // 当loading从true变为false，且有recipe数据时，滚动到recipe-display
+    if (!loading && recipes.length > 0 && showRecipe) {
+      const timer = setTimeout(() => {
+        const recipeDisplayContainer = document.querySelector('.recipe-display-container');
+        if (recipeDisplayContainer) {
+          recipeDisplayContainer.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }
+      }, 200); // 稍微增加延迟，确保RecipeDisplay完全渲染
+
+      return () => clearTimeout(timer);
+    }
+  }, [loading, recipes.length, showRecipe]); // 监听loading状态、recipes数量和showRecipe状态
+
   // 监听重新生成菜谱事件
   const handleRegenerateRecipe = useCallback(async (event: CustomEvent) => {
     const { ingredients, recipe } = event.detail;
@@ -88,6 +106,17 @@ export const HeroSection = () => {
       ...prev,
       ingredients: ingredients
     }));
+    
+    // 滚动到loading动画位置
+    setTimeout(() => {
+      const loadingContainer = document.getElementById('loading-animation-container');
+      if (loadingContainer) {
+        loadingContainer.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }
+    }, 100);
     
     try {
       const generatedRecipes = await regenerateRecipe(ingredients, recipe, {
@@ -199,32 +228,20 @@ export const HeroSection = () => {
 
   const handleSaveRecipe = async (recipe: Recipe) => {
     try {
-      await saveRecipe(recipe, formData.imageModel);
+      await saveRecipe(recipe, user?.id);
+      // 显示保存成功提示
+      toast.success(
+        locale === 'zh' 
+          ? '菜谱保存成功！' 
+          : 'Recipe saved successfully!'
+      );
     } catch (error) {
       // Error saving recipe
+      const errorMessage = error instanceof Error ? error.message : 
+        (locale === 'zh' ? '保存菜谱失败，请稍后重试' : 'Failed to save recipe, please try again');
+      toast.error(errorMessage);
     }
   };
-
-  // 新增：处理tab切换
-  const handleTabChange = (tab: 'recipe-maker' | 'meal-planner') => {
-    setActiveTab(tab);
-  };
-
-  // 新增：处理meal planner文本变更
-  const handleMealPlannerTextChange = (text: string) => {
-    setMealPlannerText(text);
-  };
-
-  // 新增：处理meal planner清空
-  const handleMealPlannerClear = () => {
-    setMealPlannerText('');
-  };
-
-  // 新增：处理meal planner提交
-  const handleMealPlannerSubmit = () => {
-    // 这里可以添加实际的提交逻辑
-  };
-
   return (
     <section id="hero" className="w-full bg-primary-5">
       {/* 第一个div: Hero Intro Section */}
@@ -338,11 +355,7 @@ export const HeroSection = () => {
               setShowRecipe={setShowRecipe}
               // 新增：tab相关props
               activeTab={activeTab}
-              onTabChange={handleTabChange}
               mealPlannerText={mealPlannerText}
-              onMealPlannerTextChange={handleMealPlannerTextChange}
-              onMealPlannerClear={handleMealPlannerClear}
-              onMealPlannerSubmit={handleMealPlannerSubmit}
             />
           </div>
 

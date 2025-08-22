@@ -50,11 +50,11 @@ export function useRecipeGeneration(): UseRecipeGenerationReturn {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json() as any;
         throw new Error(errorData.error || '食谱生成失败');
       }
 
-      const data = await response.json();
+      const data = await response.json() as any;
       // API返回格式: { recipes: [...] }
       const generatedRecipes = data.recipes || [];
       

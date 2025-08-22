@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateUserId } from '@/lib/utils/validation';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 // 检查是否有数据库绑定
 function hasDatabaseBinding(): boolean {
   try {
-    return typeof process.env.RECIPE_EASY_DB !== 'undefined' || 
-           typeof (globalThis as any).RECIPE_EASY_DB !== 'undefined';
+    const context = getCloudflareContext();
+    return !!context?.env?.RECIPE_EASY_DB;
   } catch {
     return false;
   }
@@ -75,7 +76,8 @@ export async function GET(request: NextRequest) {
     }
 
     // 获取数据库实例
-    const db = (globalThis as any).RECIPE_EASY_DB;
+    const context = getCloudflareContext();
+    const db = context?.env?.RECIPE_EASY_DB;
     if (!db) {
       throw new Error('数据库绑定不可用');
     }
@@ -184,7 +186,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const db = (globalThis as any).RECIPE_EASY_DB;
+    const context = getCloudflareContext();
+    const db = context?.env?.RECIPE_EASY_DB;
     if (!db) {
       throw new Error('数据库绑定不可用');
     }
@@ -227,10 +230,10 @@ export async function POST(request: NextRequest) {
       // 记录交易
       const transactionId = crypto.randomUUID();
       const transaction = await db.prepare(`
-        INSERT INTO credit_transactions (id, user_id, type, amount, reason, description, created_at)
-        VALUES (?, ?, 'spend', ?, 'generation', ?, DATETIME('now'))
+        INSERT INTO credit_transactions (id, user_id, type, amount, created_at)
+        VALUES (?, ?, 'spend', ?, DATETIME('now'))
         RETURNING *
-      `).bind(transactionId, userId, generationCost, description || `Generated a recipe for ${generationCost} credits.`).first();
+      `).bind(transactionId, userId, generationCost).first();
 
       return NextResponse.json({
         success: true,
@@ -274,10 +277,10 @@ export async function POST(request: NextRequest) {
       // 记录交易
       const transactionId = crypto.randomUUID();
       const transaction = await db.prepare(`
-        INSERT INTO credit_transactions (id, user_id, type, amount, reason, description, created_at)
-        VALUES (?, ?, 'earn', ?, 'earned', ?, DATETIME('now'))
+        INSERT INTO credit_transactions (id, user_id, type, amount, created_at)
+        VALUES (?, ?, 'earn', ?, DATETIME('now'))
         RETURNING *
-      `).bind(transactionId, userId, earnAmount, description || `Earned ${earnAmount} credits.`).first();
+      `).bind(transactionId, userId, earnAmount).first();
 
       return NextResponse.json({
         success: true,

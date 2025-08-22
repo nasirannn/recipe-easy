@@ -3,13 +3,45 @@ import OpenAI from 'openai';
 import { SYSTEM_PROMPTS, USER_PROMPT_TEMPLATES } from '@/lib/prompts';
 import { getLanguageConfig } from '@/lib/config';
 import { generateRecipeId } from '@/lib/utils/id-generator';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 // 强制动态渲染
 
-// 记录模型使用情况的函数（已禁用，Worker已删除）
-async function recordModelUsage(modelName: string, modelResponseId: string, requestDetails: string) {
-  // Worker已删除，模型使用记录功能暂时禁用
-
+// 记录模型使用情况的函数
+async function recordModelUsage(
+  modelName: string, 
+  modelResponseId: string, 
+  userId: string,
+  transactionId?: string
+) {
+  try {
+    // 检查是否有数据库绑定
+    const context = getCloudflareContext();
+    const db = context?.env?.RECIPE_EASY_DB;
+    if (!db) {
+      console.log('Database not available, skipping model usage recording');
+      return;
+    }
+    const recordId = crypto.randomUUID();
+    
+    const stmt = db.prepare(`
+      INSERT INTO model_usage_records 
+      (id, model_name, model_type, user_id, created_at) 
+      VALUES (?, ?, ?, ?, datetime('now'))
+    `);
+    
+    await stmt.bind(
+      recordId,
+      modelName,
+      'language',
+      userId
+    ).run();
+    
+    console.log(`Model usage recorded: ${modelName} - ${recordId} for user ${userId}`);
+  } catch (error) {
+    console.error('Failed to record model usage:', error);
+    // 不要因为记录失败而影响主要功能
+  }
 }
 
 // 提取公共的数据转换函数
@@ -34,6 +66,8 @@ function transformRecipeData(recipe: any, finalLanguageModel: string, language: 
   };
 }
 
+
+
 export async function POST(request: NextRequest) {
   let ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel, userId, finalLanguageModel;
   const isAdmin = false; // 暂时禁用管理员功能
@@ -56,6 +90,8 @@ export async function POST(request: NextRequest) {
     if (!ingredients || ingredients.length < 2) {
       return NextResponse.json({ error: '至少需要2种食材' }, { status: 400 });
     }
+
+
 
     // 获取基于语言的模型配置
     const modelConfig = getLanguageConfig(language || 'en');
@@ -155,7 +191,7 @@ export async function POST(request: NextRequest) {
       await recordModelUsage(
         finalLanguageModel,
         prediction.id,
-        userPrompt
+        userId || 'anonymous'
       );
 
       // 解析 output
@@ -219,7 +255,7 @@ export async function POST(request: NextRequest) {
     await recordModelUsage(
       finalLanguageModel,
       response.id,
-      userPrompt
+      userId || 'anonymous'
     );
 
     // 解析返回的JSON

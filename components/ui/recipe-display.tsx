@@ -97,7 +97,7 @@ export const RecipeDisplay = ({ recipes, selectedIngredients, imageLoadingStates
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen recipe-display-container">
       {/* 虚线分割线 */}
       <div className="w-full border-t-2 border-dashed border-gray-300 dark:border-gray-600 mb-4"></div>
       

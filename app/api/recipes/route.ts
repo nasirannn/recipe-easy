@@ -70,7 +70,9 @@ async function getDataFromDatabase(request: NextRequest) {
           c.name as cuisine_name, c.slug as cuisine_slug, c.id as cuisine_id,
           ri.title as title_zh, ri.description as description_zh,
           ri.ingredients as ingredients_zh, ri.seasoning as seasoning_zh,
-          ri.instructions as instructions_zh, ri.chef_tips as chef_tips_zh
+          ri.instructions as instructions_zh, ri.chef_tips as chef_tips_zh,
+          ri.tags as tags_zh, ri.difficulty as difficulty_zh,
+          r.tags
         FROM recipes r
         LEFT JOIN cuisines c ON r.cuisine_id = c.id
         LEFT JOIN recipes_i18n ri ON r.id = ri.recipe_id AND ri.language_code = 'zh'
@@ -153,6 +155,11 @@ async function getDataFromDatabase(request: NextRequest) {
         lang === 'en' && recipe.chef_tips_en ?
         JSON.parse(recipe.chef_tips_en) :
         JSON.parse(recipe.chef_tips || '[]'),
+      tags: lang === 'zh' && recipe.tags_zh ? 
+        JSON.parse(recipe.tags_zh) : 
+        lang === 'en' && recipe.tags_en ?
+        JSON.parse(recipe.tags_en) :
+        JSON.parse(recipe.tags || '[]'),
       createdAt: recipe.created_at,
       updatedAt: recipe.updated_at,
       cuisine: recipe.cuisine_name ? {

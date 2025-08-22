@@ -21,7 +21,7 @@ export async function GET(
 ) {
   try {
     const { searchParams } = new URL(request.url);
-    const language = searchParams.get('lang') || 'en';
+    const language = searchParams.get('locale') || searchParams.get('lang') || 'en';
     const { id } = await params;
 
     if (!id) {
@@ -64,6 +64,7 @@ export async function GET(
               ri.title as title_zh, ri.description as description_zh,
               ri.ingredients as ingredients_zh, ri.seasoning as seasoning_zh,
               ri.instructions as instructions_zh, ri.chef_tips as chef_tips_zh,
+              ri.tags as tags_zh, ri.difficulty as difficulty_zh,
               r.tags
             FROM recipes r
             LEFT JOIN recipes_i18n ri ON r.id = ri.recipe_id AND ri.language_code = 'zh'
@@ -112,6 +113,7 @@ export async function GET(
             ...recipe,
             title: recipe.title_en || recipe.title,
             description: recipe.description_en || recipe.description,
+            cookingTime: recipe.cooking_time || recipe.cookingTime, // 确保正确映射
             ingredients: recipe.ingredients_en ? JSON.parse(recipe.ingredients_en) : JSON.parse(recipe.ingredients || '[]'),
             seasoning: recipe.seasoning_en ? JSON.parse(recipe.seasoning_en) : JSON.parse(recipe.seasoning || '[]'),
             instructions: recipe.instructions_en ? JSON.parse(recipe.instructions_en) : JSON.parse(recipe.instructions || '[]'),
@@ -125,17 +127,19 @@ export async function GET(
             ...recipe,
             title: recipe.title_zh || recipe.title,
             description: recipe.description_zh || recipe.description,
+            cookingTime: recipe.cooking_time || recipe.cookingTime, // 确保正确映射
             ingredients: recipe.ingredients_zh ? JSON.parse(recipe.ingredients_zh) : JSON.parse(recipe.ingredients || '[]'),
             seasoning: recipe.seasoning_zh ? JSON.parse(recipe.seasoning_zh) : JSON.parse(recipe.seasoning || '[]'),
             instructions: recipe.instructions_zh ? JSON.parse(recipe.instructions_zh) : JSON.parse(recipe.instructions || '[]'),
             chef_tips: recipe.chef_tips_zh ? JSON.parse(recipe.chef_tips_zh) : JSON.parse(recipe.chef_tips || '[]'),
             difficulty: recipe.difficulty_zh || recipe.difficulty,
-            tags: recipe.tags ? JSON.parse(recipe.tags) : []
+            tags: recipe.tags_zh ? JSON.parse(recipe.tags_zh) : (recipe.tags ? JSON.parse(recipe.tags) : [])
           };
         } else {
           // 如果没有对应语言版本，使用默认内容并解析JSON字段
           processedRecipe = {
             ...recipe,
+            cookingTime: recipe.cooking_time || recipe.cookingTime, // 确保正确映射
             ingredients: JSON.parse(recipe.ingredients || '[]'),
             seasoning: JSON.parse(recipe.seasoning || '[]'),
             instructions: JSON.parse(recipe.instructions || '[]'),

@@ -33,8 +33,6 @@ export interface CreditTransaction extends BaseEntity {
   user_id: string;
   type: 'earn' | 'spend';
   amount: number;
-  reason: string;
-  description?: string;
 }
 
 // ==================== 食材和分类类型 ====================

@@ -274,21 +274,18 @@ export const RecipeForm = ({
     if (formData.ingredients.length >= 2) {
       onSubmit();
       setShowRecipe(true); // 设置显示菜谱结果
-
-      // 确保在DOM更新后执行滚动，使用更平滑的方式
+      
+      // 滚动到loading动画位置
       setTimeout(() => {
-        const loadingElement = document.getElementById('loading-animation-container');
-        if (loadingElement) {
-          const elementRect = loadingElement.getBoundingClientRect();
-          const absoluteElementTop = elementRect.top + window.pageYOffset;
-          const middle = absoluteElementTop - (window.innerHeight / 2);
-          
-          window.scrollTo({
-            top: middle,
-            behavior: 'smooth'
+        const loadingContainer = document.getElementById('loading-animation-container');
+        if (loadingContainer) {
+          loadingContainer.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start',
+            inline: 'nearest'
           });
         }
-      }, SEARCH_CONFIG.SCROLL_DELAY);
+      }, 100); // 短暂延迟确保DOM更新
     }
   }, [formData.ingredients.length, onSubmit, setShowRecipe]);
 

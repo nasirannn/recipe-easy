@@ -1,12 +1,44 @@
 import { NextRequest } from 'next/server';
 import { getImageModelConfig, getLanguageConfig } from '@/lib/config';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 // 强制动态渲染
 
-// 记录模型使用情况的函数（已禁用，Worker已删除）
-async function recordModelUsage(modelName: string, modelResponseId: string, requestDetails: string) {
-  // Worker已删除，模型使用记录功能暂时禁用
-
+// 记录模型使用情况的函数
+async function recordModelUsage(
+  modelName: string, 
+  modelResponseId: string, 
+  userId: string,
+  transactionId?: string
+) {
+  try {
+    // 检查是否有数据库绑定
+    const context = getCloudflareContext();
+    const db = context?.env?.RECIPE_EASY_DB;
+    if (!db) {
+      console.log('Database not available, skipping model usage recording');
+      return;
+    }
+    const recordId = crypto.randomUUID();
+    
+    const stmt = db.prepare(`
+      INSERT INTO model_usage_records 
+      (id, model_name, model_type, user_id, created_at) 
+      VALUES (?, ?, ?, ?, datetime('now'))
+    `);
+    
+    await stmt.bind(
+      recordId,
+      modelName,
+      'image',
+      userId
+    ).run();
+    
+    console.log(`Model usage recorded: ${modelName} - ${recordId} for user ${userId}`);
+  } catch (error) {
+    console.error('Failed to record model usage:', error);
+    // 不要因为记录失败而影响主要功能
+  }
 }
 
 // 获取当前服务器URL
@@ -174,7 +206,7 @@ export async function POST(request: NextRequest) {
       }
 
       // 记录模型使用情况
-      await recordModelUsage(modelUsed, modelResponseId, prompt);
+      await recordModelUsage(modelUsed, modelResponseId, userId);
     } else {
       // 使用 Flux
       modelUsed = 'flux';
@@ -240,11 +272,10 @@ export async function POST(request: NextRequest) {
         throw new Error(`Flux generation failed: ${currentPrediction.error || 'Unknown error'}`);
       }
 
-      // 记录模型使用情况
-      await recordModelUsage(modelUsed, modelResponseId, prompt);
     }
 
     // 扣除积分（管理员跳过）
+    let transactionId: string | undefined;
     if (!isAdmin) {
       const serverUrl = getServerUrl(request);
       const deductResponse = await fetch(`${serverUrl}/api/user-usage`, {
@@ -260,11 +291,18 @@ export async function POST(request: NextRequest) {
         })
       });
       
-      if (!deductResponse.ok) {
+      if (deductResponse.ok) {
+        const deductResult = await deductResponse.json() as { data?: { transactionId?: string } };
+        transactionId = deductResult.data?.transactionId;
+      } else {
         // 扣除积分失败，但图片已生成
         // 继续返回图片，但记录错误
+        console.error('Failed to deduct credits for image generation');
       }
     }
+
+    // 记录模型使用情况
+            await recordModelUsage(modelUsed, modelResponseId, userId, transactionId);
 
     return Response.json({
       success: true,
