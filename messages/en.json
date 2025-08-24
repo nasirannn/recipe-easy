@@ -345,8 +345,8 @@
   },
 
   "introduction": {
-    "title": "Recipe Generator",
-          "heading": "What's in my fridge?",
+    "title": "Introduction",
+    "heading": "What's in my fridge?",
     "description1": "We all know the feeling - standing in front of an open fridge, wondering what to make with the ingredients we have. Whether it's leftover vegetables, pantry staples, or that random collection of items you picked up at the store, the daily question remains: what can I make with these ingredients?",
     "description2": "Simply list your ingredients and our AI will suggest creative recipes while helping you eat healthier, save money, and reduce food waste. No more guesswork - just practical solutions for real home cooks.",
     "imageAlt": "Recipe Generator - What's in my fridge"

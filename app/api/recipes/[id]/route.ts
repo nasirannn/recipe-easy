@@ -113,13 +113,19 @@ export async function GET(
             ...recipe,
             title: recipe.title_en || recipe.title,
             description: recipe.description_en || recipe.description,
-            cookingTime: recipe.cooking_time || recipe.cookingTime, // 确保正确映射
+            cookingTime: recipe.cooking_time,
             ingredients: recipe.ingredients_en ? JSON.parse(recipe.ingredients_en) : JSON.parse(recipe.ingredients || '[]'),
             seasoning: recipe.seasoning_en ? JSON.parse(recipe.seasoning_en) : JSON.parse(recipe.seasoning || '[]'),
             instructions: recipe.instructions_en ? JSON.parse(recipe.instructions_en) : JSON.parse(recipe.instructions || '[]'),
-            chef_tips: recipe.chef_tips_en ? JSON.parse(recipe.chef_tips_en) : JSON.parse(recipe.chef_tips || '[]'),
+            chefTips: recipe.chef_tips_en ? JSON.parse(recipe.chef_tips_en) : JSON.parse(recipe.chef_tips || '[]'),
             difficulty: recipe.difficulty_en || recipe.difficulty,
-            tags: recipe.tags_en ? JSON.parse(recipe.tags_en) : (recipe.tags ? JSON.parse(recipe.tags) : [])
+            tags: recipe.tags_en ? JSON.parse(recipe.tags_en) : JSON.parse(recipe.tags || '[]'),
+            // 统一转换为驼峰命名
+            imagePath: recipe.imagePath,
+            userId: recipe.user_id,
+            cuisineId: recipe.cuisine_id,
+            createdAt: recipe.created_at,
+            updatedAt: recipe.updated_at
           };
         } else if (language === 'zh' && recipe.title_zh) {
           // 如果有中文版本，优先使用中文内容
@@ -127,24 +133,36 @@ export async function GET(
             ...recipe,
             title: recipe.title_zh || recipe.title,
             description: recipe.description_zh || recipe.description,
-            cookingTime: recipe.cooking_time || recipe.cookingTime, // 确保正确映射
+            cookingTime: recipe.cooking_time,
             ingredients: recipe.ingredients_zh ? JSON.parse(recipe.ingredients_zh) : JSON.parse(recipe.ingredients || '[]'),
             seasoning: recipe.seasoning_zh ? JSON.parse(recipe.seasoning_zh) : JSON.parse(recipe.seasoning || '[]'),
             instructions: recipe.instructions_zh ? JSON.parse(recipe.instructions_zh) : JSON.parse(recipe.instructions || '[]'),
-            chef_tips: recipe.chef_tips_zh ? JSON.parse(recipe.chef_tips_zh) : JSON.parse(recipe.chef_tips || '[]'),
+            chefTips: recipe.chef_tips_zh ? JSON.parse(recipe.chef_tips_zh) : JSON.parse(recipe.chef_tips || '[]'),
             difficulty: recipe.difficulty_zh || recipe.difficulty,
-            tags: recipe.tags_zh ? JSON.parse(recipe.tags_zh) : (recipe.tags ? JSON.parse(recipe.tags) : [])
+            tags: recipe.tags_zh ? JSON.parse(recipe.tags_zh) : JSON.parse(recipe.tags || '[]'),
+            // 统一转换为驼峰命名
+            imagePath: recipe.imagePath,
+            userId: recipe.user_id,
+            cuisineId: recipe.cuisine_id,
+            createdAt: recipe.created_at,
+            updatedAt: recipe.updated_at
           };
         } else {
           // 如果没有对应语言版本，使用默认内容并解析JSON字段
           processedRecipe = {
             ...recipe,
-            cookingTime: recipe.cooking_time || recipe.cookingTime, // 确保正确映射
+            cookingTime: recipe.cooking_time,
             ingredients: JSON.parse(recipe.ingredients || '[]'),
             seasoning: JSON.parse(recipe.seasoning || '[]'),
             instructions: JSON.parse(recipe.instructions || '[]'),
-            chef_tips: JSON.parse(recipe.chef_tips || '[]'),
-            tags: recipe.tags ? JSON.parse(recipe.tags) : []
+            chefTips: JSON.parse(recipe.chef_tips || '[]'),
+            tags: recipe.tags ? JSON.parse(recipe.tags) : [],
+            // 统一转换为驼峰命名
+            imagePath: recipe.imagePath,
+            userId: recipe.user_id,
+            cuisineId: recipe.cuisine_id,
+            createdAt: recipe.created_at,
+            updatedAt: recipe.updated_at
           };
         }
 

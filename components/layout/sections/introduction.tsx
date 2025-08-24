@@ -5,10 +5,10 @@ export const IntroductionSection = () => {
   const t = useTranslations("introduction");
 
   return (
-    <section id="introduction" className="w-full py-16 sm:py-16" style={{ backgroundColor: 'rgb(237, 237, 255)' }}>
+    <section id="introduction" className="w-full py-16 sm:py-16 bg-[rgb(237,237,255)] dark:bg-[rgb(30,30,50)]">
       <div className="container">
         <div className="grid lg:grid-cols-2 place-items-center lg:gap-24">
-          <div className="relative bg-white rounded-lg p-8 shadow-lg overflow-hidden">
+          <div className="relative bg-white dark:bg-gray-800 rounded-lg p-8 shadow-lg overflow-hidden">
             {/* 背景纹理图片 */}
             <div className="absolute inset-0 pointer-events-none">
               <Image

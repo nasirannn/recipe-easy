@@ -66,7 +66,6 @@ export interface Recipe extends BaseEntity {
   title: string;
   description: string;
   cookingTime: number;
-  cooking_time?: number; // 兼容数据库字段名
   servings: number;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   ingredients: string[];
@@ -74,11 +73,9 @@ export interface Recipe extends BaseEntity {
   instructions: string[];
   tags: string[];
   chefTips: string[];
-  chef_tips?: string[]; // 兼容数据库字段名
-  user_id?: string;
-  cuisine_id?: number;
-  cuisineId?: number; // 兼容前端使用
-  cuisine_name?: string; // 菜系名称
+  userId?: string;
+  cuisineId?: number;
+  cuisineName?: string; // 菜系名称
   cuisine?: Cuisine; // 菜系对象
   imagePath?: string;
   imageModel?: string;
@@ -91,41 +88,41 @@ export interface Recipe extends BaseEntity {
 export interface DatabaseRecipe {
   id: string;
   title: string;
-  image_path: string | null;
+  imagePath: string | null;
   description: string | null;
   tags: string | null;
-  cooking_time: number | null;
+  cookingTime: number | null;
   servings: number | null;
   difficulty: string | null;
   ingredients: string;
   seasoning: string | null;
   instructions: string;
-  chef_tips: string | null;
-  cuisine_id: number | null;
-  cuisine_name?: string | null;
-  user_id: string | null;
-  image_model?: string | null;
-  language_model?: string | null;
+  chefTips: string | null;
+  cuisineId: number | null;
+  cuisineName?: string | null;
+  userId: string | null;
+  imageModel?: string | null;
+  languageModel?: string | null;
   language: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // 食谱创建和更新输入类型
 export interface RecipeInput {
   title: string;
-  image_path?: string;
+  imagePath?: string;
   description?: string;
   tags?: string[];
-  cooking_time?: number;
+  cookingTime?: number;
   servings?: number;
   difficulty?: string;
   ingredients: any[] | string;
   seasoning?: any[] | string;
   instructions: any[] | string;
-  chef_tips?: string;
-  cuisine_id?: number;
-  user_id?: string;
+  chefTips?: string;
+  cuisineId?: number;
+  userId?: string;
   language?: string;
 }
 

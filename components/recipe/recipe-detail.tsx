@@ -29,8 +29,6 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
   const t = useTranslations('recipeDisplay');
   const router = useRouter();
   const [copiedSection, setCopiedSection] = useState<'ingredients' | 'seasoning' | 'instructions' | null>(null);
-  const [isLiked, setIsLiked] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
 
   // 解析JSON字符串为数组
   const parseJsonArray = (data: any): any[] => {
