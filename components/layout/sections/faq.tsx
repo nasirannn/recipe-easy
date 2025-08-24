@@ -51,7 +51,7 @@ export const FAQSection = () => {
   };
 
   return (
-    <section id="faq" className="w-full bg-primary-5 py-4 sm:py-12">
+    <section id="faq" className="w-full py-16 sm:py-16">
       <div className="container">
         <div className="text-center mb-16 ">
          <h2 className="text-lg text-secondary text-center mb-2 tracking-wider">
@@ -66,35 +66,31 @@ export const FAQSection = () => {
         {FAQList.map(({ questionKey, answerKey, value }, index) => {
           const isOpen = openItem === value;
           return (
-            <div key={value} className="bg-background/50 rounded-lg">
+            <div key={value} className="border-b border-border">
               <button
                 onClick={() => toggleItem(value)}
-                className="w-full px-6 py-4 text-left hover:no-underline flex items-center gap-4"
+                className="w-full py-6 text-left hover:no-underline flex items-center justify-between"
               >
-                <div className="shrink-0">
-                  <div className="w-8 h-8 bg-[--color-primary-10] rounded-lg flex items-center justify-center">
-                    <span className="text-secondary font-semibold text-sm">
+                <div className="flex items-center gap-4">
+                  <span className="text-2xl font-bold text-foreground min-w-[3rem]">
                       {String(index + 1).padStart(2, '0')}
                     </span>
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <h3 className={`text-lg font-semibold ${isOpen ? 'text-primary' : 'text-foreground'}`}>
+                  <h3 className="text-xl font-semibold text-foreground">
                     {t(questionKey)}
                   </h3>
                 </div>
                 <div className="shrink-0">
                   {isOpen ? (
-                                      <ChevronUp className={`h-5 w-5 ${isOpen ? 'text-secondary' : 'text-muted-foreground'}`} />
+                    <ChevronUp className="h-6 w-6 text-muted-foreground" />
                 ) : (
-                  <ChevronDown className={`h-5 w-5 ${isOpen ? 'text-secondary' : 'text-muted-foreground'}`} />
+                    <ChevronDown className="h-6 w-6 text-muted-foreground" />
                   )}
                 </div>
               </button>
               {isOpen && (
-                <div className="px-6 pb-4">
-                  <div className="ml-12">
-                    <p className="text-muted-foreground leading-relaxed">
+                <div className="pb-6">
+                  <div className="ml-16">
+                    <p className="text-muted-foreground leading-relaxed text-lg">
                       {t(answerKey)}
                     </p>
                   </div>

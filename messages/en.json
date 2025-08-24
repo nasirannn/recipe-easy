@@ -49,8 +49,8 @@
   },
   "recipeForm": {
     "title": "AI Recipe Generator",
-    "subtitle": "Select ingredients, AI creates delicious recipes for you",
-    "mainTitle": "🎉 No Prompts Needed, Just Select Ingredients",
+    "mainTitle": "🎉 Make a Meal With Ingredients You Have",
+    "subtitle": "No prompts needed, just select ingredients",
     "recipeMaker": "Recipe Maker",
     "cuisine": "Cuisine",
     "cuisinePlaceholder": "Select cuisine style",
@@ -108,6 +108,7 @@
     "loadingSubtitle": "Preparing delicious ingredients for you...",
     "loadError": "Load failed",
     "retry": "Retry",
+    "fetchIngredientsError": "Failed to fetch ingredients data",
     "noIngredientsFound": "No ingredients found for",
     "pressEnterToAdd": "to add it as a custom ingredient",
     "noIngredientsInCategory": "No ingredients available in this category",
@@ -163,8 +164,8 @@
     "insufficientCredits": "Insufficient credits to generate image"
   },
   "recipes": {
-    "title": "Explore Recipes",
-    "subtitle": "Discover delicious recipes from around the world",
+    "title": "Featured Recipes",
+    "subtitle": "AI-Generated Culinary Masterpieces",
     "loadingRecipes": "Loading recipes...",
     "loadMore": "Load More",
     "allRecipesDisplayed": "All recipes displayed",
@@ -219,20 +220,19 @@
     "consumeOneCredit": "1 image = 1 credit"
   },
   "tutorial": {
-    "title": "How to Use AI Recipe Generator?",
-    "subtitle": "Quick Tutorial",
+    "title": "How It Works",
     "description": "Follow these simple steps to create delicious recipes from your ingredients in just minutes.",
     "step1": {
-      "title": "Select or Enter Ingredients",
-      "description": "Choose from our extensive ingredient database or input custom ingredients(press Enter). Simply search, select, and build your ingredient list. Our AI generator will work with whatever ingredients you have available."
+      "title": "01. Select or Enter Ingredients",
+      "description": "Select from our ingredient database or add custom ones. Search, choose, and build your list. Our recipe generator will make ingredients pairings with whatever you have."
     },
     "step2": {
-      "title": "Generate Your Recipe",
-      "description": "Click 'Generate' button and watch our AI create a personalized recipe just for you. Choose your preferred cuisine style, cooking time, and difficulty level. The AI will analyze your ingredients and create the perfect recipe."
+      "title": "02. Generate Your Recipe",
+      "description": "Choose servings, cooking time, difficulty and cuisine, click 'Generate' and our AI creates your recipe. AI analyzes ingredients for perfect results."
     },
     "step3": {
-      "title": "Get Your Recipe & Image",
-      "description": "Based on your selected ingredients, get your recipe first and then the image. You can copy ingredients, seasoning, instructions and the beautiful AI-generated image. You can also share your recipe with friends or save for later."
+      "title": "03. Get Your Recipe & Image",
+      "description": "Get your recipe and image. Copy ingredients, seasoning, and instructions. Share with friends or save for later."
     }
   },
   "testimonials": {
@@ -345,11 +345,10 @@
   },
 
   "introduction": {
-    "title": "Introduction",
-    "heading": "What's in my fridge?",
-    "description1": "In today's fast-paced world, many people face the daily challenge of deciding what to cook with the ingredients they have available. Whether it's leftover vegetables in the fridge, pantry staples, or seasonal produce, the question \"What should I cook today?\" is a universal dilemma that affects home cooks everywhere.",
-    "description2": "Home cooking offers significant advantages over takeout - it's more cost-effective, healthier, and allows for better control over ingredients and nutrition. However, the barrier to creative cooking often lies in recipe discovery. This random food generator was designed to solve this exact problem by providing intelligent, personalized recipe suggestions based on available ingredients.",
-    "description3": "The platform focuses on user experience, making recipe generation accessible through intuitive clicking rather than complex typing. By leveraging AI technology, it helps users transform everyday ingredients into delicious, creative meals, making home cooking more enjoyable and less daunting for everyone.",
-    "imageAlt": "AI Recipe Generator Introduction"
+    "title": "Recipe Generator",
+          "heading": "What's in my fridge?",
+    "description1": "We all know the feeling - standing in front of an open fridge, wondering what to make with the ingredients we have. Whether it's leftover vegetables, pantry staples, or that random collection of items you picked up at the store, the daily question remains: what can I make with these ingredients?",
+    "description2": "Simply list your ingredients and our AI will suggest creative recipes while helping you eat healthier, save money, and reduce food waste. No more guesswork - just practical solutions for real home cooks.",
+    "imageAlt": "Recipe Generator - What's in my fridge"
   }
 }

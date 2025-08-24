@@ -283,10 +283,10 @@ export const IngredientSelector = ({
                         key={ingredient.id}
                         onClick={() => handleIngredientSelect(ingredient)}
                         className={cn(
-                          "group relative rounded-2xl bg-linear-to-br from-white via-gray-50 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 hover:from-[--color-primary-10] hover:via-[--color-primary-5] hover:to-[--color-primary-10] text-sm text-center transition-all duration-500 border border-gray-100 dark:border-gray-600 overflow-hidden shrink-0",
+                          "group relative rounded-2xl bg-linear-to-br from-white via-gray-50 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 hover:from-[--color-primary-10] hover:via-[--color-primary-5] hover:to-[--color-primary-10] text-sm text-center transition-all duration-500 overflow-hidden shrink-0",
                           isMobile 
-                            ? "px-3 py-2 hover:scale-105 hover:shadow-lg hover:shadow-[--color-primary-20] hover:-translate-y-0.5 active:scale-95" 
-                            : "px-4 py-3 hover:scale-110 hover:shadow-xl hover:shadow-[--color-primary-25] hover:-translate-y-1",
+                            ? "px-3 py-1.5 hover:scale-105 hover:shadow-lg hover:shadow-[--color-primary-20] hover:-translate-y-0.5 active:scale-95" 
+                            : "px-4 py-2 hover:scale-110 hover:shadow-xl hover:shadow-[--color-primary-25] hover:-translate-y-1",
                           cardWidth
                         )}
                       >

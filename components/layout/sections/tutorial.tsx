@@ -1,45 +1,33 @@
 import { useTranslations } from 'next-intl';
 import { Card } from "@/components/ui/card";
-import { Upload, ChefHat, Download } from "lucide-react";
 import Image from 'next/image';
 
 interface TutorialStepProps {
-  step: string;
   title: string;
   description: string;
-  icon: React.ReactNode;
   imageSrc: string;
 }
 
-const TutorialStep = ({ step, title, description, icon, imageSrc }: TutorialStepProps) => {
+const TutorialStep = ({ title, description, imageSrc }: TutorialStepProps) => {
   return (
-    <Card className="bg-card border-2 border-gray-200 dark:border-gray-700 rounded-xl p-6 h-full">
-      <div className="flex items-center mb-4">
-        <div className="w-10 h-10 bg-[--color-primary-10] rounded-full flex items-center justify-center mr-3">
-          {icon}
-        </div>
-        <h3 className="text-lg font-semibold text-secondary">
-          {step}
-        </h3>
-      </div>
-      
-      <h4 className="text-xl font-bold mb-3 text-foreground">
-        {title}
-      </h4>
-      
-      <p className="text-muted-foreground mb-4 leading-relaxed">
-        {description}
-      </p>
-      
-      <div className="bg-muted rounded-lg p-3">
+    <Card className="bg-card p-6 h-full shadow-none">
+      <div className="rounded-lg p-3 mb-4">
         <Image 
           src={imageSrc} 
           alt={title}
-          width={400}
-          height={200}
-          className="w-full h-auto object-contain rounded-md"
+          width={200}
+          height={100}
+          className="w-full max-w-[200px] h-auto object-contain rounded-md mx-auto"
         />
       </div>
+      
+      <h4 className="text-xl font-bold mb-3 text-foreground text-center">
+        {title}
+      </h4>
+      
+      <p className="text-muted-foreground mb-4 leading-relaxed text-center">
+        {description}
+      </p>
     </Card>
   );
 };
@@ -49,35 +37,26 @@ export const TutorialSection = () => {
 
   const tutorialSteps = [
     {
-      step: "01",
       title: t('step1.title'),
       description: t('step1.description'),
-      icon: <Upload className="w-5 h-5 text-secondary" />,
-      imageSrc: "/images/tutorial_step_1.png"
+      imageSrc: "/images/tutorial_step_1.svg"
     },
     {
-      step: "02", 
       title: t('step2.title'),
       description: t('step2.description'),
-      icon: <ChefHat className="w-5 h-5 text-secondary" />,
-      imageSrc: "/images/tutorial_step_2.png"
+      imageSrc: "/images/tutorial_step_2.svg"
     },
     {
-      step: "03",
       title: t('step3.title'), 
       description: t('step3.description'),
-      icon: <Download className="w-5 h-5 text-secondary" />,
-      imageSrc: "/images/tutorial_step_3.png"
+      imageSrc: "/images/tutorial_step_3.svg"
     }
   ];
 
   return (
-    <section id="tutorial" className="container py-16 sm:py-20">
+    <section id="tutorial" className="container pt-8 sm:pt-12 pb-8 sm:pb-12">
       <div className="text-center mb-16">
-        <h2 className="text-lg text-secondary mb-2 tracking-wider font-medium">
-          {t('subtitle')}
-        </h2>
-        <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+        <h3 className="text-3xl md:text-6xl font-bold text-foreground mb-4">
           {t('title')}
         </h3>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">

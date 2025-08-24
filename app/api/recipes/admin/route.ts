@@ -53,12 +53,12 @@ async function getDataFromDatabase(request: NextRequest) {
           SELECT 
             r.id, r.title, r.description, r.cooking_time, r.servings, r.difficulty,
             rim.image_path as imagePath,
-            r.ingredients, r.seasoning, r.instructions, r.chef_tips as chefTips,
+            r.ingredients, r.seasoning, r.instructions, r.tags, r.chef_tips as chefTips,
             r.created_at as createdAt, r.updated_at as updatedAt,
             c.name as cuisine_name, c.slug as cuisine_slug,
             ri.title as title_zh, ri.description as description_zh,
             ri.ingredients as ingredients_zh, ri.seasoning as seasoning_zh,
-            ri.instructions as instructions_zh, ri.chef_tips as chefTips_zh
+            ri.instructions as instructions_zh, ri.tags as tags_zh, ri.chef_tips as chefTips_zh
           FROM recipes r
           LEFT JOIN cuisines c ON r.cuisine_id = c.id
           LEFT JOIN recipes_i18n ri ON r.id = ri.recipe_id AND ri.language_code = 'zh'
@@ -93,6 +93,9 @@ async function getDataFromDatabase(request: NextRequest) {
           instructions: recipe.instructions_zh ? 
             JSON.parse(recipe.instructions_zh) : 
             JSON.parse(recipe.instructions || '[]'),
+          tags: recipe.tags_zh ? 
+            JSON.parse(recipe.tags_zh) : 
+            JSON.parse(recipe.tags || '[]'),
           chefTips: recipe.chefTips_zh ? 
             JSON.parse(recipe.chefTips_zh) : 
             JSON.parse(recipe.chefTips || '[]'),
@@ -122,7 +125,7 @@ async function getDataFromDatabase(request: NextRequest) {
             r.id, r.title, r.description, r.cooking_time as cookingTime,
             r.servings, r.difficulty,
             rim.image_path as imagePath,
-            r.ingredients, r.seasoning, r.instructions, r.chef_tips as chefTips,
+            r.ingredients, r.seasoning, r.instructions, r.tags, r.chef_tips as chefTips,
             r.created_at as createdAt, r.updated_at as updatedAt,
             c.name as cuisine_name, c.slug as cuisine_slug
           FROM recipes r
@@ -152,6 +155,7 @@ async function getDataFromDatabase(request: NextRequest) {
           ingredients: JSON.parse(recipe.ingredients || '[]'),
           seasoning: JSON.parse(recipe.seasoning || '[]'),
           instructions: JSON.parse(recipe.instructions || '[]'),
+          tags: JSON.parse(recipe.tags || '[]'),
           chefTips: JSON.parse(recipe.chefTips || '[]'),
           createdAt: recipe.createdAt,
           updatedAt: recipe.updatedAt,

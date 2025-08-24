@@ -415,9 +415,9 @@ export const RecipeForm = ({
   return (
     <div className="w-full flex flex-col gap-2 sm:gap-3">
       <div className={cn(
-        "pb-2 pt-1",
+        "pb-2 pt-1 rounded-2xl bg-gradient-to-r from-white via-green-50/20 to-emerald-50/30 dark:from-gray-900 dark:via-green-900/15 dark:to-emerald-900/25 shadow-xs p-4",
         isMobile
-          ? "flex flex-col gap-5 px-4"
+          ? "flex flex-col gap-5"
           : "flex justify-between items-center"
       )}>
         {/* 标题栏 */}
@@ -428,11 +428,18 @@ export const RecipeForm = ({
           <div className="relative group">
             {/* 主标题 */}
             <h2 className={cn(
-              "relative z-10 font-bold text-secondary leading-relaxed px-4 py-2 rounded-2xl transition-all duration-300",
-              isMobile ? "text-xl" : "text-2xl"
+              "relative z-10 font-bold leading-relaxed px-4 py-2 rounded-2xl transition-all duration-300",
+              isMobile ? "text-lg" : "text-xl"
             )}>
               {t('mainTitle')}
             </h2>
+            {/* 描述文字 */}
+            <p className={cn(
+              "relative z-10 text-muted-foreground dark:text-gray-400 mt-1 px-4",
+              isMobile ? "text-sm" : "text-base"
+            )}>
+              {t('subtitle')}
+            </p>
           </div>
         </div>
 
@@ -568,11 +575,19 @@ export const RecipeForm = ({
           <div className="relative flex-1 min-h-0">
             {/* 左侧背景主体 */}
             <div className={cn(
-              "bg-gradient-to-br from-white via-blue-50/30 to-purple-50/40 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/30 rounded-2xl flex flex-col shadow-md",
+              "bg-[rgb(245,231,202)] dark:bg-gray-900 rounded-2xl flex flex-col shadow-md relative overflow-hidden",
               isMobile ? "p-4 h-[420px]" : "p-6 h-[400px]"
             )}>
-
-
+              {/* 背景纹理图片 */}
+              <div className="absolute inset-0 opacity-100 dark:opacity-5 pointer-events-none">
+                <Image
+                  src="/images/ingredients-icon/grain-texture.png"
+                  alt=""
+                  fill
+                  className="object-cover"
+                  unoptimized={true}
+                />
+              </div>
               {/* 食材分类tab - 固定高度 */}
               <div className="shrink-0 mb-3">
                 {!isMobile ? (
@@ -595,13 +610,13 @@ export const RecipeForm = ({
                                     className={cn(
                                       "flex items-center justify-center transition-all duration-300 relative group h-12 flex-1 cursor-pointer",
                                       isActive
-                                        ? "bg-linear-to-r from-orange-500 to-amber-600 dark:from-orange-600 dark:to-amber-700 text-white shadow-lg shadow-orange-500/30 dark:shadow-orange-600/40 scale-105 rounded-2xl px-2 gap-2"
-                                        : "text-gray-600 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 hover:scale-105 rounded-xl p-2 gap-2"
+                                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 scale-105 rounded-2xl px-2 gap-2"
+                                        : "text-gray-600 dark:text-gray-400 hover:text-primary hover:scale-105 rounded-xl p-2 gap-2"
                                     )}
                                   >
                                     {/* 选中状态的背景装饰 */}
                                     {isActive && (
-                                      <div className="absolute inset-0 bg-linear-to-r from-orange-500/10 to-amber-600/10 dark:from-orange-600/15 dark:to-amber-700/15 rounded-2xl" />
+                                      <div className="absolute inset-0 bg-primary/10 rounded-2xl" />
                                     )}
 
                                     <span className={cn(
@@ -638,7 +653,7 @@ export const RecipeForm = ({
                       value={activeCategory}
                       onValueChange={(value) => handleCategoryChange(value as keyof typeof CATEGORIES_CONFIG)}
                     >
-                      <SelectTrigger className="w-full h-11 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-xs hover:border-orange-500/50 focus:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-300 cursor-pointer">
+                      <SelectTrigger className="w-full h-11 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-xs hover:border-primary/50 focus:border-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-all duration-300 cursor-pointer">
                         <SelectValue>
                           <div className="flex items-center gap-2">
                             {CATEGORIES_CONFIG[activeCategory] && (() => {
@@ -651,7 +666,7 @@ export const RecipeForm = ({
                           </div>
                         </SelectValue>
                       </SelectTrigger>
-                      <SelectContent className="max-h-[300px] overflow-y-auto bg-white dark:bg-gray-800 border-2 border-orange-200 dark:border-orange-700 rounded-xl shadow-lg">
+                      <SelectContent className="max-h-[300px] overflow-y-auto bg-white dark:bg-gray-800 border-2 border-primary/20 dark:border-primary/30 rounded-xl shadow-lg">
                         {Object.entries(CATEGORIES_CONFIG).map(([categoryId, category]) => {
                           const Icon = category.icon;
                           const isActive = activeCategory === categoryId;
@@ -664,8 +679,8 @@ export const RecipeForm = ({
                               className={cn(
                                 "flex items-center gap-3 py-3 px-4 cursor-pointer transition-all duration-200",
                                 isActive
-                                  ? "bg-linear-to-r from-orange-500/10 to-amber-500/10 text-orange-600 dark:text-orange-400 font-semibold border-l-2 border-orange-500"
-                                  : "hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400"
+                                  ? "bg-primary/10 text-primary font-semibold border-l-2 border-primary"
+                                  : "hover:bg-primary/5 dark:hover:bg-primary/10 hover:text-primary"
                               )}
                             >
                               <div className="flex items-center gap-3 w-full">
@@ -696,11 +711,11 @@ export const RecipeForm = ({
                         <div className="w-12 h-12 border-4 border-gray-200 dark:border-gray-700 border-t-primary rounded-full animate-spin"></div>
                         <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-[--color-primary-30] rounded-full animate-ping"></div>
                       </div>
-                      
+
                       {/* Loading 文字 */}
                       <div className="text-center">
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                          {tIngredientSelector('loadingIngredients') || '正在加载食材...'}
+                          {tIngredientSelector('loadingIngredients')}
                         </p>
                       </div>
                     </div>
@@ -713,23 +728,23 @@ export const RecipeForm = ({
                       <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center">
                         <span className="text-2xl">⚠️</span>
                       </div>
-                      
+
                       {/* 错误信息 */}
                       <div>
                         <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                          {tIngredientSelector('loadError') || '加载失败'}
+                          {tIngredientSelector('loadError')}
                         </h3>
                         <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
                           {ingredientsError}
                         </p>
-                        
+
                         {/* 重试按钮 */}
                         <button
                           onClick={fetchIngredientsData}
                           className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:bg-[--color-primary-90] transition-colors duration-200"
                         >
                           <RotateCcw className="h-3 w-3" />
-                          {tIngredientSelector('retry') || '重试'}
+                          {tIngredientSelector('retry')}
                         </button>
                       </div>
                     </div>
@@ -764,43 +779,53 @@ export const RecipeForm = ({
           <div className="relative">
             {/* 小票主体 */}
             <div className={cn(
-              "bg-gradient-to-br from-white via-orange-50/20 to-amber-50/30 dark:from-gray-900 dark:via-orange-900/15 dark:to-amber-900/25 rounded-2xl shadow-lg shadow-[--color-gray-200-50] dark:shadow-[--color-gray-900-50] flex flex-col border-2 border-gray-200 dark:border-gray-700",
+              "bg-gradient-to-br from-white via-orange-50/20 to-amber-50/30 dark:from-gray-900 dark:via-orange-900/15 dark:to-amber-900/25 rounded-2xl shadow-lg shadow-[--color-gray-200-50] dark:shadow-[--color-gray-900-50] flex flex-col border-2 border-gray-200 dark:border-gray-700 relative overflow-hidden",
               isMobile ? "p-4 h-[380px]" : "p-6 h-[400px]"
             )}>
+              {/* 背景纹理图片 */}
+              <div className="absolute inset-0 dark:opacity-5 pointer-events-none">
+                <Image
+                  src="/images/ingredients-icon/grain-texture.png"
+                  alt=""
+                  fill
+                  className="object-cover"
+                  unoptimized={true}
+                />
+              </div>
               {/* 小票顶部装饰 - 模拟小票撕口 */}
               <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-20 h-2 bg-linear-to-r from-transparent via-gray-300 dark:via-gray-500 to-transparent rounded-full"></div>
 
               {/* 小票头部信息 */}
               <div className="mb-4 pb-3 border-b-2 border-dashed border-gray-300 dark:border-gray-600">
-                                  <div className={cn(
-                    "flex items-center",
-                    isMobile ? "justify-center" : "justify-between"
+                <div className={cn(
+                  "flex items-center",
+                  isMobile ? "justify-center" : "justify-between"
+                )}>
+                  <div className={cn(
+                    "flex items-center gap-2",
+                    isMobile ? "justify-center" : "flex-1"
                   )}>
                     <div className={cn(
-                      "flex items-center gap-2",
-                      isMobile ? "justify-center" : "flex-1"
+                      "flex items-center justify-center",
+                      isMobile ? "w-6 h-6" : "w-8 h-8"
                     )}>
-                      <div className={cn(
-                        "flex items-center justify-center",
-                        isMobile ? "w-6 h-6" : "w-8 h-8"
-                      )}>
-                        <span className={cn(
-                          "text-gray-700 dark:text-gray-300",
-                          isMobile ? "text-base" : "text-lg"
-                        )}>🧺</span>
-                      </div>
-                      <h3 className={cn(
-                        "font-bold text-gray-900 dark:text-gray-100 font-mono",
+                      <span className={cn(
+                        "text-gray-700 dark:text-gray-300",
                         isMobile ? "text-base" : "text-lg"
-                      )}>
-                        {t('basket')}
-                        {formData.ingredients.length > 0 && (
-                          <span className="ml-2 text-gray-600 dark:text-gray-400 font-normal">
-                            ({formData.ingredients.length})
-                          </span>
-                        )}
-                      </h3>
+                      )}>🧺</span>
                     </div>
+                    <h3 className={cn(
+                      "font-bold text-gray-900 dark:text-gray-100 font-mono",
+                      isMobile ? "text-base" : "text-lg"
+                    )}>
+                      {t('basket')}
+                      {formData.ingredients.length > 0 && (
+                        <span className="ml-2 text-gray-600 dark:text-gray-400 font-normal">
+                          ({formData.ingredients.length})
+                        </span>
+                      )}
+                    </h3>
+                  </div>
 
                   {/* Reset按钮 - 只在有食材时显示 */}
                   {formData.ingredients.length > 0 && (
@@ -981,7 +1006,7 @@ export const RecipeForm = ({
                       </button>
                     </TooltipTrigger>
                     <TooltipContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
-                      <p>{showOptions ? t('hideOptions') || '隐藏选项' : t('showOptions') || '显示选项'}</p>
+                      <p>{showOptions ? t('hideOptions') : t('showOptions')}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -1000,136 +1025,136 @@ export const RecipeForm = ({
                     transformOrigin: 'left center'
                   }}
                 >
-                {/* Servings 步进器 */}
-                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px] border border-gray-100 dark:border-gray-700">
-                  <Label htmlFor="servings" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                    <Image
+                  {/* Servings 步进器 */}
+                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px]">
+                    <Label htmlFor="servings" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                      <Image
                       src="/images/options-icon/serving.svg"
-                      alt="Servings"
-                      width={16}
-                      height={16}
-                      className="w-4 h-4 object-contain"
+                      alt={t('servings')}
+                      width={20}
+                      height={20}
+                      className="w-5 h-5 object-contain"
                       unoptimized={true}
                     />
                     <span>{t('servings')}</span>
-                  </Label>
-                  <div className="flex items-center gap-1 rounded-md p-1 ml-auto">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
-                      onClick={handleServingsDecrease}
-                      disabled={formData.servings <= 1}
-                    >
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <div className="w-6 text-center px-1">
-                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formData.servings}</span>
+                    </Label>
+                    <div className="flex items-center gap-1 rounded-md p-1 ml-auto">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
+                        onClick={handleServingsDecrease}
+                        disabled={formData.servings <= 1}
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <div className="w-6 text-center px-1">
+                        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formData.servings}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
+                        onClick={handleServingsIncrease}
+                        disabled={formData.servings >= 8}
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
-                      onClick={handleServingsIncrease}
-                      disabled={formData.servings >= 8}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
                   </div>
-                </div>
 
-                {/* Cooking Time 选择器 */}
-                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px] border border-gray-100 dark:border-gray-700">
-                  <Label htmlFor="cookingTime" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                    <Image
-                      src="/images/options-icon/cooking_time.svg"
-                      alt="Cooking Time"
-                      width={16}
-                      height={16}
-                      className="w-4 h-4 object-contain"
-                      unoptimized={true}
-                    />
-                    <span>{t('cookingTime')}</span>
-                  </Label>
-                  <Select
-                    value={formData.cookingTime}
-                    onValueChange={handleCookingTimeChange}
-                  >
-                    <SelectTrigger id="cookingTime" className="h-8 w-20 sm:w-24 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
-                      <SelectValue placeholder={t('selectCookingTime')} />
-                    </SelectTrigger>
-                    <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 z-50">
-                      <SelectItem value="quick">{t('quick')}</SelectItem>
-                      <SelectItem value="medium">{t('mediumTime')}</SelectItem>
-                      <SelectItem value="long">{t('long')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  {/* Cooking Time 选择器 */}
+                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px]">
+                    <Label htmlFor="cookingTime" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                      <Image
+                        src="/images/options-icon/cooking_time.svg"
+                        alt={t('cookingTime')}
+                        width={20}
+                        height={20}
+                        className="w-5 h-5 object-contain"
+                        unoptimized={true}
+                      />
+                      <span>{t('cookingTime')}</span>
+                    </Label>
+                    <Select
+                      value={formData.cookingTime}
+                      onValueChange={handleCookingTimeChange}
+                    >
+                      <SelectTrigger id="cookingTime" className="h-8 w-20 sm:w-24 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
+                        <SelectValue placeholder={t('selectCookingTime')} />
+                      </SelectTrigger>
+                      <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 z-50">
+                        <SelectItem value="quick">{t('quick')}</SelectItem>
+                        <SelectItem value="medium">{t('mediumTime')}</SelectItem>
+                        <SelectItem value="long">{t('long')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                {/* Difficulty 选择器 */}
-                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px] border border-gray-100 dark:border-gray-700">
-                  <Label htmlFor="difficulty" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                    <Image
-                      src="/images/options-icon/difficulty.svg"
-                      alt="Difficulty"
-                      width={16}
-                      height={16}
-                      className="w-4 h-4 object-contain"
-                      unoptimized={true}
-                    />
-                    <span>{t('difficulty')}</span>
-                  </Label>
-                  <Select
-                    value={formData.difficulty}
-                    onValueChange={handleDifficultyChange}
-                  >
-                    <SelectTrigger id="difficulty" className="h-8 w-20 sm:w-24 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
-                      <SelectValue placeholder={t('selectDifficulty')} />
-                    </SelectTrigger>
-                    <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 z-50">
-                      <SelectItem value="easy">{t('easy')}</SelectItem>
-                      <SelectItem value="medium">{t('mediumDifficulty')}</SelectItem>
-                      <SelectItem value="hard">{t('hard')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  {/* Difficulty 选择器 */}
+                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px]">
+                    <Label htmlFor="difficulty" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                      <Image
+                        src="/images/options-icon/difficulty.svg"
+                        alt="Difficulty"
+                        width={20}
+                        height={20}
+                        className="w-5 h-5 object-contain"
+                        unoptimized={true}
+                      />
+                      <span>{t('difficulty')}</span>
+                    </Label>
+                    <Select
+                      value={formData.difficulty}
+                      onValueChange={handleDifficultyChange}
+                    >
+                      <SelectTrigger id="difficulty" className="h-8 w-20 sm:w-24 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
+                        <SelectValue placeholder={t('selectDifficulty')} />
+                      </SelectTrigger>
+                      <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 z-50">
+                        <SelectItem value="easy">{t('easy')}</SelectItem>
+                        <SelectItem value="medium">{t('mediumDifficulty')}</SelectItem>
+                        <SelectItem value="hard">{t('hard')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                {/* Cuisine 选择器 */}
-                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px] border border-gray-100 dark:border-gray-700">
-                  <Label htmlFor="cuisine" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                    <Image
-                      src="/images/options-icon/cuisine.svg"
-                      alt="Cuisine"
-                      width={16}
-                      height={16}
-                      className="w-4 h-4 object-contain"
-                      unoptimized={true}
-                    />
-                    <span>{t('cuisine')}</span>
-                  </Label>
-                  <Select
-                    value={formData.cuisine}
-                    onValueChange={handleCuisineChange}
-                  >
-                    <SelectTrigger id="cuisine" className="h-8 w-20 sm:w-24 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
-                      <SelectValue placeholder={t('selectCuisine')} />
-                    </SelectTrigger>
-                    <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 z-50">
-                      <SelectItem value="any">{t('anyCuisine')}</SelectItem>
-                      {cuisinesLoading ? (
-                        <SelectItem value="loading" disabled>{t('loadingCuisines')}</SelectItem>
-                      ) : (
-                        cuisines.map((cuisine) => (
-                          <SelectItem key={cuisine.id} value={cuisine.id.toString()}>
-                            {cuisine.name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
+                  {/* Cuisine 选择器 */}
+                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full sm:w-auto sm:min-w-[140px]">
+                    <Label htmlFor="cuisine" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                      <Image
+                        src="/images/options-icon/cuisine.svg"
+                        alt="Cuisine"
+                        width={20}
+                        height={20}
+                        className="w-5 h-5 object-contain"
+                        unoptimized={true}
+                      />
+                      <span>{t('cuisine')}</span>
+                    </Label>
+                    <Select
+                      value={formData.cuisine}
+                      onValueChange={handleCuisineChange}
+                    >
+                      <SelectTrigger id="cuisine" className="h-8 w-20 sm:w-24 text-xs bg-gray-50 dark:bg-gray-700 border-0 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 ml-auto">
+                        <SelectValue placeholder={t('selectCuisine')} />
+                      </SelectTrigger>
+                      <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 z-50">
+                        <SelectItem value="any">{t('anyCuisine')}</SelectItem>
+                        {cuisinesLoading ? (
+                          <SelectItem value="loading" disabled>{t('loadingCuisines')}</SelectItem>
+                        ) : (
+                          cuisines.map((cuisine) => (
+                            <SelectItem key={cuisine.id} value={cuisine.id.toString()}>
+                              {cuisine.name}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
                 </div>
               </div>
@@ -1182,7 +1207,7 @@ export const RecipeForm = ({
                       </button>
                     </TooltipTrigger>
                     <TooltipContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
-                      <p>{showOptions ? t('hideOptions') || '隐藏选项' : t('showOptions') || '显示选项'}</p>
+                      <p>{showOptions ? t('hideOptions') : t('showOptions')}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -1203,14 +1228,14 @@ export const RecipeForm = ({
                 }}
               >
                 {/* Servings 步进器 */}
-                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full border border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full">
                   <Label htmlFor="servings" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                     <Image
                       src="/images/options-icon/serving.svg"
-                      alt="Servings"
-                      width={16}
-                      height={16}
-                      className="w-4 h-4 object-contain"
+                      alt={t('servings')}
+                      width={20}
+                      height={20}
+                      className="w-5 h-5 object-contain"
                       unoptimized={true}
                     />
                     <span>{t('servings')}</span>
@@ -1243,14 +1268,14 @@ export const RecipeForm = ({
                 </div>
 
                 {/* Cooking Time 选择器 */}
-                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full border border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full">
                   <Label htmlFor="cookingTime" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                     <Image
                       src="/images/options-icon/cooking_time.svg"
-                      alt="Cooking Time"
-                      width={16}
-                      height={16}
-                      className="w-4 h-4 object-contain"
+                      alt={t('cookingTime')}
+                      width={20}
+                      height={20}
+                      className="w-5 h-5 object-contain"
                       unoptimized={true}
                     />
                     <span>{t('cookingTime')}</span>
@@ -1271,7 +1296,7 @@ export const RecipeForm = ({
                 </div>
 
                 {/* Difficulty 选择器 */}
-                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full border border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full">
                   <Label htmlFor="difficulty" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                     <Image
                       src="/images/options-icon/difficulty.svg"
@@ -1299,14 +1324,14 @@ export const RecipeForm = ({
                 </div>
 
                 {/* Cuisine 选择器 */}
-                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full border border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2.5 h-10 w-full">
                   <Label htmlFor="cuisine" className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                     <Image
                       src="/images/options-icon/cuisine.svg"
                       alt="Cuisine"
-                      width={16}
-                      height={16}
-                      className="w-4 h-4 object-contain"
+                      width={20}
+                      height={20}
+                      className="w-5 h-5 object-contain"
                       unoptimized={true}
                     />
                     <span>{t('cuisine')}</span>

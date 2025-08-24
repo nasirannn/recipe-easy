@@ -13,7 +13,7 @@
   /* 容器配置 */
   --container-center: true;
   --container-padding: 1.5rem;
-  
+
   /* 响应式断点 */
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
@@ -33,7 +33,7 @@
   --color-gray-800: oklch(0.15 0 0);
   --color-gray-900: oklch(0.09 0 0);
   --color-gray-950: oklch(0.03 0 0);
-  
+
   /* 带透明度的灰色变量 */
   --color-gray-100-50: oklch(0.95 0 0 / 0.5);
   --color-gray-200-40: oklch(0.9 0 0 / 0.4);
@@ -61,23 +61,23 @@
   /* 设计系统颜色 - 浅色模式 */
   --color-background: oklch(1 0 0);                    /* 纯白背景 */
   --color-foreground: oklch(0.2 0 0);                  /* 深灰文字（AA 级对比度） */
-  
+
   --color-muted: oklch(0.96 0 0);                      /* 淡灰背景 */
   --color-muted-foreground: oklch(0.46 0 0);           /* 中灰文字 */
-  
+
   --color-popover: oklch(1 0 0);                       /* 弹窗背景 */
   --color-popover-foreground: oklch(0.2 0 0);          /* 弹窗文字 */
-  
+
   --color-card: oklch(1 0 0);                          /* 卡片背景 */
   --color-card-foreground: oklch(0.2 0 0);             /* 卡片文字 */
-  
+
   --color-border: oklch(0.9 0 0);                      /* 边框颜色 */
   --color-input: oklch(0.9 0 0);                       /* 输入框边框 */
-  
+
   /* 品牌主色 - 暖橙色（食欲刺激）- 使用 RGB */
   --color-primary: rgb(255 106 0);                      /* 主按钮/链接 */
   --color-primary-foreground: oklch(0.98 0 0);         /* 主按钮文字 */
-  
+
   /* 带透明度的主色变量 - 支持 v4 语法 */
   --color-primary-5: rgb(255 106 0 / 0.05);
   --color-primary-10: rgb(255 106 0 / 0.1);
@@ -87,28 +87,28 @@
   --color-primary-50: rgb(255 106 0 / 0.5);
   --color-primary-80: rgb(255 106 0 / 0.8);
   --color-primary-90: rgb(255 106 0 / 0.9);
-  
+
   /* 辅助色 - 蒲公英黄绿（自然健康） */
   --color-secondary: oklch(0.8 0.15 72);               /* 图标/标签 */
   --color-secondary-foreground: oklch(0.98 0 0);       /* 辅助按钮文字 */
-  
+
   /* 带透明度的辅助色变量 */
   --color-secondary-10: oklch(0.8 0.15 72 / 0.1);
   --color-secondary-80: oklch(0.8 0.15 72 / 0.8);
-  
+
   --color-accent: oklch(0.96 0 0);                     /* 强调色 */
   --color-accent-foreground: oklch(0.1 0 0);           /* 强调文字 */
-  
+
   --color-destructive: oklch(0.602 0.237 25.331);      /* 危险操作（如删除） */
   --color-destructive-foreground: oklch(0.98 0 0);     /* 危险文字 */
-  
+
   /* 带透明度的危险色变量 */
   --color-destructive-10: oklch(0.602 0.237 25.331 / 0.1);
   --color-destructive-80: oklch(0.602 0.237 25.331 / 0.8);
   --color-destructive-90: oklch(0.602 0.237 25.331 / 0.9);
-  
+
   --color-ring: rgb(255 106 0);                         /* 聚焦轮廓 */
-  
+
   /* 圆角半径 */
   --radius: 0.5rem;
   --radius-sm: calc(var(--radius) - 4px);
@@ -151,7 +151,7 @@
   /* 辅助色 - 蒲公英黄绿（亮度提升） */
   --color-secondary: oklch(0.85 0.15 72);              /* 图标/标签 */
   --color-secondary-foreground: oklch(0.2 0 0);        /* 辅助按钮文字 */
-  
+
   /* 带透明度的辅助色变量 - 深色模式 */
   --color-secondary-10: oklch(0.85 0.15 72 / 0.1);
   --color-secondary-80: oklch(0.85 0.15 72 / 0.8);
@@ -161,14 +161,14 @@
 
   --color-destructive: oklch(0.602 0.237 25.331);      /* 危险操作 */
   --color-destructive-foreground: oklch(0.98 0 0);     /* 危险文字 */
-  
+
   /* 带透明度的危险色变量 - 深色模式 */
   --color-destructive-10: oklch(0.602 0.237 25.331 / 0.1);
   --color-destructive-80: oklch(0.602 0.237 25.331 / 0.8);
   --color-destructive-90: oklch(0.602 0.237 25.331 / 0.9);
-  
+
   --color-ring: oklch(0.8 0.213 25.331);               /* 聚焦轮廓（亮橙色） */
-  
+
   /* 带透明度的灰色变量 - 深色模式 */
   --color-gray-100-50: oklch(0.95 0 0 / 0.5);
   --color-gray-200-40: oklch(0.9 0 0 / 0.4);
@@ -393,4 +393,15 @@ body {
 
 .animate-fade-in {
   animation: fadeIn 0.2s ease-in-out forwards;
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

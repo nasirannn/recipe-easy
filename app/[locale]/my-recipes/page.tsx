@@ -226,14 +226,12 @@ export default function MyRecipesPage() {
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <div className="flex items-center gap-4">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
                   {t('title')}
                   <span className="text-lg font-normal text-gray-500 dark:text-gray-400 ml-2 flex items-center">
                     ({total})
                   </span>
-                </h1>
-              </div>
+              </h2>
             </div>
             
             {/* Image Notice */}
@@ -276,13 +274,12 @@ export default function MyRecipesPage() {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
                 {t('title')}
                 <span className="text-lg font-normal text-gray-500 dark:text-gray-400 ml-2 flex items-center">
                   ({total})
                 </span>
-              </h1>
+            </h2>
               {hasLoaded && (
                 <Button
                   variant="ghost"
@@ -296,7 +293,6 @@ export default function MyRecipesPage() {
                   </svg>
                 </Button>
               )}
-            </div>
           </div>
           
           {/* Image Notice */}

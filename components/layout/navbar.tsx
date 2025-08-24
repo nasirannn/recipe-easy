@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, LogOut, User, Settings, BookOpen, Home, Search, Star, HelpCircle, ChevronRight, Compass } from "lucide-react";
+import { Menu, LogOut, BookOpen, Star, HelpCircle, ChevronRight, ArrowRight, Compass } from "lucide-react";
 import React, { useState } from "react";
 import {
   DropdownMenu,
@@ -61,7 +61,6 @@ export const Navbar = () => {
   }
 
   const routeList: RouteProps[] = [
-    { href: `/${locale}`, label: t('home'), icon: <Home className="h-4 w-4" /> },
     { href: `/${locale}/recipes`, label: t('explore'), icon: <Compass className="h-4 w-4" /> },
     { href: `/${locale}#features`, label: t('features'), icon: <Star className="h-4 w-4" /> },
     { href: `/${locale}#faq`, label: t('faq'), icon: <HelpCircle className="h-4 w-4" /> },
@@ -217,9 +216,13 @@ export const Navbar = () => {
                    </DropdownMenuContent>
                  </DropdownMenu>
                 ) : (
-                  <Button onClick={() => setShowAuthModal(true)} variant="default" size="sm" className="ml-2 cursor-pointer">
+                  <div 
+                    onClick={() => setShowAuthModal(true)} 
+                    className="ml-2 cursor-pointer px-3 py-2 text-sm font-medium text-foreground hover:bg-accent/50 transition-colors duration-200 flex items-center gap-1.5 rounded-md"
+                  >
                     {t('signin')}
-                  </Button>
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
                 )
               )}
             </div>
@@ -360,16 +363,16 @@ export const Navbar = () => {
                       )}
                       
                       {!loading && !user && (
-                        <Button
-                          variant="default"
-                          className="w-full justify-center cursor-pointer"
+                        <div
+                          className="w-full text-center cursor-pointer px-4 py-3 text-sm font-medium text-foreground hover:bg-accent/50 transition-colors duration-200 flex items-center justify-center gap-1.5 rounded-md"
                           onClick={() => {
                             setShowAuthModal(true);
                             setIsOpen(false);
                           }}
                         >
                           {t('signin')}
-                        </Button>
+                          <ArrowRight className="h-4 w-4" />
+                        </div>
                       )}
                     </div>
                   </div>

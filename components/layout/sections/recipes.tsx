@@ -2,24 +2,13 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Spinner } from '@/components/ui/spinner';
-import { Clock, Users, ChefHat, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 
 import { Recipe } from '@/lib/types';
 import { getImageUrl } from '@/lib/config';
-
-// 获取 cuisine 的 CSS 类名 - 现在直接从数据库获取
-const getCuisineClassName = (cuisine: any): string => {
-  if (!cuisine) return 'cuisine-other';
-  return cuisine.cssClass || 'cuisine-other';
-};
-
-// 获取 cuisine 的本地化显示名称
-const getLocalizedCuisineName = (cuisineName: string, locale: string): string => {
-  if (!cuisineName) return locale === 'zh' ? '其他' : 'Other';
-  return cuisineName; // 现在直接从数据库获取本地化名称
-};
 
 export const RecipesSection = () => {
   const t = useTranslations('recipes');
@@ -76,6 +65,15 @@ export const RecipesSection = () => {
     return () => clearInterval(interval);
   }, [recipes.length, currentImageIndex, isTransitioning, userInteracting]);
 
+  // 鼠标悬浮暂停轮播
+  const handleMouseEnter = () => {
+    setUserInteracting(true);
+  };
+
+  const handleMouseLeave = () => {
+    setUserInteracting(false);
+  };
+
   // 手动切换图片
   const goToNext = () => {
     if (isTransitioning) return;
@@ -125,31 +123,28 @@ export const RecipesSection = () => {
 
   if (isLoading) {
     return (
-      <section id="recipes" className="container py-8 sm:py-12 lg:py-16 xl:py-20">
-        <div className="grid lg:grid-cols-2 place-items-center gap-8 lg:gap-24">
-          <div className="w-full order-2 lg:order-1">
-            <div className="flex justify-center items-center aspect-[4/3] sm:aspect-[3/2] bg-gray-200 dark:bg-gray-700 rounded-lg min-h-[280px] sm:min-h-[320px] lg:min-h-[400px]">
-              <Spinner className="h-6 w-6 sm:h-8 sm:w-8" />
+      <section id="recipes" className="py-8 sm:py-20">
+        <div className="container max-w-6xl mx-auto px-4">
+          <div className="grid lg:grid-cols-10 gap-0 bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden">
+            <div className="lg:col-span-6 aspect-square lg:aspect-[4/3] bg-muted flex items-center justify-center">
+              <Spinner className="h-8 w-8" />
+            </div>
+            <div className="lg:col-span-4 p-8 lg:p-12 flex flex-col justify-center bg-blue-50 dark:bg-blue-950/30">
+              <div className="space-y-4">
+                {/* 标题骨架 */}
+                <Skeleton className="h-12 w-4/5" />
+                {/* 描述骨架 */}
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-5/6" />
+                </div>
+                {/* 标签骨架 */}
+                <div className="flex gap-2 pt-2">
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                  <Skeleton className="h-6 w-20 rounded-full" />
             </div>
           </div>
-          <div className="text-center lg:text-left order-1 lg:order-2">
-            <h2 className="text-base sm:text-lg text-secondary mb-2 tracking-wider">
-              {t('title')}
-            </h2>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
-              {t('subtitle')}
-            </h2>
-            <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8">
-              {t('description1')}
-            </p>
-            <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8">
-              {t('description2')}
-            </p>
-            <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8">
-              {t('description3')}
-            </p>
-            <div className="flex justify-center lg:justify-start">
-              <Spinner className="h-6 w-6 sm:h-8 sm:w-8" />
             </div>
           </div>
         </div>
@@ -158,13 +153,45 @@ export const RecipesSection = () => {
   }
 
   return (
-    <section id="recipes" className="container py-8 sm:py-12 lg:py-16 xl:py-16">
-      <div className="grid lg:grid-cols-2 gap-8 lg:gap-24">
-        {/* 左侧：图片轮播 */}
-        <div className="w-full order-2 lg:order-1">
+    <section id="recipes" className="py-8 sm:py-20">
+      <div className="container max-w-6xl mx-auto px-4">
+        {/* Section Title and Subtitle */}
+        <div className="text-center mb-8">
+          <h2 className="text-lg text-secondary text-center mb-2 tracking-wider">
+            {t('title')}
+          </h2>
+
+          <h2 className="text-3xl md:text-4xl text-center font-bold mb-4">
+            {t('subtitle')}
+          </h2>
+        </div>
+        <div
+          className="grid lg:grid-cols-10 gap-0 bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden relative group"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {/* 导航按钮 - 放在最外层，只在悬浮时显示 */}
+          <div className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out" style={{ zIndex: 50 }}>
+            <button
+              onClick={goToPrevious}
+              className="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 pointer-events-auto backdrop-blur-md hover:scale-110"
+              aria-label="Previous recipe"
+            >
+              <ChevronLeft className="w-5 h-5 stroke-[3]" />
+            </button>
+            <button
+              onClick={goToNext}
+              className="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 pointer-events-auto backdrop-blur-md hover:scale-110"
+              aria-label="Next recipe"
+            >
+              <ChevronRight className="w-5 h-5 stroke-[3]" />
+            </button>
+          </div>
+
+          {/* 左侧：图片 */}
+          <div className="lg:col-span-6 relative group">
           {displayRecipes.length > 0 ? (
-            <div className="relative">
-              <div className="relative aspect-[4/3] sm:aspect-[3/2] overflow-hidden rounded-lg shadow-lg min-h-[280px] sm:min-h-[320px] lg:min-h-[400px]">
+              <div className="relative aspect-square lg:aspect-[4/3] overflow-hidden">
                 {/* 底层图片 - 当前显示的图片 */}
                 <Link href={`/${locale}/recipe/${displayRecipes[currentImageIndex].id}`} className="relative block w-full h-full">
                   <Image
@@ -172,9 +199,8 @@ export const RecipesSection = () => {
                     src={getImageUrl(displayRecipes[currentImageIndex].imagePath) || '/images/recipe-placeholder-bg.png'}
                     alt={displayRecipes[currentImageIndex].title}
                     fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 50vw, 25vw"
-                    className={`object-cover cursor-pointer hover:scale-105 transition-all duration-300 ${
-                      isTransitioning ? 'animate-fade-out' : ''
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className={`object-cover cursor-pointer transition-all duration-300 ${isTransitioning ? 'animate-fade-out' : ''
                     }`}
                     style={{
                       animation: isTransitioning ? 'fade-out 0.6s ease-in-out' : 'none',
@@ -185,9 +211,6 @@ export const RecipesSection = () => {
                       const target = e.target as HTMLImageElement;
                       target.onerror = null;
                       target.src = '/images/recipe-placeholder-bg.png';
-                      target.className = `object-cover cursor-pointer hover:scale-105 transition-all duration-300 ${
-                        isTransitioning ? 'animate-fade-out' : ''
-                      }`;
                     }}
                     onClick={handleImageClick}
                   />
@@ -201,8 +224,8 @@ export const RecipesSection = () => {
                       src={getImageUrl(displayRecipes[nextImageIndex].imagePath) || '/images/recipe-placeholder-bg.png'}
                       alt={displayRecipes[nextImageIndex].title}
                       fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 50vw, 25vw"
-                      className="object-cover animate-fade-in cursor-pointer hover:scale-105 transition-all duration-300"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover animate-fade-in cursor-pointer transition-all duration-300"
                       style={{
                         animation: 'fade-in 0.6s ease-in-out',
                         zIndex: 10
@@ -212,117 +235,63 @@ export const RecipesSection = () => {
                         const target = e.target as HTMLImageElement;
                         target.onerror = null;
                         target.src = '/images/recipe-placeholder-bg.png';
-                        target.className = 'object-cover animate-fade-in cursor-pointer hover:scale-105 transition-all duration-300';
                       }}
                       onClick={handleImageClick}
                     />
                   </Link>
                 )}
-
-                {/* 菜系标签 */}
-                {displayRecipes[currentImageIndex].cuisine_id && (
-                  <div className="absolute top-2 sm:top-3 left-2 sm:left-3">
-                    <span className={`inline-block px-2 py-1 text-xs font-medium text-white rounded-full ${getCuisineClassName(displayRecipes[currentImageIndex].cuisine)}`}>
-                      {getLocalizedCuisineName(displayRecipes[currentImageIndex].cuisine?.name, locale)}
-                    </span>
-                  </div>
-                )}
-
-                {/* 导航按钮 */}
-                {displayRecipes.length > 1 && (
-                  <>
-                    <button
-                      onClick={goToPrevious}
-                      className="absolute left-1 sm:left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition-all duration-200"
-                      aria-label="Previous image"
-                    >
-                      <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
-                    </button>
-                    <button
-                      onClick={goToNext}
-                      className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition-all duration-200"
-                      aria-label="Next image"
-                    >
-                      <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
-                    </button>
-                  </>
-                )}
-              </div>
             </div>
           ) : (
-            <div className="aspect-[4/3] sm:aspect-[3/2] bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center min-h-[280px] sm:min-h-[320px] lg:min-h-[400px]">
-              <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">{t('loadingRecipes')}</p>
+              <div className="aspect-square lg:aspect-[4/3] bg-muted flex items-center justify-center">
+                <p className="text-muted-foreground">{t('loadingRecipes')}</p>
             </div>
           )}
         </div>
 
-        {/* 右侧：文字内容 */}
-        <div className="text-center lg:text-left flex flex-col h-full order-1 lg:order-2">
-          <div className="flex flex-col h-full">
-            <h2 className="text-base sm:text-lg text-secondary mb-2 tracking-wider">
-              {t('title')}
-            </h2>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
-              {t('subtitle')}
-            </h2>
-            
-            {/* 菜谱内容包装器 - 使用flex-1占满剩余空间，移除底部margin */}
-            <div className="bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl p-4 sm:p-6 border border-slate-200/50 dark:border-slate-700/50 shadow-xs flex-1 flex flex-col">
-              <div className="flex-1">
-                <p className="text-base sm:text-lg text-foreground mb-3 sm:mb-4 line-clamp-2">
-                  {displayRecipes.length > 0 ? (
-                    displayRecipes[currentImageIndex].title
-                  ) : (
-                    t('description1')
-                  )}
-                </p>
-                
-                {/* 菜系标签 - 放在名称下面 */}
-                {displayRecipes.length > 0 && displayRecipes[currentImageIndex].cuisine?.name && displayRecipes[currentImageIndex].cuisine.name.trim() !== '' && (
-                  <div className="mb-4 sm:mb-6">
-                    <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium text-white rounded-full shadow-xs ${getCuisineClassName(displayRecipes[currentImageIndex].cuisine)}`}>
-                      {getLocalizedCuisineName(displayRecipes[currentImageIndex].cuisine.name, locale)}
-                    </span>
-                  </div>
-                )}
-                <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 line-clamp-2">
-                  {displayRecipes.length > 0 ? (
-                    displayRecipes[currentImageIndex].description || t('description2')
-                  ) : (
-                    t('description2')
-                  )}
-                </p>
+          {/* 右侧：菜谱信息 */}
+          <div className="lg:col-span-4 p-8 lg:p-12 flex flex-col justify-center relative bg-blue-50 dark:bg-blue-950/30 overflow-hidden">
+            {/* 背景纹理图片 */}
+            <div className="absolute inset-0 dark:opacity-5 pointer-events-none">
+              <Image
+                src="/images/ingredients-icon/grain-texture.png"
+                alt=""
+                fill
+                className="object-cover"
+                unoptimized={true}
+              />
+            </div>
+            <div className="relative z-10 space-y-4">
+            {/* 菜谱标题 */}
+              {displayRecipes.length > 0 ? (
+                <Link href={`/${locale}/recipe/${displayRecipes[currentImageIndex].id}`}>
+                  <h2 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-foreground leading-tight cursor-pointer hover:text-primary transition-colors duration-200">
+                    {displayRecipes[currentImageIndex].title}
+                  </h2>
+                </Link>
+              ) : (
+                <div className="text-3xl lg:text-4xl xl:text-5xl font-bold text-foreground leading-tight text-muted-foreground">
+                  {t('loadingRecipes')}
               </div>
-              
-              {/* 底部信息 - 固定在底部 */}
-              <div className="mt-auto pt-2">
-                {displayRecipes.length > 0 ? (
-                  <div className="flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3">
-                    {displayRecipes[currentImageIndex].cookingTime && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
-                        <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
-                        <span className="text-xs sm:text-sm">{displayRecipes[currentImageIndex].cookingTime}</span>
-                      </span>
-                    )}
-                    {displayRecipes[currentImageIndex].servings && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
-                        <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                        <span className="text-xs sm:text-sm">{displayRecipes[currentImageIndex].servings}</span>
-                      </span>
-                    )}
-                    {displayRecipes[currentImageIndex].difficulty && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/50 dark:bg-slate-800/50 rounded-full text-sm">
-                        <ChefHat className="h-3 w-3 sm:h-4 sm:w-4" />
-                        <span className="text-xs sm:text-sm">{displayRecipes[currentImageIndex].difficulty}</span>
-                      </span>
-                    )}
+              )}
+
+            {/* 菜谱描述 */}
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                {displayRecipes.length > 0 ? displayRecipes[currentImageIndex].description : ''}
+              </p>
+
+              {/* 标签 */}
+              {displayRecipes.length > 0 && displayRecipes[currentImageIndex].tags && Array.isArray(displayRecipes[currentImageIndex].tags) && displayRecipes[currentImageIndex].tags.length > 0 && (
+                <div className="pt-2">
+                  <div className="flex flex-wrap gap-2">
+                    {displayRecipes[currentImageIndex].tags.slice(0, 3).map((tag, index) => (
+                      <div key={index} className="tag-minimal">
+                        <span className="text-[10px]">🏷️</span>
+                        <span>{tag}</span>
                   </div>
-                ) : (
-                  <p className="text-base sm:text-lg text-muted-foreground mb-0">
-                    {t('description3')}
-                  </p>
-                )}
-              </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

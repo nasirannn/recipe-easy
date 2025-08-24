@@ -50,8 +50,8 @@
   },
   "recipeForm": {
     "title": "AI菜谱生成器",
-    "subtitle": "选择食材，AI为您创造美味菜谱",
-    "mainTitle": "无需提示词，只选食材即可 🎉",
+    "mainTitle": "🎉 用你现有的食材制作美食",
+    "subtitle": "无需提示词，只选食材即可",
     "recipeMaker": "菜谱生成器",
     "cuisine": "菜系",
     "cuisinePlaceholder": "选择菜系风格",
@@ -110,6 +110,7 @@
     "pleaseWait": "请稍候",
     "loadError": "加载失败",
     "retry": "重试",
+    "fetchIngredientsError": "获取食材数据失败",
     "noIngredientsFound": "未找到食材",
     "pressEnterToAdd": "按回车键将其添加为自定义食材",
     "noIngredientsInCategory": "此分类中没有可用的食材",
@@ -164,8 +165,8 @@
     "insufficientCredits": "积分不足，无法生成图片"
   },
   "recipes": {
-    "title": "探索菜谱",
-    "subtitle": "来自世界各地的美味食谱",
+    "title": "精选菜谱",
+    "subtitle": "AI生成的烹饪杰作",
     "loadingRecipes": "加载菜谱中...",
     "loadMore": "加载更多",
     "allRecipesDisplayed": "已显示所有菜谱",
@@ -220,20 +221,19 @@
     "consumeOneCredit": "1图片 = 1积分"
   },
   "tutorial": {
-    "title": "如何使用AI食谱生成器？",
-    "subtitle": "快速教程",
+    "title": "使用方法",
     "description": "按照这些简单步骤，在几分钟内从您的食材创建美味食谱。",
     "step1": {
       "title": "选择或输入食材",
-      "description": "从我们广泛的食材数据库中选择或输入自定义食材（按回车键）。只需搜索、选择并构建您的食材清单。我们的AI生成器将与您拥有的任何食材一起工作。"
+      "description": "从食材数据库选择或添加自定义食材。搜索、选择并构建您的清单。AI将用您拥有的食材创建食谱。"
     },
     "step2": {
       "title": "生成您的食谱",
-      "description": "点击\"生成\"按钮，观看我们的AI为您创建个性化食谱。选择您喜欢的菜系风格、烹饪时间和难度级别。AI将分析您的食材并创建完美的食谱。"
+      "description": "选择菜系、时间和难度，点击\"生成\"，AI为您创建食谱。AI分析食材获得完美结果。"
     },
     "step3": {
       "title": "获取您的食谱和图片",
-      "description": "基于您选择的食材，先获得食谱，再获得生成的图片。复制食材、调料和烹饪步骤。保存图片并与朋友分享食谱，或保存起来以后使用。"
+      "description": "获得食谱和图片。复制食材、调料和制作步骤。与朋友分享或保存起来。"
     }
   },
   "testimonials": {

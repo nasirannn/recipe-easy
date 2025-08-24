@@ -5,7 +5,7 @@ import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from "react";
-import { Rocket, Compass } from "lucide-react";
+import { Rocket } from "lucide-react";
 import { Recipe, RecipeFormData } from "@/lib/types";
 import { LanguageModel, ImageModel } from "@/lib/types";
 import { RecipeForm } from "@/components/ui/recipe-form";
@@ -257,7 +257,7 @@ export const HeroSection = () => {
           }}
         />
         {/* 模糊遮罩 */}
-        <div className="absolute inset-0 z-[-1] bg-white/10 backdrop-blur-sm" />
+        <div className="absolute inset-0 z-[-1] bg-white/5 backdrop-blur-sm" />
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center w-full">
           {/* 居中内容 */}
           <div className="space-y-12 max-w-3xl">
@@ -298,10 +298,10 @@ export const HeroSection = () => {
               </div>
             </div>
             {/* 按钮组 */}
-            <div className="mt-12 flex flex-col justify-center gap-4 sm:flex-row">
+            <div className="mt-12 flex justify-center">
               <Button
                 size="lg"
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 h-11 rounded-full px-8 w-full sm:w-auto"
+                className="group relative inline-flex items-center justify-center gap-3 whitespace-nowrap text-base font-semibold ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white hover:from-orange-600 hover:via-red-600 hover:to-pink-600 h-14 rounded-full px-12 w-full sm:w-auto shadow-2xl hover:shadow-orange-500/25 transform hover:scale-105 hover:-translate-y-1"
                 onClick={() => {
                   const recipeFormElement = document.getElementById('recipe-form-section');
                   if (recipeFormElement) {
@@ -314,26 +314,16 @@ export const HeroSection = () => {
                   }
                 }}
               >
-                <Rocket className="w-4 h-4 mr-2" />
-                {t('tryNow')}
-              </Button>
-              <Button
-                size="lg"
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-black/40 text-white hover:bg-black/60 h-11 rounded-full px-8 w-full sm:w-auto backdrop-blur-md shadow-lg"
-                onClick={() => {
-                  // 跳转到导航栏中 Explore 对应的页面
-                  router.push(`/${locale}/recipes`);
-                }}
-              >
-                <Compass className="w-4 h-4 mr-2" />
-                {locale === 'zh' ? '探索食谱' : 'Explore Recipes'}
+                <Rocket className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
+                <span className="text-lg">{t('tryNow')}</span>
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </Button>
             </div>
           </div>
         </div>
       </div>
       {/* 第二个div: Recipe Form Section */}
-      <div id="recipe-form-section" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-16 pb-16">
+      <div id="recipe-form-section" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-20 pb-20">
         <div className="relative w-full">
           {/* 装饰性背景元素 */}
           <div className="absolute -top-4 -left-4 w-40 h-40 bg-gradient-to-br from-orange-400/20 to-amber-400/15 rounded-full blur-2xl"></div>
