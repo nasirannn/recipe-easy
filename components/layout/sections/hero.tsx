@@ -1,17 +1,17 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from "react";
-import { Rocket } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
+import Image from "next/image";
 import { Recipe, RecipeFormData } from "@/lib/types";
 import { LanguageModel, ImageModel } from "@/lib/types";
 import { RecipeForm } from "@/components/ui/recipe-form";
 import { RecipeDisplay } from "@/components/ui/recipe-display";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
-import { getRecommendedModels } from "@/lib/config";
+import { APP_CONFIG, getRecommendedModels } from "@/lib/config";
 import { useAuth } from "@/contexts/auth-context";
 import { useUserUsage } from "@/hooks/use-user-usage";
 import { useRecipeGeneration } from "@/hooks/use-recipe-generation";
@@ -25,8 +25,8 @@ export const HeroSection = () => {
   const locale = useLocale();
   const router = useRouter();
   const { user } = useAuth();
-  const isAdmin = user?.user_metadata?.role === 'admin';
-  const { canGenerate } = useUserUsage();
+  const { credits } = useUserUsage();
+  const canGenerateImage = (credits?.credits ?? 0) >= APP_CONFIG.imageGenerationCost;
 
   
   // 使用自定义 hooks
@@ -159,12 +159,12 @@ export const HeroSection = () => {
       return;
     }
 
-    // 检查积分余额（管理员跳过）
-    if (!isAdmin && !canGenerate) {
+    // 检查积分余额
+    if (!canGenerateImage) {
       toast.error(
         locale === 'zh' 
-          ? '积分不足，无法重新生成图片。每次生成需要 1 个积分。' 
-          : 'Insufficient credits to regenerate image. Each generation requires 1 credit.'
+          ? `积分不足，无法重新生成图片。每次生成需要 ${APP_CONFIG.imageGenerationCost} 个积分。`
+          : `Insufficient credits to regenerate image. Each generation requires ${APP_CONFIG.imageGenerationCost} credits.`
       );
       return;
     }
@@ -180,8 +180,8 @@ export const HeroSection = () => {
         // 显示成功提示
         toast.success(
           locale === 'zh' 
-            ? '图片重新生成成功！已消耗 1 个积分。' 
-            : 'Image regenerated successfully! 1 credit consumed.'
+            ? `图片重新生成成功！已消耗 ${APP_CONFIG.imageGenerationCost} 个积分。`
+            : `Image regenerated successfully! ${APP_CONFIG.imageGenerationCost} credits consumed.`
         );
       });
     } catch (error) {
@@ -243,98 +243,63 @@ export const HeroSection = () => {
     }
   };
   return (
-    <section id="hero" className="w-full bg-primary-5">
-      {/* 第一个div: Hero Intro Section */}
-      <div className="w-full pb-8 lg:pb-0 h-[calc(100vh-3.5rem)] flex items-center relative">
-        {/* 背景图片容器 */}
-        <div 
-          className="absolute inset-0 z-[-1] bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: 'url(/images/hero-background.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        />
-        {/* 模糊遮罩 */}
-        <div className="absolute inset-0 z-[-1] bg-white/5 backdrop-blur-sm" />
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center w-full">
-          {/* 居中内容 */}
-          <div className="space-y-12 max-w-3xl">
-            {/* 标题和描述 */}
-            <h1 className="mx-auto mb-6 mt-8 max-w-3xl text-balance text-7xl font-bold lg:mb-10 lg:text-7xl text-white drop-shadow-lg">
+    <section id="hero" className="relative isolate overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <div className="absolute -top-36 left-[-18%] h-[28rem] w-[28rem] rounded-full bg-blue-400/18 blur-3xl dark:bg-blue-500/20" />
+        <div className="absolute -top-40 right-[-14%] h-[30rem] w-[30rem] rounded-full bg-orange-300/20 blur-3xl dark:bg-orange-500/18" />
+      </div>
+
+      <div className="relative z-10 home-inner pb-6 pt-24 sm:pb-8 sm:pt-28 md:pb-10 md:pt-32">
+        <div className="mx-auto max-w-5xl text-center">
+          <div>
+            <span className="home-eyebrow">
+              {locale === 'zh' ? 'AI 食谱工作台' : 'AI Recipe Workspace'}
+            </span>
+            <h1 className="home-title mx-auto max-w-3xl">
               {locale === 'zh' ? (
                 <>
-                  <span>用任意食材，</span>
-                  <br />
-                  <span>生成</span>
-                  <span className="text-transparent bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 bg-clip-text drop-shadow-none font-extrabold">AI食谱</span>
+                  用任意食材，
+                  <span className="bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent"> 生成 AI 食谱</span>
                 </>
               ) : (
                 <>
-                  <span className="text-transparent bg-gradient-to-r from-orange-400 via-amber-500 to-orange-600 bg-clip-text drop-shadow-none font-extrabold">Free Online AI</span>
-                  <span className="text-transparent bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 bg-clip-text drop-shadow-none font-extrabold"> Recipes Generator</span>
-                  <br />
-                  <span className="text-white"> From Any Ingredients</span>
+                  Turn Any Ingredients Into
+                  <span className="bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent"> AI Recipes</span>
                 </>
               )}
             </h1>
-            <p className="m mx-auto max-w-3xl text-white/90 lg:text-xl drop-shadow-md mb-8">
+            <p className="home-lead mx-auto max-w-2xl">
               {t('description')}
             </p>
-            {/* 特色信息 Badge */}
-            <div className="flex flex-wrap gap-2 items-center justify-center mt-8 mb-8">
-              <div className="inline-flex items-center px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-xs font-medium text-white drop-shadow-sm">
-                {t('badgeFreeRecipeCreation')}
-              </div>
-              <div className="inline-flex items-center px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-xs font-medium text-white drop-shadow-sm">
-                {t('badgeRegisterForImages')}
-              </div>
-              <div className="inline-flex items-center px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-xs font-medium text-white drop-shadow-sm">
-                {t('badgeStartWithCredits')}
-              </div>
-              <div className="inline-flex items-center px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-xs font-medium text-white drop-shadow-sm">
-                {t('badgeImageCostPerCredit')}
-              </div>
+
+            <div className="scrollbar-hide mx-auto mt-4 flex w-full max-w-5xl flex-nowrap items-center justify-start gap-2 overflow-x-auto px-1 sm:mt-5 sm:justify-center">
+              {[t('badgeFreeRecipeCreation'), t('badgeRegisterForImages'), t('badgeStartWithCredits'), t('badgeImageCostPerCredit')].map((item) => (
+                <div
+                  key={item}
+                  className="inline-flex min-h-[34px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200/80 bg-white/70 px-3 py-1.5 text-left text-xs font-medium leading-5 text-slate-700 backdrop-blur-sm dark:border-slate-700/70 dark:bg-slate-900/46 dark:text-slate-300 sm:text-[13px]"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-primary" />
+                  <span className="font-medium">{item}</span>
+                </div>
+              ))}
             </div>
-            {/* 按钮组 */}
-            <div className="mt-12 flex justify-center">
-              <Button
-                size="lg"
-                className="group relative inline-flex items-center justify-center gap-3 whitespace-nowrap text-base font-semibold ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white hover:from-orange-600 hover:via-red-600 hover:to-pink-600 h-14 rounded-full px-12 w-full sm:w-auto shadow-2xl hover:shadow-orange-500/25 transform hover:scale-105 hover:-translate-y-1"
-                onClick={() => {
-                  const recipeFormElement = document.getElementById('recipe-form-section');
-                  if (recipeFormElement) {
-                    const elementTop = recipeFormElement.offsetTop;
-                    // 滚动到第一屏完全消失的位置，即recipe-form-section的顶部减去一个小的偏移量
-                    window.scrollTo({
-                      top: elementTop, // 减去20px确保第一屏完全消失
-                      behavior: 'smooth'
-                    });
-                  }
-                }}
-              >
-                <Rocket className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
-                <span className="text-lg">{t('tryNow')}</span>
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </Button>
-            </div>
+
           </div>
         </div>
       </div>
-      {/* 第二个div: Recipe Form Section */}
-      <div id="recipe-form-section" className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-20 pb-20">
-        <div className="relative w-full">
-          {/* 装饰性背景元素 */}
-          <div className="absolute -top-4 -left-4 w-40 h-40 bg-gradient-to-br from-orange-400/20 to-amber-400/15 rounded-full blur-2xl"></div>
-          <div className="absolute top-0 left-1/4 w-24 h-24 bg-gradient-to-br from-orange-300/10 to-amber-300/8 rounded-full blur-xl"></div>
-          <div className="absolute bottom-4 right-8 w-16 h-16 bg-gradient-to-r from-orange-200/6 to-amber-100/4 rounded-full blur-lg"></div>
-          
-          {/* 微妙的边框高光 */}
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-transparent via-white/20 to-transparent p-px">
-            <div className="w-full h-full rounded-3xl bg-transparent"></div>
+
+      <div id="recipe-form-section" className="relative z-10 home-inner pb-20 lg:pb-24">
+        <div className="home-card relative overflow-hidden p-4 md:p-6">
+          <div className="absolute inset-0 pointer-events-none dark:opacity-5">
+            <Image
+              src="/images/ingredients-icon/grain-texture.png"
+              alt=""
+              fill
+              className="object-cover"
+              unoptimized={true}
+            />
           </div>
-          {/* 内容区域 */}
+
           <div className="relative z-10">
             <RecipeForm
               formData={formData}
@@ -343,35 +308,33 @@ export const HeroSection = () => {
               loading={loading || imageGenerating}
               showRecipe={showRecipe}
               setShowRecipe={setShowRecipe}
-              // 新增：tab相关props
               activeTab={activeTab}
               mealPlannerText={mealPlannerText}
             />
           </div>
-
-          {/* Recipe Display Section */}
-          {showRecipe && activeTab === 'recipe-maker' && (
-            <div id="loading-animation-container" className="relative z-10 mt-6">
-              {loading ? (
-                <LoadingAnimation language={locale as 'en' | 'zh'} />
-              ) : (
-                <RecipeDisplay 
-                  recipes={recipes} 
-                  selectedIngredients={searchedIngredients}
-                  imageLoadingStates={imageLoadingStates}
-                  onRegenerateImage={handleRegenerateImage}
-                  onSaveRecipe={handleSaveRecipe}
-                />
-              )}
-              {error && (
-                <div className="max-w-screen-md mx-auto text-center mt-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400">
-                  {error}
-                </div>
-              )}
-            </div>
-          )}
         </div>
+
+        {showRecipe && activeTab === 'recipe-maker' && (
+          <div id="loading-animation-container" className="mt-8">
+            {loading ? (
+              <LoadingAnimation language={locale as 'en' | 'zh'} />
+            ) : (
+              <RecipeDisplay 
+                recipes={recipes} 
+                selectedIngredients={searchedIngredients}
+                imageLoadingStates={imageLoadingStates}
+                onRegenerateImage={handleRegenerateImage}
+                onSaveRecipe={handleSaveRecipe}
+              />
+            )}
+            {error && (
+              <div className="mx-auto mt-6 max-w-screen-md rounded-xl border border-red-200 bg-red-50 p-4 text-center text-red-600 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-400">
+                {error}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );
-}; 
+};

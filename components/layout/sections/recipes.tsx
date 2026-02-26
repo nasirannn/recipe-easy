@@ -3,12 +3,13 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Spinner } from '@/components/ui/spinner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Tag } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 
 import { Recipe } from '@/lib/types';
 import { getImageUrl } from '@/lib/config';
+import { SectionHeader } from '@/components/layout/section-header';
 
 export const RecipesSection = () => {
   const t = useTranslations('recipes');
@@ -20,22 +21,22 @@ export const RecipesSection = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [userInteracting, setUserInteracting] = useState(false);
 
-  // 从本地 API 获取食谱数据 - 只获取管理员最近创建的6个菜谱
+  // 从本地 API 获取食谱数据 - 获取最近创建的6个菜谱
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
         setIsLoading(true);
-        // 调用管理员菜谱接口，限制为最近创建的6个菜谱
-        const response = await fetch(`/api/recipes/admin?limit=6&lang=${locale}`);
+        // 调用通用菜谱接口，限制为最近创建的6个菜谱
+        const response = await fetch(`/api/recipes?type=latest&limit=6&page=1&lang=${locale}`);
         const data = await response.json() as any;
 
         if (data.success) {
           setRecipes(data.results || []);
         } else {
-          // Failed to fetch admin recipes
+          // Failed to fetch recipes
         }
       } catch (error) {
-        // Error fetching admin recipes
+        // Error fetching recipes
       } finally {
         setIsLoading(false);
       }
@@ -123,13 +124,13 @@ export const RecipesSection = () => {
 
   if (isLoading) {
     return (
-      <section id="recipes" className="py-8 sm:py-20">
-        <div className="container max-w-6xl mx-auto px-4">
-          <div className="grid lg:grid-cols-10 gap-0 bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden">
+      <section id="recipes" className="home-section">
+        <div className="home-inner">
+          <div className="home-card grid overflow-hidden lg:grid-cols-10">
             <div className="lg:col-span-6 aspect-square lg:aspect-[4/3] bg-muted flex items-center justify-center">
               <Spinner className="h-8 w-8" />
             </div>
-            <div className="lg:col-span-4 p-8 lg:p-12 flex flex-col justify-center bg-blue-50 dark:bg-blue-950/30">
+            <div className="lg:col-span-4 p-8 lg:p-12 flex flex-col justify-center bg-background/70">
               <div className="space-y-4">
                 {/* 标题骨架 */}
                 <Skeleton className="h-12 w-4/5" />
@@ -153,20 +154,15 @@ export const RecipesSection = () => {
   }
 
   return (
-    <section id="recipes" className="py-8 sm:py-20">
-      <div className="container max-w-6xl mx-auto px-4">
-        {/* Section Title and Subtitle */}
-        <div className="text-center mb-8">
-          <h2 className="text-lg text-secondary text-center mb-2 tracking-wider">
-            {t('title')}
-          </h2>
-
-          <h2 className="text-3xl md:text-4xl text-center font-bold mb-4">
-            {t('subtitle')}
-          </h2>
-        </div>
+    <section id="recipes" className="home-section">
+      <div className="home-inner">
+        <SectionHeader
+          eyebrow={t('title')}
+          title={t('subtitle')}
+          className="mb-8 md:mb-10"
+        />
         <div
-          className="grid lg:grid-cols-10 gap-0 bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden relative group"
+          className="home-card relative grid overflow-hidden lg:grid-cols-10 group"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
@@ -174,14 +170,14 @@ export const RecipesSection = () => {
           <div className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out" style={{ zIndex: 50 }}>
             <button
               onClick={goToPrevious}
-              className="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 pointer-events-auto backdrop-blur-md hover:scale-110"
+              className="bg-white/20 hover:bg-white/30 text-white h-11 w-11 rounded-full flex items-center justify-center transition-all duration-300 pointer-events-auto backdrop-blur-md hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
               aria-label="Previous recipe"
             >
               <ChevronLeft className="w-5 h-5 stroke-[3]" />
             </button>
             <button
               onClick={goToNext}
-              className="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 pointer-events-auto backdrop-blur-md hover:scale-110"
+              className="bg-white/20 hover:bg-white/30 text-white h-11 w-11 rounded-full flex items-center justify-center transition-all duration-300 pointer-events-auto backdrop-blur-md hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
               aria-label="Next recipe"
             >
               <ChevronRight className="w-5 h-5 stroke-[3]" />
@@ -249,7 +245,7 @@ export const RecipesSection = () => {
         </div>
 
           {/* 右侧：菜谱信息 */}
-          <div className="lg:col-span-4 p-8 lg:p-12 flex flex-col justify-center relative bg-blue-50 dark:bg-blue-950/30 overflow-hidden">
+          <div className="lg:col-span-4 p-8 lg:p-12 flex flex-col justify-center relative bg-background/75 overflow-hidden">
             {/* 背景纹理图片 */}
             <div className="absolute inset-0 dark:opacity-5 pointer-events-none">
               <Image
@@ -264,18 +260,18 @@ export const RecipesSection = () => {
             {/* 菜谱标题 */}
               {displayRecipes.length > 0 ? (
                 <Link href={`/${locale}/recipe/${displayRecipes[currentImageIndex].id}`}>
-                  <h2 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-foreground leading-tight cursor-pointer hover:text-primary transition-colors duration-200">
+                  <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground leading-tight cursor-pointer hover:text-primary transition-colors duration-200">
                     {displayRecipes[currentImageIndex].title}
                   </h2>
                 </Link>
               ) : (
-                <div className="text-3xl lg:text-4xl xl:text-5xl font-bold text-foreground leading-tight text-muted-foreground">
+                <div className="text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground leading-tight text-muted-foreground">
                   {t('loadingRecipes')}
               </div>
               )}
 
             {/* 菜谱描述 */}
-              <p className="text-muted-foreground text-lg leading-relaxed">
+              <p className="text-base leading-7 text-muted-foreground md:text-lg">
                 {displayRecipes.length > 0 ? displayRecipes[currentImageIndex].description : ''}
               </p>
 
@@ -284,8 +280,8 @@ export const RecipesSection = () => {
                 <div className="pt-2">
                   <div className="flex flex-wrap gap-2">
                     {displayRecipes[currentImageIndex].tags.slice(0, 3).map((tag, index) => (
-                      <div key={index} className="tag-minimal">
-                        <span className="text-[10px]">🏷️</span>
+                      <div key={index} className="inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-card/70 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                        <Tag className="h-3.5 w-3.5 text-primary/80" />
                         <span>{tag}</span>
                   </div>
                     ))}

@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocale } from 'next-intl';
 import { Cuisine } from '@/lib/types';
-import { getWorkerApiUrl } from '@/lib/config';
 
 interface UseCuisinesReturn {
   cuisines: Cuisine[];
@@ -21,8 +20,7 @@ export function useCuisines(): UseCuisinesReturn {
       setLoading(true);
       setError(null);
       
-      // 使用 getWorkerApiUrl 确保正确的 API 路径
-      const response = await fetch(getWorkerApiUrl(`/api/cuisines?lang=${locale}`));
+      const response = await fetch(`/api/cuisines?lang=${locale}`);
       const data = await response.json() as any;
       
       if (!response.ok) {

@@ -2,32 +2,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 
-// R2 存储桶配置
-const R2_CONFIG = {
-  bucketName: 'recipe-doc',
-  baseUrl: process.env.R2_PUBLIC_URL || 'https://pub-f394e3ee820f4d8ea8a5e4c343502b6c.r2.dev',
-  customDomain: 'https://doc.recipe-easy.com',
-};
+const R2_PUBLIC_BASE = (
+  process.env.R2_PUBLIC_URL ||
+  process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
+  'https://cdn.recipe-easy.com'
+).replace(/\/+$/, '');
+
+function resolveLegalFileName(type: string, locale: string): string {
+  if (type === 'privacy') {
+    return locale === 'en' ? 'privacy-policy.md' : 'privacy-policy-zh.md';
+  }
+
+  if (type === 'terms') {
+    return locale === 'en' ? 'terms-of-service.md' : 'terms-of-service-zh.md';
+  }
+
+  return `${type}-policy-${locale}.md`;
+}
 
 // 获取文档的完整 URL
 function getDocumentUrl(type: string, locale: string): string {
-  // 修复文件名格式以匹配实际文件
-  let fileName: string;
-  if (type === 'privacy') {
-    fileName = locale === 'en' ? 'privacy-policy.md' : 'privacy-policy-zh.md';
-  } else if (type === 'terms') {
-    fileName = locale === 'en' ? 'terms-of-service.md' : 'terms-of-service-zh.md';
-  } else {
-    fileName = `${type}-policy-${locale}.md`;
-  }
-  
-  // 优先使用自定义域名
-  if (R2_CONFIG.customDomain) {
-    return `${R2_CONFIG.customDomain}/${fileName}`;
-  }
-  
-  // 使用 R2 公共 URL
-  return `${R2_CONFIG.baseUrl}/${fileName}`;
+  return `${R2_PUBLIC_BASE}/${resolveLegalFileName(type, locale)}`;
 }
 
 // 从 R2 获取法律文档
@@ -63,16 +58,8 @@ async function getLegalDocumentFromR2(type: string, locale: string): Promise<str
 // 从本地文件系统获取内容作为备用
 async function getLegalDocumentFromLocal(type: string, locale: string): Promise<string | null> {
   try {
-    // 修复文件名格式以匹配实际文件
-    let fileName: string;
-    if (type === 'privacy') {
-      fileName = locale === 'en' ? 'privacy-policy.md' : 'privacy-policy-zh.md';
-    } else if (type === 'terms') {
-      fileName = locale === 'en' ? 'terms-of-service.md' : 'terms-of-service-zh.md';
-    } else {
-      fileName = `${type}-policy-${locale}.md`;
-    }
-    
+    const fileName = resolveLegalFileName(type, locale);
+
     const filePath = path.join(process.cwd(), 'public', fileName);
     
     // 从本地文件读取文档
@@ -97,10 +84,10 @@ async function getLegalDocumentFromLocal(type: string, locale: string): Promise<
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { type: string; locale: string } }
+  { params }: { params: Promise<{ type: string; locale: string }> }
 ) {
   try {
-    const { type, locale } = params;
+    const { type, locale } = await params;
     
     // 验证参数
     if (!['terms', 'privacy'].includes(type)) {

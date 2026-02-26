@@ -1,13 +1,10 @@
 /**
- * 图片处理工具
- * 处理图片上传、下载、路径生成等操作
+ * 图片处理工具（通用版本）
+ * 不依赖 Cloudflare Worker 运行时绑定，适用于 Vercel/Node.js 环境。
  */
 
-import { R2Bucket } from '@cloudflare/workers-types';
-import { generateImageId } from './id-generator';
-
 /**
- * 获取文件Content-Type
+ * 获取文件 Content-Type
  */
 export function getContentType(filename: string): string {
   const ext = filename.split('.').pop()?.toLowerCase();
@@ -29,7 +26,7 @@ export function getContentType(filename: string): string {
 }
 
 /**
- * 生成安全的图片路径
+ * 生成安全的图片对象路径
  */
 export function generateSafeImagePath(
   userId: string,
@@ -44,137 +41,41 @@ export function generateSafeImagePath(
 }
 
 /**
- * 从URL下载图片
+ * 从 URL 下载图片
  */
 export async function downloadImageFromUrl(imageUrl: string): Promise<Uint8Array> {
   const response = await fetch(imageUrl);
   if (!response.ok) {
     throw new Error(`Failed to download image: ${response.statusText}`);
   }
-  
+
   const imageBuffer = await response.arrayBuffer();
   return new Uint8Array(imageBuffer);
 }
 
 /**
- * 上传图片到R2
+ * 构建图片 URL
  */
-export async function uploadImageToR2(
-  bucket: R2Bucket,
-  path: string,
-  imageData: Uint8Array,
-  options: {
-    contentType?: string;
-    userId?: string;
-    recipeId?: string;
-    imageModel?: string;
-  } = {}
-): Promise<void> {
-  const {
-    contentType = 'image/jpeg',
-    userId,
-    recipeId,
-    imageModel = 'unknown'
-  } = options;
-
-  await bucket.put(path, imageData, {
-    httpMetadata: {
-      contentType,
-    },
-    customMetadata: {
-      userId,
-      recipeId,
-      imageModel,
-      uploadedAt: new Date().toISOString()
-    }
-  });
+export function buildImageUrl(baseUrl: string, imagePath: string): string {
+  return `${baseUrl.replace(/\/+$/, '')}/${imagePath.replace(/^\/+/, '')}`;
 }
 
 /**
- * 保存图片记录到数据库
- */
-export async function saveImageRecord(
-  db: any,
-  options: {
-    imageId?: string;
-    userId: string;
-    recipeId: string;
-    imagePath: string;
-    imageModel?: string;
-  }
-): Promise<void> {
-  const {
-    imageId = generateImageId(),
-    userId,
-    recipeId,
-    imagePath,
-    imageModel = 'unknown'
-  } = options;
-
-  await db.prepare(`
-    INSERT INTO recipe_images (
-      id, user_id, recipe_id, image_path, image_model, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?)
-  `).bind(
-    imageId,
-    userId,
-    recipeId,
-    imagePath,
-    imageModel,
-    new Date().toISOString()
-  ).run();
-}
-
-/**
- * 删除R2中的图片
- */
-export async function deleteImageFromR2(
-  bucket: R2Bucket,
-  imagePath: string
-): Promise<boolean> {
-  try {
-    // 检查图片是否存在
-    const imageObject = await bucket.head(imagePath);
-    if (imageObject) {
-      // 删除存在的图片
-      await bucket.delete(imagePath);
-      return true;
-    }
-    return false;
-  } catch (error) {
-    // Failed to delete image
-    return false;
-  }
-}
-
-/**
- * 构建图片URL
- */
-export function buildImageUrl(
-  baseUrl: string,
-  imagePath: string
-): string {
-  return `${baseUrl}/images/${imagePath}`;
-}
-
-/**
- * 验证图片URL格式
+ * 验证图片 URL 格式
  */
 export function isValidImageUrl(url: string): boolean {
   try {
     const urlObj = new URL(url);
     const validProtocols = ['http:', 'https:'];
     const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-    
+
     if (!validProtocols.includes(urlObj.protocol)) {
       return false;
     }
-    
+
     const pathname = urlObj.pathname.toLowerCase();
-    return validExtensions.some(ext => pathname.endsWith(ext));
+    return validExtensions.some((ext) => pathname.endsWith(ext));
   } catch {
     return false;
   }
 }
-
-// 过期图片清理功能已移除 

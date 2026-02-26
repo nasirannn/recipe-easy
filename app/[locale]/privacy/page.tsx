@@ -39,7 +39,11 @@ async function getPrivacyPolicy(locale: string) {
   try {
     // 直接从 R2 存储桶获取内容
     const fileName = locale === 'en' ? 'privacy-policy.md' : 'privacy-policy-zh.md';
-    const r2Url = `${process.env.R2_PUBLIC_URL || 'https://doc.recipe-easy.com'}/${fileName}`;
+    const publicBase =
+      (process.env.R2_PUBLIC_URL ||
+        process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
+        'https://cdn.recipe-easy.com').replace(/\/+$/, '');
+    const r2Url = `${publicBase}/${fileName}`;
     
     // Fetching privacy policy from R2
     

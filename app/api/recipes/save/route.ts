@@ -1,21 +1,17 @@
-/**
- * 保存菜谱API路由
- * 
- * 处理菜谱保存到数据库，包含完整的图片处理功能和自动翻译
- */
-
 import { NextRequest, NextResponse } from 'next/server';
-import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { 
-  generateSafeImagePath, 
-  downloadImageFromUrl, 
-  uploadImageToR2, 
-  saveImageRecord,
-  deleteImageFromR2
-} from '@/lib/utils/image-utils';
 import { generateImageId } from '@/lib/utils/id-generator';
+import { getPostgresPool } from '@/lib/server/postgres';
+import { translateRecipeAsync } from '@/lib/services/translation';
+import { validateUserId } from '@/lib/utils/validation';
+import {
+  buildR2PublicUrl,
+  extractR2ObjectKey,
+  isR2S3Configured,
+  uploadImageFromUrlToR2,
+} from '@/lib/server/r2';
 
-// 定义请求体类型
+export const runtime = 'nodejs';
+
 interface SaveRecipeRequest {
   recipe?: {
     id: string;
@@ -25,315 +21,374 @@ interface SaveRecipeRequest {
     cooking_time?: number;
     servings?: number;
     difficulty?: string;
-    ingredients?: any[];
-    seasoning?: any[];
-    instructions?: any[];
-    tags?: any[];
-    chefTips?: any[];
-    chef_tips?: any[];
+    ingredients?: unknown[];
+    seasoning?: unknown[];
+    instructions?: unknown[];
+    tags?: unknown[];
+    chefTips?: unknown[];
+    chef_tips?: unknown[];
     imagePath?: string;
     imageModel?: string;
     cuisineId?: number;
   };
-  recipes?: any[];
-  userId: string;
-  language?: string; // 添加语言字段
+  recipes?: Array<Record<string, unknown>>;
+  userId?: string;
+  language?: string;
 }
 
-// 标准化菜谱数据
-function normalizeRecipeForDatabase(recipe: any) {
+type SaveRecipeInput = {
+  id: string;
+  title: string;
+  description: string;
+  cookingTime: number;
+  servings: number;
+  difficulty: string;
+  ingredients: unknown[];
+  seasoning: unknown[];
+  instructions: unknown[];
+  tags: unknown[];
+  chefTips: unknown[];
+  imagePath?: string;
+  imageModel?: string;
+  cuisineId: number;
+};
+
+function normalizeImagePathForStorage(imagePath: string): string {
+  const trimmed = imagePath.trim();
+  if (!trimmed) {
+    return '';
+  }
+
+  const r2Key = extractR2ObjectKey(trimmed);
+  if (!r2Key) {
+    return trimmed;
+  }
+
+  const publicUrl = buildR2PublicUrl(r2Key);
+  if (/^https?:\/\//i.test(publicUrl)) {
+    return publicUrl;
+  }
+
+  const appBase = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || '').replace(/\/+$/, '');
+  if (appBase) {
+    return `${appBase}/api/images/${r2Key}`;
+  }
+
+  return trimmed;
+}
+
+function parseArray(value: unknown): unknown[] {
+  if (!value) {
+    return [];
+  }
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function normalizeStringArray(values: unknown[]): string[] {
+  return values
+    .map((item) => {
+      if (typeof item === 'string') {
+        return item;
+      }
+      if (typeof item === 'number') {
+        return String(item);
+      }
+      if (item && typeof item === 'object' && 'name' in (item as Record<string, unknown>)) {
+        const name = (item as Record<string, unknown>).name;
+        return typeof name === 'string' ? name : '';
+      }
+      return '';
+    })
+    .filter(Boolean);
+}
+
+function normalizeRecipeForDatabase(recipe: Record<string, unknown>): SaveRecipeInput {
+  const cookingTimeRaw = recipe.cookingTime ?? recipe.cooking_time;
+  const servingsRaw = recipe.servings;
+  const cuisineIdRaw = recipe.cuisineId ?? recipe.cuisine_id;
+  const chefTipsRaw = recipe.chefTips ?? recipe.chef_tips;
+
+  const cookingTimeNum = Number(cookingTimeRaw);
+  const servingsNum = Number(servingsRaw);
+  const cuisineIdNum = Number(cuisineIdRaw);
+
+  const cookingTime = Number.isFinite(cookingTimeNum) ? cookingTimeNum : 30;
+  const servings = Number.isFinite(servingsNum) ? servingsNum : 4;
+  const cuisineId = Number.isFinite(cuisineIdNum) ? cuisineIdNum : 9;
+
   return {
-    ...recipe,
-    cookingTime: recipe.cookingTime || recipe.cooking_time,
-    chefTips: recipe.chefTips || recipe.chef_tips || []
+    id: String(recipe.id ?? ''),
+    title: String(recipe.title ?? ''),
+    description: String(recipe.description ?? ''),
+    cookingTime,
+    servings,
+    difficulty: String(recipe.difficulty ?? 'easy'),
+    ingredients: parseArray(recipe.ingredients),
+    seasoning: parseArray(recipe.seasoning),
+    instructions: parseArray(recipe.instructions),
+    tags: parseArray(recipe.tags),
+    chefTips: parseArray(chefTipsRaw),
+    imagePath: typeof recipe.imagePath === 'string' ? recipe.imagePath : undefined,
+    imageModel: typeof recipe.imageModel === 'string' ? recipe.imageModel : undefined,
+    cuisineId,
   };
 }
 
-// 异步翻译菜谱（不等待结果）
-async function triggerRecipeTranslation(recipe: any, targetLanguage: string, db: any, env: any): Promise<void> {
-  try {
-    // 使用翻译服务进行翻译
-    const { translateRecipeAsync } = await import('@/lib/services/translation');
-    await translateRecipeAsync(recipe, targetLanguage, db, env);
-  } catch (error) {
-    console.error(`❌ Recipe translation failed for ${recipe.id} to ${targetLanguage}:`, error);
-    // 不抛出错误，避免影响主要业务逻辑
+async function upsertRecipeImage(
+  recipeId: string,
+  userId: string,
+  imagePath: string,
+  imageModel: string
+): Promise<boolean> {
+  const db = getPostgresPool();
+  const existing = await db.query<{ id: string; image_path: string | null }>(
+    `
+      SELECT id, image_path
+      FROM recipe_images
+      WHERE recipe_id = $1
+      ORDER BY created_at DESC
+      LIMIT 1
+    `,
+    [recipeId]
+  );
+
+  const current = existing.rows[0];
+  if (current?.id) {
+    await db.query(
+      `
+        UPDATE recipe_images
+        SET image_path = $1, image_model = $2, created_at = NOW()
+        WHERE id = $3
+      `,
+      [imagePath, imageModel, current.id]
+    );
+
+    return current.image_path !== imagePath;
   }
+
+  await db.query(
+    `
+      INSERT INTO recipe_images (id, user_id, recipe_id, image_path, image_model, created_at)
+      VALUES ($1, $2, $3, $4, $5, NOW())
+    `,
+    [generateImageId(), userId, recipeId, imagePath, imageModel]
+  );
+
+  return true;
 }
 
-// 保存菜谱到数据库
 async function saveRecipeToDatabase(request: NextRequest) {
-  try {
-    // 保存菜谱到数据库
+  const db = getPostgresPool();
+  const body = (await request.json()) as SaveRecipeRequest;
+  const { recipe, recipes, userId, language } = body;
 
-    // 获取Cloudflare环境
-    const { env, cf, ctx } = await getCloudflareContext();
-    const db = env.RECIPE_EASY_DB;
-    const imagesBucket = env.RECIPE_IMAGES;
+  if (!validateUserId(userId)) {
+    return NextResponse.json(
+      { success: false, error: 'Missing or invalid userId in request body' },
+      { status: 400 }
+    );
+  }
 
-    if (!db) {
-      throw new Error('数据库绑定不可用');
+  let recipeArray: Array<Record<string, unknown>> = [];
+  if (Array.isArray(recipes)) {
+    recipeArray = recipes;
+  } else if (recipes && typeof recipes === 'object') {
+    recipeArray = [recipes];
+  } else if (recipe && typeof recipe === 'object') {
+    recipeArray = [recipe as unknown as Record<string, unknown>];
+  }
+
+  if (recipeArray.length === 0) {
+    return NextResponse.json(
+      { success: false, error: 'No recipe data provided' },
+      { status: 400 }
+    );
+  }
+
+  const savedRecipes: SaveRecipeInput[] = [];
+  const newlySavedRecipes: SaveRecipeInput[] = [];
+  let hasUpdatedImage = false;
+  let alreadyExists = false;
+
+  for (const rawRecipe of recipeArray) {
+    const normalizedRecipe = normalizeRecipeForDatabase(rawRecipe);
+    if (!normalizedRecipe.id || !normalizedRecipe.title) {
+      return NextResponse.json(
+        { success: false, error: 'Recipe ID and title are required' },
+        { status: 400 }
+      );
     }
 
-    const body: SaveRecipeRequest = await request.json();
-    const { recipe, recipes, userId, language } = body;
+    const existing = await db.query<{ id: string }>(
+      'SELECT id FROM recipes WHERE id = $1 LIMIT 1',
+      [normalizedRecipe.id]
+    );
+    const recipeExists = existing.rowCount > 0;
+    alreadyExists = alreadyExists || recipeExists;
 
-    if (!userId) {
-      throw new Error('Missing userId in request body');
-    }
-
-    // 支持单个菜谱或菜谱数组，兼容两种数据格式
-    let recipeArray;
-    if (recipes) {
-      recipeArray = Array.isArray(recipes) ? recipes : [recipes];
-    } else if (recipe) {
-      recipeArray = [recipe];
+    if (recipeExists) {
+      await db.query(
+        `
+          UPDATE recipes
+          SET
+            title = $1,
+            description = $2,
+            cooking_time = $3,
+            servings = $4,
+            difficulty = $5,
+            ingredients = $6,
+            seasoning = $7,
+            instructions = $8,
+            tags = $9,
+            chef_tips = $10,
+            user_id = $11,
+            cuisine_id = $12,
+            updated_at = NOW()
+          WHERE id = $13
+        `,
+        [
+          normalizedRecipe.title,
+          normalizedRecipe.description,
+          normalizedRecipe.cookingTime,
+          normalizedRecipe.servings,
+          normalizedRecipe.difficulty,
+          JSON.stringify(normalizedRecipe.ingredients),
+          JSON.stringify(normalizedRecipe.seasoning),
+          JSON.stringify(normalizedRecipe.instructions),
+          JSON.stringify(normalizedRecipe.tags),
+          JSON.stringify(normalizedRecipe.chefTips),
+          userId,
+          normalizedRecipe.cuisineId,
+          normalizedRecipe.id,
+        ]
+      );
     } else {
-      throw new Error('No recipe data provided');
+      await db.query(
+        `
+          INSERT INTO recipes (
+            id, title, description, cooking_time, servings, difficulty,
+            ingredients, seasoning, instructions, tags, chef_tips,
+            user_id, cuisine_id, created_at, updated_at
+          )
+          VALUES (
+            $1, $2, $3, $4, $5, $6,
+            $7, $8, $9, $10, $11,
+            $12, $13, NOW(), NOW()
+          )
+        `,
+        [
+          normalizedRecipe.id,
+          normalizedRecipe.title,
+          normalizedRecipe.description,
+          normalizedRecipe.cookingTime,
+          normalizedRecipe.servings,
+          normalizedRecipe.difficulty,
+          JSON.stringify(normalizedRecipe.ingredients),
+          JSON.stringify(normalizedRecipe.seasoning),
+          JSON.stringify(normalizedRecipe.instructions),
+          JSON.stringify(normalizedRecipe.tags),
+          JSON.stringify(normalizedRecipe.chefTips),
+          userId,
+          normalizedRecipe.cuisineId,
+        ]
+      );
+
+      newlySavedRecipes.push(normalizedRecipe);
     }
 
-    const savedRecipes = [];
-    let hasUpdatedImage = false;
-    let alreadyExists = false;
-    const newlySavedRecipes = []; // 记录新保存的菜谱，用于后续翻译
+    if (normalizedRecipe.imagePath) {
+      let resolvedImagePath = normalizeImagePathForStorage(normalizedRecipe.imagePath);
 
-    for (const recipeData of recipeArray) {
-      // 验证必要字段
-      if (!recipeData.id || !recipeData.title) {
-        throw new Error('Recipe ID and title are required');
-      }
-
-      // 检查菜谱是否已存在
-      const existingRecipe = await db.prepare(`
-        SELECT r.id, ri.id as image_id, ri.image_path as current_image_path 
-        FROM recipes r 
-        LEFT JOIN recipe_images ri ON r.id = ri.recipe_id 
-        WHERE r.id = ?
-      `).bind(recipeData.id).first();
-
-      if (existingRecipe) {
-        alreadyExists = true;
-
-        // 检查图片是否有更新
-        const hasNewImage = recipeData.imagePath && recipeData.imagePath !== existingRecipe.current_image_path;
-
-        if (hasNewImage && imagesBucket) {
-          hasUpdatedImage = true;
-
-          try {
-            // 生成安全的图片路径
-            const path = generateSafeImagePath(userId, recipeData.id);
-
-            // 下载新图片
-            const imageData = await downloadImageFromUrl(recipeData.imagePath);
-            if (imageData) {
-              // 删除旧图片（如果存在）
-              if (existingRecipe.current_image_path) {
-                await deleteImageFromR2(imagesBucket as any, String(existingRecipe.current_image_path));
-              }
-
-              // 上传新图片到R2
-              await uploadImageToR2(imagesBucket as any, path, imageData, {
-                userId,
-                recipeId: recipeData.id,
-                imageModel: recipeData.imageModel || 'unknown'
-              });
-
-              // 保存图片记录到数据库
-              await saveImageRecord(db, {
-                userId,
-                recipeId: recipeData.id,
-                imagePath: path,
-                imageModel: recipeData.imageModel || 'unknown'
-              });
-            }
-          } catch (error) {
-            // Failed to update image for recipe
-            console.error(`Failed to update image for recipe ${recipeData.id}:`, error);
-          }
+      if (/^https?:\/\//i.test(resolvedImagePath) && !extractR2ObjectKey(resolvedImagePath) && isR2S3Configured()) {
+        try {
+          const uploaded = await uploadImageFromUrlToR2({
+            sourceUrl: resolvedImagePath,
+            userId,
+            recipeId: normalizedRecipe.id,
+            imageModel: normalizedRecipe.imageModel,
+          });
+          resolvedImagePath = normalizeImagePathForStorage(uploaded.publicUrl);
+        } catch (error) {
+          console.error('Failed to upload recipe image to R2, fallback to source URL:', error);
         }
-
-        // 添加到已存在的菜谱列表（即使没有更新图片）
-        savedRecipes.push(normalizeRecipeForDatabase(recipeData));
-        continue; // 跳过插入新菜谱的逻辑
       }
 
-      // 插入新菜谱
-      await db.prepare(`
-        INSERT INTO recipes (
-          id, title, description, cooking_time, servings, difficulty, 
-          ingredients, seasoning, instructions, tags, chef_tips, 
-          user_id, cuisine_id, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).bind(
-        recipeData.id,
-        recipeData.title,
-        recipeData.description || '',
-        recipeData.cookingTime || recipeData.cooking_time || 30,
-        recipeData.servings || 4,
-        recipeData.difficulty || 'easy',
-        JSON.stringify(recipeData.ingredients || []),
-        JSON.stringify(recipeData.seasoning || []),
-        JSON.stringify(recipeData.instructions || []),
-        JSON.stringify(recipeData.tags || []),
-        JSON.stringify(recipeData.chefTips || recipeData.chef_tips || []),
+      const imageChanged = await upsertRecipeImage(
+        normalizedRecipe.id,
         userId,
-        recipeData.cuisineId || 9,
-        new Date().toISOString(),
-        new Date().toISOString()
-      ).run();
+        resolvedImagePath,
+        normalizedRecipe.imageModel ?? 'unknown'
+      );
+      hasUpdatedImage = hasUpdatedImage || imageChanged;
 
-      // 如果菜谱有图片且有R2存储桶，保存图片
-      if (recipeData.imagePath && imagesBucket) {
-        try {
-          // 下载图片
-          const imageData = await downloadImageFromUrl(recipeData.imagePath);
-          if (imageData) {
-            // 生成安全的图片路径
-            const path = generateSafeImagePath(userId, recipeData.id);
-
-            // 上传到R2
-            await uploadImageToR2(imagesBucket as any, path, imageData, {
-              userId,
-              recipeId: recipeData.id,
-              imageModel: recipeData.imageModel || 'unknown'
-            });
-
-            // 保存图片记录到数据库
-            await saveImageRecord(db, {
-              userId,
-              recipeId: recipeData.id,
-              imagePath: path,
-              imageModel: recipeData.imageModel || 'unknown'
-            });
-
-            // 图片保存成功
-          }
-        } catch (error) {
-          // 图片保存失败
-          console.error(`Failed to save image for recipe ${recipeData.id}:`, error);
-          // 图片保存失败不影响菜谱保存
-        }
-      }
-
-      // 添加到保存的菜谱列表
-      savedRecipes.push(normalizeRecipeForDatabase(recipeData));
-      newlySavedRecipes.push(recipeData); // 记录新保存的菜谱
+      normalizedRecipe.imagePath = resolvedImagePath;
     }
 
-    // 如果有新保存的菜谱，立即触发翻译（异步执行）
-    let translationPromise: Promise<void> | null = null;
-    
-    if (newlySavedRecipes.length > 0) {
-      // 创建翻译 Promise
-      translationPromise = (async () => {
-        try {
-          // 为每个新保存的菜谱触发翻译
-          const translationPromises = [];
-          
-          for (const savedRecipe of newlySavedRecipes) {
-            // 使用传递的语言参数，如果没有则默认为英文
-            const sourceLanguage = language || 'en';
-            const targetLanguage = sourceLanguage === 'zh' ? 'en' : 'zh';
-            
-            // 创建翻译 Promise
-            const translationPromise = triggerRecipeTranslation(
-              {
-                id: savedRecipe.id,
-                title: savedRecipe.title,
-                description: savedRecipe.description,
-                difficulty: savedRecipe.difficulty,
-                servings: savedRecipe.servings,
-                cookingTime: savedRecipe.cookingTime || savedRecipe.cooking_time,
-                ingredients: savedRecipe.ingredients || [],
-                seasoning: savedRecipe.seasoning || [],
-                instructions: savedRecipe.instructions || [],
-                chefTips: savedRecipe.chefTips || savedRecipe.chef_tips || [],
-                tags: savedRecipe.tags || [],
-                language: sourceLanguage
-              },
-              targetLanguage,
-              db,
-              env
-            ).catch((error) => {
-              console.error(`❌ Translation failed for recipe ${savedRecipe.id}:`, error);
-              // 添加更详细的错误信息
-              if (error instanceof Error) {
-                console.error(`   Error message: ${error.message}`);
-                console.error(`   Error stack: ${error.stack}`);
-              }
-            });
-            
-            translationPromises.push(translationPromise);
-          }
-          
-          // 等待所有翻译完成
-          const results = await Promise.allSettled(translationPromises);
-          
-          // 统计翻译结果
-          const succeeded = results.filter(r => r.status === 'fulfilled').length;
-          const failed = results.filter(r => r.status === 'rejected').length;
-          
-          if (failed > 0) {
-            console.error(`❌ Failed translations:`, results.filter(r => r.status === 'rejected').map(r => r.reason));
-          }
-          
-        } catch (error) {
-          console.error('Translation processing failed:', error);
-          // 翻译失败不影响保存流程
-        }
-      })();
-    }
+    savedRecipes.push(normalizedRecipe);
+  }
 
-    // 准备响应
-    const response = NextResponse.json({
-      success: true,
-      recipes: savedRecipes,
-      count: savedRecipes.length,
-      alreadyExists,
-      hasUpdatedImage
-    });
+  if (newlySavedRecipes.length > 0) {
+    const sourceLanguage = (language ?? 'en').toLowerCase().startsWith('zh') ? 'zh' : 'en';
+    const targetLanguage = sourceLanguage === 'zh' ? 'en' : 'zh';
 
-    // 使用 Cloudflare 的 waitUntil 确保翻译任务完成
-    if (translationPromise && ctx?.waitUntil) {
-      ctx.waitUntil(translationPromise);
-    } else if (translationPromise) {
-      // waitUntil not available, translation may be interrupted
-    }
+    // Fire-and-forget translation to avoid blocking save latency.
+    void (async () => {
+      const tasks = newlySavedRecipes.map((savedRecipe) =>
+        translateRecipeAsync(
+          {
+            id: savedRecipe.id,
+            title: savedRecipe.title,
+            description: savedRecipe.description,
+            difficulty: savedRecipe.difficulty,
+            servings: savedRecipe.servings,
+            cookingTime: savedRecipe.cookingTime,
+            ingredients: normalizeStringArray(savedRecipe.ingredients),
+            seasoning: normalizeStringArray(savedRecipe.seasoning),
+            instructions: normalizeStringArray(savedRecipe.instructions),
+            chefTips: normalizeStringArray(savedRecipe.chefTips),
+            tags: normalizeStringArray(savedRecipe.tags),
+            language: sourceLanguage,
+          },
+          targetLanguage,
+          db
+        )
+      );
 
-    return response;
+      await Promise.allSettled(tasks);
+    })();
+  }
 
+  return NextResponse.json({
+    success: true,
+    recipes: savedRecipes,
+    count: savedRecipes.length,
+    alreadyExists,
+    hasUpdatedImage,
+  });
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    return await saveRecipeToDatabase(req);
   } catch (error) {
-    // 保存菜谱失败
     return NextResponse.json(
       {
         success: false,
         error: '保存菜谱失败',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
   }
 }
-
-/**
- * POST /api/recipes/save
- * 保存菜谱到数据库
- */
-export async function POST(req: NextRequest) {
-  // 保存菜谱API调用
-  
-  try {
-    return await saveRecipeToDatabase(req);
-  } catch (error) {
-    // 保存菜谱API错误
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: '服务器错误', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
-      },
-      { status: 500 }
-    );
-  }
-} 

@@ -1,168 +1,75 @@
 import { NextRequest } from 'next/server';
-import { getImageModelConfig } from '@/lib/config';
-import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { APP_CONFIG, getImageModelConfig } from '@/lib/config';
+import {
+  ensureCreditsSchema,
+  getOrCreateUserCredits,
+  spendCredits,
+} from '@/lib/server/credits';
+import { recordModelUsage } from '@/lib/server/model-usage';
+import { getPostgresPool } from '@/lib/server/postgres';
+import { supabase } from '@/lib/supabase';
 
 // 强制动态渲染
+export const runtime = 'nodejs';
 
-// 记录模型使用情况的函数
-async function recordModelUsage(
-  modelName: string, 
-  modelResponseId: string, 
-  userId: string,
-  transactionId?: string
-) {
-  try {
-    // 检查是否有数据库绑定
-    const context = await getCloudflareContext();
-    const db = context?.env?.RECIPE_EASY_DB;
-    if (!db) {
-      return;
-    }
-    const recordId = crypto.randomUUID();
-    
-    const stmt = db.prepare(`
-      INSERT INTO model_usage_records 
-      (id, model_name, model_type, user_id, created_at) 
-      VALUES (?, ?, ?, ?, datetime('now'))
-    `);
-    
-    await stmt.bind(
-      recordId,
-      modelName,
-      'image',
-      userId
-    ).run();
-    
-
-  } catch (error) {
-    console.error('Failed to record model usage:', error);
-    // 不要因为记录失败而影响主要功能
-  }
-}
-
-// 检查用户积分的内部函数
-async function checkUserCredits(userId: string, isAdmin: boolean, context: any): Promise<{ credits: number }> {
-  if (isAdmin) {
-    return { credits: 999999 }; // 管理员无限积分
+function getBearerToken(request: NextRequest): string | null {
+  const value = request.headers.get('authorization') || '';
+  if (!value.toLowerCase().startsWith('bearer ')) {
+    return null;
   }
 
-  try {
-    const db = context?.env?.RECIPE_EASY_DB;
-    if (!db) {
-      throw new Error('Database not available');
-    }
-
-    const stmt = db.prepare(`
-      SELECT credits FROM user_credits WHERE user_id = ?
-    `);
-    
-    const result = await stmt.bind(userId).first() as { credits: number } | undefined;
-    
-    if (!result) {
-      throw new Error('User not found');
-    }
-    
-    return { credits: result.credits || 0 };
-  } catch (error) {
-    console.error('Failed to check user credits:', error);
-    throw new Error('Failed to fetch user data');
-  }
-}
-
-// 扣除用户积分的内部函数
-async function deductUserCredits(userId: string, amount: number, description: string, context: any): Promise<string | undefined> {
-  try {
-    const db = context?.env?.RECIPE_EASY_DB;
-    if (!db) {
-      throw new Error('Database not available');
-    }
-
-    const transactionId = crypto.randomUUID();
-    
-    try {
-      // 检查用户积分
-      const checkStmt = db.prepare(`
-        SELECT credits FROM user_credits WHERE user_id = ?
-      `);
-      const userResult = await checkStmt.bind(userId).first() as { credits: number } | undefined;
-      
-      if (!userResult || userResult.credits < amount) {
-        throw new Error('Insufficient credits');
-      }
-      
-      const batchResults = await db.batch([
-        // 扣除积分
-        db.prepare(`
-          UPDATE user_credits SET credits = credits - ?, total_spend = total_spend + ? WHERE user_id = ?
-        `).bind(amount, amount, userId),
-        
-        // 记录交易
-        db.prepare(`
-          INSERT INTO credit_transactions 
-          (id, user_id, amount, type, created_at) 
-          VALUES (?, ?, ?, 'spend', datetime('now'))
-        `).bind(transactionId, userId, amount)
-      ]);
-      // 验证更新结果
-      if (batchResults[0].meta.changes !== 1) {
-        throw new Error('Failed to update user credits');
-      }
-      
-      if (batchResults[1].meta.changes !== 1) {
-        throw new Error('Failed to record transaction');
-      }
-      
-      return transactionId;
-    } catch (error) {
-      throw error;
-    }
-  } catch (error) {
-    console.error('Failed to deduct user credits:', error);
-    throw new Error('Failed to deduct credits');
-  }
+  const token = value.slice(7).trim();
+  return token || null;
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const token = getBearerToken(request);
+    if (!token) {
+      return Response.json({
+        success: false,
+        error: 'Unauthorized'
+      }, { status: 401 });
+    }
+
+    const { data: authData, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !authData.user) {
+      return Response.json({
+        success: false,
+        error: 'Unauthorized'
+      }, { status: 401 });
+    }
+
     const body = await request.json() as any;
     const { 
       recipeTitle,
       recipeIngredients,
-      userId,
-      language = 'en',
-      isAdmin = false
+      language = 'en'
     } = body;
 
-    if (!userId) {
-      return Response.json({
-        success: false,
-        error: 'User must be logged in to generate images'
-      }, { status: 401 });
-    }
+    const userId = authData.user.id;
 
-    // 获取Cloudflare上下文
-    const context = getCloudflareContext();
+    const db = getPostgresPool();
+
+    await ensureCreditsSchema(db);
+    const imageGenerationCost = APP_CONFIG.imageGenerationCost;
 
     // 获取基于语言的图片模型配置
     const imageConfig = getImageModelConfig(language);
 
-    // 检查用户积分（管理员跳过）
-    if (!isAdmin) {
-      try {
-        const userData = await checkUserCredits(userId, isAdmin, context);
-        
-        if (userData.credits < 1) {
-          return Response.json({
-            success: false,
-            error: 'Insufficient credits. You need at least 1 credit to generate an image.'
-          }, { status: 402 });
-        }
-      } catch (error) {
+    try {
+      const credits = await getOrCreateUserCredits(db, userId);
+      if (credits.credits < imageGenerationCost) {
         return Response.json({
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to fetch user data'
-        }, { status: 500 });
+          error: `Insufficient credits. You need at least ${imageGenerationCost} credits to generate an image.`
+        }, { status: 402 });
       }
+    } catch (error) {
+      return Response.json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch user data'
+      }, { status: 500 });
     }
 
     // 构建提示词
@@ -179,7 +86,6 @@ export async function POST(request: NextRequest) {
 
     let imageUrl = '';
     let modelUsed = '';
-    let modelResponseId = '';
 
     // 根据语言选择对应的图片模型
     if (language === 'zh') {
@@ -221,7 +127,6 @@ export async function POST(request: NextRequest) {
       if (result.output?.task_id) {
         // 这是异步调用，需要轮询获取结果
         const taskId = result.output.task_id;
-        modelResponseId = taskId;
         let attempts = 0;
         
         while (attempts < imageConfig.maxAttempts) {
@@ -260,7 +165,6 @@ export async function POST(request: NextRequest) {
       } else if (result.output?.results?.[0]?.url) {
         // 同步调用结果
         imageUrl = result.output.results[0].url;
-        modelResponseId = result.request_id || `wanx_${Date.now()}`;
       } else {
         throw new Error('No image URL returned from Wanx API');
       }
@@ -302,8 +206,6 @@ export async function POST(request: NextRequest) {
         throw new Error(`Flux API error: ${prediction.error}`);
       }
 
-      modelResponseId = prediction.id;
-
       // 轮询等待结果
       let attempts = 0;
       let currentPrediction = prediction;
@@ -333,28 +235,29 @@ export async function POST(request: NextRequest) {
 
     }
 
-    // 扣除积分（管理员跳过）
-    let transactionId: string | undefined;
-    if (!isAdmin) {
-      console.log(`[POST] User ${userId} is not admin, proceeding with credit deduction`);
-      try {
-        console.log(`[POST] Calling deductUserCredits for user ${userId}`);
-        transactionId = await deductUserCredits(userId, 1, 'Image generation', context);
-        console.log(`[POST] Successfully deducted 1 credit for user ${userId}, transaction ID: ${transactionId}`);
-      } catch (error) {
-        // 扣除积分失败，但图片已生成
-        // 继续返回图片，但记录错误
-        console.error('[POST] Failed to deduct credits for image generation:', error);
-        // 这里可以选择是否要抛出错误，取决于业务逻辑
-        // throw new Error('Failed to deduct credits');
+    try {
+      await spendCredits(db, userId, imageGenerationCost);
+    } catch (error) {
+      const details = error instanceof Error ? error.message : 'Unknown error';
+      if (details === 'Insufficient credits') {
+        return Response.json({
+          success: false,
+          error: `Insufficient credits. You need at least ${imageGenerationCost} credits to generate an image.`
+        }, { status: 402 });
       }
-    } else {
-      console.log(`[POST] Admin user ${userId} skipped credit deduction`);
+      console.error('[POST] Failed to deduct credits for image generation:', error);
+      throw error;
     }
 
-    // 记录模型使用情况（只在这里调用一次）
-    console.log(`[POST] Recording model usage for ${modelUsed}, user ${userId}, transaction ${transactionId}`);
-    await recordModelUsage(modelUsed, modelResponseId, userId, transactionId);
+    try {
+      await recordModelUsage(db, {
+        modelName: modelUsed,
+        modelType: 'image',
+        userId,
+      });
+    } catch (error) {
+      console.error('Failed to record model usage:', error);
+    }
 
     return Response.json({
       success: true,

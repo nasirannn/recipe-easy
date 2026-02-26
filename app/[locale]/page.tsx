@@ -27,16 +27,18 @@ export async function generateMetadata({
 
 export default function Home() {
   return (
-    <>
+    <main className="home-main">
       <AnchorHandler />
       <HeroSection />
-      <TutorialSection />
-      <RecipesSection />
-      <IntroductionSection />
-      <FeaturesSection />
-      <FAQSection />
-      <TestimonialSection />
-      <FooterSection />
-    </>
+      <div className="home-sections">
+        <TutorialSection />
+        <RecipesSection />
+        <IntroductionSection />
+        <FeaturesSection />
+        <FAQSection />
+        <TestimonialSection />
+        <FooterSection />
+      </div>
+    </main>
   );
 }

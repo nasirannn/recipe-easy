@@ -2,7 +2,6 @@
 
 import { useLocale } from 'next-intl';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Globe, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const languages = [
@@ -18,10 +17,13 @@ const languages = [
   { code: 'zh', name: '中文' },
 ];
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  className?: string;
+}
+
+export function LanguageSwitcher({ className }: LanguageSwitcherProps) {
   const locale = useLocale();
   const pathname = usePathname();
-  const [hoveredCode, setHoveredCode] = useState<string | null>(null);
 
   const switchLanguage = (newLocale: string) => {
     // Remove the current locale from the pathname
@@ -37,31 +39,33 @@ export function LanguageSwitcher() {
     window.location.href = newUrl;
   };
 
-  const currentLanguage = languages.find(lang => lang.code === locale);
-  
-  // 直接指定颜色变量，而不是依赖Tailwind类名
-  const primaryColor = "hsl(var(--primary))";
-  const foregroundColor = "hsl(var(--foreground))";
+  const currentLanguageName = locale === 'zh' ? '中文' : 'English';
 
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          size="sm"
-          className="gap-2 hover:bg-accent/50 px-3 py-2 cursor-pointer"
+          size="icon"
+          aria-label={`Switch language. Current: ${currentLanguageName}`}
+          className={cn(
+            "h-10 w-10 cursor-pointer rounded-full transition-colors duration-200 hover:bg-transparent",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2",
+            className
+          )}
         >
-          <Globe className="h-4 w-4 text-muted-foreground" />
-          <span className="hidden sm:inline font-medium">
-            {currentLanguage?.name}
+          <span
+            aria-hidden="true"
+            className="inline-flex items-center justify-center text-[13px] font-semibold leading-none tracking-tight text-foreground"
+          >
+            A文
           </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-40 p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-xl"
+        className="w-40 rounded-xl border border-border/70 bg-card p-2 text-foreground shadow-lg"
         sideOffset={8}
-        onMouseLeave={() => setHoveredCode(null)}
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         {languages.map((language) => (
@@ -71,17 +75,13 @@ export function LanguageSwitcher() {
               e.preventDefault();
               switchLanguage(language.code);
             }}
-            onMouseOver={() => setHoveredCode(language.code)}
-            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200 font-medium hover:bg-accent"
+            className="flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 font-medium transition-colors duration-200 hover:bg-accent"
           >
-            <span 
-              className="text-sm"
-              style={{ 
-                color: hoveredCode === language.code ? primaryColor : 
-                       (hoveredCode === null && locale === language.code) ? primaryColor : 
-                       foregroundColor,
-                transition: 'color 0.15s ease'
-              }}
+            <span
+              className={cn(
+                "text-sm",
+                locale === language.code ? "text-primary" : "text-foreground"
+              )}
             >
               {language.name}
             </span>

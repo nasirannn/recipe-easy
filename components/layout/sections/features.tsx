@@ -1,5 +1,6 @@
 "use client";
 import { useTranslations } from 'next-intl';
+import { SectionHeader } from "@/components/layout/section-header";
 
 import { Globe, Sparkles, Image as ImageIcon, Utensils, Pizza, Smartphone } from "lucide-react";
 
@@ -48,34 +49,32 @@ export const FeaturesSection = () => {
   return (
     <section
       id="features"
-      className="w-full py-16 bg-background relative"
+      className="home-section"
     >
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-            {t('title')}
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            {t('description')}
-          </p>
-        </div>
+      <div className="home-inner">
+        <SectionHeader
+          eyebrow="Capabilities"
+          title={t('title')}
+          description={t('description')}
+          className="mb-10 md:mb-14"
+        />
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 md:gap-6">
           {features.map((feature) => (
             <div 
               key={feature.id} 
-              className="flex gap-4 p-6 rounded-xl hover:bg-muted/50 transition-colors"
+              className="home-card flex min-h-[220px] gap-4 p-6 transition-colors hover:border-primary/30"
             >
               <div className="shrink-0">
-                <div className="h-12 w-12 rounded-full bg-[--color-primary-10] flex items-center justify-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
                   {feature.icon}
                 </div>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-foreground mb-3">
+                <h3 className="text-lg font-semibold tracking-tight text-foreground">
                   {t(feature.title)}
                 </h3>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="mt-3 text-base leading-7 text-muted-foreground">
                   {t(feature.description)}
                 </p>
               </div>

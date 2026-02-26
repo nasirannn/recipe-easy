@@ -1,46 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { SYSTEM_PROMPTS, USER_PROMPT_TEMPLATES } from '@/lib/prompts';
-import { getLanguageConfig } from '@/lib/config';
+import { APP_CONFIG, getLanguageConfig } from '@/lib/config';
 import { generateRecipeId } from '@/lib/utils/id-generator';
-import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { recordModelUsage as saveModelUsage } from '@/lib/server/model-usage';
+import {
+  ensureCreditsSchema,
+  getOrCreateUserCredits,
+  spendCredits,
+} from '@/lib/server/credits';
+import { getPostgresPool } from '@/lib/server/postgres';
+import { supabase } from '@/lib/supabase';
+
+export const runtime = 'nodejs';
 
 // 强制动态渲染
 
-// 记录模型使用情况的函数
-async function recordModelUsage(
-  modelName: string, 
-  modelResponseId: string, 
-  userId: string,
-  transactionId?: string
-) {
+async function recordModelUsage(modelName: string, userId: string) {
   try {
-    // 检查是否有数据库绑定
-    const context = getCloudflareContext();
-    const db = context?.env?.RECIPE_EASY_DB;
-    if (!db) {
-      return;
-    }
-    const recordId = crypto.randomUUID();
-    
-    const stmt = db.prepare(`
-      INSERT INTO model_usage_records 
-      (id, model_name, model_type, user_id, created_at) 
-      VALUES (?, ?, ?, ?, datetime('now'))
-    `);
-    
-    await stmt.bind(
-      recordId,
+    const db = getPostgresPool();
+    await saveModelUsage(db, {
       modelName,
-      'language',
-      userId
-    ).run();
-    
-
+      modelType: 'language',
+      userId,
+    });
   } catch (error) {
     console.error('Failed to record model usage:', error);
-    // 不要因为记录失败而影响主要功能
   }
+}
+
+function getBearerToken(request: NextRequest): string | null {
+  const value = request.headers.get('authorization') || '';
+  if (!value.toLowerCase().startsWith('bearer ')) {
+    return null;
+  }
+
+  const token = value.slice(7).trim();
+  return token || null;
 }
 
 // 提取公共的数据转换函数
@@ -68,10 +64,19 @@ function transformRecipeData(recipe: any, finalLanguageModel: string, language: 
 
 
 export async function POST(request: NextRequest) {
-  let ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel, userId, finalLanguageModel;
-  const isAdmin = false; // 暂时禁用管理员功能
+  let ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel, finalLanguageModel;
   
   try {
+    const token = getBearerToken(request);
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { data: authData, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !authData.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json() as {
       ingredients: any[];
       servings: number;
@@ -81,9 +86,44 @@ export async function POST(request: NextRequest) {
       cuisine: string;
       language: string;
       languageModel?: string;
-      userId?: string;
     };
-    ({ ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel, userId } = body);
+    ({ ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel } = body);
+    const userId = authData.user.id;
+    const db = getPostgresPool();
+    const recipeGenerationCost = APP_CONFIG.recipeGenerationCost;
+
+    await ensureCreditsSchema(db);
+
+    try {
+      const credits = await getOrCreateUserCredits(db, userId);
+      if (credits.credits < recipeGenerationCost) {
+        return NextResponse.json(
+          { error: `Insufficient credits. You need at least ${recipeGenerationCost} credits to generate a recipe.` },
+          { status: 402 }
+        );
+      }
+    } catch (error) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : 'Failed to fetch user credits' },
+        { status: 500 }
+      );
+    }
+
+    const spendRecipeCredits = async (): Promise<NextResponse | null> => {
+      try {
+        await spendCredits(db, userId, recipeGenerationCost);
+        return null;
+      } catch (error) {
+        const details = error instanceof Error ? error.message : 'Unknown error';
+        if (details === 'Insufficient credits') {
+          return NextResponse.json(
+            { error: `Insufficient credits. You need at least ${recipeGenerationCost} credits to generate a recipe.` },
+            { status: 402 }
+          );
+        }
+        throw error;
+      }
+    };
 
     // 验证必要参数
     if (!ingredients || ingredients.length < 2) {
@@ -95,14 +135,8 @@ export async function POST(request: NextRequest) {
     // 获取基于语言的模型配置
     const modelConfig = getLanguageConfig(language || 'en');
     
-    // 管理员可以选择模型，普通用户使用基于语言的默认模型
-    if (isAdmin && languageModel) {
-      // 管理员指定了模型，使用指定模型（需要向后兼容）
-      finalLanguageModel = languageModel;
-    } else {
-      // 根据语言自动选择模型
-      finalLanguageModel = language === 'zh' ? 'qwen-plus' : 'gpt-4o-mini';
-    }
+    // 根据语言自动选择模型
+    finalLanguageModel = language === 'zh' ? 'qwen-plus' : 'gpt-4o-mini';
 
     if (!modelConfig.apiKey) {
       return NextResponse.json({ error: 'API密钥未配置' }, { status: 500 });
@@ -189,7 +223,6 @@ export async function POST(request: NextRequest) {
       // 记录模型使用情况
       await recordModelUsage(
         finalLanguageModel,
-        prediction.id,
         userId || 'anonymous'
       );
 
@@ -217,6 +250,11 @@ export async function POST(request: NextRequest) {
       const recipesWithDefaults = recipes.map((recipe: any) => 
         transformRecipeData(recipe, finalLanguageModel, language)
       );
+
+      const spendResponse = await spendRecipeCredits();
+      if (spendResponse) {
+        return spendResponse;
+      }
       
       return NextResponse.json({ recipes: recipesWithDefaults });
     }
@@ -253,7 +291,6 @@ export async function POST(request: NextRequest) {
     // 记录模型使用情况
     await recordModelUsage(
       finalLanguageModel,
-      response.id,
       userId || 'anonymous'
     );
 
@@ -279,6 +316,11 @@ export async function POST(request: NextRequest) {
     const recipesWithDefaults = recipes.map((recipe: any) => 
       transformRecipeData(recipe, finalLanguageModel, language)
     );
+
+    const spendResponse = await spendRecipeCredits();
+    if (spendResponse) {
+      return spendResponse;
+    }
     
     return NextResponse.json({ recipes: recipesWithDefaults });
 

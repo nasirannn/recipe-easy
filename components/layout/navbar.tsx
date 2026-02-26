@@ -14,7 +14,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { useAuth } from "@/contexts/auth-context";
 import { useUserUsage } from '@/hooks/use-user-usage';
 import { getUserDisplayName } from '@/lib/utils/user-display';
-import { EditDisplayNameDialog } from '@/components/ui/edit-display-name-dialog';
+import { EditUserInfoDialog } from '@/components/ui/edit-display-name-dialog';
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
@@ -24,6 +24,7 @@ import { ToggleTheme } from "@/components/layout/toogle-theme";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import Image from "next/image";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface RouteProps {
   href: string;
@@ -35,13 +36,62 @@ export const Navbar = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showEditNameDialog, setShowEditNameDialog] = useState(false);
+  const [showEditUserInfoDialog, setShowEditUserInfoDialog] = useState(false);
+  const [isScrolled, setIsScrolled] = React.useState(false);
   const { user, loading, signOut } = useAuth();
   const { credits } = useUserUsage();
   const [isOpen, setIsOpen] = React.useState(false);
   const t = useTranslations('navigation');
   const tCredits = useTranslations('credits');
   const locale = useLocale();
+  const isHomePage = pathname === `/${locale}` || pathname === "/";
+
+  React.useEffect(() => {
+    if (!isHomePage) {
+      setIsScrolled(false);
+      return;
+    }
+
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 12);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [isHomePage]);
+
+  const actionButtonClassName = cn(
+    "ml-1 inline-flex min-h-[40px] items-center gap-1.5 rounded-full border px-3 py-2 text-[15px] font-medium text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2",
+    isHomePage
+      ? "border-transparent bg-slate-100/56 hover:bg-slate-100/72 dark:bg-slate-800/36 dark:hover:bg-slate-800/56"
+      : "border-border/60 bg-background/70 hover:bg-accent/50"
+  );
+
+  const mobileTriggerClassName = cn(
+    "h-10 w-10 cursor-pointer rounded-full border",
+    isHomePage
+      ? "border-transparent bg-slate-100/56 hover:bg-slate-100/72 dark:bg-slate-800/36 dark:hover:bg-slate-800/56"
+      : "border-border/60 bg-background/70 hover:bg-accent/50"
+  );
+
+  const avatarTriggerClassName = cn(
+    "ml-1 h-11 w-11 cursor-pointer overflow-hidden rounded-full border p-0 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2",
+    isHomePage
+      ? "border-transparent bg-slate-100/56 hover:bg-slate-100/72 dark:bg-slate-800/36 dark:hover:bg-slate-800/56"
+      : "border-border/60 bg-background/70 hover:bg-accent/50",
+    "data-[state=open]:border-primary/50 data-[state=open]:bg-primary/10"
+  );
+
+  const avatarMenuClassName = cn(
+    "w-[19rem] rounded-2xl border p-2 shadow-lg backdrop-blur-xl",
+    isHomePage
+      ? "border-slate-200/80 bg-white/92 dark:border-slate-700/80 dark:bg-slate-900/88"
+      : "border-border/70 bg-background/95"
+  );
 
   // 添加调试信息
   React.useEffect(() => {
@@ -75,35 +125,57 @@ export const Navbar = () => {
     }
   };
 
-  // 处理编辑名称成功后的回调 - 简化版本
-  const handleEditNameSuccess = () => {
+  // 处理编辑用户资料成功后的回调 - 简化版本
+  const handleEditUserInfoSuccess = () => {
     // 用户数据会通过认证状态变化自动更新
   };
 
   return (
-    <header className="w-full border-b border-transparent bg-transparent backdrop-blur-sm">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 hidden md:flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <div className="relative w-8 h-8">
+    <header
+      className={cn(
+        "z-50 w-full transition-[background-color,border-color,backdrop-filter,box-shadow] duration-300 ease-out motion-reduce:transition-none",
+        isHomePage
+          ? cn(
+              "fixed inset-x-0 top-0",
+              isScrolled
+                ? "bg-background/80 shadow-[0_1px_0_rgba(15,23,42,0.08)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/68 dark:shadow-[0_1px_0_rgba(255,255,255,0.08)]"
+                : "border-transparent bg-transparent backdrop-blur-0"
+            )
+          : "sticky top-0 border-b border-border/40 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70"
+      )}
+    >
+      <div className="home-inner">
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href={`/${locale}`}
+              className="flex items-center gap-2.5 rounded-full px-2 py-1.5 transition-colors hover:bg-primary/5"
+            >
+              <div className="relative h-9 w-9">
               <Image
                 src="/images/recipe-easy-logo.svg"
                 alt="RecipeEasy"
                 fill
                 className="object-contain"
-                sizes="32px"
+                sizes="36px"
               />
             </div>
-            <span className="hidden font-bold sm:inline-block">
+              <span className="text-[15px] font-semibold tracking-tight sm:text-base">
               RecipeEasy
             </span>
           </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
+
+            <nav className="hidden items-center gap-1 text-[15px] font-medium md:flex">
             {routeList.map((route) => (
               <Link
                 key={route.href}
                 href={route.href}
-                className="flex items-center gap-2 transition-colors hover:text-primary text-gray-500"
+                  className={cn(
+                    "inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-3 py-2 transition-colors duration-200",
+                    !route.href.includes('#') && pathname.startsWith(route.href)
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
+                  )}
               >
                 {route.icon}
                 {route.label}
@@ -111,20 +183,12 @@ export const Navbar = () => {
             ))}
           </nav>
         </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <div className="w-full flex-1 md:w-auto md:flex-none">
-          </div>
-          <nav className="flex items-center">
+
+          <div className="flex items-center gap-2">
             {/* 桌面版功能区 */}
-            <div className="hidden md:flex items-center">
-              <div className="flex items-center ml-3">
-                <div className="cursor-pointer">
-                  <LanguageSwitcher />
-                </div>
-                <div className="mx-1"></div>
-                <div className="cursor-pointer">
-                  <ToggleTheme />
-                </div>
+              <div className="hidden items-center gap-1.5 md:flex">
+                <LanguageSwitcher />
+                <ToggleTheme />
               </div>
               
               {/* 用户菜单 */}
@@ -132,106 +196,95 @@ export const Navbar = () => {
                 user ? (
                   <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="ml-2 h-11 w-11 rounded-full overflow-hidden p-0 hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 cursor-pointer"
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={avatarTriggerClassName}
                       >
-                        <UserAvatar user={user} size="md" />
+                        <UserAvatar user={user} size="lg" className="h-10 w-10" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent 
-                      align="end" 
-                      className="w-52 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg"
+                    <DropdownMenuContent
+                      align="end"
+                      sideOffset={10}
+                      className={avatarMenuClassName}
                       onCloseAutoFocus={(e) => e.preventDefault()}
                     >
-                      {/* 用户信息 */}
-                      <div className="mb-3">
-                        <div className="relative">
-                          {/* 用户名居中显示 */}
-                          <div className="text-center">
-                            <div className="font-medium text-base truncate">
+                      <div className="rounded-xl border border-border/70 bg-muted/35 p-3">
+                        <div className="flex items-start gap-3">
+                          <UserAvatar user={user} size="lg" className="h-11 w-11" />
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-sm font-semibold text-foreground">
                               {getUserDisplayName(user)}
                             </div>
+                            <div className="truncate text-xs text-muted-foreground">
+                              {user.email}
+                            </div>
                           </div>
-                          {/* 右箭头绝对定位到右侧 */}
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="absolute right-0 top-0 h-6 w-6 p-0 hover:bg-accent cursor-pointer"
-                            onClick={() => setShowEditNameDialog(true)}
+                            className="h-7 w-7 cursor-pointer rounded-md p-0 hover:bg-background/90"
+                            onClick={() => setShowEditUserInfoDialog(true)}
                           >
-                            <ChevronRight className="h-3 w-3" />
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
                           </Button>
                         </div>
-                      </div>
 
-                      <div className="mb-3 text-center">
-                        <div className="text-sm text-muted-foreground truncate px-2">
-                          {user.email}
+                        <div className="mt-3 flex items-center justify-between rounded-lg bg-background/80 px-2.5 py-2">
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            {t('credits')}
+                          </span>
+                          <span className="text-sm font-semibold tabular-nums text-foreground">
+                            {credits?.credits || 0}
+                          </span>
+                        </div>
+
+                        <div className="mt-1.5 text-[11px] text-muted-foreground">
+                          {tCredits('consumeOneCredit')}
                         </div>
                       </div>
-                     
-                     <DropdownMenuSeparator className="mb-3" />
-                     
-                     {/* 积分信息 */}
-                     <div className="mb-3 text-center">
-                       <div className="flex items-center justify-center gap-2">
-                         <span className="text-sm font-medium">{t('credits')}</span>
-                         <span className="font-medium text-base">
-                           {credits?.credits || 0}
-                         </span>
-                       </div>
-                     </div>
-                     
-                     <div className="mb-3 text-center">
-                       <div className="text-sm text-muted-foreground truncate px-2">
-                         {tCredits('consumeOneCredit')}
-                       </div>
-                     </div>
-                     
-                     <DropdownMenuSeparator className="mb-3" />
 
-                     {/* 我的菜谱链接 */}
-                     <div className="mb-3">
-                       <DropdownMenuItem 
-                         onClick={() => router.push(`/${locale}/my-recipes`)}
-                         className="cursor-pointer w-full justify-center"
-                       >
-                         <span className="font-medium">{t('myRecipes')}</span>
-                       </DropdownMenuItem>
-                     </div>
-                     
-                     <DropdownMenuSeparator className="mb-3" />
+                      <DropdownMenuSeparator className="my-2" />
 
-                     <div className="flex justify-center">
-                       <DropdownMenuItem 
-                         onClick={handleLogout} 
-                         className="cursor-pointer w-[90%] justify-center hover:bg-[--color-destructive-10]"
-                       >
-                         <span className="font-medium">{t('signout')}</span>
-                       </DropdownMenuItem>
-                     </div>
-                     
-                   </DropdownMenuContent>
-                 </DropdownMenu>
+                      <DropdownMenuItem
+                        onClick={() => router.push(`/${locale}/my-recipes`)}
+                        className="cursor-pointer rounded-lg px-2.5 py-2.5"
+                      >
+                        <BookOpen className="h-4 w-4 text-primary" />
+                        <span className="font-medium">{t('myRecipes')}</span>
+                        <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={handleLogout}
+                        className="mt-1 cursor-pointer rounded-lg px-2.5 py-2.5 text-destructive focus:bg-destructive/10 focus:text-destructive"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        <span className="font-medium">{t('signout')}</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 ) : (
-                  <div 
-                    onClick={() => setShowAuthModal(true)} 
-                    className="ml-2 cursor-pointer px-3 py-2 text-sm font-medium text-foreground hover:bg-accent/50 transition-colors duration-200 flex items-center gap-1.5 rounded-md"
+                  <button
+                    type="button"
+                    onClick={() => setShowAuthModal(true)}
+                    className={actionButtonClassName}
                   >
                     {t('signin')}
                     <ArrowRight className="h-4 w-4" />
-                  </div>
+                  </button>
                 )
               )}
-            </div>
-            
             {/* 移动版汉堡菜单 */}
             <div className="md:hidden">
               <Sheet open={isOpen} onOpenChange={setIsOpen} modal={false}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-9 w-9 cursor-pointer">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={mobileTriggerClassName}
+                    >
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
@@ -265,7 +318,7 @@ export const Navbar = () => {
                       {!loading && user && (
                         <div className="mb-6 pt-2 pb-5 border-b border-gray-200 dark:border-gray-700">
                           <div className="flex items-center gap-3 mb-4">
-                            <UserAvatar user={user} size="md" />
+                            <UserAvatar user={user} size="lg" className="h-10 w-10" />
                             <div className="flex-1">
                               <div className="flex items-center justify-between">
                                 <div className="font-semibold">
@@ -275,7 +328,7 @@ export const Navbar = () => {
                                   variant="ghost"
                                   size="sm"
                                   className="h-5 w-5 p-0 hover:bg-accent cursor-pointer"
-                                  onClick={() => setShowEditNameDialog(true)}
+                                  onClick={() => setShowEditUserInfoDialog(true)}
                                 >
                                   <ChevronRight className="h-3 w-3" />
                                 </Button>
@@ -379,17 +432,17 @@ export const Navbar = () => {
                 </SheetContent>
               </Sheet>
             </div>
-          </nav>
+          </div>
         </div>
       </div>
       <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
       
-      {/* 编辑显示名称对话框 */}
-      <EditDisplayNameDialog 
-        open={showEditNameDialog} 
-        onOpenChange={setShowEditNameDialog}
+      {/* 编辑用户信息对话框 */}
+      <EditUserInfoDialog 
+        open={showEditUserInfoDialog} 
+        onOpenChange={setShowEditUserInfoDialog}
         user={user}
-        onSuccess={handleEditNameSuccess}
+        onSuccess={handleEditUserInfoSuccess}
       />
     </header>
   );

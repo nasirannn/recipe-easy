@@ -1,4 +1,5 @@
 import { TRANSLATION_SYSTEM_PROMPTS, TRANSLATION_USER_PROMPTS } from '../prompts';
+import { PgClientLike } from '@/lib/server/postgres';
 
 export interface TranslationResult {
   title: string;
@@ -128,55 +129,40 @@ export async function translateRecipe(
  * 保存翻译结果到数据库
  */
 export async function saveTranslationToDatabase(
-  db: any,
+  db: PgClientLike,
   recipeId: string,
   language: string,
   translation: TranslationResult
 ): Promise<void> {
   try {
-    // 检查是否已存在翻译
-    const existingTranslation = await db.prepare(`
-      SELECT id FROM recipes_i18n 
-      WHERE recipe_id = ? AND language_code = ?
-    `).bind(recipeId, language).first();
-
-    if (existingTranslation) {
-      // 更新现有翻译
-      const updateResult = await db.prepare(`
-        UPDATE recipes_i18n SET
-          title = ?,
-          description = ?,
-          ingredients = ?,
-          seasoning = ?,
-          instructions = ?,
-          chef_tips = ?,
-          tags = ?,
-          difficulty = ?,
-          updated_at = ?
-        WHERE recipe_id = ? AND language_code = ?
-      `).bind(
-        translation.title,
-        translation.description,
-        JSON.stringify(translation.ingredients),
-        JSON.stringify(translation.seasoning),
-        JSON.stringify(translation.instructions),
-        JSON.stringify(translation.chefTips),
-        JSON.stringify(translation.tags),
-        translation.difficulty,
-        new Date().toISOString(),
-        recipeId,
-        language
-      ).run();
-
-    } else {
-      // 插入新翻译
-      const insertResult = await db.prepare(`
+    await db.query(
+      `
         INSERT INTO recipes_i18n (
-          recipe_id, language_code, title, description, ingredients, 
-          seasoning, instructions, chef_tips, tags, difficulty, 
-          created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).bind(
+          recipe_id,
+          language_code,
+          title,
+          description,
+          ingredients,
+          seasoning,
+          instructions,
+          chef_tips,
+          tags,
+          difficulty,
+          created_at,
+          updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
+        ON CONFLICT (recipe_id, language_code) DO UPDATE SET
+          title = EXCLUDED.title,
+          description = EXCLUDED.description,
+          ingredients = EXCLUDED.ingredients,
+          seasoning = EXCLUDED.seasoning,
+          instructions = EXCLUDED.instructions,
+          chef_tips = EXCLUDED.chef_tips,
+          tags = EXCLUDED.tags,
+          difficulty = EXCLUDED.difficulty,
+          updated_at = NOW()
+      `,
+      [
         recipeId,
         language,
         translation.title,
@@ -187,12 +173,8 @@ export async function saveTranslationToDatabase(
         JSON.stringify(translation.chefTips),
         JSON.stringify(translation.tags),
         translation.difficulty,
-        new Date().toISOString(),
-        new Date().toISOString()
-      ).run();
-
-    }
-
+      ]
+    );
   } catch (error) {
     throw error;
   }
@@ -204,7 +186,7 @@ export async function saveTranslationToDatabase(
 export async function translateRecipeAsync(
   recipe: RecipeForTranslation,
   targetLanguage: string,
-  db: any,
+  db: PgClientLike,
   env?: any
 ): Promise<void> {
   try {

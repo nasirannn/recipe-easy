@@ -1,6 +1,9 @@
 import { useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { create } from 'zustand';
+import { toast } from 'sonner';
+import { useLocale } from 'next-intl';
+import { APP_CONFIG } from '@/lib/config';
 
 interface UserCredits {
   id: string | null;
@@ -54,7 +57,7 @@ export const useCreditsStore = create<CreditsStore>((set) => ({
     
     return { 
       credits: updatedCredits,
-      canGenerate: updatedCredits.credits >= 1
+      canGenerate: updatedCredits.credits >= APP_CONFIG.recipeGenerationCost
     };
   }),
   reset: () => set({
@@ -69,7 +72,7 @@ export const useCreditsStore = create<CreditsStore>((set) => ({
 
 export function useUserUsage() {
   const { user } = useAuth();
-  const isAdmin = user?.user_metadata?.role === 'admin';
+  const locale = useLocale();
   // 使用全局状态
   const { 
     credits, 
@@ -100,7 +103,7 @@ export function useUserUsage() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/user-usage?userId=${user.id}&isAdmin=${isAdmin}`);
+      const response = await fetch(`/api/user-usage?userId=${user.id}`);
 
       if (!response.ok) {
         throw new Error(`Request failed with status ${response.status}: ${response.statusText}`);
@@ -111,7 +114,16 @@ export function useUserUsage() {
       if (data.success) {
         setCredits(data.credits);
         setCanGenerate(data.canGenerate);
-        setInitialized(true);
+
+        const grantedAmount = Number(data?.dailyLoginBonus?.grantedAmount ?? 0);
+        if (grantedAmount > 0) {
+          const isZh = locale.toLowerCase().startsWith('zh');
+          toast.success(
+            isZh
+              ? `每日登录奖励 +${grantedAmount} 积分，24 小时内有效`
+              : `Daily login bonus +${grantedAmount} credits (valid for 24 hours).`
+          );
+        }
       } else {
         // 检查是否是配置错误
         if (data.setup_required) {
@@ -120,18 +132,24 @@ export function useUserUsage() {
         } else {
           setError(data.error || 'Failed to fetch credits');
         }
+        setCredits(null);
+        setCanGenerate(false);
       }
     } catch (err) {
       setError('Network error');
+      setCredits(null);
+      setCanGenerate(false);
       // Error fetching credits
     } finally {
+      // 无论成功或失败，都结束初始化，避免登录后无限请求
+      setInitialized(true);
       setLoading(false);
       setRequestInProgress(false);
     }
-  }, [user?.id, isAdmin, setCredits, setCanGenerate, setLoading, setError, setInitialized, setRequestInProgress, requestInProgress]);
+  }, [user?.id, locale, setCredits, setCanGenerate, setLoading, setError, setInitialized, setRequestInProgress, requestInProgress]);
 
   // 消费积分
-  const spendCredits = useCallback(async (amount: number = 1) => {
+  const spendCredits = useCallback(async (amount: number = APP_CONFIG.recipeGenerationCost) => {
     if (!user?.id) return false;
 
     try {
@@ -144,7 +162,6 @@ export function useUserUsage() {
           userId: user.id,
           action: 'spend',
           amount,
-          isAdmin,
         }),
       });
 
@@ -152,7 +169,7 @@ export function useUserUsage() {
 
       if (data.success) {
         setCredits(data.credits);
-        setCanGenerate(data.credits.credits >= 1);
+        setCanGenerate(data.credits.credits >= APP_CONFIG.recipeGenerationCost);
         return true;
       } else {
         setError(data.error || 'Failed to spend credits');
@@ -185,7 +202,7 @@ export function useUserUsage() {
 
   return {
     credits,
-    canGenerate: isAdmin ? true : canGenerate,
+    canGenerate,
     loading,
     error,
     spendCredits,

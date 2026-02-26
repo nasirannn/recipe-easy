@@ -34,8 +34,9 @@ Recipe Easy is an innovative AI-powered platform that transforms your available 
 
 ### 2.2 Technical Infrastructure
 - **Authentication**: Powered by Supabase for secure user management
-- **Content Delivery**: Cloudflare for fast, reliable service delivery
-- **Data Storage**: Cloudflare D1 for credit and usage data
+- **Content Delivery**: Vercel edge network for fast, reliable service delivery
+- **Data Storage**: Neon PostgreSQL for credit and usage data
+- **Object Storage**: Cloudflare R2 for media and static document files
 - **AI Integration**: Multiple AI providers for optimal performance
 
 ## 3. User Accounts
@@ -164,7 +165,8 @@ Our Service relies on trusted third-party providers to deliver the best experien
 
 ### 9.1 Core Service Providers
 - **Supabase**: Secure user authentication and account management
-- **Cloudflare**: Global content delivery, security, and database services
+- **Vercel + Neon**: Application hosting and PostgreSQL database services
+- **Cloudflare R2**: Object storage for media and static document files
 - **AI Model Providers**: Advanced language models for recipe generation
 - **Image Generation Services**: AI-powered image creation for visual recipe enhancement
 - **Google OAuth**: Secure third-party authentication option

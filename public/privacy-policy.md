@@ -78,7 +78,8 @@ We integrate with trusted third-party services that may collect additional infor
 - **Google OAuth**: If you choose to sign in with Google
 
 **Infrastructure Services**
-- **Cloudflare**: Content delivery, security, and database services
+- **Vercel + Neon**: Application hosting and PostgreSQL database services
+- **Cloudflare R2**: Object storage for public documents and media files
 - **AI Model Providers**: Recipe generation services (Qwen Plus, GPT-4o Mini)
 - **Image Generation Services**: Visual content creation (WanX, Flux Schnell)
 
@@ -160,7 +161,7 @@ We use your information for specific, legitimate purposes to provide and improve
 
 **Where We Store It:**
 - **Supabase**: Account information and authentication data
-- **Cloudflare D1**: Credit system data and usage analytics
+- **Neon PostgreSQL**: Credit system data and usage analytics
 - **Secure Infrastructure**: All data is encrypted in transit and at rest
 
 ### 4.4 Data Retention Periods
@@ -186,7 +187,8 @@ We share limited data with trusted third-party services that help us operate Rec
 
 **Essential Service Providers:**
 - **Supabase**: User authentication and account management (email, encrypted passwords, user IDs)
-- **Cloudflare**: Content delivery, security, and database services (usage data, IP addresses)
+- **Vercel + Neon**: Application hosting and PostgreSQL database services (operational logs, usage data)
+- **Cloudflare R2**: Object storage for media and static document files
 - **AI Model Providers**: Recipe generation services (ingredient lists, preferences - no personal identifiers)
 - **Image Generation Services**: Visual content creation (recipe descriptions - no personal identifiers)
 
@@ -311,7 +313,7 @@ We use various technologies to enhance your experience and understand how you us
 ## 8. International Data Transfers and Legal Compliance
 
 ### 8.1 Data Location
-- **Primary Servers**: United States (Cloudflare global network)
+- **Primary Servers**: United States (Vercel and Neon infrastructure)
 - **Authentication Data**: Stored with Supabase (global infrastructure)
 - **Analytics Data**: Processed by Google and Microsoft (global services)
 

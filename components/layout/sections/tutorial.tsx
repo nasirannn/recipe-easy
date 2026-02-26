@@ -1,31 +1,39 @@
 import { useTranslations } from 'next-intl';
 import { Card } from "@/components/ui/card";
 import Image from 'next/image';
+import { SectionHeader } from '@/components/layout/section-header';
 
 interface TutorialStepProps {
+  index: number;
   title: string;
   description: string;
   imageSrc: string;
 }
 
-const TutorialStep = ({ title, description, imageSrc }: TutorialStepProps) => {
+const TutorialStep = ({ index, title, description, imageSrc }: TutorialStepProps) => {
   return (
-    <Card className="bg-card p-6 h-full shadow-none">
-      <div className="rounded-lg p-3 mb-4">
+    <Card className="home-card h-full p-6 md:p-7">
+      <div className="mb-4 flex items-center justify-between">
+        <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/10 px-2 text-xs font-semibold text-primary">
+          {`0${index + 1}`.slice(-2)}
+        </span>
+      </div>
+
+      <div className="mb-5 rounded-xl border border-border/70 bg-background/70 p-3">
         <Image 
           src={imageSrc} 
           alt={title}
-          width={200}
-          height={100}
-          className="w-full max-w-[200px] h-auto object-contain rounded-md mx-auto"
+          width={240}
+          height={120}
+          className="mx-auto h-auto w-full max-w-[240px] rounded-md object-contain"
         />
       </div>
       
-      <h4 className="text-xl font-bold mb-3 text-foreground text-center">
+      <h4 className="text-xl font-semibold tracking-tight text-foreground">
         {title}
       </h4>
       
-      <p className="text-muted-foreground mb-4 leading-relaxed text-center">
+      <p className="mt-3 text-base leading-7 text-muted-foreground">
         {description}
       </p>
     </Card>
@@ -54,20 +62,20 @@ export const TutorialSection = () => {
   ];
 
   return (
-    <section id="tutorial" className="container pt-8 sm:pt-12 pb-8 sm:pb-12">
-      <div className="text-center mb-16">
-        <h3 className="text-3xl md:text-6xl font-bold text-foreground mb-4">
-          {t('title')}
-        </h3>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          {t('description')}
-        </p>
-      </div>
+    <section id="tutorial" className="home-section">
+      <div className="home-inner">
+        <SectionHeader
+          eyebrow="Workflow"
+          title={t('title')}
+          description={t('description')}
+          className="mb-10 md:mb-14"
+        />
 
-      <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        {tutorialSteps.map((step, index) => (
-          <TutorialStep key={index} {...step} />
-        ))}
+        <div className="grid gap-5 md:grid-cols-3 md:gap-6">
+          {tutorialSteps.map((step, index) => (
+            <TutorialStep key={index} index={index} {...step} />
+          ))}
+        </div>
       </div>
     </section>
   );

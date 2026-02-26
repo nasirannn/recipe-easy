@@ -12,6 +12,41 @@ const intlMiddleware = createMiddleware({
 export default function middleware(request: NextRequest) {
   // 处理 API 路由的 CORS
   if (request.nextUrl.pathname.startsWith('/api/')) {
+    // 兼容旧客户端：移除 user-usage 的 isAdmin 查询参数
+    if (request.nextUrl.pathname === '/api/user-usage' && request.nextUrl.searchParams.has('isAdmin')) {
+      const rewrittenUrl = request.nextUrl.clone();
+      rewrittenUrl.searchParams.delete('isAdmin');
+
+      const response = NextResponse.rewrite(rewrittenUrl);
+      Object.entries(createCorsHeaders()).forEach(([key, value]) => {
+        response.headers.set(key, value);
+      });
+      response.headers.set('x-legacy-query-stripped', 'isAdmin');
+      return response;
+    }
+
+    // 兼容旧客户端：admin 列表接口改为通用 recipes 列表
+    if (request.nextUrl.pathname === '/api/recipes/admin') {
+      const rewrittenUrl = request.nextUrl.clone();
+      rewrittenUrl.pathname = '/api/recipes';
+      if (!rewrittenUrl.searchParams.get('type')) {
+        rewrittenUrl.searchParams.set('type', 'latest');
+      }
+      if (!rewrittenUrl.searchParams.get('page')) {
+        rewrittenUrl.searchParams.set('page', '1');
+      }
+      if (!rewrittenUrl.searchParams.get('limit')) {
+        rewrittenUrl.searchParams.set('limit', '10');
+      }
+
+      const response = NextResponse.rewrite(rewrittenUrl);
+      Object.entries(createCorsHeaders()).forEach(([key, value]) => {
+        response.headers.set(key, value);
+      });
+      response.headers.set('x-legacy-path-rewritten', '/api/recipes/admin');
+      return response;
+    }
+
     // 处理预检请求
     if (request.method === 'OPTIONS') {
       return new NextResponse(null, {

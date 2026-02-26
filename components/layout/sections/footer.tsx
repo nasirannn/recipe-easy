@@ -1,6 +1,5 @@
 "use client";
 
-import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from 'next-intl';
@@ -15,13 +14,13 @@ export const FooterSection = () => {
   const [showContactDialog, setShowContactDialog] = useState(false);
 
   return (
-    <footer id="footer" className="container pt-8 pb-16 sm:pt-8 sm:pb-16">
-      <div className="p-10 bg-card rounded-2xl">
+    <footer id="footer" className="home-section-compact border-t border-border/70">
+      <div className="home-inner">
         {/* Main content grid - two columns layout with right content grouped */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10">
           {/* First column: Logo and description */}
-          <div className="md:col-span-1 text-center md:text-left">
-            <Link href="/" className="font-bold text-base sm:text-lg flex items-center gap-1.5 sm:gap-2 justify-center md:justify-start">
+          <div className="text-center md:text-left">
+            <Link href="/" className="inline-flex items-center gap-2 text-base font-semibold tracking-tight sm:text-lg">
               <div className="relative w-7 h-7 sm:w-8 sm:h-8">
                 <Image 
                   src="/images/recipe-easy-logo.svg"
@@ -33,19 +32,19 @@ export const FooterSection = () => {
               </div>
               RecipeEasy
             </Link>
-            <p className="text-sm text-muted-foreground mt-3 max-w-xs mx-auto md:mx-0">
+            <p className="mt-3 max-w-xs text-sm leading-6 text-muted-foreground md:mx-0">
               {t('description')}
             </p>
           </div>
 
           {/* Second column: About, Help, and Friend sections grouped together */}
-          <div className="md:col-span-1">
-            <div className="flex gap-6 md:gap-8 justify-center md:justify-end">
+          <div>
+            <div className="flex flex-wrap justify-center gap-8 md:justify-end">
               {/* About section */}
               <div className="flex flex-col gap-2 shrink-0 text-center md:text-left">
-                <h3 className="font-bold text-lg">{t('about')}</h3>
+                <h3 className="text-base font-semibold">{t('about')}</h3>
                 <div>
-                  <Link href="#features" className="opacity-60 hover:opacity-100">
+                  <Link href="#features" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                     {t('features')}
                   </Link>
                 </div>
@@ -53,17 +52,17 @@ export const FooterSection = () => {
 
               {/* Help section */}
               <div className="flex flex-col gap-2 shrink-0 text-center md:text-left">
-                <h3 className="font-bold text-lg">{t('help')}</h3>
+                <h3 className="text-base font-semibold">{t('help')}</h3>
                 <div>
                   <button 
                     onClick={() => setShowContactDialog(true)}
-                    className="opacity-60 hover:opacity-100 text-center md:text-left bg-transparent border-none p-0 cursor-pointer"
+                    className="bg-transparent border-none p-0 text-sm text-muted-foreground transition-colors hover:text-foreground text-center md:text-left cursor-pointer"
                   >
                     {t('contact')}
                   </button>
                 </div>
                 <div>
-                  <Link href="#faq" className="opacity-60 hover:opacity-100">
+                  <Link href="#faq" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                     {t('faq')}
                   </Link>
                 </div>
@@ -71,13 +70,13 @@ export const FooterSection = () => {
 
               {/* Friend section */}
               <div className="flex flex-col gap-2 shrink-0 text-center md:text-left">
-                <h3 className="font-bold text-lg">{t('friends')}</h3>
+                <h3 className="text-base font-semibold">{t('friends')}</h3>
                 <div>
                   <a 
                     href="https://aiketorecipes.com/" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="opacity-60 hover:opacity-100"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     AI Keto Recipes
                   </a>
@@ -88,8 +87,19 @@ export const FooterSection = () => {
                   title="AIStage"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="opacity-60 hover:opacity-100"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >AIStage</a>
+                </div>
+                <div>
+                  <a
+                    href="https://makernb.com"
+                    title="MakeRNB"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    MakeRNB
+                  </a>
                 </div>
               </div>
             </div>
@@ -97,24 +107,24 @@ export const FooterSection = () => {
         </div>
 
         {/* Copyright and legal links */}
-        <Separator className="my-6" />
+        <div className="my-6 h-px bg-border/70" />
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <h3 className="text-left text-gray-500 text-sm">
+          <h3 className="text-left text-sm text-muted-foreground">
             {t('copyright')}
           </h3>
           <div className="flex gap-6 text-sm">
-            <Link href={`/${locale}/privacy`} className="text-gray-500 hover:text-gray-700 transition-colors">
+            <Link href={`/${locale}/privacy`} className="text-muted-foreground transition-colors hover:text-foreground">
               {t('privacy')}
             </Link>
-            <Link href={`/${locale}/terms`} className="text-gray-500 hover:text-gray-700 transition-colors">
+            <Link href={`/${locale}/terms`} className="text-muted-foreground transition-colors hover:text-foreground">
               {t('terms')}
             </Link>
           </div>
         </div>
 
         {/* Badges section */}
-        <Separator className="my-6" />
-        <div className="flex justify-center items-center gap-6">
+        <div className="my-6 h-px bg-border/70" />
+        <div className="flex flex-wrap items-center justify-start gap-4">
           <a 
             href="https://startupfa.me/s/recipe-easy.com?utm_source=recipe-easy.com" 
             target="_blank" 
@@ -197,10 +207,13 @@ export const FooterSection = () => {
             rel="noopener noreferrer"
             className="hover:opacity-80 transition-opacity"
           >
-            <img 
-              src="https://cdn-b.saashub.com/img/badges/approved-color.png?v=1" 
-              alt="Recipe Easy badge" 
-              style={{maxWidth: '150px', height: '36px', width: 'auto', objectFit: 'contain'}}
+            <Image
+              src="https://cdn-b.saashub.com/img/badges/approved-color.png?v=1"
+              alt="Recipe Easy badge"
+              width={150}
+              height={36}
+              className="h-9 w-auto max-w-[150px] object-contain"
+              unoptimized
             />
           </a>
           <a href="https://indie.deals?ref=https%3A%2F%2Frecipe-easy.com" target="_blank" rel="noopener noreferrer">

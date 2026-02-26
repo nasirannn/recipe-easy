@@ -1,9 +1,9 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
-import { AuthProvider } from '@/contexts/auth-context';
 import { Navbar } from '@/components/layout/navbar';
 import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
 import { PageViewTracker } from '@/components/analytics/page-view-tracker';
+import { RouteBackgroundShell } from '@/components/layout/route-background-shell';
 
 export async function generateMetadata({
   params,
@@ -31,12 +31,12 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <AuthProvider>
-      <NextIntlClientProvider locale={locale} messages={messages}>
-        <PageViewTracker />
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <PageViewTracker />
+      <RouteBackgroundShell locale={locale}>
         <Navbar />
         {children}
-      </NextIntlClientProvider>
-    </AuthProvider>
+      </RouteBackgroundShell>
+    </NextIntlClientProvider>
   );
 }

@@ -11,6 +11,7 @@ import {
 import { Star } from "lucide-react";
 import { useTranslations } from 'next-intl';
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { SectionHeader } from "@/components/layout/section-header";
 
 interface ReviewProps {
   image: string;
@@ -143,96 +144,99 @@ export const TestimonialSection = () => {
   }, [animate]);
 
   return (
-    <section id="testimonials" className="container pt-8 pb-4 sm:pt-16 sm:pb-8">
-      <div className="text-center mb-8">
-        <h2 className="text-lg text-secondary text-center mb-2 tracking-wider">
-          {t('title')}
-        </h2>
-
-        <h2 className="text-3xl md:text-4xl text-center font-bold mb-4">
-          {t('subtitle')}
-        </h2>
+    <section id="testimonials" className="home-section-compact">
+      <div className="home-inner">
+      <SectionHeader
+        eyebrow={t('title')}
+        title={t('subtitle')}
+        className="mb-8 md:mb-10"
+      />
       </div>
 
-      <div className="relative overflow-hidden">
-        {/* 渐变遮罩 - 左侧 */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-linear-to-r from-background to-transparent z-10 pointer-events-none" />
-        
-        {/* 渐变遮罩 - 右侧 */}
-        <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-linear-to-l from-background to-transparent z-10 pointer-events-none" />
+      <div className="home-inner">
+      <div className="relative overflow-hidden rounded-2xl">
+        <div className="home-card absolute inset-0" />
+        <div className="relative overflow-hidden px-2 py-5 sm:px-3">
+          {/* 渐变遮罩 - 左侧 */}
+          <div className="pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 bg-linear-to-r from-background to-transparent sm:w-16" />
+          
+          {/* 渐变遮罩 - 右侧 */}
+          <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-8 bg-linear-to-l from-background to-transparent sm:w-16" />
 
-        {/* 轮播容器 */}
-        <div 
-          ref={containerRef}
-          className="flex gap-8"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-        >
-          {duplicatedReviews.map((review, index) => {
-            const name = t(review.nameKey);
-            const userName = t(review.userNameKey);
-            const comment = t(review.commentKey);
+          {/* 轮播容器 */}
+          <div 
+            ref={containerRef}
+            className="flex gap-6 sm:gap-8"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+          >
+            {duplicatedReviews.map((review, index) => {
+              const name = t(review.nameKey);
+              const userName = t(review.userNameKey);
+              const comment = t(review.commentKey);
 
-            return (
-              <Card
-                key={index}
-                className="bg-muted/50 dark:bg-card flex flex-col h-full shrink-0"
-                style={{ 
-                  minWidth: `${cardWidth}px`, 
-                  maxWidth: `${cardWidth}px` 
-                }}
-              >
-                <CardHeader>
-                  <div className="flex gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="size-4 fill-primary text-primary"
-                      />
-                    ))}
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <p className="text-muted-foreground text-sm sm:text-base">{`"${comment}"`}</p>
-                </CardContent>
-                <CardFooter>
-                  <div className="flex flex-row items-center gap-4">
-                    <Avatar>
-                      <AvatarImage
-                        src={review.image}
-                        alt={userName}
-                        onError={(e) => {
-                          // 尝试备用头像
-                          const fallbackImages = [
-                            "https://ui-avatars.com/api/?name=" + encodeURIComponent(name) + "&background=0f172a&color=fff&size=150",
-                            "https://api.dicebear.com/7.x/avataaars/svg?seed=" + encodeURIComponent(name) + "&size=150"
-                          ];
-                          
-                          const currentSrc = e.currentTarget.src;
-                          const currentIndex = fallbackImages.findIndex(url => currentSrc.includes(url.split('?')[0]));
-                          
-                          if (currentIndex < fallbackImages.length - 1) {
-                            e.currentTarget.src = fallbackImages[currentIndex + 1];
-                          } else {
-                            e.currentTarget.style.display = 'none';
-                          }
-                        }}
-                      />
-                      <AvatarFallback className="bg-[--color-primary-10] text-primary font-semibold">
-                        {name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-
-                    <div className="flex flex-col">
-                      <CardTitle className="text-base sm:text-lg">{name}</CardTitle>
-                      <CardDescription className="text-sm">{userName}</CardDescription>
+              return (
+                <Card
+                  key={index}
+                  className="shrink-0 border border-border/70 bg-card/90"
+                  style={{ 
+                    minWidth: `${cardWidth}px`, 
+                    maxWidth: `${cardWidth}px` 
+                  }}
+                >
+                  <CardHeader>
+                    <div className="flex gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className="size-4 fill-primary text-primary"
+                        />
+                      ))}
                     </div>
-                  </div>
-                </CardFooter>
-              </Card>
-            );
-          })}
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <p className="text-sm leading-7 text-muted-foreground sm:text-base">{`"${comment}"`}</p>
+                  </CardContent>
+                  <CardFooter>
+                    <div className="flex flex-row items-center gap-4">
+                      <Avatar>
+                        <AvatarImage
+                          src={review.image}
+                          alt={userName}
+                          onError={(e) => {
+                            // 尝试备用头像
+                            const fallbackImages = [
+                              "https://ui-avatars.com/api/?name=" + encodeURIComponent(name) + "&background=0f172a&color=fff&size=150",
+                              "https://api.dicebear.com/7.x/avataaars/svg?seed=" + encodeURIComponent(name) + "&size=150"
+                            ];
+                            
+                            const currentSrc = e.currentTarget.src;
+                            const currentIndex = fallbackImages.findIndex(url => currentSrc.includes(url.split('?')[0]));
+                            
+                            if (currentIndex < fallbackImages.length - 1) {
+                              e.currentTarget.src = fallbackImages[currentIndex + 1];
+                            } else {
+                              e.currentTarget.style.display = 'none';
+                            }
+                          }}
+                        />
+                        <AvatarFallback className="bg-[--color-primary-10] text-primary font-semibold">
+                          {name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+
+                      <div className="flex flex-col">
+                        <CardTitle className="text-base sm:text-lg">{name}</CardTitle>
+                        <CardDescription className="text-sm">{userName}</CardDescription>
+                      </div>
+                    </div>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
         </div>
+      </div>
       </div>
     </section>
   );

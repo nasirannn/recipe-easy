@@ -36,13 +36,29 @@ export function getUserDisplayName(user: User | null): string {
  * 更新用户显示名称到Supabase
  */
 export async function updateUserDisplayName(user: User | null, displayName: string): Promise<boolean> {
+  return updateUserProfile(user, { displayName })
+}
+
+/**
+ * 更新用户资料（显示名称和头像URL）
+ */
+export async function updateUserProfile(
+  user: User | null,
+  profile: { displayName: string; avatarUrl?: string | null }
+): Promise<boolean> {
   if (!user) return false
   
   try {
-    const { data, error } = await supabase.auth.updateUser({
-      data: {
-        display_name: displayName
-      }
+    const metadataPayload: Record<string, unknown> = {
+      display_name: profile.displayName
+    }
+
+    if (typeof profile.avatarUrl !== 'undefined') {
+      metadataPayload.avatar_url = profile.avatarUrl
+    }
+
+    const { error } = await supabase.auth.updateUser({
+      data: metadataPayload
     })
     
     if (error) {

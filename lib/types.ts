@@ -1,6 +1,5 @@
 // ==================== 核心类型定义 ====================
 
-import { D1Database, R2Bucket } from '@cloudflare/workers-types';
 import React from 'react';
 
 // 基础实体类型
@@ -188,7 +187,6 @@ export interface GenerationRequest {
   language: string;
   languageModel?: string;
   userId?: string;
-  isAdmin?: boolean;
 }
 
 export interface ImageGenerationRequest {
@@ -207,7 +205,6 @@ export interface ImageGenParams {
   n?: number;
   model?: ImageModel;
   userId?: string;
-  isAdmin?: boolean;
   language?: string;
 }
 
@@ -223,9 +220,10 @@ export type ImageGenResponse = {
 // ==================== 环境配置类型 ====================
 
 export interface DatabaseEnv {
-  RECIPE_EASY_DB: D1Database;
-  RECIPE_IMAGES: R2Bucket;
-  WORKER_URL?: string;
+  DATABASE_URL?: string;
+  R2_ENDPOINT?: string;
+  R2_BUCKET_NAME?: string;
+  R2_PUBLIC_URL?: string;
 }
 
 export type SupportedLocale = 'en' | 'zh';

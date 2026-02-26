@@ -14,22 +14,34 @@
   },
   "profile": {
     "editDisplayName": "Edit Display Name",
+    "editUserInfo": "Edit User Info",
+    "userInfoDescription": "Update your avatar and username.",
+    "avatar": "Avatar",
+    "uploadAvatar": "Upload Avatar",
+    "changeAvatar": "Change Avatar",
+    "avatarRequirements": "PNG, JPG, WEBP, or GIF up to 5MB.",
+    "invalidAvatarType": "Please upload a PNG, JPG, WEBP, or GIF image.",
+    "avatarTooLarge": "Avatar size must be 5MB or less.",
+    "avatarUploadFailed": "Failed to upload avatar.",
+    "username": "Username",
     "displayNamePlaceholder": "Enter your display name",
     "save": "Save",
+    "saveChanges": "Save Changes",
     "cancel": "Cancel",
     "reset": "Reset",
     "updating": "Updating...",
     "updateFailed": "Failed to update display name",
+    "updateProfileFailed": "Failed to update profile.",
     "updateSuccess": "Display name updated successfully"
   },
   "hero": {
     "title": "AI Recipes Generator From Any Ingredients",
     "description": "Simply select or enter ingredients, and our AI will create random, creative, and easy-to-follow recipes for you. No more \"what can i make with these ingredients\" stress.",
     "tryNow": "Try Now",
-    "badgeFreeRecipeCreation": "Free Recipe Creation",
-    "badgeRegisterForImages": "Register to Generate Images",
-    "badgeStartWithCredits": "Start with 100 Free Credits",
-    "badgeImageCostPerCredit": "1 Credit per Image"
+    "badgeFreeRecipeCreation": "1 credit per recipe",
+    "badgeRegisterForImages": "Register to generate images",
+    "badgeStartWithCredits": "Free daily credits",
+    "badgeImageCostPerCredit": "2 credits per image"
   },
   "features": {
     "title": "Smart AI-Powered Culinary Features",
@@ -85,7 +97,7 @@
     "medium": "Medium",
     "hard": "Hard",
     "generateImage": "Generate Image",
-    "generateImageCost": "Cost 1 credit to generate image",
+    "generateImageCost": "Cost 2 credits to generate image",
     "reset": "Reset",
     "showOptions": "Show Options",
     "hideOptions": "Hide Options",
@@ -168,7 +180,7 @@
     "subtitle": "AI-Generated Culinary Masterpieces",
     "loadingRecipes": "Loading recipes...",
     "loadMore": "Load More",
-    "allRecipesDisplayed": "All recipes displayed",
+    "allRecipesDisplayed": "All recipes loaded",
     "description1": "",
     "description2": "",
     "description3": ""
@@ -206,7 +218,7 @@
       "confirm": "Delete Recipe",
       "deleting": "Deleting..."
     },
-    "allRecipesDisplayed": "All recipes displayed"
+    "allRecipesDisplayed": "All recipes loaded"
   },
   "credits": {
     "credits": "Credits",
@@ -217,7 +229,7 @@
     "spendError": "Failed to spend credits",
     "loading": "Loading...",
     "noCreditsLeft": "No credits left",
-    "consumeOneCredit": "1 image = 1 credit"
+    "consumeOneCredit": "1 image = 2 credits"
   },
   "tutorial": {
     "title": "How It Works",
@@ -272,7 +284,7 @@
   "faq": {
     "title": "Frequently Asked Questions",
     "q1": "Is this service completely free?",
-    "a1": "New users receive 100 credits upon registration. Recipe generation is free, but image generation consumes 1 credit per image. We will soon launch service packages and reward systems to provide more ways to earn credits.",
+    "a1": "New users receive 100 credits upon registration. Recipe generation consumes 1 credit per recipe, and image generation consumes 2 credits per image. We will soon launch service packages and reward systems to provide more ways to earn credits.",
     "q2": "Can I add ingredients that aren't listed?",
     "a2": "Yes! Simply type any ingredient into the search box and press Enter. Custom ingredients show up with a white background and yellow text, so you can easily spot them. Our AI will create recipes with whatever ingredients you add!",
     "q3": "How are recipe images generated?",
@@ -295,7 +307,7 @@
     "friends": "Friends",
     "featuredOn": "Featured On",
     "description": "RecipeEasy is an AI-powered platform that transforms your ingredients into delicious recipes. Experience the magic of culinary creativity in seconds.",
-    "copyright": "© 2025 Recipe Easy. Not affiliated with recipeeasy.com.",
+    "copyright": "© 2025 Recipe Easy.",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service"
   },

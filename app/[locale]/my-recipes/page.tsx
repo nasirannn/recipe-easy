@@ -13,23 +13,44 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Clock, Users, ChefHat, Calendar, ArrowLeft, AlertTriangle, Trash2, } from 'lucide-react';
+import { Clock, Users, ChefHat, Calendar, ArrowLeft, AlertTriangle, Trash2, ImageIcon, } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getImageUrl } from '@/lib/config';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface RecipeWithMetadata extends Recipe {
   createdAt?: string;
   userStatus?: UserLoginStatus;
 }
 
+type DifficultyLevel = 'easy' | 'medium' | 'hard';
+
+function normalizeDifficulty(value?: string): DifficultyLevel {
+  const normalized = (value || '').toLowerCase();
+  if (normalized === '简单' || normalized.includes('easy')) return 'easy';
+  if (normalized === '困难' || normalized.includes('hard')) return 'hard';
+  return 'medium';
+}
+
+function getDifficultyBadgeTone(value: DifficultyLevel): string {
+  if (value === 'easy') {
+    return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-200 dark:ring-emerald-400/30';
+  }
+  if (value === 'hard') {
+    return 'bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/20 dark:text-rose-200 dark:ring-rose-400/30';
+  }
+  return 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/20 dark:text-amber-200 dark:ring-amber-400/30';
+}
+
 export default function MyRecipesPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const t = useTranslations('myRecipes');
+  const tRecipe = useTranslations('recipeDisplay');
   const locale = useLocale();
   const [recipes, setRecipes] = useState<RecipeWithMetadata[]>([]);
   const [loading, setLoading] = useState(false);
@@ -153,8 +174,50 @@ export default function MyRecipesPage() {
       day: 'numeric'
     });
   };
-  
 
+  const handleGoBack = () => {
+    // 总是返回到当前语言环境的首页，避免语言切换后的路由问题
+    router.push(`/${locale}`);
+  };
+
+  const renderRecipeGridSkeleton = () => (
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <Card
+          key={`my-recipes-skeleton-${index}`}
+          className="overflow-hidden border-0 bg-white/80 shadow-lg backdrop-blur-sm dark:bg-gray-800/80"
+        >
+          <Skeleton className="aspect-[3/2] w-full rounded-none" />
+          <div className="space-y-3 p-6">
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+            <div className="flex items-center gap-3 pt-1">
+              <Skeleton className="h-3 w-14" />
+              <Skeleton className="h-3 w-12" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+            <Skeleton className="h-3 w-24" />
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+
+  const renderImageNotice = () => (
+    <div className="relative mb-6 overflow-hidden rounded-2xl border border-orange-200/80 bg-linear-to-r from-orange-50 via-white to-amber-50 p-4 shadow-sm dark:border-orange-500/30 dark:from-orange-500/10 dark:via-slate-900/70 dark:to-amber-500/10">
+      <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-orange-300/20 blur-2xl dark:bg-orange-400/15" />
+      <div className="relative flex items-start gap-3">
+        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-orange-200 bg-white text-orange-600 shadow-sm dark:border-orange-400/40 dark:bg-slate-900/80 dark:text-orange-300">
+          <ImageIcon className="h-5 w-5" />
+        </div>
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('imageNotice.title')}</h3>
+          <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{t('imageNotice.description')}</p>
+        </div>
+      </div>
+    </div>
+  );
 
   // 显示用户加载状态
   if (authLoading) {
@@ -167,7 +230,7 @@ export default function MyRecipesPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => router.push(`/${locale}`)}
+                onClick={handleGoBack}
                 className="w-10 h-10 rounded-full hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-200"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -178,11 +241,10 @@ export default function MyRecipesPage() {
             </div>
           </div>
           
-          {/* Loading in center */}
-          <div className="flex items-center justify-center py-32">
-            <div className="text-center">
-              <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-6"></div>
-              <p className="text-slate-600 dark:text-slate-400">Loading...</p>
+          <div className="space-y-8">
+            {renderRecipeGridSkeleton()}
+            <div className="flex justify-center">
+              <Skeleton className="h-10 w-56 rounded-full" />
             </div>
           </div>
         </div>
@@ -195,21 +257,16 @@ export default function MyRecipesPage() {
     return (
       <div className="min-h-screen bg-linear-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-8">
-          <div className="flex items-center justify-center py-32">
-            <div className="text-center">
-              <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-6"></div>
-              <p className="text-slate-600 dark:text-slate-400">Redirecting...</p>
+          <div className="space-y-8">
+            {renderRecipeGridSkeleton()}
+            <div className="flex justify-center">
+              <Skeleton className="h-10 w-56 rounded-full" />
             </div>
           </div>
         </div>
       </div>
     );
   }
-  
-  const handleGoBack = () => {
-    // 总是返回到当前语言环境的首页，避免语言切换后的路由问题
-    router.push(`/${locale}`);
-  };
   
   if (loading) {
     return (
@@ -234,25 +291,13 @@ export default function MyRecipesPage() {
               </h2>
             </div>
             
-            {/* Image Notice */}
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg rounded-xl p-4 mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/40 rounded-full flex items-center justify-center">
-                  <span className="text-lg">📸</span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">{t('imageNotice.title')}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{t('imageNotice.description')}</p>
-                </div>
-              </div>
-            </div>
+            {renderImageNotice()}
           </div>
           
-          {/* Loading in center */}
-          <div className="flex items-center justify-center py-32">
-            <div className="text-center">
-              <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-6"></div>
-              <p className="text-slate-600 dark:text-slate-400">{t('loading')}</p>
+          <div className="space-y-8">
+            {renderRecipeGridSkeleton()}
+            <div className="flex justify-center">
+              <Skeleton className="h-10 w-56 rounded-full" />
             </div>
           </div>
         </div>
@@ -295,18 +340,7 @@ export default function MyRecipesPage() {
               )}
           </div>
           
-          {/* Image Notice */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg rounded-xl p-4 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/40 rounded-full flex items-center justify-center">
-                <span className="text-lg">📸</span>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">{t('imageNotice.title')}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">{t('imageNotice.description')}</p>
-              </div>
-            </div>
-          </div>
+          {renderImageNotice()}
         </div>
         
         {recipes.length === 0 ? (
@@ -328,26 +362,35 @@ export default function MyRecipesPage() {
           <>
             {/* Grid Layout - 与 explore 页面保持一致 */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {recipes.map((recipe) => (
-                <Card key={recipe.id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-2xl transform hover:-translate-y-1">
+              {recipes.map((recipe) => {
+                const normalizedDifficulty = normalizeDifficulty(recipe.difficulty);
+                return (
+                  <Card
+                    key={recipe.id}
+                    className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-md shadow-slate-200/60 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-xl hover:shadow-orange-100/50 dark:border-slate-700/80 dark:bg-slate-900/75 dark:shadow-slate-950/40 dark:hover:border-orange-500/40 dark:hover:shadow-slate-900/70"
+                  >
                   {/* Image Container */}
                   <div className="relative aspect-[3/2] overflow-hidden">
-
-                    {recipe.imagePath ? (
-                      <Image 
-                        src={getImageUrl(recipe.imagePath)} 
-                        alt={recipe.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        unoptimized={true}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full relative group overflow-hidden">
-                        {/* 背景图片 - 移除模糊效果和遮罩 */}
+                    <Link
+                      href={`/${locale}/recipe/${recipe.id}`}
+                      className="absolute inset-0 z-10 block cursor-pointer"
+                      prefetch={true}
+                      aria-label={recipe.title}
+                    >
+                      {recipe.imagePath ? (
+                        <Image
+                          src={getImageUrl(recipe.imagePath)}
+                          alt={recipe.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          unoptimized={true}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = '/images/recipe-placeholder-bg.png';
+                          }}
+                        />
+                      ) : (
                         <Image
                           src="/images/recipe-placeholder-bg.png"
                           alt="Recipe placeholder background"
@@ -355,37 +398,41 @@ export default function MyRecipesPage() {
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
                           unoptimized={true}
                         />
-                      </div>
-                    )}
-                    
+                      )}
+                      <div className="absolute inset-0 bg-linear-to-t from-slate-950/65 via-slate-950/10 to-transparent opacity-75 transition-opacity duration-300 group-hover:opacity-95" />
+                    </Link>
 
-                    
-                    {/* Overlay Actions */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all duration-300 flex items-center justify-center">
-                      <div className="flex gap-3 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="h-12 w-12 rounded-full bg-red-500 hover:bg-red-600 shadow-lg"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleDeleteClick(recipe);
-                          }}
-                          disabled={deleting === recipe.id}
-                        >
-                          <Trash2 className="h-5 w-5 text-white" />
-                        </Button>
-                      </div>
+                    {recipe.createdAt && (
+                      <span className="absolute left-3 top-3 z-20 inline-flex items-center gap-1 rounded-full border border-white/40 bg-slate-950/45 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {formatDate(recipe.createdAt)}
+                      </span>
+                    )}
+
+                    <div className="absolute right-3 top-3 z-20">
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        aria-label={t('delete')}
+                        className="h-10 w-10 cursor-pointer rounded-full border-0 bg-red-500/90 text-white shadow-md transition-all duration-200 hover:bg-red-600 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDeleteClick(recipe);
+                        }}
+                        disabled={deleting === recipe.id}
+                      >
+                        <Trash2 className="h-4 w-4 text-white" />
+                      </Button>
                     </div>
                   </div>
                   
                   {/* Content - 与 explore 页面保持一致 */}
-                  <div className="p-6">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3 line-clamp-2 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors text-lg">
+                  <div className="space-y-4 p-5 md:p-6">
+                    <h3 className="line-clamp-2 text-lg font-semibold leading-snug text-slate-900 transition-colors group-hover:text-orange-600 dark:text-slate-100 dark:group-hover:text-orange-300">
                       <Link 
                         href={`/${locale}/recipe/${recipe.id}`} 
-                        className="block hover:text-orange-600 dark:hover:text-orange-400"
+                        className="block cursor-pointer"
                         prefetch={true}
                       >
                         {recipe.title}
@@ -394,48 +441,41 @@ export default function MyRecipesPage() {
                     
                     {/* 描述 - 与 explore 页面保持一致 */}
                     {recipe.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                      <p className="line-clamp-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                         {recipe.description}
                       </p>
                     )}
                     
                     {/* Meta Info - 与 explore 页面保持一致 */}
-                    <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
                       {recipe.cookingTime && (
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          <span>{recipe.cookingTime}</span>
-                        </div>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100/90 px-2.5 py-1 dark:bg-slate-800/90">
+                          <Clock className="h-3.5 w-3.5" />
+                          {recipe.cookingTime} {tRecipe('mins')}
+                        </span>
                       )}
                       {recipe.servings && (
-                        <div className="flex items-center gap-1">
-                          <Users className="h-3 w-3" />
+                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100/90 px-2.5 py-1 dark:bg-slate-800/90">
+                          <Users className="h-3.5 w-3.5" />
                           <span>{recipe.servings}</span>
-                        </div>
+                        </span>
                       )}
                       {recipe.difficulty && (
-                        <div className="flex items-center gap-1">
-                          <ChefHat className="h-3 w-3" />
-                          <span>{recipe.difficulty}</span>
-                        </div>
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 ring-1 ${getDifficultyBadgeTone(normalizedDifficulty)}`}>
+                          <ChefHat className="h-3.5 w-3.5" />
+                          {tRecipe(normalizedDifficulty)}
+                        </span>
                       )}
                     </div>
-                    
-                    {/* Date */}
-                    <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-2">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {recipe.createdAt && <span>{formatDate(recipe.createdAt)}</span>}
-                      </div>
-                    </div>
                   </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
             
             {/* No More Data Message */}
             {recipes.length > 0 && (
-              <div className="text-center mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
+              <div className="mt-12 text-center">
                 <p className="text-slate-500 dark:text-slate-400 text-sm">
                   {t('allRecipesDisplayed')}
                 </p>

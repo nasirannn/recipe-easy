@@ -55,11 +55,15 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "recipe-easy.annnb016.workers.dev",
+        hostname: "recipe-easy.com",
       },
       {
         protocol: "https",
-        hostname: "recipe-easy.com",
+        hostname: "doc.recipe-easy.com",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.recipe-easy.com",
       },
     ],
   },
@@ -93,14 +97,3 @@ const nextConfig = {
 };
 
 export default withNextIntl(nextConfig);
-
-// 开发环境初始化 - 用于 @opennextjs/cloudflare
-if (process.env.NODE_ENV === 'development') {
-  try {
-    const { initOpenNextCloudflareForDev } = await import('@opennextjs/cloudflare');
-    initOpenNextCloudflareForDev();
-  } catch (error) {
-    // 如果包未安装或在构建时，忽略错误
-    // OpenNext Cloudflare dev initialization skipped
-  }
-}

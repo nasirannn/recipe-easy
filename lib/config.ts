@@ -14,7 +14,10 @@ export const APP_CONFIG = {
   name: 'RecipeEasy',
   version: '1.0.0',
   url: getEnv('NEXT_PUBLIC_APP_URL', 'https://recipe-easy.com'),
-  workerUrl: getEnv('WORKER_URL', 'https://recipe-easy.com'),
+  r2PublicUrl: getEnv(
+    'NEXT_PUBLIC_R2_PUBLIC_URL',
+    getEnv('R2_PUBLIC_URL', 'https://cdn.recipe-easy.com')
+  ),
   
   // 应用限制
   minIngredients: 2,
@@ -34,6 +37,8 @@ export const APP_CONFIG = {
   // 积分配置
   initialCredits: 100,
   generationCost: 1,
+  recipeGenerationCost: 1,
+  imageGenerationCost: 2,
   
   // 难度等级
   difficulties: ['Easy', 'Medium', 'Hard'] as const,
@@ -151,11 +156,6 @@ export function getLanguageConfig(locale: string): ModelConfig {
 
 // ==================== 工具函数 ====================
 
-export function getWorkerApiUrl(path: string): string {
-  const cleanPath = path.replace(/^\/+|\/+$/g, '');
-  return `${APP_CONFIG.workerUrl}/${cleanPath}`;
-}
-
 export function getImageUrl(imagePath: string): string {
   if (!imagePath) return '';
   
@@ -164,8 +164,9 @@ export function getImageUrl(imagePath: string): string {
     return imagePath;
   }
   
-  // 如果是相对路径，拼接基础URL
-  return `${APP_CONFIG.workerUrl}/api/images/${imagePath}`;
+  // 如果是相对路径，拼接 R2 公共 URL
+  const cleanPath = imagePath.replace(/^\/+/, '');
+  return `${APP_CONFIG.r2PublicUrl}/${cleanPath}`;
 }
 
 // ==================== 环境检测 ====================

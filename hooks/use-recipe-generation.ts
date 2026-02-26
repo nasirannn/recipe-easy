@@ -8,7 +8,9 @@ import {
   Ingredient,
   UseRecipeGenerationReturn
 } from '@/lib/types';
+import { APP_CONFIG } from '@/lib/config';
 import { useAuth } from '@/contexts/auth-context';
+import { useUserUsage } from './use-user-usage';
 
 /**
  * 食谱生成相关的自定义Hook
@@ -20,8 +22,8 @@ export function useRecipeGeneration(): UseRecipeGenerationReturn {
   const [error, setError] = useState<string | null>(null);
   
   const locale = useLocale();
-  const { user } = useAuth();
-  const isAdmin = user?.user_metadata?.role === 'admin';
+  const { session } = useAuth();
+  const { updateCreditsLocally } = useUserUsage();
 
   /**
    * 生成食谱
@@ -35,6 +37,9 @@ export function useRecipeGeneration(): UseRecipeGenerationReturn {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(session?.access_token
+            ? { Authorization: `Bearer ${session.access_token}` }
+            : {}),
         },
         body: JSON.stringify({
           ingredients: formData.ingredients,
@@ -44,8 +49,6 @@ export function useRecipeGeneration(): UseRecipeGenerationReturn {
           cuisine: formData.cuisine,
           language: locale,
           languageModel: formData.languageModel,
-          userId: user?.id,
-          isAdmin: isAdmin
         }),
       });
 
@@ -59,6 +62,7 @@ export function useRecipeGeneration(): UseRecipeGenerationReturn {
       const generatedRecipes = data.recipes || [];
       
       setRecipes(generatedRecipes);
+      updateCreditsLocally(APP_CONFIG.recipeGenerationCost);
       return generatedRecipes;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '食谱生成失败，请稍后重试';
@@ -67,7 +71,7 @@ export function useRecipeGeneration(): UseRecipeGenerationReturn {
     } finally {
       setLoading(false);
     }
-  }, [locale, user?.id, isAdmin]);
+  }, [locale, session?.access_token, updateCreditsLocally]);
 
   /**
    * 重新生成食谱

@@ -5,14 +5,18 @@ let supabaseClient: any = null;
 
 export function getSupabase() {
   if (!supabaseClient) {
-    // 优先使用服务端环境变量，fallback 到客户端环境变量
-    const supabaseUrl = process.env.SUPABASE_URL || 
-                       process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || 
-                           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const isBrowser = typeof window !== 'undefined';
+    const supabaseUrl = isBrowser
+      ? process.env.NEXT_PUBLIC_SUPABASE_URL
+      : process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = isBrowser
+      ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      : process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     
     if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error('Supabase 环境变量未配置');
+      throw new Error(
+        'Supabase 环境变量未配置，请设置 NEXT_PUBLIC_SUPABASE_URL 和 NEXT_PUBLIC_SUPABASE_ANON_KEY'
+      );
     }
     
     supabaseClient = createClient(supabaseUrl, supabaseAnonKey);

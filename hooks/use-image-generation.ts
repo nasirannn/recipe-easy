@@ -7,6 +7,7 @@ import {
   ImageModel,
   UseImageGenerationReturn
 } from '@/lib/types';
+import { APP_CONFIG } from '@/lib/config';
 import { useAuth } from '@/contexts/auth-context';
 import { useUserUsage } from './use-user-usage';
 
@@ -19,8 +20,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
   const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({});
   
   const locale = useLocale();
-  const { user } = useAuth();
-  const isAdmin = user?.user_metadata?.role === 'admin';
+  const { session } = useAuth();
   const { updateCreditsLocally } = useUserUsage();
 
   /**
@@ -42,7 +42,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
     imageModel: ImageModel,
     onSuccess: (imageUrl: string) => void
   ): Promise<void> => {
-    if (!user?.id) {
+    if (!session?.access_token) {
       throw new Error('请先登录以生成图片');
     }
 
@@ -55,13 +55,12 @@ export function useImageGeneration(): UseImageGenerationReturn {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           recipeTitle: recipe.title,
           recipeDescription: recipe.description,
           recipeIngredients: recipe.ingredients,
-          userId: user.id,
-          isAdmin: isAdmin,
           language: locale
         }),
       });
@@ -77,10 +76,8 @@ export function useImageGeneration(): UseImageGenerationReturn {
         throw new Error(data.error || '图片生成失败');
       }
 
-      // 图片生成成功，立即更新前端积分状态（仅非管理员用户）
-      if (!isAdmin) {
-        updateCreditsLocally(1);
-      }
+      // 图片生成成功，立即更新前端积分状态
+      updateCreditsLocally(APP_CONFIG.imageGenerationCost);
 
       // 调用成功回调
       onSuccess(data.imageUrl);
@@ -91,7 +88,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
       setImageLoadingState(recipeId, false);
       setImageGenerating(false);
     }
-  }, [locale, user?.id, isAdmin, setImageLoadingState, updateCreditsLocally]);
+  }, [locale, session?.access_token, setImageLoadingState, updateCreditsLocally]);
 
   /**
    * 生成食谱图片
@@ -145,7 +142,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
     imageModel: ImageModel,
     onRecipeImageGenerated: (recipeId: string, imageUrl: string) => void
   ): Promise<void> => {
-    if (!user?.id) {
+    if (!session?.access_token) {
       throw new Error('请先登录以生成图片');
     }
 
@@ -169,13 +166,12 @@ export function useImageGeneration(): UseImageGenerationReturn {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
+                Authorization: `Bearer ${session.access_token}`,
               },
               body: JSON.stringify({
                 recipeTitle: recipe.title,
                 recipeDescription: recipe.description,
                 recipeIngredients: recipe.ingredients,
-                userId: user.id,
-                isAdmin: isAdmin,
                 language: locale
               }),
             });
@@ -203,7 +199,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
     } finally {
       setImageGenerating(false);
     }
-  }, [locale, user?.id, isAdmin, setImageLoadingState]);
+  }, [locale, session?.access_token, setImageLoadingState]);
 
   return {
     imageGenerating,

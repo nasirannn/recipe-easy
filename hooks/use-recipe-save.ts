@@ -10,7 +10,7 @@ export const useRecipeSave = () => {
 
   const saveRecipe = useCallback(async (recipe: Recipe, userId?: string) => {
     try {
-      // 调用本地 Next.js API 路由，它会转发到 Worker API
+      // 调用本地 Next.js API 路由，由服务端直接写入 Neon
       const response = await fetch('/api/recipes/save', {
         method: 'POST',
         headers: {

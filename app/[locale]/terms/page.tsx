@@ -39,7 +39,11 @@ async function getTermsOfService(locale: string) {
   try {
     // 直接从 R2 存储桶获取内容
     const fileName = locale === 'en' ? 'terms-of-service.md' : 'terms-of-service-zh.md';
-    const r2Url = `${process.env.R2_PUBLIC_URL || 'https://doc.recipe-easy.com'}/${fileName}`;
+    const publicBase =
+      (process.env.R2_PUBLIC_URL ||
+        process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
+        'https://cdn.recipe-easy.com').replace(/\/+$/, '');
+    const r2Url = `${publicBase}/${fileName}`;
     
     // Fetching terms of service from R2
     

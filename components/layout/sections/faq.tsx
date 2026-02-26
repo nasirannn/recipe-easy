@@ -2,6 +2,7 @@
 import { useTranslations } from 'next-intl';
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
+import { SectionHeader } from '@/components/layout/section-header';
 
 interface FAQProps {
   questionKey: string;
@@ -51,49 +52,44 @@ export const FAQSection = () => {
   };
 
   return (
-    <section id="faq" className="w-full py-16 sm:py-16">
-      <div className="container">
-        <div className="text-center mb-16 ">
-         <h2 className="text-lg text-secondary text-center mb-2 tracking-wider">
-          FAQ
-        </h2>
-        <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-          {t('title')}
-        </h2>
-      </div>
+    <section id="faq" className="home-section">
+      <div className="home-inner">
+        <SectionHeader
+          eyebrow="FAQ"
+          title={t('title')}
+          className="mb-8 md:mb-12"
+        />
 
-      <div className="max-w-4xl mx-auto space-y-4">
+      <div className="mx-auto max-w-4xl space-y-3">
         {FAQList.map(({ questionKey, answerKey, value }, index) => {
           const isOpen = openItem === value;
           return (
-            <div key={value} className="border-b border-border">
+            <div key={value} className="home-card overflow-hidden">
               <button
                 onClick={() => toggleItem(value)}
-                className="w-full py-6 text-left hover:no-underline flex items-center justify-between"
+                className="flex min-h-[56px] w-full items-center justify-between px-5 py-4 text-left transition-colors hover:bg-muted/40 md:px-6"
               >
                 <div className="flex items-center gap-4">
-                  <span className="text-2xl font-bold text-foreground min-w-[3rem]">
+                  <span className="min-w-[2.5rem] text-lg font-bold tracking-tight text-primary md:text-xl">
                       {String(index + 1).padStart(2, '0')}
                     </span>
-                  <h3 className="text-xl font-semibold text-foreground">
+                  <h3 className="text-base font-semibold text-foreground md:text-lg">
                     {t(questionKey)}
                   </h3>
                 </div>
                 <div className="shrink-0">
                   {isOpen ? (
-                    <ChevronUp className="h-6 w-6 text-muted-foreground" />
+                    <ChevronUp className="h-5 w-5 text-muted-foreground" />
                 ) : (
-                    <ChevronDown className="h-6 w-6 text-muted-foreground" />
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
                   )}
                 </div>
               </button>
               {isOpen && (
-                <div className="pb-6">
-                  <div className="ml-16">
-                    <p className="text-muted-foreground leading-relaxed text-lg">
+                <div className="px-5 pb-5 md:px-6 md:pb-6">
+                    <p className="text-base leading-7 text-muted-foreground md:pl-[3.5rem]">
                       {t(answerKey)}
                     </p>
-                  </div>
                 </div>
               )}
             </div>
