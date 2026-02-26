@@ -208,3 +208,7 @@ dist/
 worker/
 _worker.js/
 *.worker.js
+
+.dev.vars*
+!.dev.vars.example
+!.env.example
