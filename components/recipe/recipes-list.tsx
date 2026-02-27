@@ -150,9 +150,9 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
               {uiText.deck}
             </span>
 
-            <h2 className="mx-auto mt-5 max-w-4xl text-balance text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50 md:text-5xl md:leading-[1.1]">
+            <h1 className="mx-auto mt-5 max-w-4xl text-balance text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50 md:text-5xl md:leading-[1.1]">
               {t('title')}
-            </h2>
+            </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-300 md:text-lg">
               {t('subtitle')}
             </p>
@@ -236,9 +236,9 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
             {uiText.deck}
           </span>
 
-          <h2 className="mx-auto mt-5 max-w-4xl text-balance text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50 md:text-5xl md:leading-[1.1]">
+          <h1 className="mx-auto mt-5 max-w-4xl text-balance text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50 md:text-5xl md:leading-[1.1]">
             {t('title')}
-          </h2>
+          </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-300 md:text-lg">
             {t('subtitle')}
           </p>

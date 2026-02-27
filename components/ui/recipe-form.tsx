@@ -573,85 +573,84 @@ export const RecipeForm = ({
       {/* 食材选择区域 */}
       <>
         {!isMobile ? (
-            <div className="grid grid-cols-[minmax(0,1fr)_19.5rem] gap-0">
-              <section className="flex h-[440px] min-h-0 flex-col overflow-hidden">
-                <div className="grid h-full min-h-0 grid-cols-[10.5rem_minmax(0,1fr)]">
-                  <aside className="scrollbar-hide min-h-0 overflow-y-auto">
-                    <div className="space-y-1 p-2">
-                      {Object.entries(CATEGORIES_CONFIG).map(([categoryId, category]) => {
-                        const Icon = category.icon;
-                        const isActive = activeCategory === categoryId;
-                        const categoryName =
-                          dynamicCategories[categoryId]?.name || tIngredientSelector(`categories.${categoryId}`);
+            <div className="flex flex-col gap-4">
+              <section className="rounded-xl bg-background/65 p-2">
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(CATEGORIES_CONFIG).map(([categoryId, category]) => {
+                    const Icon = category.icon;
+                    const isActive = activeCategory === categoryId;
+                    const categoryName =
+                      dynamicCategories[categoryId]?.name || tIngredientSelector(`categories.${categoryId}`);
 
-                        return (
-                          <button
-                            key={categoryId}
-                            type="button"
-                            aria-label={categoryName}
-                            title={categoryName}
-                            onClick={() => handleCategoryChange(categoryId as keyof typeof CATEGORIES_CONFIG)}
-                            className={cn(
-                              "flex h-10 w-full cursor-pointer items-center rounded-lg text-xs font-medium transition-all duration-200",
-                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2",
-                              isActive
-                                ? "justify-start gap-2 bg-primary/10 px-3 text-primary"
-                                : "justify-start gap-2 px-3 text-muted-foreground hover:bg-background/55 hover:text-foreground"
-                            )}
-                          >
-                            <span className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : category.color)}>
-                              {Icon}
-                            </span>
-                            <span className="truncate whitespace-nowrap">{categoryName}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </aside>
-
-                  <div className="flex h-full min-h-0 flex-col">
-                    <div className="min-h-0 flex-1 p-2">
-                    {ingredientsLoading ? (
-                      renderIngredientsSkeleton(18)
-                    ) : ingredientsError ? (
-                      <div className="flex h-full items-center justify-center">
-                        <div className="max-w-xs space-y-3 px-4 text-center">
-                          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-                            <X className="h-5 w-5 text-destructive" />
-                          </div>
-                          <div className="space-y-1.5">
-                            <h3 className="text-sm font-semibold text-foreground">
-                              {tIngredientSelector('loadError')}
-                            </h3>
-                            <p className="text-xs text-muted-foreground">{ingredientsError}</p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={fetchIngredientsData}
-                            className="inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
-                          >
-                            <RotateCcw className="h-3 w-3" />
-                            {tIngredientSelector('retry')}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <IngredientSelector
-                        selectedIngredients={formData.ingredients}
-                        onIngredientSelect={handleIngredientSelect}
-                        activeCategory={activeCategory}
-                        onCategoryChange={handleCategoryChange}
-                        allIngredients={allIngredients}
-                        dynamicCategories={dynamicCategories}
-                        hideHeader={true}
-                      />
-                    )}
-                  </div>
-                  </div>
+                    return (
+                      <button
+                        key={categoryId}
+                        type="button"
+                        aria-label={categoryName}
+                        title={categoryName}
+                        onClick={() => handleCategoryChange(categoryId as keyof typeof CATEGORIES_CONFIG)}
+                        className={cn(
+                          "inline-flex min-h-[40px] cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all duration-200",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2",
+                          isActive
+                            ? "bg-primary/10 text-primary shadow-sm"
+                            : "bg-transparent text-muted-foreground hover:bg-muted/65 hover:text-foreground"
+                        )}
+                      >
+                        <span className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : category.color)}>
+                          {Icon}
+                        </span>
+                        <span className="truncate whitespace-nowrap">{categoryName}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </section>
 
-              <aside className="flex h-[440px] min-h-0 flex-col overflow-hidden">
+              <div className="grid grid-cols-[minmax(0,1fr)_19.5rem] gap-0">
+                <section className="flex h-[440px] min-h-0 flex-col overflow-hidden">
+                  <div className="flex h-full min-h-0 flex-col">
+                    <div className="min-h-0 flex-1 p-2">
+                      {ingredientsLoading ? (
+                        renderIngredientsSkeleton(18)
+                      ) : ingredientsError ? (
+                        <div className="flex h-full items-center justify-center">
+                          <div className="max-w-xs space-y-3 px-4 text-center">
+                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                              <X className="h-5 w-5 text-destructive" />
+                            </div>
+                            <div className="space-y-1.5">
+                              <h3 className="text-sm font-semibold text-foreground">
+                                {tIngredientSelector('loadError')}
+                              </h3>
+                              <p className="text-xs text-muted-foreground">{ingredientsError}</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={fetchIngredientsData}
+                              className="inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                              {tIngredientSelector('retry')}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <IngredientSelector
+                          selectedIngredients={formData.ingredients}
+                          onIngredientSelect={handleIngredientSelect}
+                          activeCategory={activeCategory}
+                          onCategoryChange={handleCategoryChange}
+                          allIngredients={allIngredients}
+                          dynamicCategories={dynamicCategories}
+                          hideHeader={true}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </section>
+
+                <aside className="flex h-[440px] min-h-0 flex-col overflow-hidden">
                   <div className="flex h-14 items-center justify-between gap-3 border-b border-dashed border-border/20 px-4">
                     <div className="flex min-w-0 items-center gap-2">
                       <h3 className="truncate text-sm font-semibold text-foreground">{t('basket')}</h3>
@@ -694,7 +693,9 @@ export const RecipeForm = ({
                             className="mx-auto mb-3 h-auto w-[160px]"
                           />
                           <p className="text-sm font-semibold text-foreground">{t('noIngredients')}</p>
-                          <p className="mt-1 text-xs text-muted-foreground">{t('selectFromLeftPanel')}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {isZhLocale ? '从上方分类中选择食材' : 'Select ingredients from the categories above'}
+                          </p>
                         </div>
                       </div>
                     ) : (
@@ -734,7 +735,8 @@ export const RecipeForm = ({
                       </div>
                     )}
                   </div>
-              </aside>
+                </aside>
+              </div>
             </div>
           ) : (
             <div className="overflow-hidden">
@@ -870,7 +872,9 @@ export const RecipeForm = ({
                             className="mx-auto mb-3 h-auto w-[150px]"
                           />
                           <p className="text-sm font-semibold text-foreground">{t('noIngredients')}</p>
-                          <p className="mt-1 text-xs text-muted-foreground">{t('selectFromLeftPanel')}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {isZhLocale ? '从分类中选择食材后会显示在这里' : 'Selected ingredients will appear here'}
+                          </p>
                         </div>
                       </div>
                     ) : (

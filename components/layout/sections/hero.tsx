@@ -249,13 +249,13 @@ export const HeroSection = () => {
         <div className="absolute -top-40 right-[-14%] h-[30rem] w-[30rem] rounded-full bg-orange-300/20 blur-3xl dark:bg-orange-500/18" />
       </div>
 
-      <div className="relative z-10 home-inner pb-6 pt-24 sm:pb-8 sm:pt-28 md:pb-10 md:pt-32">
-        <div className="mx-auto max-w-5xl text-center">
-          <div>
+      <div className="relative z-10 home-inner pb-20 pt-24 sm:pt-28 md:pb-24 md:pt-32">
+        <div className="mx-auto max-w-5xl">
+          <div className="text-center">
             <span className="home-eyebrow">
               {locale === 'zh' ? 'AI 食谱工作台' : 'AI Recipe Workspace'}
             </span>
-            <h1 className="home-title mx-auto max-w-3xl">
+            <h1 className="home-title mx-auto mt-4 max-w-3xl">
               {locale === 'zh' ? (
                 <>
                   用任意食材，
@@ -268,72 +268,71 @@ export const HeroSection = () => {
                 </>
               )}
             </h1>
-            <p className="home-lead mx-auto max-w-2xl">
+            <p className="home-lead mx-auto mt-3 max-w-3xl">
               {t('description')}
             </p>
 
-            <div className="scrollbar-hide mx-auto mt-4 flex w-full max-w-5xl flex-nowrap items-center justify-start gap-2 overflow-x-auto px-1 sm:mt-5 sm:justify-center">
+            <div className="mx-auto mt-4 flex w-full max-w-5xl flex-wrap items-center justify-center gap-2 px-1 sm:mt-5">
               {[t('badgeFreeRecipeCreation'), t('badgeRegisterForImages'), t('badgeStartWithCredits'), t('badgeImageCostPerCredit')].map((item) => (
                 <div
                   key={item}
-                  className="inline-flex min-h-[34px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200/80 bg-white/70 px-3 py-1.5 text-left text-xs font-medium leading-5 text-slate-700 backdrop-blur-sm dark:border-slate-700/70 dark:bg-slate-900/46 dark:text-slate-300 sm:text-[13px]"
+                  className="inline-flex min-h-[34px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200/80 bg-white/72 px-3 py-1.5 text-left text-xs font-medium leading-5 text-slate-700 backdrop-blur-sm dark:border-slate-700/70 dark:bg-slate-900/46 dark:text-slate-300 sm:text-[13px]"
                 >
                   <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-primary" />
                   <span className="font-medium">{item}</span>
                 </div>
               ))}
             </div>
-
-          </div>
-        </div>
-      </div>
-
-      <div id="recipe-form-section" className="relative z-10 home-inner pb-20 lg:pb-24">
-        <div className="home-card relative overflow-hidden p-4 md:p-6">
-          <div className="absolute inset-0 pointer-events-none dark:opacity-5">
-            <Image
-              src="/images/ingredients-icon/grain-texture.png"
-              alt=""
-              fill
-              className="object-cover"
-              unoptimized={true}
-            />
           </div>
 
-          <div className="relative z-10">
-            <RecipeForm
-              formData={formData}
-              onFormChange={handleFormChange}
-              onSubmit={handleSubmit}
-              loading={loading || imageGenerating}
-              showRecipe={showRecipe}
-              setShowRecipe={setShowRecipe}
-              activeTab={activeTab}
-              mealPlannerText={mealPlannerText}
-            />
-          </div>
-        </div>
-
-        {showRecipe && activeTab === 'recipe-maker' && (
-          <div id="loading-animation-container" className="mt-8">
-            {loading ? (
-              <LoadingAnimation language={locale as 'en' | 'zh'} />
-            ) : (
-              <RecipeDisplay 
-                recipes={recipes} 
-                selectedIngredients={searchedIngredients}
-                imageLoadingStates={imageLoadingStates}
-                onRegenerateImage={handleRegenerateImage}
-                onSaveRecipe={handleSaveRecipe}
-              />
-            )}
-            {error && (
-              <div className="mx-auto mt-6 max-w-screen-md rounded-xl border border-red-200 bg-red-50 p-4 text-center text-red-600 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-400">
-                {error}
+          <div id="recipe-form-section" className="mt-7 sm:mt-8">
+            <div className="home-card relative overflow-hidden">
+              <div className="absolute inset-0 pointer-events-none dark:opacity-5">
+                <Image
+                  src="/images/ingredients-icon/grain-texture.png"
+                  alt=""
+                  fill
+                  className="object-cover"
+                  unoptimized={true}
+                />
               </div>
-            )}
+
+              <div className="relative z-10 p-4 md:p-6">
+                <RecipeForm
+                  formData={formData}
+                  onFormChange={handleFormChange}
+                  onSubmit={handleSubmit}
+                  loading={loading || imageGenerating}
+                  showRecipe={showRecipe}
+                  setShowRecipe={setShowRecipe}
+                  activeTab={activeTab}
+                  mealPlannerText={mealPlannerText}
+                />
+              </div>
+            </div>
           </div>
-        )}
+
+          {showRecipe && activeTab === 'recipe-maker' && (
+            <div id="loading-animation-container" className="mt-8">
+              {loading ? (
+                <LoadingAnimation language={locale as 'en' | 'zh'} />
+              ) : (
+                <RecipeDisplay
+                  recipes={recipes}
+                  selectedIngredients={searchedIngredients}
+                  imageLoadingStates={imageLoadingStates}
+                  onRegenerateImage={handleRegenerateImage}
+                  onSaveRecipe={handleSaveRecipe}
+                />
+              )}
+              {error && (
+                <div className="mx-auto mt-6 max-w-screen-md rounded-xl border border-red-200 bg-red-50 p-4 text-center text-red-600 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-400">
+                  {error}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

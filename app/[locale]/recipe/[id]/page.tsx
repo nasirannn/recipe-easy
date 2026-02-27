@@ -3,12 +3,66 @@ import { notFound } from 'next/navigation';
 import { RecipeDetail } from '@/components/recipe/recipe-detail';
 import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
 import { env } from '@/lib/env';
+import { getImageUrl } from '@/lib/config';
 
 interface RecipePageProps {
   params: Promise<{
     locale: string;
     id: string;
   }>;
+}
+
+function normalizeStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+
+  if (typeof value !== 'string' || !value.trim()) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    return normalizeStringArray(parsed);
+  } catch {
+    return [];
+  }
+}
+
+function buildRecipeStructuredData(recipe: any, locale: string, id: string) {
+  const baseUrl = env.APP_URL.replace(/\/+$/, '');
+  const isZh = locale.toLowerCase().startsWith('zh');
+  const pageUrl = isZh ? `${baseUrl}/zh/recipe/${id}` : `${baseUrl}/recipe/${id}`;
+
+  const ingredients = normalizeStringArray(recipe.ingredients);
+  const instructions = normalizeStringArray(recipe.instructions);
+  const tags = normalizeStringArray(recipe.tags);
+  const rawImage = typeof recipe.imagePath === 'string' ? recipe.imagePath : '';
+  const imageUrl = rawImage ? getImageUrl(rawImage) : '';
+  const cookingMinutes = Number.isFinite(Number(recipe.cookingTime))
+    ? Math.max(0, Number(recipe.cookingTime))
+    : 0;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Recipe',
+    name: recipe.title,
+    description: recipe.description || `How to make ${recipe.title}`,
+    url: pageUrl,
+    inLanguage: isZh ? 'zh-CN' : 'en',
+    image: imageUrl ? [imageUrl] : undefined,
+    recipeYield: recipe.servings ? String(recipe.servings) : undefined,
+    totalTime: cookingMinutes > 0 ? `PT${cookingMinutes}M` : undefined,
+    recipeIngredient: ingredients,
+    recipeInstructions: instructions.map((text, index) => ({
+      '@type': 'HowToStep',
+      name: isZh ? `步骤 ${index + 1}` : `Step ${index + 1}`,
+      text,
+    })),
+    keywords: tags.length > 0 ? tags.join(', ') : undefined,
+    datePublished: recipe.createdAt || undefined,
+    dateModified: recipe.updatedAt || recipe.createdAt || undefined,
+  };
 }
 
 export async function generateMetadata({
@@ -86,6 +140,16 @@ export default async function RecipePage({ params }: RecipePageProps) {
   if (!recipe) {
     notFound();
   }
-  
-  return <RecipeDetail recipe={recipe} locale={locale} />;
+
+  const recipeStructuredData = buildRecipeStructuredData(recipe, locale, id);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeStructuredData) }}
+      />
+      <RecipeDetail recipe={recipe} locale={locale} />
+    </>
+  );
 }

@@ -95,7 +95,7 @@ export function generateRecipeStructuredData(recipe: any) {
 export const organizationStructuredData = generateStructuredData('Organization', {
   name: 'RecipeEasy',
   url: SITE_URL,
-  logo: `${SITE_URL}/images/logo.png`,
+  logo: `${SITE_URL}/images/recipe-easy-logo.svg`,
   description: 'AI-powered recipe generation platform',
   sameAs: [
     
