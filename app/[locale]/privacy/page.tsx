@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { SimpleLayout } from '@/components/layout/simple-layout';
 import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
+import { getLegalDocument, normalizeLegalLocale } from '@/lib/server/legal-documents';
 
 export async function generateMetadata({
   params,
@@ -36,40 +37,15 @@ function processMarkdownToHtml(content: string) {
 }
 
 async function getPrivacyPolicy(locale: string) {
-  try {
-    // 直接从 R2 存储桶获取内容
-    const fileName = locale === 'en' ? 'privacy-policy.md' : 'privacy-policy-zh.md';
-    const publicBase =
-      (process.env.R2_PUBLIC_URL_DOC ||
-        process.env.NEXT_PUBLIC_R2_PUBLIC_URL_DOC ||
-        process.env.R2_PUBLIC_URL ||
-        process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
-        'https://doc.recipe-easy.com').replace(/\/+$/, '');
-    const r2Url = `${publicBase}/${fileName}`;
-    
-    // Fetching privacy policy from R2
-    
-    const response = await fetch(r2Url, {
-      cache: 'force-cache',
-      next: { revalidate: 3600 }, // 缓存1小时
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch privacy policy: ${response.status}`);
-    }
-
-    const content = await response.text();
+  const content = await getLegalDocument('privacy', normalizeLegalLocale(locale));
+  if (content) {
     return processMarkdownToHtml(content);
-  } catch (error) {
-    // Error fetching privacy policy from R2
-    
-    // 如果 R2 获取失败，返回错误信息
-    return `<div class="prose prose-lg max-w-none">
-      <h1>${locale === 'zh' ? '隐私政策' : 'Privacy Policy'}</h1>
-      <p>${locale === 'zh' ? '抱歉，隐私政策内容暂时无法加载。请稍后再试。' : 'Sorry, the privacy policy content is temporarily unavailable. Please try again later.'}</p>
-      <p>${locale === 'zh' ? '错误详情：' : 'Error details: '}${error instanceof Error ? error.message : 'Unknown error'}</p>
-     </div>`;
   }
+
+  return `<div class="prose prose-lg max-w-none">
+    <h1>${locale === 'zh' ? '隐私政策' : 'Privacy Policy'}</h1>
+    <p>${locale === 'zh' ? '抱歉，隐私政策内容暂时无法加载。请稍后再试。' : 'Sorry, the privacy policy content is temporarily unavailable. Please try again later.'}</p>
+  </div>`;
 }
 
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
