@@ -728,7 +728,7 @@ export const RecipeForm = ({
                             </div>
                             <p className="text-sm font-semibold text-foreground">{t('noIngredients')}</p>
                             <p className="mt-1 text-xs text-muted-foreground">
-                              {isZhLocale ? '从上方分类中选择食材' : 'Select ingredients from the categories above'}
+                              {isZhLocale ? '从左侧分类中选择食材' : 'Select ingredients from the categories on the left'}
                             </p>
                           </div>
                         </div>
