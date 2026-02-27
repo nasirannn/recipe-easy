@@ -16,7 +16,8 @@ AI-powered recipe generation web app built with Next.js, Neon PostgreSQL, and R2
 - Runtime: Node.js (Vercel)
 - Database: Neon PostgreSQL
 - File storage: R2 (S3-compatible API)
-- Image URLs: public R2 domain (`R2_PUBLIC_URL` / `NEXT_PUBLIC_R2_PUBLIC_URL`)
+- Image URLs: public R2 image domain (`R2_PUBLIC_URL_IMG` / `NEXT_PUBLIC_R2_PUBLIC_URL_IMG`)
+- Legal docs URLs: public R2 docs domain (`R2_PUBLIC_URL_DOC` / `NEXT_PUBLIC_R2_PUBLIC_URL_DOC`)
 
 ## Quick Start
 
@@ -53,13 +54,22 @@ QWENPLUS_API_KEY=<token>
 DASHSCOPE_API_KEY=<token>
 DEEPSEEK_API_KEY=<token>
 
-# R2 (S3 compatible)
+# Shared R2 endpoint (S3 compatible)
 R2_ENDPOINT=https://<accountid>.r2.cloudflarestorage.com
-R2_BUCKET_NAME=recipe-images
-R2_ACCESS_KEY_ID=<key-id>
-R2_SECRET_ACCESS_KEY=<secret>
-R2_PUBLIC_URL=https://<your-r2-public-domain>
-NEXT_PUBLIC_R2_PUBLIC_URL=https://<your-r2-public-domain>
+
+# R2 image bucket
+R2_BUCKET_NAME_IMG=recipe-images
+R2_ACCESS_KEY_ID_IMG=<key-id>
+R2_SECRET_ACCESS_KEY_IMG=<secret>
+R2_PUBLIC_URL_IMG=https://<your-r2-image-public-domain>
+NEXT_PUBLIC_R2_PUBLIC_URL_IMG=https://<your-r2-image-public-domain>
+
+# R2 docs bucket (public markdown docs)
+R2_BUCKET_NAME_DOC=recipe-doc
+R2_ACCESS_KEY_ID_DOC=<key-id>
+R2_SECRET_ACCESS_KEY_DOC=<secret>
+R2_PUBLIC_URL_DOC=https://<your-r2-doc-public-domain>
+NEXT_PUBLIC_R2_PUBLIC_URL_DOC=https://<your-r2-doc-public-domain>
 ```
 
 ## Database

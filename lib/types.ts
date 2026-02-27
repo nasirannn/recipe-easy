@@ -222,8 +222,10 @@ export type ImageGenResponse = {
 export interface DatabaseEnv {
   DATABASE_URL?: string;
   R2_ENDPOINT?: string;
-  R2_BUCKET_NAME?: string;
-  R2_PUBLIC_URL?: string;
+  R2_BUCKET_NAME_IMG?: string;
+  R2_PUBLIC_URL_IMG?: string;
+  R2_BUCKET_NAME_DOC?: string;
+  R2_PUBLIC_URL_DOC?: string;
 }
 
 export type SupportedLocale = 'en' | 'zh';

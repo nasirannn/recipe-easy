@@ -21,6 +21,16 @@ function withoutTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '');
 }
 
+function getImageR2PublicBase(): string {
+  return (
+    process.env.NEXT_PUBLIC_R2_PUBLIC_URL_IMG ||
+    process.env.R2_PUBLIC_URL_IMG ||
+    process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
+    process.env.R2_PUBLIC_URL ||
+    ''
+  );
+}
+
 function sanitizePathSegment(value: string, fallback: string): string {
   const sanitized = (value || '')
     .trim()
@@ -70,13 +80,11 @@ export function buildUserAvatarObjectKey(params: {
 
 export function getR2Config(): R2Config | null {
   const endpoint = process.env.R2_ENDPOINT || '';
-  const bucket = process.env.R2_BUCKET_NAME || '';
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID || '';
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY || '';
-  const publicUrl =
-    process.env.R2_PUBLIC_URL ||
-    process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
-    '';
+  const bucket = process.env.R2_BUCKET_NAME_IMG || process.env.R2_BUCKET_NAME || '';
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID_IMG || process.env.R2_ACCESS_KEY_ID || '';
+  const secretAccessKey =
+    process.env.R2_SECRET_ACCESS_KEY_IMG || process.env.R2_SECRET_ACCESS_KEY || '';
+  const publicUrl = getImageR2PublicBase();
 
   if (!endpoint || !bucket || !accessKeyId || !secretAccessKey) {
     return null;
@@ -99,7 +107,7 @@ function getR2Client(): S3Client {
   const config = getR2Config();
   if (!config) {
     throw new Error(
-      'R2 S3 config missing. Set R2_ENDPOINT, R2_BUCKET_NAME, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY.'
+      'R2 image config missing. Set R2_ENDPOINT, R2_BUCKET_NAME_IMG, R2_ACCESS_KEY_ID_IMG, R2_SECRET_ACCESS_KEY_IMG.'
     );
   }
 
@@ -120,11 +128,7 @@ function getR2Client(): S3Client {
 
 export function buildR2PublicUrl(objectKey: string): string {
   const config = getR2Config();
-  const publicBase =
-    config?.publicUrl ||
-    process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
-    process.env.R2_PUBLIC_URL ||
-    '';
+  const publicBase = config?.publicUrl || getImageR2PublicBase();
 
   if (!publicBase) {
     return objectKey;
@@ -151,10 +155,7 @@ export function extractR2ObjectKey(imagePath: string): string | null {
       return null;
     }
 
-    const publicBase =
-      process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
-      process.env.R2_PUBLIC_URL ||
-      '';
+    const publicBase = getImageR2PublicBase();
     if (publicBase) {
       const normalizedBase = withoutTrailingSlash(publicBase);
       const normalizedInput = withoutTrailingSlash(`${url.origin}`);

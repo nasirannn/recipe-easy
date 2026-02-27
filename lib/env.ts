@@ -1,15 +1,7 @@
 // 环境配置管理
 export const env = {
-  // 应用 URL - 开发环境使用本地URL
-  APP_URL:
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.NODE_ENV === 'development'
-      ? 'http://localhost:3000'
-      : 'https://recipe-easy.com'),
-
-  // 环境检测
-  IS_DEVELOPMENT: process.env.NODE_ENV === 'development',
-  IS_PRODUCTION: process.env.NODE_ENV === 'production',
+  // 统一环境入口：本地与线上都走同一套 URL 配置
+  APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://recipe-easy.com',
 } as const;
 
 // 验证环境配置
@@ -27,11 +19,11 @@ export function validateEnv() {
 export function getApiUrl(path: string): string {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
 
-  if (env.IS_DEVELOPMENT && typeof window !== 'undefined') {
-    // 客户端使用相对路径
+  if (typeof window !== 'undefined') {
+    // 客户端始终使用相对路径，避免跨域和域名差异
     return normalizedPath;
   }
 
-  // 服务器端或生产环境使用完整URL
+  // 服务端统一使用完整URL
   return `${env.APP_URL}${normalizedPath}`;
 }

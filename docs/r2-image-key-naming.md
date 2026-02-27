@@ -41,7 +41,7 @@ node scripts/migrate-r2-recipe-image-keys.js --apply --no-delete-old
 
 - `DATABASE_URL`
 - `R2_ENDPOINT`
-- `R2_BUCKET_NAME` (should be `recipe-images`)
-- `R2_ACCESS_KEY_ID`
-- `R2_SECRET_ACCESS_KEY`
-- `R2_PUBLIC_URL` or `NEXT_PUBLIC_R2_PUBLIC_URL`
+- `R2_BUCKET_NAME_IMG` (should be `recipe-images`)
+- `R2_ACCESS_KEY_ID_IMG`
+- `R2_SECRET_ACCESS_KEY_IMG`
+- `R2_PUBLIC_URL_IMG` or `NEXT_PUBLIC_R2_PUBLIC_URL_IMG`

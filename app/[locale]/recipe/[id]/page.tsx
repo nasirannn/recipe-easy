@@ -17,8 +17,8 @@ export async function generateMetadata({
   const { locale, id } = await params;
   
   try {
-    // 获取菜谱数据用于SEO - 在服务器端使用完整URL
-    const apiUrl = env.IS_DEVELOPMENT ? `http://localhost:3000/api/recipes/${id}?lang=${locale}` : `${env.APP_URL}/api/recipes/${id}?lang=${locale}`;
+    // 获取菜谱数据用于SEO - 统一使用配置中的应用域名
+    const apiUrl = `${env.APP_URL}/api/recipes/${id}?lang=${locale}`;
     const response = await fetch(apiUrl);
     const data = await response.json() as any;
     
@@ -52,8 +52,8 @@ export async function generateMetadata({
 
 async function getRecipe(id: string, locale: string) {
   try {
-    // 在服务器端使用完整URL
-    const apiUrl = env.IS_DEVELOPMENT ? `http://localhost:3000/api/recipes/${id}?lang=${locale}` : `${env.APP_URL}/api/recipes/${id}?lang=${locale}`;
+    // 在服务器端统一使用配置中的应用域名
+    const apiUrl = `${env.APP_URL}/api/recipes/${id}?lang=${locale}`;
     const response = await fetch(apiUrl, {
       // 添加缓存控制
       next: { revalidate: 3600 } // 1小时缓存

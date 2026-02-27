@@ -15,8 +15,11 @@ export const APP_CONFIG = {
   version: '1.0.0',
   url: getEnv('NEXT_PUBLIC_APP_URL', 'https://recipe-easy.com'),
   r2PublicUrl: getEnv(
-    'NEXT_PUBLIC_R2_PUBLIC_URL',
-    getEnv('R2_PUBLIC_URL', 'https://cdn.recipe-easy.com')
+    'NEXT_PUBLIC_R2_PUBLIC_URL_IMG',
+    getEnv(
+      'R2_PUBLIC_URL_IMG',
+      getEnv('NEXT_PUBLIC_R2_PUBLIC_URL', getEnv('R2_PUBLIC_URL', 'https://cdn.recipe-easy.com'))
+    )
   ),
   
   // 应用限制
@@ -169,16 +172,6 @@ export function getImageUrl(imagePath: string): string {
   return `${APP_CONFIG.r2PublicUrl}/${cleanPath}`;
 }
 
-// ==================== 环境检测 ====================
-
-export function isProduction(): boolean {
-  return process.env.NODE_ENV === 'production';
-}
-
-export function isDevelopment(): boolean {
-  return process.env.NODE_ENV === 'development';
-}
-
 // ==================== 配置验证 ====================
 
 export function validateConfig(): void {
@@ -189,7 +182,7 @@ export function validateConfig(): void {
   
   const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
   
-  if (missingVars.length > 0 && isProduction()) {
+  if (missingVars.length > 0) {
     // Missing environment variables
   }
 } 

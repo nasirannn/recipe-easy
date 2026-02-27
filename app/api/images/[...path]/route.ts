@@ -4,6 +4,8 @@ export const runtime = 'nodejs';
 
 function getR2PublicBase(): string {
   const value =
+    process.env.NEXT_PUBLIC_R2_PUBLIC_URL_IMG ||
+    process.env.R2_PUBLIC_URL_IMG ||
     process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
     process.env.R2_PUBLIC_URL ||
     '';

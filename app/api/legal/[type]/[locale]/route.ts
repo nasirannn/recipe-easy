@@ -3,9 +3,11 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 const R2_PUBLIC_BASE = (
+  process.env.R2_PUBLIC_URL_DOC ||
+  process.env.NEXT_PUBLIC_R2_PUBLIC_URL_DOC ||
   process.env.R2_PUBLIC_URL ||
   process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
-  'https://cdn.recipe-easy.com'
+  'https://doc.recipe-easy.com'
 ).replace(/\/+$/, '');
 
 function resolveLegalFileName(type: string, locale: string): string {
