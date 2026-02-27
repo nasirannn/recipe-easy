@@ -9,6 +9,7 @@ export type RecipeListOptions = {
   lang?: string;
   search?: string;
   userId?: string;
+  withImage?: boolean;
 };
 
 export type RecipeMutationInput = {
@@ -240,6 +241,7 @@ function toRecipeView(row: RecipeRow): RecipeView {
 function buildWhereClause(options: {
   search: string;
   userId?: string;
+  withImage?: boolean;
   startIndex: number;
 }): { clause: string; params: string[]; nextIndex: number } {
   const where: string[] = [];
@@ -259,6 +261,12 @@ function buildWhereClause(options: {
     const pattern = `%${options.search}%`;
     params.push(pattern, pattern);
     idx += 2;
+  }
+
+  if (options.withImage) {
+    where.push(
+      "EXISTS (SELECT 1 FROM recipe_images rimg WHERE rimg.recipe_id = r.id AND rimg.image_path IS NOT NULL AND BTRIM(rimg.image_path) <> '')"
+    );
   }
 
   return {
@@ -333,6 +341,7 @@ export async function listRecipes(
   const selectWhere = buildWhereClause({
     search,
     userId: options.userId,
+    withImage: options.withImage,
     startIndex: 3,
   });
 
@@ -354,6 +363,7 @@ export async function listRecipes(
   const countWhere = buildWhereClause({
     search,
     userId: options.userId,
+    withImage: options.withImage,
     startIndex: 2,
   });
   const countResult = await db.query<{ count: string }>(

@@ -12,6 +12,13 @@ function toNumber(value: string | null): number | undefined {
   return Number.isNaN(parsed) ? undefined : parsed;
 }
 
+function toBoolean(value: string | null): boolean {
+  if (!value) {
+    return false;
+  }
+  return value === '1' || value.toLowerCase() === 'true';
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -19,9 +26,10 @@ export async function GET(request: NextRequest) {
     const limit = toNumber(searchParams.get('limit'));
     const lang = searchParams.get('lang') ?? 'en';
     const search = searchParams.get('search') ?? '';
+    const withImage = toBoolean(searchParams.get('withImage'));
 
     const db = getPostgresPool();
-    const result = await listRecipes(db, { page, limit, lang, search });
+    const result = await listRecipes(db, { page, limit, lang, search, withImage });
     return NextResponse.json({
       success: true,
       results: result.results,

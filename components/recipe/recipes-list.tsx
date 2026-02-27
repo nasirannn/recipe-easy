@@ -137,7 +137,7 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
 
   if (isLoading && page === 1) {
     return (
-      <div className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
+      <div className="relative min-h-screen overflow-hidden bg-background">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -left-16 -top-20 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl dark:bg-blue-500/20" />
           <div className="absolute right-0 top-20 h-80 w-80 rounded-full bg-orange-300/20 blur-3xl dark:bg-orange-500/20" />
@@ -150,19 +150,19 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
               {uiText.deck}
             </span>
 
-            <h1 className="mx-auto mt-5 max-w-4xl text-balance text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50 md:text-5xl md:leading-[1.1]">
+            <h1 className="mx-auto mt-5 max-w-4xl text-balance text-4xl font-bold tracking-tight text-foreground md:text-5xl md:leading-[1.1]">
               {t('title')}
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-300 md:text-lg">
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
               {t('subtitle')}
             </p>
-            <p className="mx-auto mt-2 max-w-3xl text-sm leading-relaxed text-slate-500 dark:text-slate-400 md:text-base">
+            <p className="mx-auto mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground md:text-base">
               {uiText.subtitleExtra}
             </p>
           </section>
 
           <section className="mb-8">
-            <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {uiText.filterLabel}
             </div>
             <div className="flex flex-wrap gap-2">
@@ -176,15 +176,15 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
                     aria-pressed={active}
                     className={`inline-flex h-11 cursor-not-allowed items-center gap-2 rounded-full border px-4 text-sm font-semibold transition-all duration-200 opacity-80 ${
                       active
-                        ? 'border-slate-900 bg-slate-900 text-white shadow-lg shadow-slate-300/60 dark:border-slate-100 dark:bg-slate-100 dark:text-slate-900 dark:shadow-none'
-                        : 'border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200'
+                        ? 'border-foreground bg-foreground text-background shadow-lg shadow-foreground/20 dark:shadow-none'
+                        : 'border-border bg-card text-foreground'
                     }`}
                   >
                     <span>{filter.label}</span>
                     <span className={`rounded-full px-2 py-0.5 text-xs ${
                       active
-                        ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900'
-                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                        ? 'bg-background/20 text-background'
+                        : 'bg-muted text-muted-foreground'
                     }`}>
                       {filter.count}
                     </span>
@@ -198,7 +198,7 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={`recipe-card-skeleton-${index}`}
-                className={`overflow-hidden rounded-2xl border border-slate-200/70 bg-white/90 shadow-md dark:border-slate-800 dark:bg-slate-900/70 ${
+                className={`overflow-hidden rounded-2xl border border-border/70 bg-card/90 shadow-md ${
                   index === 0 ? 'md:col-span-2 lg:col-span-2' : ''
                 }`}
               >
@@ -223,7 +223,7 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -left-16 -top-20 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl dark:bg-blue-500/20" />
         <div className="absolute right-0 top-20 h-80 w-80 rounded-full bg-orange-300/20 blur-3xl dark:bg-orange-500/20" />
@@ -236,19 +236,19 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
             {uiText.deck}
           </span>
 
-          <h1 className="mx-auto mt-5 max-w-4xl text-balance text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50 md:text-5xl md:leading-[1.1]">
+          <h1 className="mx-auto mt-5 max-w-4xl text-balance text-4xl font-bold tracking-tight text-foreground md:text-5xl md:leading-[1.1]">
             {t('title')}
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-300 md:text-lg">
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
             {t('subtitle')}
           </p>
-          <p className="mx-auto mt-2 max-w-3xl text-sm leading-relaxed text-slate-500 dark:text-slate-400 md:text-base">
+          <p className="mx-auto mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground md:text-base">
             {uiText.subtitleExtra}
           </p>
         </section>
 
         <section className="mb-8">
-          <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {uiText.filterLabel}
           </div>
           <div className="flex flex-wrap gap-2">
@@ -260,17 +260,17 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
                   type="button"
                   onClick={() => setActiveDifficulty(filter.key)}
                   aria-pressed={active}
-                  className={`inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:focus-visible:ring-offset-slate-950 ${
+                  className={`inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                     active
-                      ? 'border-slate-900 bg-slate-900 text-white shadow-lg shadow-slate-300/60 dark:border-slate-100 dark:bg-slate-100 dark:text-slate-900 dark:shadow-none'
-                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800'
+                      ? 'border-foreground bg-foreground text-background shadow-lg shadow-foreground/20 dark:shadow-none'
+                      : 'border-border bg-card text-foreground hover:border-border/90 hover:bg-muted'
                   }`}
                 >
                   <span>{filter.label}</span>
                   <span className={`rounded-full px-2 py-0.5 text-xs ${
                     active
-                      ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900'
-                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      ? 'bg-background/20 text-background'
+                      : 'bg-muted text-muted-foreground'
                   }`}>
                     {filter.count}
                   </span>
@@ -281,12 +281,12 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
         </section>
 
         {filteredRecipes.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white/80 p-10 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900/70">
-            <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{uiText.emptyFilterTitle}</p>
+          <div className="rounded-2xl border border-dashed border-border bg-card/80 p-10 text-center shadow-sm">
+            <p className="text-lg font-semibold text-foreground">{uiText.emptyFilterTitle}</p>
             <button
               type="button"
               onClick={() => setActiveDifficulty('all')}
-              className="mt-4 inline-flex h-11 cursor-pointer items-center rounded-full bg-slate-900 px-5 text-sm font-semibold text-white transition-colors hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-300 dark:focus-visible:ring-offset-slate-950"
+              className="mt-4 inline-flex h-11 cursor-pointer items-center rounded-full bg-foreground px-5 text-sm font-semibold text-background transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {uiText.clearFilter}
             </button>
@@ -301,7 +301,7 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
                 <Link
                   key={recipe.id}
                   href={`/${locale}/recipe/${recipe.id}`}
-                  className={`group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-md shadow-slate-200/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-300/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-slate-950/40 dark:hover:shadow-slate-900/60 dark:focus-visible:ring-offset-slate-950 ${
+                  className={`group relative overflow-hidden rounded-2xl border border-border/80 bg-card/90 shadow-md shadow-black/8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:shadow-black/30 dark:hover:shadow-black/40 ${
                     isFeatured ? 'md:col-span-2 lg:col-span-2' : ''
                   }`}
                 >
@@ -328,7 +328,7 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
                         {tRecipe(normalizedDifficulty)}
                       </span>
                       {recipe.cuisine?.name && (
-                        <span className="inline-flex items-center rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 dark:bg-slate-900/70 dark:text-slate-200 dark:ring-slate-700">
+                        <span className="inline-flex items-center rounded-full bg-background/80 px-3 py-1 text-xs font-semibold text-foreground ring-1 ring-border">
                           {recipe.cuisine.name}
                         </span>
                       )}
@@ -336,31 +336,31 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
                   </div>
 
                   <div className="p-5 md:p-6">
-                    <h3 className={`font-semibold leading-tight text-slate-900 transition-colors group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-300 ${
+                    <h3 className={`font-semibold leading-tight text-foreground transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-300 ${
                       isFeatured ? 'text-2xl' : 'text-xl'
                     }`}>
                       {recipe.title}
                     </h3>
 
-                    <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                    <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                       {recipe.description}
                     </p>
 
-                    <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-300">
+                    <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
                       {recipe.cookingTime && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1.5 dark:bg-slate-800">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1.5">
                           <Clock className="h-3.5 w-3.5" />
                           {recipe.cookingTime} {tRecipe('mins')}
                         </span>
                       )}
                       {recipe.servings && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1.5 dark:bg-slate-800">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1.5">
                           <Users className="h-3.5 w-3.5" />
                           {recipe.servings}
                         </span>
                       )}
                       {recipe.difficulty && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1.5 dark:bg-slate-800">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1.5">
                           <ChefHat className="h-3.5 w-3.5" />
                           {tRecipe(normalizedDifficulty)}
                         </span>
@@ -378,7 +378,7 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
             <button
               onClick={loadMore}
               disabled={isLoading}
-              className="inline-flex h-12 cursor-pointer items-center rounded-full bg-slate-900 px-7 text-sm font-semibold text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-300 dark:focus-visible:ring-offset-slate-950"
+              className="inline-flex h-12 cursor-pointer items-center rounded-full bg-foreground px-7 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {isLoading ? (
                 <>
@@ -393,8 +393,8 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
         )}
 
         {!hasMore && recipes.length > 0 && (
-          <div className="mt-12 border-t border-slate-200 pt-8 text-center dark:border-slate-700">
-            <p className="text-sm text-slate-500 dark:text-slate-400">{t('allRecipesDisplayed')}</p>
+          <div className="mt-12 border-t border-border pt-8 text-center">
+            <p className="text-sm text-muted-foreground">{t('allRecipesDisplayed')}</p>
           </div>
         )}
       </div>

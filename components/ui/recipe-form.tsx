@@ -171,6 +171,8 @@ export const RecipeForm = ({
   const [dynamicCategories, setDynamicCategories] = useState<Record<string, { name: string; icon?: string; color?: string }>>({});
   const desktopBasketBadgeRef = useRef<HTMLSpanElement | null>(null);
   const mobileBasketBadgeRef = useRef<HTMLSpanElement | null>(null);
+  const desktopBasketVisualRef = useRef<HTMLDivElement | null>(null);
+  const mobileBasketVisualRef = useRef<HTMLDivElement | null>(null);
   const [desktopBasketEditorOpen, setDesktopBasketEditorOpen] = useState(false);
   const [mobileBasketEditorOpen, setMobileBasketEditorOpen] = useState(false);
   
@@ -189,16 +191,23 @@ export const RecipeForm = ({
       return;
     }
 
+    const targetBasketVisual =
+      (isMobile ? mobileBasketVisualRef.current : desktopBasketVisualRef.current) ||
+      desktopBasketVisualRef.current ||
+      mobileBasketVisualRef.current;
+
     const targetBadge =
       (isMobile ? mobileBasketBadgeRef.current : desktopBasketBadgeRef.current) ||
       desktopBasketBadgeRef.current ||
       mobileBasketBadgeRef.current;
 
-    if (!targetBadge) {
+    const animationTarget = targetBasketVisual || targetBadge;
+
+    if (!animationTarget) {
       return;
     }
 
-    const targetRect = targetBadge.getBoundingClientRect();
+    const targetRect = animationTarget.getBoundingClientRect();
     const startX = sourceRect.left + sourceRect.width / 2;
     const startY = sourceRect.top + sourceRect.height / 2;
     const endX = targetRect.left + targetRect.width / 2;
@@ -209,7 +218,7 @@ export const RecipeForm = ({
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (prefersReducedMotion) {
-      targetBadge.animate(
+      animationTarget.animate(
         [
           { transform: 'scale(1)' },
           { transform: 'scale(1.08)' },
@@ -301,7 +310,7 @@ export const RecipeForm = ({
       flyingIcon.remove();
     };
 
-    targetBadge.animate(
+    animationTarget.animate(
       [
         { transform: 'scale(1)' },
         { transform: 'scale(1.18)' },
@@ -575,7 +584,7 @@ export const RecipeForm = ({
         {!isMobile ? (
             <div className="flex flex-col gap-4">
               <section className="rounded-xl bg-background/65 p-2">
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-8">
                   {Object.entries(CATEGORIES_CONFIG).map(([categoryId, category]) => {
                     const Icon = category.icon;
                     const isActive = activeCategory === categoryId;
@@ -590,7 +599,7 @@ export const RecipeForm = ({
                         title={categoryName}
                         onClick={() => handleCategoryChange(categoryId as keyof typeof CATEGORIES_CONFIG)}
                         className={cn(
-                          "inline-flex min-h-[40px] cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all duration-200",
+                          "flex min-h-[40px] w-full min-w-0 cursor-pointer items-center justify-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium transition-all duration-200",
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2",
                           isActive
                             ? "bg-primary/10 text-primary shadow-sm"
@@ -607,135 +616,161 @@ export const RecipeForm = ({
                 </div>
               </section>
 
-              <div className="grid grid-cols-[minmax(0,1fr)_19.5rem] gap-0">
-                <section className="flex h-[440px] min-h-0 flex-col overflow-hidden">
-                  <div className="flex h-full min-h-0 flex-col">
-                    <div className="min-h-0 flex-1 p-2">
-                      {ingredientsLoading ? (
-                        renderIngredientsSkeleton(18)
-                      ) : ingredientsError ? (
-                        <div className="flex h-full items-center justify-center">
-                          <div className="max-w-xs space-y-3 px-4 text-center">
-                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-                              <X className="h-5 w-5 text-destructive" />
+              <div className="grid grid-cols-[minmax(0,1fr)_19.5rem] gap-2">
+                <div className="relative overflow-hidden rounded-2xl bg-background/60 p-2">
+                  <div className="pointer-events-none absolute inset-0 z-0 opacity-95 dark:opacity-40">
+                    <Image
+                      src="/images/ingredients-icon/grain-texture.png"
+                      alt=""
+                      fill
+                      className="object-cover"
+                      unoptimized={true}
+                    />
+                  </div>
+
+                  <section className="relative z-10 flex h-[440px] min-h-0 flex-col overflow-hidden">
+                    <div className="flex h-full min-h-0 flex-col">
+                      <div className="min-h-0 flex-1 p-2">
+                        {ingredientsLoading ? (
+                          renderIngredientsSkeleton(18)
+                        ) : ingredientsError ? (
+                          <div className="flex h-full items-center justify-center">
+                            <div className="max-w-xs space-y-3 px-4 text-center">
+                              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                                <X className="h-5 w-5 text-destructive" />
+                              </div>
+                              <div className="space-y-1.5">
+                                <h3 className="text-sm font-semibold text-foreground">
+                                  {tIngredientSelector('loadError')}
+                                </h3>
+                                <p className="text-xs text-muted-foreground">{ingredientsError}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={fetchIngredientsData}
+                                className="inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
+                              >
+                                <RotateCcw className="h-3 w-3" />
+                                {tIngredientSelector('retry')}
+                              </button>
                             </div>
-                            <div className="space-y-1.5">
-                              <h3 className="text-sm font-semibold text-foreground">
-                                {tIngredientSelector('loadError')}
-                              </h3>
-                              <p className="text-xs text-muted-foreground">{ingredientsError}</p>
-                            </div>
+                          </div>
+                        ) : (
+                          <IngredientSelector
+                            selectedIngredients={formData.ingredients}
+                            onIngredientSelect={handleIngredientSelect}
+                            activeCategory={activeCategory}
+                            onCategoryChange={handleCategoryChange}
+                            allIngredients={allIngredients}
+                            dynamicCategories={dynamicCategories}
+                            hideHeader={true}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                <div className="relative overflow-hidden rounded-2xl bg-background/60 p-2">
+                  <div className="pointer-events-none absolute inset-0 z-0 opacity-95 dark:opacity-40">
+                    <Image
+                      src="/images/ingredients-icon/grain-texture.png"
+                      alt=""
+                      fill
+                      className="object-cover"
+                      unoptimized={true}
+                    />
+                  </div>
+
+                  <aside className="relative z-10 flex h-[440px] min-h-0 flex-col overflow-hidden">
+                    <div className="flex h-14 items-center justify-between gap-3 border-b border-dashed border-border/20 px-4">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <h3 className="truncate text-sm font-semibold text-foreground">{t('basket')}</h3>
+                        <span ref={desktopBasketBadgeRef} className="inline-flex h-6 items-center rounded-full bg-primary/10 px-2.5 text-xs font-semibold text-primary">
+                          {formData.ingredients.length}
+                        </span>
+                      </div>
+                      {formData.ingredients.length > 0 && (
+                        <Popover open={desktopBasketEditorOpen} onOpenChange={setDesktopBasketEditorOpen}>
+                          <PopoverTrigger asChild>
                             <button
                               type="button"
-                              onClick={fetchIngredientsData}
-                              className="inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
+                              aria-label={isZhLocale ? '编辑已选食材' : 'Edit selected ingredients'}
+                              className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
                             >
-                              <RotateCcw className="h-3 w-3" />
-                              {tIngredientSelector('retry')}
+                              <PencilLine className="h-4 w-4" />
+                              <span>{isZhLocale ? '编辑' : 'Edit'}</span>
                             </button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="end"
+                            sideOffset={8}
+                            className="w-[min(92vw,22rem)] border-border/70 bg-card p-3 text-foreground"
+                          >
+                            {renderBasketEditorList()}
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                    </div>
+
+                    <div className="min-h-0 flex-1 overflow-hidden p-3">
+                      {formData.ingredients.length === 0 ? (
+                        <div className="flex h-full items-center justify-center px-4 text-center">
+                          <div>
+                            <div ref={desktopBasketVisualRef} className="mx-auto mb-3 w-[170px]">
+                              <Image
+                                src="/images/empty_vegetable_basket.webp"
+                                alt=""
+                                width={170}
+                                height={170}
+                                className="mx-auto h-auto w-[160px]"
+                              />
+                            </div>
+                            <p className="text-sm font-semibold text-foreground">{t('noIngredients')}</p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {isZhLocale ? '从上方分类中选择食材' : 'Select ingredients from the categories above'}
+                            </p>
                           </div>
                         </div>
                       ) : (
-                        <IngredientSelector
-                          selectedIngredients={formData.ingredients}
-                          onIngredientSelect={handleIngredientSelect}
-                          activeCategory={activeCategory}
-                          onCategoryChange={handleCategoryChange}
-                          allIngredients={allIngredients}
-                          dynamicCategories={dynamicCategories}
-                          hideHeader={true}
-                        />
-                      )}
-                    </div>
-                  </div>
-                </section>
-
-                <aside className="flex h-[440px] min-h-0 flex-col overflow-hidden">
-                  <div className="flex h-14 items-center justify-between gap-3 border-b border-dashed border-border/20 px-4">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <h3 className="truncate text-sm font-semibold text-foreground">{t('basket')}</h3>
-                      <span ref={desktopBasketBadgeRef} className="inline-flex h-6 items-center rounded-full bg-primary/10 px-2.5 text-xs font-semibold text-primary">
-                        {formData.ingredients.length}
-                      </span>
-                    </div>
-                    {formData.ingredients.length > 0 && (
-                      <Popover open={desktopBasketEditorOpen} onOpenChange={setDesktopBasketEditorOpen}>
-                        <PopoverTrigger asChild>
-                          <button
-                            type="button"
-                            aria-label={isZhLocale ? '编辑已选食材' : 'Edit selected ingredients'}
-                            className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
-                          >
-                            <PencilLine className="h-4 w-4" />
-                            <span>{isZhLocale ? '编辑' : 'Edit'}</span>
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          align="end"
-                          sideOffset={8}
-                          className="w-[min(92vw,22rem)] border-border/70 bg-card p-3 text-foreground"
-                        >
-                          {renderBasketEditorList()}
-                        </PopoverContent>
-                      </Popover>
-                    )}
-                  </div>
-
-                  <div className="min-h-0 flex-1 overflow-hidden p-3">
-                    {formData.ingredients.length === 0 ? (
-                      <div className="flex h-full items-center justify-center px-4 text-center">
-                        <div>
-                          <Image
-                            src="/images/empty_vegetable_basket.webp"
-                            alt=""
-                            width={170}
-                            height={170}
-                            className="mx-auto mb-3 h-auto w-[160px]"
-                          />
-                          <p className="text-sm font-semibold text-foreground">{t('noIngredients')}</p>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {isZhLocale ? '从上方分类中选择食材' : 'Select ingredients from the categories above'}
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex h-full flex-col items-center justify-center px-3 text-center">
-                        <div className="relative mb-3 w-[170px]">
-                          <Image
-                            src="/images/empty_vegetable_basket_topdowm.webp"
-                            alt=""
-                            width={170}
-                            height={170}
-                            className="mx-auto h-auto w-[160px]"
-                          />
-                          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                            <div className="relative h-full w-full">
-                              {basketGridIngredients.map((ingredient, index) => (
-                                <span
-                                  key={`desktop-basket-overlay-${ingredient.id}`}
-                                  className={cn(
-                                    "absolute -translate-x-1/2 -translate-y-1/2",
-                                    DESKTOP_BASKET_ICON_POSITIONS[index]
-                                  )}
-                                >
-                                  <BasketIngredientIcon
-                                    ingredient={ingredient}
-                                    className="h-10 w-10"
-                                    imageClassName="h-10 w-10"
-                                    fallbackClassName="h-5 w-5"
-                                  />
-                                </span>
-                              ))}
+                        <div className="flex h-full flex-col items-center justify-center px-3 text-center">
+                          <div ref={desktopBasketVisualRef} className="relative mb-3 w-[170px]">
+                            <Image
+                              src="/images/empty_vegetable_basket_topdowm.webp"
+                              alt=""
+                              width={170}
+                              height={170}
+                              className="mx-auto h-auto w-[160px]"
+                            />
+                            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                              <div className="relative h-full w-full">
+                                {basketGridIngredients.map((ingredient, index) => (
+                                  <span
+                                    key={`desktop-basket-overlay-${ingredient.id}`}
+                                    className={cn(
+                                      "absolute -translate-x-1/2 -translate-y-1/2",
+                                      DESKTOP_BASKET_ICON_POSITIONS[index]
+                                    )}
+                                  >
+                                    <BasketIngredientIcon
+                                      ingredient={ingredient}
+                                      className="h-10 w-10"
+                                      imageClassName="h-10 w-10"
+                                      fallbackClassName="h-5 w-5"
+                                    />
+                                  </span>
+                                ))}
+                              </div>
                             </div>
                           </div>
+                          <p className="max-h-20 max-w-[15rem] overflow-y-auto text-xs leading-relaxed text-foreground">
+                            {selectedIngredientNames}
+                          </p>
                         </div>
-                        <p className="max-h-20 max-w-[15rem] overflow-y-auto text-xs leading-relaxed text-foreground">
-                          {selectedIngredientNames}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </aside>
+                      )}
+                    </div>
+                  </aside>
+                </div>
               </div>
             </div>
           ) : (
@@ -864,13 +899,15 @@ export const RecipeForm = ({
                     {formData.ingredients.length === 0 ? (
                       <div className="flex h-full items-center justify-center px-4 text-center">
                         <div>
-                          <Image
-                            src="/images/empty_vegetable_basket.webp"
-                            alt=""
-                            width={166}
-                            height={166}
-                            className="mx-auto mb-3 h-auto w-[150px]"
-                          />
+                          <div ref={mobileBasketVisualRef} className="mx-auto mb-3 w-[166px]">
+                            <Image
+                              src="/images/empty_vegetable_basket.webp"
+                              alt=""
+                              width={166}
+                              height={166}
+                              className="mx-auto h-auto w-[150px]"
+                            />
+                          </div>
                           <p className="text-sm font-semibold text-foreground">{t('noIngredients')}</p>
                           <p className="mt-1 text-xs text-muted-foreground">
                             {isZhLocale ? '从分类中选择食材后会显示在这里' : 'Selected ingredients will appear here'}
@@ -879,7 +916,7 @@ export const RecipeForm = ({
                       </div>
                     ) : (
                       <div className="flex h-full flex-col items-center justify-center px-3 text-center">
-                        <div className="relative mb-3 w-[166px]">
+                        <div ref={mobileBasketVisualRef} className="relative mb-3 w-[166px]">
                           <Image
                             src="/images/empty_vegetable_basket_topdowm.webp"
                             alt=""
@@ -920,7 +957,7 @@ export const RecipeForm = ({
         )}
       </>
       {/* 生成按钮和高级设置 */}
-      <div className="pb-2">
+      <div className={cn("pb-2", !isMobile && "rounded-2xl bg-background/60 px-3 pt-1 md:px-4")}>
         {/* 内容容器 */}
         <div className="w-full pt-4">
           {/* 桌面端：上方高级设置，下方独立生成按钮 */}

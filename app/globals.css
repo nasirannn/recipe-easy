@@ -117,7 +117,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* 深色模式主题变量 - 使用 OKLCH */
+/* 深色模式主题变量（仅覆盖与浅色不同的 token） */
 .dark {
   --color-background: oklch(0.15 0.01 240);            /* 深蓝灰背景（护眼） */
   --color-foreground: oklch(0.95 0 0);                 /* 浅白文字（AAA 级对比度） */
@@ -134,19 +134,8 @@
   --color-border: oklch(0.3 0.01 240);                 /* 边框 */
   --color-input: oklch(0.3 0.01 240);                  /* 输入框边框 */
 
-  /* 品牌主色 - 暖橙色（亮度提升） */
-  --color-primary: rgb(255 106 0);                      /* 主按钮/链接 */
+  /* 品牌主色在暗色模式沿用同一色相，仅调整前景色 */
   --color-primary-foreground: oklch(0.2 0 0);          /* 主按钮文字（深灰） */
-
-  /* 带透明度的主色变量 - 深色模式 */
-  --color-primary-5: rgb(255 106 0 / 0.05);
-  --color-primary-10: rgb(255 106 0 / 0.1);
-  --color-primary-20: rgb(255 106 0 / 0.2);
-  --color-primary-25: rgb(255 106 0 / 0.25);
-  --color-primary-30: rgb(255 106 0 / 0.3);
-  --color-primary-50: rgb(255 106 0 / 0.5);
-  --color-primary-80: rgb(255 106 0 / 0.8);
-  --color-primary-90: rgb(255 106 0 / 0.9);
 
   /* 辅助色 - 蒲公英黄绿（亮度提升） */
   --color-secondary: oklch(0.85 0.15 72);              /* 图标/标签 */
@@ -159,53 +148,7 @@
   --color-accent: oklch(0.25 0.01 240);                /* 强调色 */
   --color-accent-foreground: oklch(0.65 0.01 240);     /* 强调文字 */
 
-  --color-destructive: oklch(0.602 0.237 25.331);      /* 危险操作 */
-  --color-destructive-foreground: oklch(0.98 0 0);     /* 危险文字 */
-
-  /* 带透明度的危险色变量 - 深色模式 */
-  --color-destructive-10: oklch(0.602 0.237 25.331 / 0.1);
-  --color-destructive-80: oklch(0.602 0.237 25.331 / 0.8);
-  --color-destructive-90: oklch(0.602 0.237 25.331 / 0.9);
-
   --color-ring: oklch(0.8 0.213 25.331);               /* 聚焦轮廓（亮橙色） */
-
-  /* 带透明度的灰色变量 - 深色模式 */
-  --color-gray-100-50: oklch(0.95 0 0 / 0.5);
-  --color-gray-200-40: oklch(0.9 0 0 / 0.4);
-  --color-gray-200-50: oklch(0.9 0 0 / 0.5);
-  --color-gray-700-50: oklch(0.25 0 0 / 0.5);
-  --color-gray-900-40: oklch(0.09 0 0 / 0.4);
-  --color-gray-900-50: oklch(0.09 0 0 / 0.5);
-
-  /* 带透明度的绿色变量 - 深色模式 */
-  --color-green-900-20: oklch(0.15 0.15 142 / 0.2);
-  --color-emerald-900-20: oklch(0.15 0.15 160 / 0.2);
-
-  /* 带透明度的蓝色变量 - 深色模式 */
-  --color-blue-900-20: oklch(0.15 0.15 240 / 0.2);
-  --color-indigo-900-20: oklch(0.15 0.15 260 / 0.2);
-
-  /* 带透明度的紫色变量 - 深色模式 */
-  --color-purple-900-20: oklch(0.15 0.15 280 / 0.2);
-  --color-violet-900-20: oklch(0.15 0.15 300 / 0.2);
-
-  /* 带透明度的橙色变量 - 深色模式 */
-  --color-orange-900-20: oklch(0.15 0.15 60 / 0.2);
-  --color-amber-900-20: oklch(0.15 0.15 80 / 0.2);
-}
-
-/* Grid background pattern */
-.bg-grid {
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
-  background-size: 50px 50px;
-}
-
-.dark .bg-grid {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
 }
 
 /* 隐藏滚动条样式 */
@@ -220,38 +163,18 @@
 /* 简约性冷淡风格标签 */
 .tag-minimal {
   @apply inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-normal;
-  @apply bg-gray-50 dark:bg-gray-800;
-  @apply border border-gray-200 dark:border-gray-700;
-  @apply text-gray-600 dark:text-gray-300;
+  @apply bg-muted;
+  @apply border border-border;
+  @apply text-muted-foreground;
   @apply rounded-md;
   @apply transition-all duration-200;
-  @apply hover:bg-gray-100 dark:hover:bg-gray-700;
-  @apply hover:border-gray-300 dark:hover:border-gray-600;
+  @apply hover:bg-accent;
+  @apply hover:border-border;
   @apply cursor-default;
 }
 
 .tag-minimal:hover {
   @apply transform scale-[1.02];
-}
-
-.shadow-light {
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.085);
-}
-
-.shadow-dark {
-  box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.141);
-}
-
-/* 基础样式 */
-* {
-  border-color: var(--color-border);
-}
-
-body {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
-  line-height: 1.6;
-  font-feature-settings: "ss01" 1, "ss02" 1;
 }
 
 /* Home page design system */
@@ -278,26 +201,16 @@ body {
   z-index: 10;
 }
 
-.home-main {
-  position: relative;
-  z-index: 10;
-}
-
-.home-sections {
-  position: relative;
-  z-index: 10;
-}
-
-.home-section {
-  position: relative;
-  z-index: 10;
-  padding-top: 5rem;
-  padding-bottom: 5rem;
-}
-
+.home-main,
+.home-sections,
+.home-section,
 .home-section-compact {
   position: relative;
   z-index: 10;
+}
+
+.home-section,
+.home-section-compact {
   padding-top: 5rem;
   padding-bottom: 5rem;
 }
@@ -365,7 +278,7 @@ body {
 .home-lead {
   margin-top: 0.75rem;
   max-width: 38rem;
-  font-size: clamp(0.98rem, 1.2vw, 1.08rem);
+  font-size: clamp(1rem, 1.2vw, 1.08rem);
   line-height: 1.62;
   color: rgb(71 85 105);
   text-wrap: pretty;
@@ -483,41 +396,6 @@ body {
   overflow: hidden;
 }
 
-/* Custom scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--color-muted);
-  border-radius: 3px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-muted-foreground);
-}
-
-/* Smooth transitions */
-.smooth-transition {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Glass morphism effect */
-.glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.dark .glass {
-  background: rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
 /* 轮播图淡入动画 */
 @keyframes fadeIn {
   from {
@@ -565,14 +443,13 @@ body {
     animation: none;
   }
 }
-
-
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    line-height: 1.6;
+    font-feature-settings: "ss01" 1, "ss02" 1;
   }
 }

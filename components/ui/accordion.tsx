@@ -51,7 +51,7 @@ const AccordionContent = React.forwardRef<
     {...props}
   >
     <div
-      className={cn("pb-4 pt-0 text-muted-foreground text-[16px]", className)}
+      className={cn("pb-4 pt-0 text-base text-muted-foreground", className)}
     >
       {children}
     </div>

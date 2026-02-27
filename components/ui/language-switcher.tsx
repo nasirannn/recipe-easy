@@ -56,7 +56,7 @@ export function LanguageSwitcher({ className }: LanguageSwitcherProps) {
         >
           <span
             aria-hidden="true"
-            className="inline-flex items-center justify-center text-[13px] font-semibold leading-none tracking-tight text-foreground"
+            className="inline-flex items-center justify-center text-sm font-semibold leading-none tracking-tight text-foreground"
           >
             A文
           </span>

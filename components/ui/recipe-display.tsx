@@ -148,8 +148,8 @@ export const RecipeDisplay = ({
 
                       {imageLoadingStates[recipe.id] && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-xs">
-                          <div className="rounded-full bg-white p-4 shadow-xl">
-                            <RefreshCw className="h-8 w-8 animate-spin text-gray-700" />
+                          <div className="rounded-full bg-background p-4 shadow-xl">
+                            <RefreshCw className="h-8 w-8 animate-spin text-foreground" />
                           </div>
                         </div>
                       )}
@@ -172,11 +172,11 @@ export const RecipeDisplay = ({
                               onRegenerateImage(recipe.id, recipe);
                             }
                           }}
-                          className="flex h-16 w-16 items-center justify-center rounded-full border border-gray-200 bg-white shadow-xl transition hover:scale-105 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 disabled:cursor-not-allowed"
+                          className="flex h-16 w-16 items-center justify-center rounded-full border border-border bg-background shadow-xl transition hover:scale-105 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 disabled:cursor-not-allowed"
                           disabled={imageLoadingStates[recipe.id]}
                         >
                           <RefreshCw
-                            className={`h-8 w-8 text-gray-700 ${
+                            className={`h-8 w-8 text-foreground ${
                               imageLoadingStates[recipe.id] ? "animate-spin" : ""
                             }`}
                           />
@@ -195,8 +195,8 @@ export const RecipeDisplay = ({
                       <button
                         className={`absolute bottom-3 right-3 flex h-12 w-12 items-center justify-center rounded-full border shadow-lg transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 ${
                           canGenerateImage
-                            ? "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-                            : "cursor-not-allowed border-gray-300 bg-gray-100 text-gray-400"
+                            ? "border-border bg-background text-foreground hover:bg-muted"
+                            : "cursor-not-allowed border-border/70 bg-muted text-muted-foreground"
                         }`}
                         onClick={(event) => {
                           event.stopPropagation();

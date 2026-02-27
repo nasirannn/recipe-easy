@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Clock, Users, ChefHat, Calendar, ArrowLeft, AlertTriangle, Trash2, ImageIcon, } from 'lucide-react';
+import { Clock, Users, ChefHat, Calendar, ArrowLeft, AlertTriangle, Trash2, } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
@@ -21,6 +21,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getImageUrl } from '@/lib/config';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FooterSection } from '@/components/layout/sections/footer';
 
 interface RecipeWithMetadata extends Recipe {
   createdAt?: string;
@@ -185,7 +186,7 @@ export default function MyRecipesPage() {
       {Array.from({ length: 6 }).map((_, index) => (
         <Card
           key={`my-recipes-skeleton-${index}`}
-          className="overflow-hidden border-0 bg-white/80 shadow-lg backdrop-blur-sm dark:bg-gray-800/80"
+          className="overflow-hidden border-0 bg-card/80 shadow-lg backdrop-blur-sm"
         >
           <Skeleton className="aspect-[3/2] w-full rounded-none" />
           <div className="space-y-3 p-6">
@@ -204,21 +205,6 @@ export default function MyRecipesPage() {
     </div>
   );
 
-  const renderImageNotice = () => (
-    <div className="relative mb-6 overflow-hidden rounded-2xl border border-orange-200/80 bg-linear-to-r from-orange-50 via-white to-amber-50 p-4 shadow-sm dark:border-orange-500/30 dark:from-orange-500/10 dark:via-slate-900/70 dark:to-amber-500/10">
-      <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-orange-300/20 blur-2xl dark:bg-orange-400/15" />
-      <div className="relative flex items-start gap-3">
-        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-orange-200 bg-white text-orange-600 shadow-sm dark:border-orange-400/40 dark:bg-slate-900/80 dark:text-orange-300">
-          <ImageIcon className="h-5 w-5" />
-        </div>
-        <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t('imageNotice.title')}</h3>
-          <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{t('imageNotice.description')}</p>
-        </div>
-      </div>
-    </div>
-  );
-
   // 显示用户加载状态
   if (authLoading) {
     return (
@@ -231,11 +217,11 @@ export default function MyRecipesPage() {
                 variant="ghost"
                 size="sm"
                 onClick={handleGoBack}
-                className="w-10 h-10 rounded-full hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-200"
+                className="h-10 w-10 rounded-full transition-all duration-200 hover:bg-muted/70"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-3xl font-bold text-foreground">
                 {t('title')}
               </h1>
             </div>
@@ -279,19 +265,17 @@ export default function MyRecipesPage() {
                 variant="ghost"
                 size="sm"
                 onClick={handleGoBack}
-                className="w-10 h-10 rounded-full hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-200"
+                className="h-10 w-10 rounded-full transition-all duration-200 hover:bg-muted/70"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+              <h2 className="text-3xl font-bold text-foreground flex items-center">
                   {t('title')}
-                  <span className="text-lg font-normal text-gray-500 dark:text-gray-400 ml-2 flex items-center">
+                  <span className="text-lg font-normal text-muted-foreground ml-2 flex items-center">
                     ({total})
                   </span>
               </h2>
             </div>
-            
-            {renderImageNotice()}
           </div>
           
           <div className="space-y-8">
@@ -301,6 +285,7 @@ export default function MyRecipesPage() {
             </div>
           </div>
         </div>
+        <FooterSection />
       </div>
     );
   }
@@ -315,42 +300,27 @@ export default function MyRecipesPage() {
               variant="ghost"
               size="sm"
               onClick={handleGoBack}
-              className="w-10 h-10 rounded-full hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-200"
+              className="h-10 w-10 rounded-full transition-all duration-200 hover:bg-muted/70"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+            <h2 className="text-3xl font-bold text-foreground flex items-center">
                 {t('title')}
-                <span className="text-lg font-normal text-gray-500 dark:text-gray-400 ml-2 flex items-center">
+                <span className="text-lg font-normal text-muted-foreground ml-2 flex items-center">
                   ({total})
                 </span>
             </h2>
-              {hasLoaded && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => loadRecipes(true)}
-                  disabled={loading}
-                  className="w-10 h-10 rounded-full hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-200"
-                >
-                  <svg className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                </Button>
-              )}
           </div>
-          
-          {renderImageNotice()}
         </div>
         
         {recipes.length === 0 ? (
           <div className="text-center py-16">
             <div className="max-w-md mx-auto">
               <div className="w-24 h-24 bg-linear-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <ChefHat className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+                <ChefHat className="h-12 w-12 text-muted-foreground" />
               </div>
-              <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">{t('emptyState.title')}</h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+              <h2 className="text-2xl font-bold mb-3 text-foreground">{t('emptyState.title')}</h2>
+              <p className="text-muted-foreground mb-8 leading-relaxed">
                 {t('emptyState.description')}
               </p>
               <Button asChild size="lg" className="bg-linear-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
@@ -367,7 +337,7 @@ export default function MyRecipesPage() {
                 return (
                   <Card
                     key={recipe.id}
-                    className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-md shadow-slate-200/60 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-xl hover:shadow-orange-100/50 dark:border-slate-700/80 dark:bg-slate-900/75 dark:shadow-slate-950/40 dark:hover:border-orange-500/40 dark:hover:shadow-slate-900/70"
+                    className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card/90 shadow-md shadow-slate-200/60 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-xl hover:shadow-orange-100/50 dark:hover:border-orange-500/40 dark:hover:shadow-slate-900/70"
                   >
                   {/* Image Container */}
                   <div className="relative aspect-[3/2] overflow-hidden">
@@ -403,7 +373,7 @@ export default function MyRecipesPage() {
                     </Link>
 
                     {recipe.createdAt && (
-                      <span className="absolute left-3 top-3 z-20 inline-flex items-center gap-1 rounded-full border border-white/40 bg-slate-950/45 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
+                      <span className="absolute left-3 top-3 z-20 inline-flex items-center gap-1 rounded-full border border-white/40 bg-black/45 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
                         <Calendar className="h-3.5 w-3.5" />
                         {formatDate(recipe.createdAt)}
                       </span>
@@ -414,7 +384,7 @@ export default function MyRecipesPage() {
                         size="sm"
                         variant="destructive"
                         aria-label={t('delete')}
-                        className="h-10 w-10 cursor-pointer rounded-full border-0 bg-red-500/90 text-white shadow-md transition-all duration-200 hover:bg-red-600 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
+                        className="h-10 w-10 cursor-pointer rounded-full border-0 bg-destructive/90 text-destructive-foreground shadow-md transition-all duration-200 hover:bg-destructive md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
@@ -422,14 +392,14 @@ export default function MyRecipesPage() {
                         }}
                         disabled={deleting === recipe.id}
                       >
-                        <Trash2 className="h-4 w-4 text-white" />
+                        <Trash2 className="h-4 w-4 text-destructive-foreground" />
                       </Button>
                     </div>
                   </div>
                   
                   {/* Content - 与 explore 页面保持一致 */}
                   <div className="space-y-4 p-5 md:p-6">
-                    <h3 className="line-clamp-2 text-lg font-semibold leading-snug text-slate-900 transition-colors group-hover:text-orange-600 dark:text-slate-100 dark:group-hover:text-orange-300">
+                    <h3 className="line-clamp-2 text-lg font-semibold leading-snug text-foreground transition-colors group-hover:text-orange-600 dark:group-hover:text-orange-300">
                       <Link 
                         href={`/${locale}/recipe/${recipe.id}`} 
                         className="block cursor-pointer"
@@ -441,21 +411,21 @@ export default function MyRecipesPage() {
                     
                     {/* 描述 - 与 explore 页面保持一致 */}
                     {recipe.description && (
-                      <p className="line-clamp-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                      <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                         {recipe.description}
                       </p>
                     )}
                     
                     {/* Meta Info - 与 explore 页面保持一致 */}
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                       {recipe.cookingTime && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100/90 px-2.5 py-1 dark:bg-slate-800/90">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted/90 px-2.5 py-1">
                           <Clock className="h-3.5 w-3.5" />
                           {recipe.cookingTime} {tRecipe('mins')}
                         </span>
                       )}
                       {recipe.servings && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100/90 px-2.5 py-1 dark:bg-slate-800/90">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted/90 px-2.5 py-1">
                           <Users className="h-3.5 w-3.5" />
                           <span>{recipe.servings}</span>
                         </span>
@@ -476,7 +446,7 @@ export default function MyRecipesPage() {
             {/* No More Data Message */}
             {recipes.length > 0 && (
               <div className="mt-12 text-center">
-                <p className="text-slate-500 dark:text-slate-400 text-sm">
+                <p className="text-muted-foreground text-sm">
                   {t('allRecipesDisplayed')}
                 </p>
               </div>
@@ -534,7 +504,7 @@ export default function MyRecipesPage() {
                 </div>
                 {t('deleteDialog.title')}
               </DialogTitle>
-              <DialogDescription className="text-slate-600 dark:text-slate-400">
+              <DialogDescription className="text-muted-foreground">
                 {t('deleteDialog.description', { title: recipeToDelete?.title })}
               </DialogDescription>
             </DialogHeader>
@@ -559,6 +529,7 @@ export default function MyRecipesPage() {
           </DialogContent>
         </Dialog>
       </div>
+      <FooterSection />
     </div>
   );
 }

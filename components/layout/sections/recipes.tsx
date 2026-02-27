@@ -26,8 +26,8 @@ export const RecipesSection = () => {
     const fetchRecipes = async () => {
       try {
         setIsLoading(true);
-        // 调用通用菜谱接口，限制为最近创建的6个菜谱
-        const response = await fetch(`/api/recipes?type=latest&limit=6&page=1&lang=${locale}`);
+        // 调用通用菜谱接口，限制为最近创建的6个有图片菜谱
+        const response = await fetch(`/api/recipes?type=latest&limit=6&page=1&lang=${locale}&withImage=1`);
         const data = await response.json() as any;
 
         if (data.success) {
@@ -159,6 +159,7 @@ export const RecipesSection = () => {
         <SectionHeader
           eyebrow={t('title')}
           title={t('subtitle')}
+          description={t('description1')}
           className="mb-8 md:mb-10"
         />
         <div

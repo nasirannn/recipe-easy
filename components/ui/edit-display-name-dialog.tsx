@@ -226,22 +226,22 @@ export function EditUserInfoDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="overflow-hidden border-slate-200/80 bg-white/95 p-0 sm:max-w-[520px] dark:border-slate-700 dark:bg-slate-950/95">
-        <div className="border-b border-slate-200/80 bg-slate-50/80 px-6 py-5 dark:border-slate-700 dark:bg-slate-900/70">
+      <DialogContent className="overflow-hidden border-border/80 bg-background/95 p-0 sm:max-w-[520px]">
+        <div className="border-b border-border/80 bg-muted/45 px-6 py-5">
           <DialogHeader className="space-y-2 text-left">
-            <DialogTitle className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+            <DialogTitle className="text-xl font-semibold text-foreground">
               {t('editUserInfo')}
             </DialogTitle>
-            <DialogDescription className="text-sm text-slate-600 dark:text-slate-300">
+            <DialogDescription className="text-sm text-muted-foreground">
               {t('userInfoDescription')}
             </DialogDescription>
           </DialogHeader>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5 px-6 py-5">
-          <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-900/60">
+          <div className="rounded-xl border border-border/80 bg-muted/45 p-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <Avatar className="h-20 w-20 border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-950">
+              <Avatar className="h-20 w-20 border border-border bg-background shadow-sm">
                 {avatarPreview ? (
                   <AvatarImage
                     src={avatarPreview}
@@ -249,16 +249,16 @@ export function EditUserInfoDialog({
                     className="object-cover"
                   />
                 ) : null}
-                <AvatarFallback className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-100">
+                <AvatarFallback className="bg-muted text-foreground">
                   <UserRound className="h-8 w-8" />
                 </AvatarFallback>
               </Avatar>
 
               <div className="flex-1 space-y-2">
-                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                <div className="text-sm font-semibold text-foreground">
                   {t('avatar')}
                 </div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">
+                <div className="text-xs text-muted-foreground">
                   {t('avatarRequirements')}
                 </div>
                 <input
@@ -284,7 +284,7 @@ export function EditUserInfoDialog({
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="displayName" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            <label htmlFor="displayName" className="text-sm font-semibold text-foreground">
               {t('username')}
             </label>
             <Input
@@ -295,7 +295,7 @@ export function EditUserInfoDialog({
               maxLength={50}
               disabled={loading}
               autoFocus
-              className="h-11 rounded-lg border-slate-300/90 bg-white dark:border-slate-600 dark:bg-slate-900"
+              className="h-11 rounded-lg border-border bg-background"
             />
           </div>
 

@@ -97,7 +97,7 @@ export function UserAvatar({
       
       {/* 积分扣减气泡 */}
       {showCreditDeduction && (
-        <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-bounce shadow-lg border-2 border-white">
+        <div className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-destructive text-xs font-bold text-destructive-foreground animate-bounce shadow-lg">
           <Minus className="h-3 w-3" />
           <span className="ml-0.5">1</span>
         </div>

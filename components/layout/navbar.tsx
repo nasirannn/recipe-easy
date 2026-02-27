@@ -65,23 +65,23 @@ export const Navbar = () => {
   }, [isHomePage]);
 
   const actionButtonClassName = cn(
-    "ml-1 inline-flex min-h-[40px] items-center gap-1.5 rounded-full border px-3 py-2 text-[15px] font-medium text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2",
+    "ml-1 inline-flex min-h-[40px] items-center gap-1.5 rounded-full border px-3 py-2 text-sm font-medium text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2",
     isHomePage
-      ? "border-transparent bg-slate-100/56 hover:bg-slate-100/72 dark:bg-slate-800/36 dark:hover:bg-slate-800/56"
+      ? "border-transparent bg-muted/56 hover:bg-muted/72"
       : "border-border/60 bg-background/70 hover:bg-accent/50"
   );
 
   const mobileTriggerClassName = cn(
     "h-10 w-10 cursor-pointer rounded-full border",
     isHomePage
-      ? "border-transparent bg-slate-100/56 hover:bg-slate-100/72 dark:bg-slate-800/36 dark:hover:bg-slate-800/56"
+      ? "border-transparent bg-muted/56 hover:bg-muted/72"
       : "border-border/60 bg-background/70 hover:bg-accent/50"
   );
 
   const avatarTriggerClassName = cn(
     "ml-1 h-11 w-11 cursor-pointer overflow-hidden rounded-full border p-0 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2",
     isHomePage
-      ? "border-transparent bg-slate-100/56 hover:bg-slate-100/72 dark:bg-slate-800/36 dark:hover:bg-slate-800/56"
+      ? "border-transparent bg-muted/56 hover:bg-muted/72"
       : "border-border/60 bg-background/70 hover:bg-accent/50",
     "data-[state=open]:border-primary/50 data-[state=open]:bg-primary/10"
   );
@@ -89,7 +89,7 @@ export const Navbar = () => {
   const avatarMenuClassName = cn(
     "w-[19rem] rounded-2xl border p-2 shadow-lg backdrop-blur-xl",
     isHomePage
-      ? "border-slate-200/80 bg-white/92 dark:border-slate-700/80 dark:bg-slate-900/88"
+      ? "border-border/80 bg-background/92"
       : "border-border/70 bg-background/95"
   );
 
@@ -160,12 +160,12 @@ export const Navbar = () => {
                 sizes="36px"
               />
             </div>
-              <span className="text-[15px] font-semibold tracking-tight sm:text-base">
+              <span className="text-base font-semibold tracking-tight">
               RecipeEasy
             </span>
           </Link>
 
-            <nav className="hidden items-center gap-1 text-[15px] font-medium md:flex">
+            <nav className="hidden items-center gap-1 text-sm font-medium md:flex">
             {routeList.map((route) => (
               <Link
                 key={route.href}
@@ -232,7 +232,7 @@ export const Navbar = () => {
                         </div>
 
                         <div className="mt-3 flex items-center justify-between rounded-lg bg-background/80 px-2.5 py-2">
-                          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                             {t('credits')}
                           </span>
                           <span className="text-sm font-semibold tabular-nums text-foreground">
@@ -240,7 +240,7 @@ export const Navbar = () => {
                           </span>
                         </div>
 
-                        <div className="mt-1.5 text-[11px] text-muted-foreground">
+                        <div className="mt-1.5 text-xs text-muted-foreground">
                           {tCredits('consumeOneCredit')}
                         </div>
                       </div>
@@ -316,7 +316,7 @@ export const Navbar = () => {
                     {/* 移动版导航项 */}
                     <div className="p-4 flex-1 overflow-y-auto">
                       {!loading && user && (
-                        <div className="mb-6 pt-2 pb-5 border-b border-gray-200 dark:border-gray-700">
+                        <div className="mb-6 border-b border-border pt-2 pb-5">
                           <div className="flex items-center gap-3 mb-4">
                             <UserAvatar user={user} size="lg" className="h-10 w-10" />
                             <div className="flex-1">

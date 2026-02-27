@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from "react";
 import { CheckCircle2 } from "lucide-react";
-import Image from "next/image";
 import { Recipe, RecipeFormData } from "@/lib/types";
 import { LanguageModel, ImageModel } from "@/lib/types";
 import { RecipeForm } from "@/components/ui/recipe-form";
@@ -272,13 +271,13 @@ export const HeroSection = () => {
               {t('description')}
             </p>
 
-            <div className="mx-auto mt-4 flex w-full max-w-5xl flex-wrap items-center justify-center gap-2 px-1 sm:mt-5">
+            <div className="mx-auto mt-4 flex w-full max-w-5xl flex-wrap items-center justify-center gap-2.5 px-1 sm:mt-5">
               {[t('badgeFreeRecipeCreation'), t('badgeRegisterForImages'), t('badgeStartWithCredits'), t('badgeImageCostPerCredit')].map((item) => (
                 <div
                   key={item}
-                  className="inline-flex min-h-[34px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200/80 bg-white/72 px-3 py-1.5 text-left text-xs font-medium leading-5 text-slate-700 backdrop-blur-sm dark:border-slate-700/70 dark:bg-slate-900/46 dark:text-slate-300 sm:text-[13px]"
+                  className="inline-flex min-h-[36px] shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-background/86 px-3.5 py-1.5 text-left text-xs font-semibold leading-5 text-foreground shadow-[0_6px_16px_rgba(15,23,42,0.08)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(15,23,42,0.12)] sm:text-sm"
                 >
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-primary" />
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-primary drop-shadow-[0_1px_1px_rgba(37,99,235,0.25)]" />
                   <span className="font-medium">{item}</span>
                 </div>
               ))}
@@ -286,30 +285,16 @@ export const HeroSection = () => {
           </div>
 
           <div id="recipe-form-section" className="mt-7 sm:mt-8">
-            <div className="home-card relative overflow-hidden">
-              <div className="absolute inset-0 pointer-events-none dark:opacity-5">
-                <Image
-                  src="/images/ingredients-icon/grain-texture.png"
-                  alt=""
-                  fill
-                  className="object-cover"
-                  unoptimized={true}
-                />
-              </div>
-
-              <div className="relative z-10 p-4 md:p-6">
-                <RecipeForm
-                  formData={formData}
-                  onFormChange={handleFormChange}
-                  onSubmit={handleSubmit}
-                  loading={loading || imageGenerating}
-                  showRecipe={showRecipe}
-                  setShowRecipe={setShowRecipe}
-                  activeTab={activeTab}
-                  mealPlannerText={mealPlannerText}
-                />
-              </div>
-            </div>
+            <RecipeForm
+              formData={formData}
+              onFormChange={handleFormChange}
+              onSubmit={handleSubmit}
+              loading={loading || imageGenerating}
+              showRecipe={showRecipe}
+              setShowRecipe={setShowRecipe}
+              activeTab={activeTab}
+              mealPlannerText={mealPlannerText}
+            />
           </div>
 
           {showRecipe && activeTab === 'recipe-maker' && (

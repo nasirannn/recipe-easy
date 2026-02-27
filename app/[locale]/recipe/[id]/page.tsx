@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { RecipeDetail } from '@/components/recipe/recipe-detail';
+import { FooterSection } from '@/components/layout/sections/footer';
 import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
 import { env } from '@/lib/env';
 import { getImageUrl } from '@/lib/config';
@@ -150,6 +151,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeStructuredData) }}
       />
       <RecipeDetail recipe={recipe} locale={locale} />
+      <FooterSection />
     </>
   );
 }
