@@ -40,7 +40,6 @@ export type DailyLoginBonusSettlement = {
   expiresAt: string | null;
 };
 
-export const DEFAULT_INITIAL_CREDITS = APP_CONFIG.initialCredits;
 const DEFAULT_RECIPE_GENERATION_COST = APP_CONFIG.recipeGenerationCost;
 const DEFAULT_MIN_CREDITS_FOR_GENERATION = APP_CONFIG.recipeGenerationCost;
 const DAILY_LOGIN_BONUS_AMOUNT = 3;
@@ -265,30 +264,6 @@ export async function getUserCredits(
   return row ? normalizeCreditsRow(row) : null;
 }
 
-export async function createUserCredits(
-  db: PgClientLike,
-  userId: string,
-  initialCredits: number
-): Promise<UserCreditsRecord> {
-  const id = crypto.randomUUID();
-  const normalized = Math.max(initialCredits, 0);
-
-  await db.query(
-    `
-      INSERT INTO user_credits (
-        id, user_id, credits, total_earned, total_spent, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, 0, NOW(), NOW())
-    `,
-    [id, userId, normalized, normalized]
-  );
-
-  const created = await getUserCredits(db, userId);
-  if (!created) {
-    throw new Error('Failed to initialize user credits');
-  }
-  return created;
-}
-
 export async function getOrCreateUserCredits(
   db: PgClientLike,
   userId: string
@@ -298,8 +273,6 @@ export async function getOrCreateUserCredits(
     return existing;
   }
 
-  const initialCredits = DEFAULT_INITIAL_CREDITS;
-
   await db.query(
     `
       INSERT INTO user_credits (
@@ -308,7 +281,7 @@ export async function getOrCreateUserCredits(
       VALUES ($1, $2, $3, $4, 0, NOW(), NOW())
       ON CONFLICT (user_id) DO NOTHING
     `,
-    [crypto.randomUUID(), userId, initialCredits, initialCredits]
+    [crypto.randomUUID(), userId, 0, 0]
   );
 
   const created = await getUserCredits(db, userId);
@@ -386,7 +359,6 @@ export async function settleDailyLoginBonusOnLogin(
 ): Promise<DailyLoginBonusSettlement> {
   const now = new Date();
   const nowIso = now.toISOString();
-  const initialCredits = DEFAULT_INITIAL_CREDITS;
 
   return withPgTransaction(async (client) => {
     await client.query(
@@ -397,7 +369,7 @@ export async function settleDailyLoginBonusOnLogin(
         VALUES ($1, $2, $3, $4, 0, NOW(), NOW())
         ON CONFLICT (user_id) DO NOTHING
       `,
-      [crypto.randomUUID(), userId, initialCredits, initialCredits]
+      [crypto.randomUUID(), userId, 0, 0]
     );
 
     const current = await readCreditsRowForUpdate(client, userId);

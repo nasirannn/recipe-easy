@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, type ReactNode } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Recipe, UserLoginStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -13,15 +13,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Clock, Users, ChefHat, Calendar, ArrowLeft, AlertTriangle, Trash2, } from 'lucide-react';
+import { ChefHat, Calendar, AlertTriangle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
-import Image from 'next/image';
-import { getImageUrl } from '@/lib/config';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FooterSection } from '@/components/layout/sections/footer';
+import { RecipeListCard, RecipeListCardSkeleton } from '@/components/recipe/recipe-list-card';
 
 interface RecipeWithMetadata extends Recipe {
   createdAt?: string;
@@ -29,6 +28,7 @@ interface RecipeWithMetadata extends Recipe {
 }
 
 type DifficultyLevel = 'easy' | 'medium' | 'hard';
+const masonryMediaClasses = ['aspect-[4/5]', 'aspect-[3/4]', 'aspect-[5/6]', 'aspect-square', 'aspect-[10/13]'] as const;
 
 function normalizeDifficulty(value?: string): DifficultyLevel {
   const normalized = (value || '').toLowerCase();
@@ -37,14 +37,13 @@ function normalizeDifficulty(value?: string): DifficultyLevel {
   return 'medium';
 }
 
-function getDifficultyBadgeTone(value: DifficultyLevel): string {
-  if (value === 'easy') {
-    return 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-200 dark:ring-emerald-400/30';
+function getMasonryMediaClass(seed: string | number): string {
+  const source = String(seed);
+  let hash = 0;
+  for (let i = 0; i < source.length; i += 1) {
+    hash = (hash * 31 + source.charCodeAt(i)) >>> 0;
   }
-  if (value === 'hard') {
-    return 'bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/20 dark:text-rose-200 dark:ring-rose-400/30';
-  }
-  return 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/20 dark:text-amber-200 dark:ring-amber-400/30';
+  return masonryMediaClasses[hash % masonryMediaClasses.length];
 }
 
 export default function MyRecipesPage() {
@@ -53,6 +52,8 @@ export default function MyRecipesPage() {
   const t = useTranslations('myRecipes');
   const tRecipe = useTranslations('recipeDisplay');
   const locale = useLocale();
+  const isZh = locale.toLowerCase().startsWith('zh');
+  const pageSize = 12;
   const [recipes, setRecipes] = useState<RecipeWithMetadata[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -60,7 +61,26 @@ export default function MyRecipesPage() {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [recipeToDelete, setRecipeToDelete] = useState<RecipeWithMetadata | null>(null);
-  const [hasLoaded, setHasLoaded] = useState(false);
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const safeCurrentPage = Math.min(Math.max(page, 1), totalPages);
+  const paginationStart = Math.max(1, Math.min(safeCurrentPage - 2, Math.max(totalPages - 4, 1)));
+  const paginationEnd = Math.min(totalPages, paginationStart + 4);
+  const visiblePages = Array.from(
+    { length: paginationEnd - paginationStart + 1 },
+    (_, index) => paginationStart + index
+  );
+  const pageCopy = isZh
+    ? {
+        subtitle: '管理你生成和保存过的菜谱，随时回看做法、难度和份量。',
+        totalLabel: '总数',
+        pageLabel: '页数',
+      }
+    : {
+        subtitle: 'Review, manage, and revisit the recipes you generated with full cooking details.',
+        totalLabel: 'Total',
+        pageLabel: 'Page',
+      };
   
   // 处理未登录用户的重定向
   useEffect(() => {
@@ -69,18 +89,13 @@ export default function MyRecipesPage() {
     }
   }, [authLoading, user, router, locale]);
   
-  const loadRecipes = useCallback(async (forceReload = false) => {
-    // 如果已经加载过且不是强制重新加载，则跳过
-    if (hasLoaded && !forceReload) {
-      return;
-    }
-    
+  const loadRecipes = useCallback(async () => {
     if (!user?.id) return;
     
     try {
       setLoading(true);
       const response = await fetch(
-        `/api/recipes/user/${user.id}?page=${page}&limit=12&lang=${locale}`
+        `/api/recipes/user/${user.id}?page=${page}&limit=${pageSize}&lang=${locale}`
       );
       
       if (!response.ok) {
@@ -90,26 +105,25 @@ export default function MyRecipesPage() {
       const data = await response.json() as any;
       setRecipes(data.recipes || []);
       setTotal(data.pagination?.total || 0);
-      setHasLoaded(true);
     } catch (error) {
       // Failed to load recipes
       toast.error(t('loadError'));
     } finally {
       setLoading(false);
     }
-  }, [user?.id, page, t, hasLoaded, locale]);
+  }, [user?.id, page, t, locale, pageSize]);
   
   useEffect(() => {
-    // 等待用户状态加载完成
-    if (user?.id && !hasLoaded) {
+    // 用户、语言或分页变化时重新拉取
+    if (user?.id) {
       loadRecipes();
     }
-  }, [user, loadRecipes, hasLoaded]);
+  }, [user?.id, page, locale, loadRecipes]);
 
   // 页面可见性变化时，可以选择性地刷新数据
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (!document.hidden && user?.id && hasLoaded) {
+      if (!document.hidden && user?.id) {
         // 页面重新可见时，可以选择刷新数据（可选）
         // 这里暂时不自动刷新，保持缓存
       }
@@ -119,7 +133,7 @@ export default function MyRecipesPage() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [user?.id, hasLoaded]);
+  }, [user?.id]);
   
   const handleDeleteClick = (recipe: RecipeWithMetadata) => {
     setRecipeToDelete(recipe);
@@ -144,7 +158,7 @@ export default function MyRecipesPage() {
       }
       
       toast.success(t('deleteSuccess'));
-      await loadRecipes(true); // 强制重新加载
+      await loadRecipes(); // 删除后刷新列表
     } catch (error) {
       // Failed to delete recipe
       toast.error(t('deleteError'));
@@ -176,360 +190,244 @@ export default function MyRecipesPage() {
     });
   };
 
-  const handleGoBack = () => {
-    // 总是返回到当前语言环境的首页，避免语言切换后的路由问题
-    router.push(`/${locale}`);
-  };
+  const renderPageHeader = (count: number) => (
+    <header className="mb-6 sm:mb-8">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            {t('title')}
+          </h1>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            {pageCopy.subtitle}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+          <span className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border/70 bg-card px-3.5 text-muted-foreground">
+            <span className="font-medium">{pageCopy.totalLabel}</span>
+            <span className="font-semibold text-foreground tabular-nums">{count}</span>
+          </span>
+          {total > pageSize && (
+            <span className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border/70 bg-card px-3.5 text-muted-foreground">
+              <span className="font-medium">{pageCopy.pageLabel}</span>
+              <span className="font-semibold text-foreground tabular-nums">{safeCurrentPage}/{totalPages}</span>
+            </span>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+
+  const renderPageShell = (children: ReactNode, showFooter = false) => (
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto max-w-7xl px-4 pb-12 pt-8 sm:px-6 lg:px-8 lg:pb-16">
+        {children}
+      </div>
+      {showFooter && <FooterSection />}
+    </div>
+  );
 
   const renderRecipeGridSkeleton = () => (
-    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+    <div className="columns-1 gap-6 md:columns-2 lg:columns-3">
       {Array.from({ length: 6 }).map((_, index) => (
-        <Card
+        <RecipeListCardSkeleton
           key={`my-recipes-skeleton-${index}`}
-          className="overflow-hidden border-0 bg-card/80 shadow-lg backdrop-blur-sm"
-        >
-          <Skeleton className="aspect-[3/2] w-full rounded-none" />
-          <div className="space-y-3 p-6">
-            <Skeleton className="h-6 w-3/4" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-5/6" />
-            <div className="flex items-center gap-3 pt-1">
-              <Skeleton className="h-3 w-14" />
-              <Skeleton className="h-3 w-12" />
-              <Skeleton className="h-3 w-16" />
-            </div>
-            <Skeleton className="h-3 w-24" />
-          </div>
-        </Card>
+          layout="overlay"
+          mediaClassName={getMasonryMediaClass(index)}
+          className="mb-6 break-inside-avoid"
+        />
       ))}
     </div>
   );
 
   // 显示用户加载状态
   if (authLoading) {
-    return (
-      <div className="min-h-screen bg-linear-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-8">
-          {/* Header Section */}
-          <div className="mb-8">
-            <div className="flex items-center gap-4 mb-6">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleGoBack}
-                className="h-10 w-10 rounded-full transition-all duration-200 hover:bg-muted/70"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <h1 className="text-3xl font-bold text-foreground">
-                {t('title')}
-              </h1>
-            </div>
-          </div>
-          
-          <div className="space-y-8">
-            {renderRecipeGridSkeleton()}
-            <div className="flex justify-center">
-              <Skeleton className="h-10 w-56 rounded-full" />
-            </div>
+    return renderPageShell(
+      <>
+        {renderPageHeader(total)}
+        <div className="space-y-8">
+          {renderRecipeGridSkeleton()}
+          <div className="flex justify-center">
+            <Skeleton className="h-10 w-56 rounded-full" />
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   // 如果用户未登录，显示加载状态等待重定向
   if (!authLoading && !user) {
-    return (
-      <div className="min-h-screen bg-linear-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-8">
-          <div className="space-y-8">
-            {renderRecipeGridSkeleton()}
-            <div className="flex justify-center">
-              <Skeleton className="h-10 w-56 rounded-full" />
-            </div>
-          </div>
+    return renderPageShell(
+      <div className="space-y-8">
+        {renderRecipeGridSkeleton()}
+        <div className="flex justify-center">
+          <Skeleton className="h-10 w-56 rounded-full" />
         </div>
       </div>
     );
   }
   
   if (loading) {
-    return (
-      <div className="min-h-screen bg-linear-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-8">
-          {/* Header Section */}
-          <div className="mb-8">
-            <div className="flex items-center gap-4 mb-6">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleGoBack}
-                className="h-10 w-10 rounded-full transition-all duration-200 hover:bg-muted/70"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <h2 className="text-3xl font-bold text-foreground flex items-center">
-                  {t('title')}
-                  <span className="text-lg font-normal text-muted-foreground ml-2 flex items-center">
-                    ({total})
-                  </span>
-              </h2>
-            </div>
-          </div>
-          
-          <div className="space-y-8">
-            {renderRecipeGridSkeleton()}
-            <div className="flex justify-center">
-              <Skeleton className="h-10 w-56 rounded-full" />
-            </div>
+    return renderPageShell(
+      <>
+        {renderPageHeader(total)}
+        <div className="space-y-8">
+          {renderRecipeGridSkeleton()}
+          <div className="flex justify-center">
+            <Skeleton className="h-10 w-56 rounded-full" />
           </div>
         </div>
-        <FooterSection />
-      </div>
+      </>,
+      true
     );
   }
 
-  return (
-    <div className="min-h-screen bg-linear-to-br from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-8">
-        {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleGoBack}
-              className="h-10 w-10 rounded-full transition-all duration-200 hover:bg-muted/70"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h2 className="text-3xl font-bold text-foreground flex items-center">
-                {t('title')}
-                <span className="text-lg font-normal text-muted-foreground ml-2 flex items-center">
-                  ({total})
-                </span>
+  return renderPageShell(
+    <>
+      {renderPageHeader(total)}
+
+      {recipes.length === 0 ? (
+        <div className="mx-auto max-w-2xl">
+          <Card className="rounded-3xl border border-border/75 bg-card/95 p-8 text-center shadow-sm sm:p-10">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-primary/20 to-primary/8">
+              <ChefHat className="h-10 w-10 text-primary" />
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">
+              {t('emptyState.title')}
             </h2>
-          </div>
-        </div>
-        
-        {recipes.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="max-w-md mx-auto">
-              <div className="w-24 h-24 bg-linear-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <ChefHat className="h-12 w-12 text-muted-foreground" />
-              </div>
-              <h2 className="text-2xl font-bold mb-3 text-foreground">{t('emptyState.title')}</h2>
-              <p className="text-muted-foreground mb-8 leading-relaxed">
-                {t('emptyState.description')}
-              </p>
-              <Button asChild size="lg" className="bg-linear-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
-                <Link href="/">{t('emptyState.action')}</Link>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+              {t('emptyState.description')}
+            </p>
+            <div className="mt-8">
+              <Button
+                asChild
+                size="lg"
+                className="h-11 bg-linear-to-r from-primary to-[--color-primary-90] px-6"
+              >
+                <Link href={`/${locale}`}>{t('emptyState.action')}</Link>
               </Button>
             </div>
-          </div>
-        ) : (
-          <>
-            {/* Grid Layout - 与 explore 页面保持一致 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {recipes.map((recipe) => {
-                const normalizedDifficulty = normalizeDifficulty(recipe.difficulty);
-                return (
-                  <Card
-                    key={recipe.id}
-                    className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card/90 shadow-md shadow-slate-200/60 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-xl hover:shadow-orange-100/50 dark:hover:border-orange-500/40 dark:hover:shadow-slate-900/70"
-                  >
-                  {/* Image Container */}
-                  <div className="relative aspect-[3/2] overflow-hidden">
-                    <Link
-                      href={`/${locale}/recipe/${recipe.id}`}
-                      className="absolute inset-0 z-10 block cursor-pointer"
-                      prefetch={true}
-                      aria-label={recipe.title}
-                    >
-                      {recipe.imagePath ? (
-                        <Image
-                          src={getImageUrl(recipe.imagePath)}
-                          alt={recipe.title}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          unoptimized={true}
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.onerror = null;
-                            target.src = '/images/recipe-placeholder-bg.png';
-                          }}
-                        />
-                      ) : (
-                        <Image
-                          src="/images/recipe-placeholder-bg.png"
-                          alt="Recipe placeholder background"
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          unoptimized={true}
-                        />
-                      )}
-                      <div className="absolute inset-0 bg-linear-to-t from-slate-950/65 via-slate-950/10 to-transparent opacity-75 transition-opacity duration-300 group-hover:opacity-95" />
-                    </Link>
-
-                    {recipe.createdAt && (
-                      <span className="absolute left-3 top-3 z-20 inline-flex items-center gap-1 rounded-full border border-white/40 bg-black/45 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
+          </Card>
+        </div>
+      ) : (
+        <>
+          <div className="columns-1 gap-6 md:columns-2 lg:columns-3">
+            {recipes.map((recipe) => {
+              const normalizedDifficulty = normalizeDifficulty(recipe.difficulty);
+              return (
+                <RecipeListCard
+                  key={recipe.id}
+                  recipe={recipe}
+                  href={`/${locale}/recipe/${recipe.id}?source=my-recipes`}
+                  minsLabel={tRecipe('mins')}
+                  difficultyLabel={recipe.difficulty ? tRecipe(normalizedDifficulty) : undefined}
+                  layout="overlay"
+                  mediaClassName={getMasonryMediaClass(recipe.id)}
+                  className="mb-6 break-inside-avoid"
+                  topLeftContent={
+                    recipe.createdAt ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-white/45 bg-slate-950/50 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
                         <Calendar className="h-3.5 w-3.5" />
                         {formatDate(recipe.createdAt)}
                       </span>
-                    )}
+                    ) : undefined
+                  }
+                  topRightContent={
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      aria-label={t('delete')}
+                      className="h-9 w-9 cursor-pointer rounded-full border border-white/35 bg-destructive/90 text-destructive-foreground shadow-md transition-all duration-200 hover:bg-destructive md:translate-y-1 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleDeleteClick(recipe);
+                      }}
+                      disabled={deleting === recipe.id}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive-foreground" />
+                    </Button>
+                  }
+                />
+              );
+            })}
+          </div>
 
-                    <div className="absolute right-3 top-3 z-20">
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        aria-label={t('delete')}
-                        className="h-10 w-10 cursor-pointer rounded-full border-0 bg-destructive/90 text-destructive-foreground shadow-md transition-all duration-200 hover:bg-destructive md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleDeleteClick(recipe);
-                        }}
-                        disabled={deleting === recipe.id}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive-foreground" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  {/* Content - 与 explore 页面保持一致 */}
-                  <div className="space-y-4 p-5 md:p-6">
-                    <h3 className="line-clamp-2 text-lg font-semibold leading-snug text-foreground transition-colors group-hover:text-orange-600 dark:group-hover:text-orange-300">
-                      <Link 
-                        href={`/${locale}/recipe/${recipe.id}`} 
-                        className="block cursor-pointer"
-                        prefetch={true}
-                      >
-                        {recipe.title}
-                      </Link>
-                    </h3>
-                    
-                    {/* 描述 - 与 explore 页面保持一致 */}
-                    {recipe.description && (
-                      <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                        {recipe.description}
-                      </p>
-                    )}
-                    
-                    {/* Meta Info - 与 explore 页面保持一致 */}
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                      {recipe.cookingTime && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-muted/90 px-2.5 py-1">
-                          <Clock className="h-3.5 w-3.5" />
-                          {recipe.cookingTime} {tRecipe('mins')}
-                        </span>
-                      )}
-                      {recipe.servings && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-muted/90 px-2.5 py-1">
-                          <Users className="h-3.5 w-3.5" />
-                          <span>{recipe.servings}</span>
-                        </span>
-                      )}
-                      {recipe.difficulty && (
-                        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 ring-1 ${getDifficultyBadgeTone(normalizedDifficulty)}`}>
-                          <ChefHat className="h-3.5 w-3.5" />
-                          {tRecipe(normalizedDifficulty)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  </Card>
-                );
-              })}
+          {total > pageSize && (
+            <div className="mt-8 border-t border-border/70 pt-6">
+              <p className="text-center text-sm text-muted-foreground">
+                {isZh ? `第 ${safeCurrentPage} / ${totalPages} 页` : `Page ${safeCurrentPage} of ${totalPages}`}
+              </p>
+
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                  disabled={safeCurrentPage === 1}
+                  className="h-10 px-4"
+                >
+                  {t('pagination.previous')}
+                </Button>
+
+                {visiblePages.map((pageNum) => (
+                  <Button
+                    key={pageNum}
+                    variant={safeCurrentPage === pageNum ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPage(pageNum)}
+                    className="h-10 w-10"
+                  >
+                    {pageNum}
+                  </Button>
+                ))}
+
+                <Button
+                  variant="outline"
+                  onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={safeCurrentPage >= totalPages}
+                  className="h-10 px-4"
+                >
+                  {t('pagination.next')}
+                </Button>
+              </div>
             </div>
-            
-            {/* No More Data Message */}
-            {recipes.length > 0 && (
-              <div className="mt-12 text-center">
-                <p className="text-muted-foreground text-sm">
-                  {t('allRecipesDisplayed')}
-                </p>
-              </div>
-            )}
-            
-            {/* Pagination */}
-            {total > 12 && (
-              <div className="flex justify-center mt-8 pt-6">
-                <div className="flex items-center gap-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setPage(page - 1)}
-                    disabled={page === 1}
-                    className="px-6"
-                  >
-                    {t('pagination.previous')}
-                  </Button>
-                  <div className="flex items-center gap-2">
-                    {Array.from({ length: Math.min(5, Math.ceil(total / 12)) }, (_, i) => {
-                      const pageNum = i + 1;
-                      return (
-                        <Button
-                          key={pageNum}
-                          variant={page === pageNum ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setPage(pageNum)}
-                          className="w-10 h-10"
-                        >
-                          {pageNum}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => setPage(page + 1)}
-                    disabled={page >= Math.ceil(total / 12)}
-                    className="px-6"
-                  >
-                    {t('pagination.next')}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </>
-        )}
+          )}
+        </>
+      )}
 
-        {/* Delete Confirmation Dialog */}
-        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
-                  <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                </div>
-                {t('deleteDialog.title')}
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground">
-                {t('deleteDialog.description', { title: recipeToDelete?.title })}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="gap-2">
-              <Button
-                variant="outline"
-                onClick={handleDeleteCancel}
-                disabled={deleting === recipeToDelete?.id}
-                className="flex-1"
-              >
-                {t('deleteDialog.cancel')}
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDeleteConfirm}
-                disabled={deleting === recipeToDelete?.id}
-                className="flex-1"
-              >
-                {deleting === recipeToDelete?.id ? t('deleteDialog.deleting') : t('deleteDialog.confirm')}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-      <FooterSection />
-    </div>
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
+                <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+              </div>
+              {t('deleteDialog.title')}
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              {t('deleteDialog.description', { title: recipeToDelete?.title })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={handleDeleteCancel}
+              disabled={deleting === recipeToDelete?.id}
+              className="flex-1"
+            >
+              {t('deleteDialog.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={deleting === recipeToDelete?.id}
+              className="flex-1"
+            >
+              {deleting === recipeToDelete?.id ? t('deleteDialog.deleting') : t('deleteDialog.confirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>,
+    true
   );
 }

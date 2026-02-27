@@ -284,17 +284,17 @@
   "faq": {
     "title": "Frequently Asked Questions",
     "q1": "Is this service completely free?",
-    "a1": "New users receive 100 credits upon registration. Recipe generation consumes 1 credit per recipe, and image generation consumes 2 credits per image. We will soon launch service packages and reward systems to provide more ways to earn credits.",
+    "a1": "RecipeEasy uses a credit system. Recipe generation costs 1 credit per recipe, and image generation costs 2 credits per image. Signed-in users can receive a daily login bonus of 3 credits, which expire after 24 hours if unused.",
     "q2": "Can I add ingredients that aren't listed?",
-    "a2": "Yes! Simply type any ingredient into the search box and press Enter. Custom ingredients show up with a white background and yellow text, so you can easily spot them. Our AI will create recipes with whatever ingredients you add!",
+    "a2": "Not yet. The current version supports selecting ingredients from the built-in ingredient library by category. We are evaluating support for manual custom ingredient input in a future update.",
     "q3": "How are recipe images generated?",
-    "a3": "We first use AI to generate recipes based on the ingredients you select and input. Once the recipe is created, we use AI again to generate corresponding images based on the recipe name.",
+    "a3": "After your recipe is generated, we use AI image models to create a dish image from the recipe title and ingredient context. Results can vary between generations due to model randomness.",
     "q4": "How long does the transformation process take?",
-    "a4": "Most recipes are generated in 20-60 seconds. The exact time depends on the number of ingredients selected, recipe count, AI model chosen, and current server load. More ingredients or multiple recipes may require additional processing time. During peak hours, you may experience slightly longer wait times due to high demand.",
+    "a4": "Recipe generation usually completes within tens of seconds. Image generation can take longer and may reach a few minutes during peak traffic. Actual time depends on model response speed, queue load, and network conditions.",
     "q5": "How can I provide feedback or report issues?",
     "a5": "We'd love to hear from you! Please share your feedback or report any problems by contacting our support team at contact@recipe-easy.com. Your input helps us continuously improve our service.",
     "q6": "Can I use the generated images commercially?",
-    "a6": "Yes. The generated images are free for both personal and commercial use, but please ensure not to infringe on other brands' copyright."
+    "a6": "You may use generated outputs for personal or commercial purposes to the extent permitted by law and our Terms. You are responsible for confirming legal and intellectual property compliance before commercial use."
   },
   "footer": {
     "about": "About",

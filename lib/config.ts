@@ -38,7 +38,6 @@ export const APP_CONFIG = {
   generationTimeout: 180000,
   
   // 积分配置
-  initialCredits: 100,
   generationCost: 1,
   recipeGenerationCost: 1,
   imageGenerationCost: 2,

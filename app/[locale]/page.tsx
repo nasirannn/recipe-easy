@@ -31,8 +31,8 @@ export default function Home() {
       <AnchorHandler />
       <HeroSection />
       <div className="home-sections">
-        <TutorialSection />
         <RecipesSection />
+        <TutorialSection />
         <IntroductionSection />
         <FeaturesSection />
         <FAQSection />

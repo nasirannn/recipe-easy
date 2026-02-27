@@ -1,6 +1,7 @@
 "use client";
 import { useState } from 'react';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -37,7 +38,9 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
   const [copiedSection, setCopiedSection] = useState<
     'ingredients' | 'seasoning' | 'instructions' | 'full' | 'link' | null
   >(null);
+  const searchParams = useSearchParams();
   const isZh = locale.toLowerCase().startsWith('zh');
+  const isFromMyRecipes = searchParams.get('source') === 'my-recipes';
 
   // 解析JSON字符串为数组
   const parseJsonArray = (data: unknown): string[] => {
@@ -167,12 +170,23 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
     ? {
         home: '首页',
         recipes: '菜谱',
+        myRecipes: '我的菜谱',
         navLabel: '面包屑导航',
       }
     : {
         home: 'Home',
         recipes: 'Recipes',
+        myRecipes: 'My Recipes',
         navLabel: 'Breadcrumb',
+      };
+  const secondLevelBreadcrumb = isFromMyRecipes
+    ? {
+        href: `/${locale}/my-recipes`,
+        label: breadcrumbLabels.myRecipes,
+      }
+    : {
+        href: `/${locale}/recipes`,
+        label: breadcrumbLabels.recipes,
       };
 
   const renderBasicInfo = (variant: 'cover' | 'card') => {
@@ -297,10 +311,10 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
               </li>
               <li>
                 <Link
-                  href={`/${locale}/recipes`}
+                  href={secondLevelBreadcrumb.href}
                   className="rounded-sm px-1 py-0.5 transition-colors hover:text-foreground"
                 >
-                  {breadcrumbLabels.recipes}
+                  {secondLevelBreadcrumb.label}
                 </Link>
               </li>
               <li aria-hidden="true">

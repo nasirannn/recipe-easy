@@ -27,8 +27,8 @@ export default async function RootPage() {
     <NextIntlClientProvider locale="en" messages={messages}>
       <AnchorHandler />
       <HeroSection />
-      <TutorialSection />
       <RecipesSection />
+      <TutorialSection />
       <IntroductionSection />
       <FeaturesSection />
       <FAQSection />

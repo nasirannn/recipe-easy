@@ -60,7 +60,7 @@ We use information to:
 - Authenticate users and keep the service secure
 - Generate recipes and images based on your input
 - Save, list, update, translate, and delete recipe records
-- Manage credits, including initial credits and daily login bonus logic
+- Manage credits, including daily login bonus logic
 - Support profile features (display name and avatar)
 - Diagnose failures, prevent abuse, and improve reliability
 - Understand traffic and feature usage trends

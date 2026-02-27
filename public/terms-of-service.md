@@ -35,7 +35,6 @@ Features may change over time.
 Recipe Easy uses an internal credits system.
 
 Current product rules (as of February 27, 2026):
-- New users start with **100 credits**
 - Daily login bonus may grant **3 credits** with a 24-hour validity window
 - Generating one recipe costs **1 credit**
 - Generating one image costs **2 credits**
