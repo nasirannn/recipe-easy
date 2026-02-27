@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { RecipeListCard, RecipeListCardSkeleton } from '@/components/recipe/recipe-list-card';
 
 import { Recipe } from '@/lib/types';
+import { withLocalePath } from '@/lib/utils/locale-path';
 
 type DifficultyFilter = 'all' | 'easy' | 'medium' | 'hard';
 const masonryMediaClasses = ['aspect-[4/5]', 'aspect-[3/4]', 'aspect-[5/6]', 'aspect-square', 'aspect-[10/13]'] as const;
@@ -234,7 +235,7 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
                 <RecipeListCard
                   key={recipe.id}
                   recipe={recipe}
-                  href={`/${locale}/recipe/${recipe.id}`}
+                  href={withLocalePath(locale, `/recipe/${recipe.id}`)}
                   minsLabel={tRecipe('mins')}
                   difficultyLabel={recipe.difficulty ? tRecipe(normalizedDifficulty) : undefined}
                   layout="overlay"

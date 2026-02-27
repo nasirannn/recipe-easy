@@ -25,6 +25,7 @@ import { useTranslations } from 'next-intl';
 import { Recipe } from '@/lib/types';
 import { getImageUrl } from '@/lib/config';
 import { cn } from '@/lib/utils';
+import { withLocalePath } from '@/lib/utils/locale-path';
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -41,6 +42,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
   const searchParams = useSearchParams();
   const isZh = locale.toLowerCase().startsWith('zh');
   const isFromMyRecipes = searchParams.get('source') === 'my-recipes';
+  const homeHref = withLocalePath(locale);
 
   // 解析JSON字符串为数组
   const parseJsonArray = (data: unknown): string[] => {
@@ -181,11 +183,11 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
       };
   const secondLevelBreadcrumb = isFromMyRecipes
     ? {
-        href: `/${locale}/my-recipes`,
+        href: withLocalePath(locale, '/my-recipes'),
         label: breadcrumbLabels.myRecipes,
       }
     : {
-        href: `/${locale}/recipes`,
+        href: withLocalePath(locale, '/recipes'),
         label: breadcrumbLabels.recipes,
       };
 
@@ -300,7 +302,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
             <ol className="flex min-w-max items-center gap-1.5 text-sm text-muted-foreground">
               <li>
                 <Link
-                  href={`/${locale}`}
+                  href={homeHref}
                   className="rounded-sm px-1 py-0.5 transition-colors hover:text-foreground"
                 >
                   {breadcrumbLabels.home}

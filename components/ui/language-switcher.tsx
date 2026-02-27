@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { withLocalePath } from '@/lib/utils/locale-path';
 
 const languages = [
   { code: 'en', name: 'English' },
@@ -26,16 +27,17 @@ export function LanguageSwitcher({ className }: LanguageSwitcherProps) {
   const pathname = usePathname();
 
   const switchLanguage = (newLocale: string) => {
-    // Remove the current locale from the pathname
-    let pathWithoutLocale = pathname;
-    if (locale && pathname.startsWith(`/${locale}`)) {
-      pathWithoutLocale = pathname.replace(`/${locale}`, '');
-    } else if (pathname === '/' || pathname === '') {
-      pathWithoutLocale = '';
+    let pathWithoutLocale = pathname || '/';
+
+    if (pathWithoutLocale === '/en' || pathWithoutLocale === '/zh') {
+      pathWithoutLocale = '/';
+    } else if (pathWithoutLocale.startsWith('/en/')) {
+      pathWithoutLocale = pathWithoutLocale.replace(/^\/en/, '');
+    } else if (pathWithoutLocale.startsWith('/zh/')) {
+      pathWithoutLocale = pathWithoutLocale.replace(/^\/zh/, '');
     }
 
-    // Use window.location.href for full page reload to ensure proper language switching
-    const newUrl = `/${newLocale}${pathWithoutLocale}`;
+    const newUrl = withLocalePath(newLocale, pathWithoutLocale);
     window.location.href = newUrl;
   };
 

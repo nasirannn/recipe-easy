@@ -57,7 +57,7 @@ export const FAQSection = () => {
         <SectionHeader
           eyebrow="FAQ"
           title={t('title')}
-          className="mb-8 md:mb-12"
+          className="home-section-header"
         />
 
       <div className="mx-auto max-w-4xl space-y-3">

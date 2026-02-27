@@ -149,7 +149,7 @@ export const TestimonialSection = () => {
       <SectionHeader
         eyebrow={t('title')}
         title={t('subtitle')}
-        className="mb-8 md:mb-10"
+        className="home-section-header"
       />
       </div>
 

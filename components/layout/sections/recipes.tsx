@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { SectionHeader } from '@/components/layout/section-header';
 import { RecipeListCard, RecipeListCardSkeleton } from '@/components/recipe/recipe-list-card';
 import { Recipe } from '@/lib/types';
+import { withLocalePath } from '@/lib/utils/locale-path';
 
 type DifficultyFilter = 'all' | 'easy' | 'medium' | 'hard';
 
@@ -64,7 +65,7 @@ export const RecipesSection = () => {
           eyebrow={t('title')}
           title={t('subtitle')}
           description={t('description1')}
-          className="mb-8 md:mb-10"
+          className="home-section-header"
         />
 
         {isLoading ? (
@@ -86,7 +87,7 @@ export const RecipesSection = () => {
                 <RecipeListCard
                   key={recipe.id}
                   recipe={recipe}
-                  href={`/${locale}/recipe/${recipe.id}`}
+                  href={withLocalePath(locale, `/recipe/${recipe.id}`)}
                   minsLabel={tRecipe('mins')}
                   difficultyLabel={recipe.difficulty ? tRecipe(normalizedDifficulty) : undefined}
                   layout="overlay"

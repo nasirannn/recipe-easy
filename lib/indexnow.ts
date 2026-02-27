@@ -118,11 +118,10 @@ export async function submitUrlsToIndexNow(urls: string[]): Promise<boolean> {
 export async function submitMainPagesToIndexNow(): Promise<boolean> {
   const mainPages = [
     '/',
-    '/en',
     '/zh',
-    '/en/recipes',
+    '/recipes',
     '/zh/recipes',
-    '/en/my-recipes',
+    '/my-recipes',
     '/zh/my-recipes',
   ];
 

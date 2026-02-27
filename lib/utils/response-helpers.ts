@@ -124,15 +124,13 @@ export function createRootResponse(
       '/api/ingredients', 
       '/api/cuisines',
       '/api/recipes/public',     // 公开菜谱（推荐）
-      '/api/recipes/admin',      // 管理员菜谱（需要权限）
-      '/api/recipes',            // 通用菜谱（向后兼容）
+      '/api/recipes',            // 通用菜谱列表
       '/api/recipes/user/:userId', // 用户菜谱
       '/api/user-usage'
     ],
     security: {
       note: '建议使用分离的接口以提高安全性',
       public: '/api/recipes/public - 无需权限，只返回公开菜谱',
-      admin: '/api/recipes/admin - 需要管理员权限',
       user: '/api/recipes/user/:userId - 获取指定用户的菜谱'
     }
   }, { corsHeaders });

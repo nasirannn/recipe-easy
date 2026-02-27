@@ -56,7 +56,7 @@ export const FeaturesSection = () => {
           eyebrow="Capabilities"
           title={t('title')}
           description={t('description')}
-          className="mb-10 md:mb-14"
+          className="home-section-header"
         />
         
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 md:gap-6">

@@ -4,7 +4,7 @@ import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { Apple, Banana, Beef, Carrot, CheckCircle2, Cherry, Croissant, EggFried, Fish, Pizza, Sandwich, Soup } from "lucide-react";
 import { Recipe, RecipeFormData } from "@/lib/types";
 import { LanguageModel, ImageModel } from "@/lib/types";
 import { RecipeForm } from "@/components/ui/recipe-form";
@@ -17,6 +17,16 @@ import { useRecipeGeneration } from "@/hooks/use-recipe-generation";
 import { useImageGeneration } from "@/hooks/use-image-generation";
 import { useRecipeSave } from "@/hooks/use-recipe-save";
 import { toast } from "sonner";
+
+const floatingIconStyle = (
+  animationDelay: string,
+  lightColor: string,
+  darkColor: string
+): React.CSSProperties => ({
+  animationDelay,
+  ['--hero-icon-color' as any]: lightColor,
+  ['--hero-icon-color-dark' as any]: darkColor,
+});
 
 // 合并后的Hero Section Component
 export const HeroSection = () => {
@@ -246,9 +256,77 @@ export const HeroSection = () => {
       <div className="pointer-events-none absolute inset-0 z-0">
         <div className="absolute -top-36 left-[-18%] h-[28rem] w-[28rem] rounded-full bg-blue-400/18 blur-3xl dark:bg-blue-500/20" />
         <div className="absolute -top-40 right-[-14%] h-[30rem] w-[30rem] rounded-full bg-orange-300/20 blur-3xl dark:bg-orange-500/18" />
+        <div className="absolute inset-0" aria-hidden="true">
+          <div
+            className="hero-floating-icon hero-floating-icon-drift left-[3%] top-24 sm:left-[5%] md:top-28"
+            style={floatingIconStyle('-1.1s', 'rgb(249 115 22 / 0.58)', 'rgb(251 146 60 / 0.56)')}
+          >
+            <Carrot />
+          </div>
+          <div
+            className="hero-floating-icon hero-floating-icon-alt right-[4%] top-28 sm:right-[6%] md:top-32"
+            style={floatingIconStyle('-3.2s', 'rgb(59 130 246 / 0.56)', 'rgb(125 211 252 / 0.52)')}
+          >
+            <Fish />
+          </div>
+          <div
+            className="hero-floating-icon left-[7%] top-[56%] hidden sm:flex lg:left-[8%]"
+            style={floatingIconStyle('-2.4s', 'rgb(34 197 94 / 0.56)', 'rgb(74 222 128 / 0.5)')}
+          >
+            <Apple />
+          </div>
+          <div
+            className="hero-floating-icon hero-floating-icon-drift right-[8%] top-[58%] hidden sm:flex lg:right-[10%]"
+            style={floatingIconStyle('-4.6s', 'rgb(217 119 6 / 0.55)', 'rgb(252 211 77 / 0.52)')}
+          >
+            <Sandwich />
+          </div>
+          <div
+            className="hero-floating-icon hero-floating-icon-alt left-[18%] top-[14%] hidden xl:flex"
+            style={floatingIconStyle('-0.6s', 'rgb(244 63 94 / 0.56)', 'rgb(251 113 133 / 0.52)')}
+          >
+            <Cherry />
+          </div>
+          <div
+            className="hero-floating-icon right-[20%] top-[16%] hidden xl:flex"
+            style={floatingIconStyle('-5.1s', 'rgb(234 88 12 / 0.56)', 'rgb(253 186 116 / 0.52)')}
+          >
+            <Pizza />
+          </div>
+          <div
+            className="hero-floating-icon hero-floating-icon-alt left-[30%] top-[10%] hidden lg:flex"
+            style={floatingIconStyle('-2.8s', 'rgb(245 158 11 / 0.58)', 'rgb(253 224 71 / 0.52)')}
+          >
+            <EggFried />
+          </div>
+          <div
+            className="hero-floating-icon hero-floating-icon-drift right-[32%] top-[12%] hidden lg:flex"
+            style={floatingIconStyle('-3.7s', 'rgb(251 146 60 / 0.54)', 'rgb(253 186 116 / 0.5)')}
+          >
+            <Soup />
+          </div>
+          <div
+            className="hero-floating-icon left-[14%] bottom-[14%] hidden md:flex"
+            style={floatingIconStyle('-1.9s', 'rgb(180 83 9 / 0.54)', 'rgb(252 211 77 / 0.5)')}
+          >
+            <Croissant />
+          </div>
+          <div
+            className="hero-floating-icon hero-floating-icon-alt right-[14%] bottom-[12%] hidden md:flex"
+            style={floatingIconStyle('-4.9s', 'rgb(202 138 4 / 0.54)', 'rgb(250 204 21 / 0.5)')}
+          >
+            <Banana />
+          </div>
+          <div
+            className="hero-floating-icon left-[40%] top-[62%] hidden xl:flex"
+            style={floatingIconStyle('-6.3s', 'rgb(220 38 38 / 0.55)', 'rgb(248 113 113 / 0.5)')}
+          >
+            <Beef />
+          </div>
+        </div>
       </div>
 
-      <div className="relative z-10 home-inner pb-20 pt-24 sm:pt-28 md:pb-24 md:pt-32">
+      <div className="relative z-10 home-inner pb-16 pt-24 sm:pt-28 md:pb-20 md:pt-32 xl:pb-24">
         <div className="mx-auto max-w-5xl">
           <div className="text-center">
             <span className="home-eyebrow">

@@ -211,11 +211,19 @@
 
 .home-section,
 .home-section-compact {
-  padding-top: 5rem;
-  padding-bottom: 5rem;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
+  .home-section,
+  .home-section-compact {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+}
+
+@media (min-width: 1280px) {
   .home-section,
   .home-section-compact {
     padding-top: 6rem;
@@ -288,6 +296,26 @@
   color: rgb(148 163 184);
 }
 
+.home-section-header {
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .home-section-header {
+    margin-bottom: 2.5rem;
+  }
+}
+
+.home-section-header-tight {
+  margin-bottom: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .home-section-header-tight {
+    margin-bottom: 1.5rem;
+  }
+}
+
 .home-card {
   border: 1px solid rgb(226 232 240 / 0.8);
   border-radius: 1.25rem;
@@ -300,6 +328,69 @@
   border-color: rgb(51 65 85 / 0.9);
   background: rgb(15 23 42 / 0.72);
   box-shadow: 0 14px 36px rgb(2 6 23 / 0.4);
+}
+
+.hero-floating-icon {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--hero-icon-color, rgb(71 85 105 / 0.42));
+  filter: drop-shadow(0 8px 16px rgb(15 23 42 / 0.14));
+  animation: heroFloat 9s ease-in-out infinite;
+  will-change: transform;
+}
+
+.hero-floating-icon svg {
+  height: 1.5rem;
+  width: 1.5rem;
+  stroke-width: 2;
+}
+
+.hero-floating-icon-alt {
+  animation-name: heroFloatAlt;
+  animation-duration: 10.5s;
+}
+
+.hero-floating-icon-drift {
+  animation-name: heroFloatDrift;
+  animation-duration: 11s;
+}
+
+.dark .hero-floating-icon {
+  color: var(--hero-icon-color-dark, rgb(226 232 240 / 0.4));
+  filter: drop-shadow(0 8px 16px rgb(2 6 23 / 0.5));
+}
+
+@keyframes heroFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-2deg);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0) rotate(2deg);
+  }
+}
+
+@keyframes heroFloatAlt {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(1deg);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0) rotate(-3deg);
+  }
+}
+
+@keyframes heroFloatDrift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(6px, -9px, 0) rotate(3deg);
+  }
 }
 
 /* 容器样式 */
@@ -439,6 +530,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hero-floating-icon,
+  .hero-floating-icon-alt,
+  .hero-floating-icon-drift {
+    animation: none;
+  }
+
   .ingredient-option:hover .ingredient-option-icon {
     animation: none;
   }

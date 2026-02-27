@@ -116,7 +116,7 @@ export const RecipeListCard = ({
             </h3>
 
             {recipe.description ? (
-              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white/90 drop-shadow-[0_1px_1px_rgba(2,6,23,0.55)]">
+              <p className="mt-2 line-clamp-1 text-sm leading-relaxed text-white/90 drop-shadow-[0_1px_1px_rgba(2,6,23,0.55)]">
                 {recipe.description}
               </p>
             ) : null}
@@ -165,7 +165,7 @@ export const RecipeListCard = ({
           </h3>
 
           {recipe.description ? (
-            <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+            <p className="line-clamp-1 text-sm leading-relaxed text-muted-foreground">
               {recipe.description}
             </p>
           ) : null}
@@ -236,7 +236,6 @@ export const RecipeListCardSkeleton = ({
         <div className="space-y-3 p-5 sm:p-6">
           <Skeleton className="h-6 w-4/5" />
           <Skeleton className="h-4 w-11/12" />
-          <Skeleton className="h-4 w-8/12" />
           <div className="flex items-center gap-2 pt-1">
             <Skeleton className="h-6 w-20 rounded-full" />
             <Skeleton className="h-6 w-16 rounded-full" />

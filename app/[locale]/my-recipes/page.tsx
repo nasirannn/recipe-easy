@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FooterSection } from '@/components/layout/sections/footer';
 import { RecipeListCard, RecipeListCardSkeleton } from '@/components/recipe/recipe-list-card';
+import { withLocalePath } from '@/lib/utils/locale-path';
 
 interface RecipeWithMetadata extends Recipe {
   createdAt?: string;
@@ -52,6 +53,7 @@ export default function MyRecipesPage() {
   const t = useTranslations('myRecipes');
   const tRecipe = useTranslations('recipeDisplay');
   const locale = useLocale();
+  const homeHref = withLocalePath(locale);
   const isZh = locale.toLowerCase().startsWith('zh');
   const pageSize = 12;
   const [recipes, setRecipes] = useState<RecipeWithMetadata[]>([]);
@@ -85,9 +87,9 @@ export default function MyRecipesPage() {
   // 处理未登录用户的重定向
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push(`/${locale}`);
+      router.push(homeHref);
     }
-  }, [authLoading, user, router, locale]);
+  }, [authLoading, user, router, homeHref]);
   
   const loadRecipes = useCallback(async () => {
     if (!user?.id) return;
@@ -303,7 +305,7 @@ export default function MyRecipesPage() {
                 size="lg"
                 className="h-11 bg-linear-to-r from-primary to-[--color-primary-90] px-6"
               >
-                <Link href={`/${locale}`}>{t('emptyState.action')}</Link>
+                <Link href={homeHref}>{t('emptyState.action')}</Link>
               </Button>
             </div>
           </Card>
@@ -317,7 +319,7 @@ export default function MyRecipesPage() {
                 <RecipeListCard
                   key={recipe.id}
                   recipe={recipe}
-                  href={`/${locale}/recipe/${recipe.id}?source=my-recipes`}
+                  href={withLocalePath(locale, `/recipe/${recipe.id}?source=my-recipes`)}
                   minsLabel={tRecipe('mins')}
                   difficultyLabel={recipe.difficulty ? tRecipe(normalizedDifficulty) : undefined}
                   layout="overlay"

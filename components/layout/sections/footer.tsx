@@ -6,11 +6,13 @@ import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { useState } from 'react';
 import { ContactDialog } from '@/components/ui/contact-dialog';
+import { withLocalePath } from '@/lib/utils/locale-path';
 
 export const FooterSection = () => {
   const t = useTranslations('footer');
   const tContact = useTranslations('contactDialog');
   const locale = useLocale();
+  const homeHref = withLocalePath(locale);
   const [showContactDialog, setShowContactDialog] = useState(false);
 
   return (
@@ -20,7 +22,7 @@ export const FooterSection = () => {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10">
           {/* First column: Logo and description */}
           <div className="text-center md:text-left">
-            <Link href="/" className="inline-flex items-center gap-2 text-base font-semibold tracking-tight sm:text-lg">
+            <Link href={homeHref} className="inline-flex items-center gap-2 text-base font-semibold tracking-tight sm:text-lg">
               <div className="relative w-7 h-7 sm:w-8 sm:h-8">
                 <Image 
                   src="/images/recipe-easy-logo.svg"
@@ -44,7 +46,7 @@ export const FooterSection = () => {
               <div className="flex flex-col gap-2 shrink-0 text-center md:text-left">
                 <h3 className="text-base font-semibold">{t('about')}</h3>
                 <div>
-                  <Link href="#features" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  <Link href={withLocalePath(locale, '#features')} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                     {t('features')}
                   </Link>
                 </div>
@@ -62,7 +64,7 @@ export const FooterSection = () => {
                   </button>
                 </div>
                 <div>
-                  <Link href="#faq" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  <Link href={withLocalePath(locale, '#faq')} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                     {t('faq')}
                   </Link>
                 </div>
@@ -113,10 +115,10 @@ export const FooterSection = () => {
             {t('copyright')}
           </h3>
           <div className="flex gap-6 text-sm">
-            <Link href={`/${locale}/privacy`} className="text-muted-foreground transition-colors hover:text-foreground">
+            <Link href={withLocalePath(locale, '/privacy')} className="text-muted-foreground transition-colors hover:text-foreground">
               {t('privacy')}
             </Link>
-            <Link href={`/${locale}/terms`} className="text-muted-foreground transition-colors hover:text-foreground">
+            <Link href={withLocalePath(locale, '/terms')} className="text-muted-foreground transition-colors hover:text-foreground">
               {t('terms')}
             </Link>
           </div>

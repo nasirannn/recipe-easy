@@ -25,6 +25,7 @@ import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { withLocalePath } from "@/lib/utils/locale-path";
 
 interface RouteProps {
   href: string;
@@ -45,6 +46,7 @@ export const Navbar = () => {
   const tCredits = useTranslations('credits');
   const locale = useLocale();
   const isHomePage = pathname === `/${locale}` || pathname === "/";
+  const homeHref = withLocalePath(locale);
 
   React.useEffect(() => {
     if (!isHomePage) {
@@ -111,15 +113,15 @@ export const Navbar = () => {
   }
 
   const routeList: RouteProps[] = [
-    { href: `/${locale}/recipes`, label: t('explore'), icon: <Compass className="h-4 w-4" /> },
-    { href: `/${locale}#features`, label: t('features'), icon: <Star className="h-4 w-4" /> },
-    { href: `/${locale}#faq`, label: t('faq'), icon: <HelpCircle className="h-4 w-4" /> },
+    { href: withLocalePath(locale, '/recipes'), label: t('explore'), icon: <Compass className="h-4 w-4" /> },
+    { href: withLocalePath(locale, '#features'), label: t('features'), icon: <Star className="h-4 w-4" /> },
+    { href: withLocalePath(locale, '#faq'), label: t('faq'), icon: <HelpCircle className="h-4 w-4" /> },
   ];
 
   const handleLogout = async () => {
     try {
       await signOut();
-      router.push(`/${locale}`);
+      router.push(homeHref);
     } catch (error) {
       // Logout error
     }
@@ -148,7 +150,7 @@ export const Navbar = () => {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
-              href={`/${locale}`}
+              href={homeHref}
               className="flex items-center gap-2.5 rounded-full px-2 py-1.5 transition-colors hover:bg-primary/5"
             >
               <div className="relative h-9 w-9">
@@ -248,7 +250,7 @@ export const Navbar = () => {
                       <DropdownMenuSeparator className="my-2" />
 
                       <DropdownMenuItem
-                        onClick={() => router.push(`/${locale}/my-recipes`)}
+                        onClick={() => router.push(withLocalePath(locale, '/my-recipes'))}
                         className="cursor-pointer rounded-lg px-2.5 py-2.5"
                       >
                         <BookOpen className="h-4 w-4 text-primary" />
@@ -298,7 +300,7 @@ export const Navbar = () => {
                     {/* 移动版顶部 */}
                     <div className="p-4 border-b">
                       <div className="flex items-center justify-between">
-                        <Link href="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
+                        <Link href={homeHref} className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
                           <div className="relative w-8 h-8">
                             <Image
                               src="/images/recipe-easy-logo.svg"
@@ -378,7 +380,7 @@ export const Navbar = () => {
                         {/* 我的菜谱链接 - 仅登录用户显示 */}
                         {!loading && user && (
                           <Link
-                            href={`/${locale}/my-recipes`}
+                            href={withLocalePath(locale, '/my-recipes')}
                             className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium hover:bg-accent hover:text-primary transition-colors"
                             onClick={() => setIsOpen(false)}
                           >
