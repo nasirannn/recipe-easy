@@ -124,8 +124,8 @@ export const IngredientSelector = ({
                       onIngredientSelect(ingredient, sourceRect);
                     }}
                     className={cn(
-                      "ingredient-option group inline-flex min-h-[116px] w-[92px] shrink-0 flex-col items-center justify-start gap-2 rounded-xl bg-background/85 px-2.5 py-2.5 text-center transition-all duration-200",
-                      "hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
+                      "ingredient-option group inline-flex min-h-[116px] w-[92px] shrink-0 flex-col items-center justify-start gap-2 rounded-xl border border-border/65 bg-card/95 px-2.5 py-2.5 text-center shadow-sm transition-[background-color,border-color,box-shadow] duration-200",
+                      "hover:border-primary/35 hover:bg-primary/5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
                     )}
                   >
                     {iconPath ? (

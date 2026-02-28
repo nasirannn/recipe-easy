@@ -566,7 +566,7 @@ export const RecipeForm = ({
         {Array.from({ length: count }).map((_, index) => (
           <div
             key={`ingredient-skeleton-${index}`}
-            className="inline-flex min-h-[116px] w-[92px] shrink-0 flex-col items-center justify-start gap-2 rounded-xl bg-background/70 px-2.5 py-2.5"
+            className="inline-flex min-h-[116px] w-[92px] shrink-0 flex-col items-center justify-start gap-2 rounded-xl border border-border/65 bg-card/95 px-2.5 py-2.5 shadow-sm"
           >
             <Skeleton className="h-11 w-11 rounded-full" />
             <Skeleton className="h-3 w-14 rounded-sm" />
@@ -583,7 +583,7 @@ export const RecipeForm = ({
       <>
         {!isMobile ? (
             <div className="flex flex-col gap-4">
-              <section className="rounded-xl bg-background/65 p-2">
+              <section className="rounded-xl bg-muted/45 p-2">
                 <div className="grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-8">
                   {Object.entries(CATEGORIES_CONFIG).map(([categoryId, category]) => {
                     const Icon = category.icon;
@@ -617,18 +617,8 @@ export const RecipeForm = ({
               </section>
 
               <div className="grid grid-cols-[minmax(0,1fr)_19.5rem] gap-2">
-                <div className="relative overflow-hidden rounded-2xl bg-background/60 p-2">
-                  <div className="pointer-events-none absolute inset-0 z-0 opacity-95 dark:opacity-40">
-                    <Image
-                      src="/images/ingredients-icon/grain-texture.png"
-                      alt=""
-                      fill
-                      className="object-cover"
-                      unoptimized={true}
-                    />
-                  </div>
-
-                  <section className="relative z-10 flex h-[440px] min-h-0 flex-col overflow-hidden">
+                <div className="relative overflow-hidden rounded-2xl bg-muted/45 p-2">
+                  <section className="flex h-[440px] min-h-0 flex-col overflow-hidden">
                     <div className="flex h-full min-h-0 flex-col">
                       <div className="min-h-0 flex-1 p-2">
                         {ingredientsLoading ? (
@@ -671,18 +661,8 @@ export const RecipeForm = ({
                   </section>
                 </div>
 
-                <div className="relative overflow-hidden rounded-2xl bg-background/60 p-2">
-                  <div className="pointer-events-none absolute inset-0 z-0 opacity-95 dark:opacity-40">
-                    <Image
-                      src="/images/ingredients-icon/grain-texture.png"
-                      alt=""
-                      fill
-                      className="object-cover"
-                      unoptimized={true}
-                    />
-                  </div>
-
-                  <aside className="relative z-10 flex h-[440px] min-h-0 flex-col overflow-hidden">
+                <div className="relative overflow-hidden rounded-2xl bg-muted/45 p-2">
+                  <aside className="flex h-[440px] min-h-0 flex-col overflow-hidden">
                     <div className="flex h-14 items-center justify-between gap-3 border-b border-dashed border-border/20 px-4">
                       <div className="flex min-w-0 items-center gap-2">
                         <h3 className="truncate text-sm font-semibold text-foreground">{t('basket')}</h3>
@@ -957,7 +937,7 @@ export const RecipeForm = ({
         )}
       </>
       {/* 生成按钮和高级设置 */}
-      <div className={cn("pb-2", !isMobile && "rounded-2xl bg-background/60 px-3 pt-1 md:px-4")}>
+      <div className={cn("pb-2", !isMobile && "rounded-2xl bg-muted/45 px-3 pt-1 md:px-4")}>
         {/* 内容容器 */}
         <div className="w-full pt-4">
           {/* 桌面端：上方高级设置，下方独立生成按钮 */}
@@ -970,7 +950,7 @@ export const RecipeForm = ({
                   className="flex w-full flex-wrap items-center gap-2.5 xl:flex-nowrap xl:gap-3"
                 >
                   {/* Servings 步进器 */}
-                  <div className="flex h-11 w-full min-w-[168px] flex-1 items-center gap-2 rounded-lg bg-background/40 px-3 py-2.5">
+                  <div className="flex h-11 w-full min-w-[168px] flex-1 items-center gap-2 rounded-lg px-3 py-2.5">
                     <Label htmlFor="servings" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
                       <Image
                       src="/images/options-icon/serving.svg"
@@ -1010,7 +990,7 @@ export const RecipeForm = ({
                   </div>
 
                   {/* Cooking Time 选择器 */}
-                  <div className="flex h-11 w-full min-w-[168px] flex-1 items-center gap-2 rounded-lg bg-background/40 px-3 py-2.5">
+                  <div className="flex h-11 w-full min-w-[168px] flex-1 items-center gap-2 rounded-lg px-3 py-2.5">
                     <Label htmlFor="cookingTime" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
                       <Image
                         src="/images/options-icon/cooking_time.svg"
@@ -1038,7 +1018,7 @@ export const RecipeForm = ({
                   </div>
 
                   {/* Difficulty 选择器 */}
-                  <div className="flex h-11 w-full min-w-[168px] flex-1 items-center gap-2 rounded-lg bg-background/40 px-3 py-2.5">
+                  <div className="flex h-11 w-full min-w-[168px] flex-1 items-center gap-2 rounded-lg px-3 py-2.5">
                     <Label htmlFor="difficulty" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
                       <Image
                         src="/images/options-icon/difficulty.svg"
@@ -1066,7 +1046,7 @@ export const RecipeForm = ({
                   </div>
 
                   {/* Cuisine 选择器 */}
-                  <div className="flex h-11 w-full min-w-[168px] flex-1 items-center gap-2 rounded-lg bg-background/40 px-3 py-2.5">
+                  <div className="flex h-11 w-full min-w-[168px] flex-1 items-center gap-2 rounded-lg px-3 py-2.5">
                     <Label htmlFor="cuisine" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
                       <Image
                         src="/images/options-icon/cuisine.svg"
@@ -1124,7 +1104,7 @@ export const RecipeForm = ({
               {/* 选项面板（常显） */}
               <div className="flex w-full flex-col gap-3">
                 {/* Servings 步进器 */}
-                <div className="flex h-11 w-full items-center gap-2 rounded-lg bg-background/40 px-3 py-2.5">
+                <div className="flex h-11 w-full items-center gap-2 rounded-lg px-3 py-2.5">
                   <Label htmlFor="servings" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
                     <Image
                       src="/images/options-icon/serving.svg"
@@ -1164,7 +1144,7 @@ export const RecipeForm = ({
                 </div>
 
                 {/* Cooking Time 选择器 */}
-                <div className="flex h-11 w-full items-center gap-2 rounded-lg bg-background/40 px-3 py-2.5">
+                <div className="flex h-11 w-full items-center gap-2 rounded-lg px-3 py-2.5">
                   <Label htmlFor="cookingTime" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
                     <Image
                       src="/images/options-icon/cooking_time.svg"
@@ -1192,7 +1172,7 @@ export const RecipeForm = ({
                 </div>
 
                 {/* Difficulty 选择器 */}
-                <div className="flex h-11 w-full items-center gap-2 rounded-lg bg-background/40 px-3 py-2.5">
+                <div className="flex h-11 w-full items-center gap-2 rounded-lg px-3 py-2.5">
                   <Label htmlFor="difficulty" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
                     <Image
                       src="/images/options-icon/difficulty.svg"
@@ -1220,7 +1200,7 @@ export const RecipeForm = ({
                 </div>
 
                 {/* Cuisine 选择器 */}
-                <div className="flex h-11 w-full items-center gap-2 rounded-lg bg-background/40 px-3 py-2.5">
+                <div className="flex h-11 w-full items-center gap-2 rounded-lg px-3 py-2.5">
                   <Label htmlFor="cuisine" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
                     <Image
                       src="/images/options-icon/cuisine.svg"

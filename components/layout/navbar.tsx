@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, LogOut, BookOpen, Star, HelpCircle, ChevronRight, ArrowRight, Compass } from "lucide-react";
+import { Menu, LogOut, BookOpen, Star, HelpCircle, ChevronRight, ArrowRight, Compass, Coins, User } from "lucide-react";
 import React, { useState } from "react";
 import {
   DropdownMenu,
@@ -38,15 +38,36 @@ export const Navbar = () => {
   const pathname = usePathname();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showEditUserInfoDialog, setShowEditUserInfoDialog] = useState(false);
+  const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
   const { user, loading, signOut } = useAuth();
   const { credits } = useUserUsage();
   const [isOpen, setIsOpen] = React.useState(false);
+  const avatarMenuCloseTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const t = useTranslations('navigation');
   const tCredits = useTranslations('credits');
   const locale = useLocale();
   const isHomePage = pathname === `/${locale}` || pathname === "/";
   const homeHref = withLocalePath(locale);
+
+  const clearAvatarMenuCloseTimer = React.useCallback(() => {
+    if (!avatarMenuCloseTimerRef.current) return;
+    clearTimeout(avatarMenuCloseTimerRef.current);
+    avatarMenuCloseTimerRef.current = null;
+  }, []);
+
+  const openAvatarMenu = React.useCallback(() => {
+    clearAvatarMenuCloseTimer();
+    setIsAvatarMenuOpen(true);
+  }, [clearAvatarMenuCloseTimer]);
+
+  const scheduleAvatarMenuClose = React.useCallback(() => {
+    clearAvatarMenuCloseTimer();
+    avatarMenuCloseTimerRef.current = setTimeout(() => {
+      setIsAvatarMenuOpen(false);
+      avatarMenuCloseTimerRef.current = null;
+    }, 120);
+  }, [clearAvatarMenuCloseTimer]);
 
   React.useEffect(() => {
     if (!isHomePage) {
@@ -116,6 +137,14 @@ export const Navbar = () => {
     } else {
     }
   }, [user, loading]);
+
+  React.useEffect(() => {
+    return () => {
+      if (!avatarMenuCloseTimerRef.current) return;
+      clearTimeout(avatarMenuCloseTimerRef.current);
+      avatarMenuCloseTimerRef.current = null;
+    };
+  }, []);
 
   // 如果当前路径包含隐私政策或服务条款，不显示导航栏
   if (pathname.includes('/privacy') || pathname.includes('/terms')) {
@@ -206,12 +235,21 @@ export const Navbar = () => {
               {/* 用户菜单 */}
               {!loading && (
                 user ? (
-                  <DropdownMenu modal={false}>
+                  <DropdownMenu
+                    modal={false}
+                    open={isAvatarMenuOpen}
+                    onOpenChange={(open) => {
+                      clearAvatarMenuCloseTimer();
+                      setIsAvatarMenuOpen(open);
+                    }}
+                  >
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
                         className={avatarTriggerClassName}
+                        onMouseEnter={openAvatarMenu}
+                        onMouseLeave={scheduleAvatarMenuClose}
                       >
                         <UserAvatar user={user} size="lg" className="h-10 w-10" />
                       </Button>
@@ -221,6 +259,8 @@ export const Navbar = () => {
                       sideOffset={10}
                       className={avatarMenuClassName}
                       onCloseAutoFocus={(e) => e.preventDefault()}
+                      onMouseEnter={openAvatarMenu}
+                      onMouseLeave={scheduleAvatarMenuClose}
                     >
                       <div className="space-y-3 py-1">
                         <div className="space-y-1.5">
@@ -234,7 +274,10 @@ export const Navbar = () => {
 
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-sm">
-                            <span className="font-medium text-foreground">{t('credits')}</span>
+                            <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+                              <Coins className="h-3.5 w-3.5 text-muted-foreground" />
+                              {t('credits')}
+                            </span>
                             <span className="font-semibold tabular-nums text-foreground">{creditProgressLabel}</span>
                           </div>
                           <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted/75">
@@ -252,6 +295,7 @@ export const Navbar = () => {
                         onClick={() => setShowEditUserInfoDialog(true)}
                         className="cursor-pointer rounded-lg px-2.5 py-2.5 text-sm font-medium text-foreground focus:bg-muted/60"
                       >
+                        <User className="h-4 w-4 text-muted-foreground" />
                         {t('profile')}
                       </DropdownMenuItem>
 
@@ -261,6 +305,7 @@ export const Navbar = () => {
                         onClick={handleLogout}
                         className="cursor-pointer rounded-lg px-2.5 py-2.5 text-sm font-medium text-destructive focus:bg-destructive/10 focus:text-destructive"
                       >
+                        <LogOut className="h-4 w-4 text-destructive" />
                         {t('signout')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>

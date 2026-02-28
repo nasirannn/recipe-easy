@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import { useLocale } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,35 @@ interface LanguageSwitcherProps {
 export function LanguageSwitcher({ className }: LanguageSwitcherProps) {
   const locale = useLocale();
   const pathname = usePathname();
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = React.useState(false);
+  const languageMenuCloseTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearLanguageMenuCloseTimer = React.useCallback(() => {
+    if (!languageMenuCloseTimerRef.current) return;
+    clearTimeout(languageMenuCloseTimerRef.current);
+    languageMenuCloseTimerRef.current = null;
+  }, []);
+
+  const openLanguageMenu = React.useCallback(() => {
+    clearLanguageMenuCloseTimer();
+    setIsLanguageMenuOpen(true);
+  }, [clearLanguageMenuCloseTimer]);
+
+  const scheduleLanguageMenuClose = React.useCallback(() => {
+    clearLanguageMenuCloseTimer();
+    languageMenuCloseTimerRef.current = setTimeout(() => {
+      setIsLanguageMenuOpen(false);
+      languageMenuCloseTimerRef.current = null;
+    }, 120);
+  }, [clearLanguageMenuCloseTimer]);
+
+  React.useEffect(() => {
+    return () => {
+      if (!languageMenuCloseTimerRef.current) return;
+      clearTimeout(languageMenuCloseTimerRef.current);
+      languageMenuCloseTimerRef.current = null;
+    };
+  }, []);
 
   const switchLanguage = (newLocale: string) => {
     let pathWithoutLocale = pathname || '/';
@@ -44,12 +74,21 @@ export function LanguageSwitcher({ className }: LanguageSwitcherProps) {
   const currentLanguageName = locale === 'zh' ? '中文' : 'English';
 
   return (
-    <DropdownMenu modal={false}>
+    <DropdownMenu
+      modal={false}
+      open={isLanguageMenuOpen}
+      onOpenChange={(open) => {
+        clearLanguageMenuCloseTimer();
+        setIsLanguageMenuOpen(open);
+      }}
+    >
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
           size="icon"
           aria-label={`Switch language. Current: ${currentLanguageName}`}
+          onMouseEnter={openLanguageMenu}
+          onMouseLeave={scheduleLanguageMenuClose}
           className={cn(
             "h-10 w-10 cursor-pointer rounded-full transition-colors duration-200 hover:bg-transparent",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2",
@@ -69,6 +108,8 @@ export function LanguageSwitcher({ className }: LanguageSwitcherProps) {
         className="w-40 rounded-xl border border-border/70 bg-card p-2 text-foreground shadow-lg"
         sideOffset={8}
         onCloseAutoFocus={(e) => e.preventDefault()}
+        onMouseEnter={openLanguageMenu}
+        onMouseLeave={scheduleLanguageMenuClose}
       >
         {languages.map((language) => (
           <DropdownMenuItem

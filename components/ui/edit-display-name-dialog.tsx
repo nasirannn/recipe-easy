@@ -1,6 +1,6 @@
 "use client"
 
-import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import {
   Dialog,
@@ -63,37 +63,35 @@ export function EditUserInfoDialog({
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const previewObjectUrlRef = useRef<string | null>(null)
 
-  const clearLocalPreview = () => {
+  const clearLocalPreview = useCallback(() => {
     if (previewObjectUrlRef.current) {
       URL.revokeObjectURL(previewObjectUrlRef.current)
       previewObjectUrlRef.current = null
     }
-  }
+  }, [])
 
   useEffect(() => {
     return () => {
       clearLocalPreview()
     }
-  }, [])
+  }, [clearLocalPreview])
 
-  const initializeForm = () => {
-    if (!user) return
-    clearLocalPreview()
+  useEffect(() => {
+    if (open && user) {
+      clearLocalPreview()
+      const suggestedName = getSuggestedDisplayName(user)
+      const existingAvatarPreview = getUserAvatarUrl(user)
+      const existingCustomAvatar = user.user_metadata?.avatar_url ?? null
 
-    const suggestedName = getSuggestedDisplayName(user)
-    const existingAvatarPreview = getUserAvatarUrl(user)
-    const existingCustomAvatar = user.user_metadata?.avatar_url ?? null
-
-    setDisplayName(suggestedName)
-    setInitialDisplayName(suggestedName)
-    setAvatarPreview(existingAvatarPreview)
-    setCurrentCustomAvatarUrl(existingCustomAvatar)
-    setSelectedAvatar(null)
-    setError(null)
-    setLoading(false)
-  }
-
-  const resetFormState = () => {
+      setDisplayName(suggestedName)
+      setInitialDisplayName(suggestedName)
+      setAvatarPreview(existingAvatarPreview)
+      setCurrentCustomAvatarUrl(existingCustomAvatar)
+      setSelectedAvatar(null)
+      setError(null)
+      setLoading(false)
+      return
+    }
     clearLocalPreview()
     setDisplayName('')
     setInitialDisplayName('')
@@ -102,14 +100,9 @@ export function EditUserInfoDialog({
     setSelectedAvatar(null)
     setError(null)
     setLoading(false)
-  }
+  }, [open, user, clearLocalPreview])
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (nextOpen) {
-      initializeForm()
-    } else {
-      resetFormState()
-    }
     onOpenChange(nextOpen)
   }
 

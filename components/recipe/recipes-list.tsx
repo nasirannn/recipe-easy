@@ -47,7 +47,6 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
         emptyFilterTitle: '当前筛选暂无菜谱',
         emptyFilterHint: '可以切换筛选条件，查看更多菜谱。',
         clearFilter: '清除筛选',
-        loadedLabel: '已加载',
       }
     : {
         filterLabel: 'Filter By Difficulty',
@@ -55,7 +54,6 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
         emptyFilterTitle: 'No recipes match this filter',
         emptyFilterHint: 'Try a different filter to explore more recipes.',
         clearFilter: 'Clear Filter',
-        loadedLabel: 'Loaded',
       };
 
   // 从本地 API 获取食谱数据
@@ -144,17 +142,8 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
             {t('subtitle')}
           </p>
         </div>
-        <span className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border/70 bg-card px-3.5 text-sm text-muted-foreground">
-          <span className="font-medium">{uiText.loadedLabel}</span>
-          <span className="font-semibold text-foreground tabular-nums">{recipes.length}</span>
-        </span>
-      </div>
 
-      <section className="rounded-2xl border border-border/70 bg-card/90 p-3 sm:p-4">
-        <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {uiText.filterLabel}
-        </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 lg:justify-end" role="group" aria-label={uiText.filterLabel}>
           {difficultyFilters.map((filter) => {
             const active = activeDifficulty === filter.key;
             return (
@@ -182,7 +171,7 @@ export const RecipesList = ({ locale }: RecipesListProps) => {
             );
           })}
         </div>
-      </section>
+      </div>
     </header>
   );
 
