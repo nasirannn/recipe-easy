@@ -1,8 +1,9 @@
-import { useEffect, useCallback } from 'react';
+import { createElement, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { create } from 'zustand';
 import { toast } from 'sonner';
 import { useLocale } from 'next-intl';
+import { Gift } from 'lucide-react';
 import { APP_CONFIG } from '@/lib/config';
 
 interface UserCredits {
@@ -118,10 +119,25 @@ export function useUserUsage() {
         const grantedAmount = Number(data?.dailyLoginBonus?.grantedAmount ?? 0);
         if (grantedAmount > 0) {
           const isZh = locale.toLowerCase().startsWith('zh');
+          const bonusText = Number.isInteger(grantedAmount)
+            ? String(grantedAmount)
+            : grantedAmount.toFixed(1);
+
           toast.success(
-            isZh
-              ? `每日登录奖励 +${grantedAmount} 积分，24 小时内有效`
-              : `Daily login bonus +${grantedAmount} credits (valid for 24 hours).`
+            isZh ? '每日登录奖励' : 'Daily Login Bonus!',
+            {
+              icon: createElement(Gift, { className: 'h-4 w-4' }),
+              description: isZh
+                ? `你已获得 ${bonusText} 积分登录奖励，仅限当天（UTC）有效，请及时使用。`
+                : `You have received ${bonusText} credits as a daily login bonus. They are only valid today (UTC) - use them up soon.`,
+              duration: 5600,
+              className: 'border border-border/70 bg-background/95 text-foreground shadow-lg',
+              classNames: {
+                title: 'text-sm font-semibold',
+                description: 'text-sm leading-6 text-muted-foreground',
+                icon: 'text-primary',
+              },
+            }
           );
         }
       } else {

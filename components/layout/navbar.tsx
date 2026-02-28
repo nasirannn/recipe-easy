@@ -89,11 +89,21 @@ export const Navbar = () => {
   );
 
   const avatarMenuClassName = cn(
-    "w-[19rem] rounded-2xl border p-2 shadow-lg backdrop-blur-xl",
+    "w-[14.5rem] rounded-2xl border p-3 shadow-lg backdrop-blur-xl",
     isHomePage
       ? "border-border/80 bg-background/92"
       : "border-border/70 bg-background/95"
   );
+  const creditBalance = Number(credits?.credits ?? 0);
+  const creditProgressMax = 3;
+  const creditProgress = Math.min(
+    100,
+    Math.max(0, (creditBalance / creditProgressMax) * 100)
+  );
+  const formattedCreditBalance = Number.isInteger(creditBalance)
+    ? String(creditBalance)
+    : creditBalance.toFixed(1);
+  const creditProgressLabel = `${formattedCreditBalance}/${creditProgressMax}`;
 
   // 添加调试信息
   React.useEffect(() => {
@@ -212,58 +222,46 @@ export const Navbar = () => {
                       className={avatarMenuClassName}
                       onCloseAutoFocus={(e) => e.preventDefault()}
                     >
-                      <div className="rounded-xl border border-border/70 bg-muted/35 p-3">
-                        <div className="flex items-start gap-3">
-                          <UserAvatar user={user} size="lg" className="h-11 w-11" />
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-semibold text-foreground">
-                              {getUserDisplayName(user)}
-                            </div>
-                            <div className="truncate text-xs text-muted-foreground">
-                              {user.email}
-                            </div>
+                      <div className="space-y-3 py-1">
+                        <div className="space-y-1.5">
+                          <p className="truncate text-sm font-semibold text-foreground">
+                            {getUserDisplayName(user)}
+                          </p>
+                          <p className="line-clamp-2 break-all text-xs leading-4 text-muted-foreground">
+                            {user.email}
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="font-medium text-foreground">{t('credits')}</span>
+                            <span className="font-semibold tabular-nums text-foreground">{creditProgressLabel}</span>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 cursor-pointer rounded-md p-0 hover:bg-background/90"
-                            onClick={() => setShowEditUserInfoDialog(true)}
-                          >
-                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                          </Button>
-                        </div>
-
-                        <div className="mt-3 flex items-center justify-between rounded-lg bg-background/80 px-2.5 py-2">
-                          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                            {t('credits')}
-                          </span>
-                          <span className="text-sm font-semibold tabular-nums text-foreground">
-                            {credits?.credits || 0}
-                          </span>
-                        </div>
-
-                        <div className="mt-1.5 text-xs text-muted-foreground">
-                          {tCredits('consumeOneCredit')}
+                          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted/75">
+                            <div
+                              className="h-full rounded-full bg-primary transition-all duration-300"
+                              style={{ width: `${creditProgress}%` }}
+                            />
+                          </div>
                         </div>
                       </div>
 
-                      <DropdownMenuSeparator className="my-2" />
+                      <DropdownMenuSeparator className="my-2.5 bg-border/70" />
 
                       <DropdownMenuItem
-                        onClick={() => router.push(withLocalePath(locale, '/my-recipes'))}
-                        className="cursor-pointer rounded-lg px-2.5 py-2.5"
+                        onClick={() => setShowEditUserInfoDialog(true)}
+                        className="cursor-pointer rounded-lg px-2.5 py-2.5 text-sm font-medium text-foreground focus:bg-muted/60"
                       >
-                        <BookOpen className="h-4 w-4 text-primary" />
-                        <span className="font-medium">{t('myRecipes')}</span>
-                        <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
+                        {t('profile')}
                       </DropdownMenuItem>
+
+                      <DropdownMenuSeparator className="my-2.5 bg-border/70" />
 
                       <DropdownMenuItem
                         onClick={handleLogout}
-                        className="mt-1 cursor-pointer rounded-lg px-2.5 py-2.5 text-destructive focus:bg-destructive/10 focus:text-destructive"
+                        className="cursor-pointer rounded-lg px-2.5 py-2.5 text-sm font-medium text-destructive focus:bg-destructive/10 focus:text-destructive"
                       >
-                        <LogOut className="h-4 w-4" />
-                        <span className="font-medium">{t('signout')}</span>
+                        {t('signout')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

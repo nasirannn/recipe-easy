@@ -275,12 +275,8 @@
   line-height: 1.1;
   letter-spacing: -0.025em;
   font-weight: 800;
-  color: rgb(15 23 42);
+  color: var(--color-foreground);
   text-wrap: balance;
-}
-
-.dark .home-title {
-  color: rgb(241 245 249);
 }
 
 .home-lead {
@@ -288,12 +284,8 @@
   max-width: 38rem;
   font-size: clamp(1rem, 1.2vw, 1.08rem);
   line-height: 1.62;
-  color: rgb(71 85 105);
+  color: var(--color-muted-foreground);
   text-wrap: pretty;
-}
-
-.dark .home-lead {
-  color: rgb(148 163 184);
 }
 
 .home-section-header {
