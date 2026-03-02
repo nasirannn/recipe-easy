@@ -6,13 +6,7 @@
 /* Tailwind CSS v4 主题配置 - 使用现代 OKLCH 颜色空间 */
 @theme {
   /* 字体系列 */
-  --font-sans: var(--font-plus-jakarta), var(--font-noto-sans-sc), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
-
-  /* 容器配置 */
-  --container-center: true;
-  --container-padding: 1.5rem;
+  --font-sans: var(--font-space-grotesk), var(--font-noto-sans), var(--font-noto-sans-sc), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
   /* 响应式断点 */
   --breakpoint-sm: 640px;
@@ -34,29 +28,73 @@
   --color-gray-900: oklch(0.09 0 0);
   --color-gray-950: oklch(0.03 0 0);
 
-  /* 带透明度的灰色变量 */
-  --color-gray-100-50: oklch(0.95 0 0 / 0.5);
-  --color-gray-200-40: oklch(0.9 0 0 / 0.4);
-  --color-gray-200-50: oklch(0.9 0 0 / 0.5);
-  --color-gray-700-50: oklch(0.25 0 0 / 0.5);
-  --color-gray-900-40: oklch(0.09 0 0 / 0.4);
-  --color-gray-900-50: oklch(0.09 0 0 / 0.5);
+  /* 语义色透明度变量（保持主题联动，避免 /xx 被编译为固定色） */
+  --color-background-28: color-mix(in oklab, var(--color-background) 28%, transparent);
+  --color-background-45: color-mix(in oklab, var(--color-background) 45%, transparent);
+  --color-background-50: color-mix(in oklab, var(--color-background) 50%, transparent);
+  --color-background-60: color-mix(in oklab, var(--color-background) 60%, transparent);
+  --color-background-70: color-mix(in oklab, var(--color-background) 70%, transparent);
+  --color-background-72: color-mix(in oklab, var(--color-background) 72%, transparent);
+  --color-background-80: color-mix(in oklab, var(--color-background) 80%, transparent);
+  --color-background-84: color-mix(in oklab, var(--color-background) 84%, transparent);
+  --color-background-85: color-mix(in oklab, var(--color-background) 85%, transparent);
+  --color-background-90: color-mix(in oklab, var(--color-background) 90%, transparent);
+  --color-background-92: color-mix(in oklab, var(--color-background) 92%, transparent);
+  --color-background-95: color-mix(in oklab, var(--color-background) 95%, transparent);
+  --color-nav-surface: color-mix(in oklab, var(--color-background) 94%, transparent);
+  --color-nav-surface-strong: color-mix(in oklab, var(--color-background) 97%, transparent);
 
-  /* 带透明度的绿色变量 */
-  --color-green-900-20: oklch(0.15 0.15 142 / 0.2);
-  --color-emerald-900-20: oklch(0.15 0.15 160 / 0.2);
+  --color-border-20: color-mix(in oklab, var(--color-border) 20%, transparent);
+  --color-border-45: color-mix(in oklab, var(--color-border) 45%, transparent);
+  --color-border-50: color-mix(in oklab, var(--color-border) 50%, transparent);
+  --color-border-55: color-mix(in oklab, var(--color-border) 55%, transparent);
+  --color-border-65: color-mix(in oklab, var(--color-border) 65%, transparent);
+  --color-border-70: color-mix(in oklab, var(--color-border) 70%, transparent);
+  --color-border-75: color-mix(in oklab, var(--color-border) 75%, transparent);
+  --color-border-80: color-mix(in oklab, var(--color-border) 80%, transparent);
 
-  /* 带透明度的蓝色变量 */
-  --color-blue-900-20: oklch(0.15 0.15 240 / 0.2);
-  --color-indigo-900-20: oklch(0.15 0.15 260 / 0.2);
+  --color-card-90: color-mix(in oklab, var(--color-card) 90%, transparent);
+  --color-card-95: color-mix(in oklab, var(--color-card) 95%, transparent);
 
-  /* 带透明度的紫色变量 */
-  --color-purple-900-20: oklch(0.15 0.15 280 / 0.2);
-  --color-violet-900-20: oklch(0.15 0.15 300 / 0.2);
+  --color-muted-20: color-mix(in oklab, var(--color-muted) 20%, transparent);
+  --color-muted-25: color-mix(in oklab, var(--color-muted) 25%, transparent);
+  --color-muted-30: color-mix(in oklab, var(--color-muted) 30%, transparent);
+  --color-muted-35: color-mix(in oklab, var(--color-muted) 35%, transparent);
+  --color-muted-40: color-mix(in oklab, var(--color-muted) 40%, transparent);
+  --color-muted-50: color-mix(in oklab, var(--color-muted) 50%, transparent);
+  --color-muted-60: color-mix(in oklab, var(--color-muted) 60%, transparent);
+  --color-muted-65: color-mix(in oklab, var(--color-muted) 65%, transparent);
+  --color-muted-75: color-mix(in oklab, var(--color-muted) 75%, transparent);
 
-  /* 带透明度的橙色变量 */
-  --color-orange-900-20: oklch(0.15 0.15 60 / 0.2);
-  --color-amber-900-20: oklch(0.15 0.15 80 / 0.2);
+  --color-muted-foreground-80: color-mix(in oklab, var(--color-muted-foreground) 80%, transparent);
+  --color-muted-foreground-90: color-mix(in oklab, var(--color-muted-foreground) 90%, transparent);
+
+  --color-primary-foreground-20: color-mix(in oklab, var(--color-primary-foreground) 20%, transparent);
+  --color-primary-foreground-80: color-mix(in oklab, var(--color-primary-foreground) 80%, transparent);
+
+  --color-accent-50: color-mix(in oklab, var(--color-accent) 50%, transparent);
+  --color-accent-80: color-mix(in oklab, var(--color-accent) 80%, transparent);
+
+  --color-ring-50: color-mix(in oklab, var(--color-ring) 50%, transparent);
+  --color-ring-60: color-mix(in oklab, var(--color-ring) 60%, transparent);
+
+  /* Recipe card surface tokens (light): align My Cookbook card with Explore surface */
+  --color-recipe-surface: var(--color-card);
+  --color-recipe-surface-foreground: var(--color-foreground);
+  --color-recipe-surface-muted-foreground: var(--color-muted-foreground);
+  --color-recipe-surface-border: var(--color-border);
+  --color-recipe-surface-button: color-mix(in oklab, var(--color-muted) 35%, transparent);
+  --color-recipe-surface-button-border: color-mix(in oklab, var(--color-border) 70%, transparent);
+  --color-recipe-surface-button-hover: color-mix(in oklab, var(--color-muted) 50%, transparent);
+  --color-recipe-surface-focus-offset: var(--color-card);
+  --color-recipe-surface-skeleton: color-mix(in oklab, var(--color-muted) 65%, transparent);
+  --color-recipe-surface-skeleton-soft: color-mix(in oklab, var(--color-muted) 40%, transparent);
+  --color-recipe-overlay-strong: rgb(16 34 22 / 0.86);
+  --color-recipe-overlay-mid: rgb(16 34 22 / 0.36);
+  --color-recipe-overlay-soft: rgb(16 34 22 / 0.14);
+  --color-button-option-surface: color-mix(in oklab, var(--color-card) 75%, transparent);
+  --color-button-option-border: color-mix(in oklab, var(--color-border) 70%, transparent);
+  --color-button-option-border-hover: color-mix(in oklab, var(--color-primary) 50%, transparent);
 
   /* 设计系统颜色 - 浅色模式 */
   --color-background: oklch(1 0 0);                    /* 纯白背景 */
@@ -74,19 +112,19 @@
   --color-border: oklch(0.9 0 0);                      /* 边框颜色 */
   --color-input: oklch(0.9 0 0);                       /* 输入框边框 */
 
-  /* 品牌主色 - 暖橙色（食欲刺激）- 使用 RGB */
-  --color-primary: rgb(255 106 0);                      /* 主按钮/链接 */
-  --color-primary-foreground: oklch(0.98 0 0);         /* 主按钮文字 */
+  /* 品牌主色 - 清新绿（与 landing page 对齐）- 使用 RGB */
+  --color-primary: rgb(19 236 91);                      /* 主按钮/链接 */
+  --color-primary-foreground: rgb(16 34 22);            /* 主按钮文字 */
 
   /* 带透明度的主色变量 - 支持 v4 语法 */
-  --color-primary-5: rgb(255 106 0 / 0.05);
-  --color-primary-10: rgb(255 106 0 / 0.1);
-  --color-primary-20: rgb(255 106 0 / 0.2);
-  --color-primary-25: rgb(255 106 0 / 0.25);
-  --color-primary-30: rgb(255 106 0 / 0.3);
-  --color-primary-50: rgb(255 106 0 / 0.5);
-  --color-primary-80: rgb(255 106 0 / 0.8);
-  --color-primary-90: rgb(255 106 0 / 0.9);
+  --color-primary-5: rgb(19 236 91 / 0.05);
+  --color-primary-10: rgb(19 236 91 / 0.1);
+  --color-primary-20: rgb(19 236 91 / 0.2);
+  --color-primary-25: rgb(19 236 91 / 0.25);
+  --color-primary-30: rgb(19 236 91 / 0.3);
+  --color-primary-50: rgb(19 236 91 / 0.5);
+  --color-primary-80: rgb(19 236 91 / 0.8);
+  --color-primary-90: rgb(19 236 91 / 0.9);
 
   /* 辅助色 - 蒲公英黄绿（自然健康） */
   --color-secondary: oklch(0.8 0.15 72);               /* 图标/标签 */
@@ -107,7 +145,7 @@
   --color-destructive-80: oklch(0.602 0.237 25.331 / 0.8);
   --color-destructive-90: oklch(0.602 0.237 25.331 / 0.9);
 
-  --color-ring: rgb(255 106 0);                         /* 聚焦轮廓 */
+  --color-ring: rgb(19 236 91 / 0.65);                 /* 聚焦轮廓 */
 
   /* 圆角半径 */
   --radius: 0.5rem;
@@ -128,7 +166,7 @@
   --color-popover: oklch(0.2 0.01 240);                /* 弹窗背景 */
   --color-popover-foreground: oklch(0.95 0 0);         /* 弹窗文字 */
 
-  --color-card: oklch(0.25 0.01 240);                  /* 卡片背景 */
+  --color-card: #183021;                               /* 卡片背景（对齐 My Cookbook 暗色卡片） */
   --color-card-foreground: oklch(0.95 0 0);            /* 卡片文字 */
 
   --color-border: oklch(0.3 0.01 240);                 /* 边框 */
@@ -148,352 +186,296 @@
   --color-accent: oklch(0.25 0.01 240);                /* 强调色 */
   --color-accent-foreground: oklch(0.65 0.01 240);     /* 强调文字 */
 
-  --color-ring: oklch(0.8 0.213 25.331);               /* 聚焦轮廓（亮橙色） */
+  --color-ring: rgb(74 222 128 / 0.65);                /* 聚焦轮廓（亮绿色） */
+
+  /* Recipe card surface tokens - dark mode */
+  --color-recipe-surface: #183021;
+  --color-recipe-surface-foreground: #f8fafc;
+  --color-recipe-surface-muted-foreground: rgb(248 250 252 / 0.72);
+  --color-recipe-surface-border: rgb(255 255 255 / 0.05);
+  --color-recipe-surface-button: rgb(255 255 255 / 0.05);
+  --color-recipe-surface-button-border: rgb(255 255 255 / 0.05);
+  --color-recipe-surface-button-hover: rgb(255 255 255 / 0.1);
+  --color-recipe-surface-focus-offset: #183021;
+  --color-recipe-surface-skeleton: rgb(255 255 255 / 0.2);
+  --color-recipe-surface-skeleton-soft: rgb(255 255 255 / 0.14);
+  --color-recipe-overlay-strong: rgb(12 27 18 / 0.92);
+  --color-recipe-overlay-mid: rgb(18 49 31 / 0.46);
+  --color-recipe-overlay-soft: rgb(18 49 31 / 0.2);
 }
 
-/* 隐藏滚动条样式 */
-.scrollbar-hide {
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
-  scrollbar-width: none;  /* Firefox */
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Safari and Chrome */
-}
-
-/* 简约性冷淡风格标签 */
-.tag-minimal {
-  @apply inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-normal;
-  @apply bg-muted;
-  @apply border border-border;
-  @apply text-muted-foreground;
-  @apply rounded-md;
-  @apply transition-all duration-200;
-  @apply hover:bg-accent;
-  @apply hover:border-border;
-  @apply cursor-default;
-}
-
-.tag-minimal:hover {
-  @apply transform scale-[1.02];
-}
-
-/* Home page design system */
-.home-shell {
-  position: relative;
-  isolation: isolate;
-  min-height: 100dvh;
-  overflow-x: clip;
-  background:
-    radial-gradient(900px 500px at 12% -10%, rgb(37 99 235 / 0.14), transparent 60%),
-    radial-gradient(860px 520px at 90% -12%, rgb(249 115 22 / 0.14), transparent 58%),
-    linear-gradient(180deg, #f8fafc 0%, #ffffff 38%, #f8fafc 100%);
-}
-
-.dark .home-shell {
-  background:
-    radial-gradient(900px 500px at 12% -10%, rgb(37 99 235 / 0.2), transparent 62%),
-    radial-gradient(860px 520px at 90% -12%, rgb(249 115 22 / 0.18), transparent 60%),
-    linear-gradient(180deg, #0f172a 0%, #020617 40%, #020617 100%);
-}
-
-.home-shell-content {
-  position: relative;
-  z-index: 10;
-}
-
-.home-main,
-.home-sections,
-.home-section,
-.home-section-compact {
-  position: relative;
-  z-index: 10;
-}
-
-.home-section,
-.home-section-compact {
-  padding-top: 4rem;
-  padding-bottom: 4rem;
-}
-
-@media (min-width: 768px) {
-  .home-section,
-  .home-section-compact {
-    padding-top: 5rem;
-    padding-bottom: 5rem;
+@layer components {
+  /* Surface theme tokens used by app pages */
+  .theme-shell-base,
+  .theme-surface-base {
+    --color-primary: rgb(19 236 91);
+    --color-primary-foreground: rgb(16 34 22);
+    --color-primary-5: rgb(19 236 91 / 0.05);
+    --color-primary-10: rgb(19 236 91 / 0.1);
+    --color-primary-20: rgb(19 236 91 / 0.2);
+    --color-primary-25: rgb(19 236 91 / 0.25);
+    --color-primary-30: rgb(19 236 91 / 0.3);
+    --color-primary-50: rgb(19 236 91 / 0.5);
+    --color-primary-80: rgb(19 236 91 / 0.8);
+    --color-primary-90: rgb(19 236 91 / 0.9);
+    --color-ring: rgb(19 236 91 / 0.65);
+    --color-background: #f6f8f6;
+    --color-foreground: #0f172a;
+    --color-muted: #f1f5f9;
+    --color-muted-foreground: #64748b;
+    --color-card: #ffffff;
+    --color-card-foreground: #0f172a;
+    --color-border: #e2e8f0;
+    --color-input: #e2e8f0;
+    --color-popover: #ffffff;
+    --color-popover-foreground: #0f172a;
+    --color-button-option-surface: color-mix(in oklab, var(--color-card) 75%, transparent);
+    --color-button-option-border: color-mix(in oklab, var(--color-border) 70%, transparent);
+    --color-button-option-border-hover: color-mix(in oklab, var(--color-primary) 50%, transparent);
   }
-}
 
-@media (min-width: 1280px) {
-  .home-section,
-  .home-section-compact {
-    padding-top: 6rem;
-    padding-bottom: 6rem;
+  .dark .theme-shell-base,
+  .dark .theme-surface-base {
+    --color-background: #102216;
+    --color-foreground: #f8fafc;
+    --color-muted: #1c271f;
+    --color-muted-foreground: #94a3b8;
+    --color-card: #183021;
+    --color-card-foreground: #f8fafc;
+    --color-border: #28392e;
+    --color-input: #28392e;
+    --color-popover: #183021;
+    --color-popover-foreground: #f8fafc;
   }
-}
 
-.home-inner {
-  width: 100%;
-  max-width: 72rem;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
+  /* Toggle button unification: keep interaction style centralized */
+  button[aria-pressed] {
+    border-color: var(--color-button-option-border);
+    background-color: var(--color-button-option-surface);
+    color: var(--color-foreground);
+  }
 
-@media (min-width: 640px) {
+  button[aria-pressed]:hover {
+    border-color: var(--color-button-option-border-hover);
+    color: var(--color-primary);
+  }
+
+  button[aria-pressed="true"] {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary);
+    color: var(--color-primary-foreground);
+  }
+
+  button[aria-pressed="true"]:hover {
+    background-color: var(--color-primary-90);
+  }
+
+  button[aria-pressed]:disabled {
+    cursor: not-allowed;
+    opacity: 0.75;
+  }
+
+  /* Icon toggle buttons on image overlays (favorites/bookmarks) */
+  button[aria-pressed][class*="h-8"][class*="w-8"][class*="rounded-full"][aria-pressed="false"] {
+    border-color: var(--color-recipe-surface-border);
+    background-color: var(--color-recipe-overlay-mid);
+    color: #fff;
+  }
+
+  button[aria-pressed][class*="h-8"][class*="w-8"][class*="rounded-full"][aria-pressed="false"]:hover {
+    background-color: var(--color-recipe-overlay-strong);
+    color: #fff;
+  }
+
+  .theme-shell-base {
+    position: relative;
+    isolation: isolate;
+    min-height: 100dvh;
+    overflow-x: clip;
+    background-color: var(--color-background);
+  }
+
+  .theme-shell-content {
+    position: relative;
+    z-index: 10;
+  }
+
+  .home-main,
+  .home-sections,
+  .home-section {
+    position: relative;
+    z-index: 10;
+  }
+
+  .home-section {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+
+  @media (min-width: 768px) {
+    .home-section {
+      padding-top: 5rem;
+      padding-bottom: 5rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .home-section {
+      padding-top: 6rem;
+      padding-bottom: 6rem;
+    }
+  }
+
   .home-inner {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+    width: 100%;
+    max-width: 75rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
-}
 
-.home-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  border: 1px solid rgb(37 99 235 / 0.2);
-  background: rgb(37 99 235 / 0.08);
-  color: #1d4ed8;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.75rem;
-  line-height: 1;
-  letter-spacing: 0.06em;
-  font-weight: 700;
-  text-transform: uppercase;
-}
+  @media (min-width: 640px) {
+    .home-inner {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
 
-.dark .home-eyebrow {
-  border-color: rgb(96 165 250 / 0.35);
-  background: rgb(59 130 246 / 0.2);
-  color: rgb(191 219 254);
-}
+  .home-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid rgb(19 236 91 / 0.32);
+    background: rgb(19 236 91 / 0.12);
+    color: rgb(21 128 61);
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
 
-.home-title {
-  margin-top: 1rem;
-  font-size: clamp(1.875rem, 4.4vw, 3.25rem);
-  line-height: 1.1;
-  letter-spacing: -0.025em;
-  font-weight: 800;
-  color: var(--color-foreground);
-  text-wrap: balance;
-}
+  .dark .home-eyebrow {
+    border-color: rgb(74 222 128 / 0.44);
+    background: rgb(22 163 74 / 0.2);
+    color: rgb(187 247 208);
+  }
 
-.home-lead {
-  margin-top: 0.75rem;
-  max-width: 38rem;
-  font-size: clamp(1rem, 1.2vw, 1.08rem);
-  line-height: 1.62;
-  color: var(--color-muted-foreground);
-  text-wrap: pretty;
-}
+  .home-title {
+    margin-top: 1rem;
+    font-size: clamp(2rem, 4.8vw, 3.55rem);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    font-weight: 900;
+    color: var(--color-foreground);
+    text-wrap: balance;
+  }
 
-.home-section-header {
-  margin-bottom: 2rem;
-}
+  .home-lead {
+    margin-top: 0.75rem;
+    max-width: 38rem;
+    font-size: clamp(1rem, 1.2vw, 1.08rem);
+    line-height: 1.62;
+    color: var(--color-muted-foreground);
+    text-wrap: pretty;
+  }
 
-@media (min-width: 768px) {
   .home-section-header {
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
   }
-}
 
-.home-section-header-tight {
-  margin-bottom: 1.25rem;
-}
+  @media (min-width: 768px) {
+    .home-section-header {
+      margin-bottom: 2.5rem;
+    }
+  }
 
-@media (min-width: 768px) {
   .home-section-header-tight {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
   }
-}
 
-.home-card {
-  border: 1px solid rgb(226 232 240 / 0.8);
-  border-radius: 1.25rem;
-  background: rgb(255 255 255 / 0.78);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 12px 32px rgb(15 23 42 / 0.08);
-}
-
-.dark .home-card {
-  border-color: rgb(51 65 85 / 0.9);
-  background: rgb(15 23 42 / 0.72);
-  box-shadow: 0 14px 36px rgb(2 6 23 / 0.4);
-}
-
-.hero-floating-icon {
-  position: absolute;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--hero-icon-color, rgb(71 85 105 / 0.42));
-  filter: drop-shadow(0 8px 16px rgb(15 23 42 / 0.14));
-  animation: heroFloat 9s ease-in-out infinite;
-  will-change: transform;
-}
-
-.hero-floating-icon svg {
-  height: 1.5rem;
-  width: 1.5rem;
-  stroke-width: 2;
-}
-
-.hero-floating-icon-alt {
-  animation-name: heroFloatAlt;
-  animation-duration: 10.5s;
-}
-
-.hero-floating-icon-drift {
-  animation-name: heroFloatDrift;
-  animation-duration: 11s;
-}
-
-.dark .hero-floating-icon {
-  color: var(--hero-icon-color-dark, rgb(226 232 240 / 0.4));
-  filter: drop-shadow(0 8px 16px rgb(2 6 23 / 0.5));
-}
-
-@keyframes heroFloat {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) rotate(-2deg);
+  @media (min-width: 768px) {
+    .home-section-header-tight {
+      margin-bottom: 1.5rem;
+    }
   }
-  50% {
-    transform: translate3d(0, -12px, 0) rotate(2deg);
-  }
-}
 
-@keyframes heroFloatAlt {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) rotate(1deg);
+  .home-card {
+    border: 1px solid rgb(148 163 184 / 0.22);
+    border-radius: 1.25rem;
+    background: rgb(255 255 255 / 0.9);
+    box-shadow: 0 10px 26px rgb(15 23 42 / 0.07);
   }
-  50% {
-    transform: translate3d(0, -10px, 0) rotate(-3deg);
-  }
-}
 
-@keyframes heroFloatDrift {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
+  .dark .home-card {
+    border-color: rgb(148 163 184 / 0.22);
+    background: rgb(20 34 26 / 0.84);
+    box-shadow: 0 14px 32px rgb(2 6 23 / 0.3);
   }
-  50% {
-    transform: translate3d(6px, -9px, 0) rotate(3deg);
+
+  .nav-logo-text {
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    font-weight: 700;
+    color: var(--color-foreground);
+    font-style: normal;
+    font-kerning: normal;
   }
-}
 
-/* 容器样式 */
-.container {
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
+  .nav-link-text {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--color-muted-foreground);
+    transition: color 200ms;
+  }
 
-@media (min-width: 640px) {
   .container {
-    max-width: 640px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      max-width: 640px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .container {
+      max-width: 768px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      max-width: 1024px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .container {
+      max-width: 1280px;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .container {
+      max-width: 1536px;
+    }
   }
 }
 
-@media (min-width: 768px) {
-  .container {
-    max-width: 768px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .container {
-    max-width: 1024px;
-  }
-}
-
-@media (min-width: 1280px) {
-  .container {
-    max-width: 1280px;
-  }
-}
-
-@media (min-width: 1536px) {
-  .container {
-    max-width: 1536px;
-  }
-}
-
-/* Cuisine color styles - 使用 OKLCH */
-.cuisine-chinese {
-  background-color: oklch(0.7 0.12 12);
-  color: white;
-}
-.cuisine-italian {
-  background-color: oklch(0.85 0.05 50);
-  color: oklch(0.25 0.05 50);
-}
-.cuisine-french {
-  background-color: oklch(0.8 0.03 260);
-  color: oklch(0.2 0.03 260);
-}
-.cuisine-indian {
-  background-color: oklch(0.75 0.06 38);
-  color: oklch(0.15 0.06 38);
-}
-.cuisine-japanese {
-  background-color: oklch(0.88 0.04 340);
-  color: oklch(0.28 0.04 340);
-}
-.cuisine-mediterranean {
-  background-color: oklch(0.82 0.04 200);
-  color: oklch(0.22 0.04 200);
-}
-.cuisine-thai {
-  background-color: oklch(0.8 0.05 100);
-  color: oklch(0.2 0.05 100);
-}
-.cuisine-mexican {
-  background-color: oklch(0.78 0.08 14);
-  color: oklch(0.18 0.08 14);
-}
-.cuisine-other {
-  background-color: oklch(0.8 0.02 220);
-  color: oklch(0.2 0.02 220);
-}
-
-/* Line clamp utility */
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* 轮播图淡入动画 */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.2s ease-in-out forwards;
-}
-
-/* Ingredient option hover icon jiggle */
 @keyframes ingredientIconJiggle {
   0% {
     transform: translateX(0) rotate(0deg);
@@ -515,29 +497,51 @@
   }
 }
 
-.ingredient-option:hover .ingredient-option-icon {
-  animation: ingredientIconJiggle 0.34s ease-in-out;
-  transform-origin: center 70%;
-  will-change: transform;
-}
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 
-@media (prefers-reduced-motion: reduce) {
-  .hero-floating-icon,
-  .hero-floating-icon-alt,
-  .hero-floating-icon-drift {
-    animation: none;
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .ingredient-option:hover .ingredient-option-icon {
-    animation: none;
+    animation: ingredientIconJiggle 0.34s ease-in-out;
+    transform-origin: center 70%;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ingredient-option:hover .ingredient-option-icon {
+      animation: none;
+    }
   }
 }
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring-50;
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
     line-height: 1.6;
     font-feature-settings: "ss01" 1, "ss02" 1;
   }

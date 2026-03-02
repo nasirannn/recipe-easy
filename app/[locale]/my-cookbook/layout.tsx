@@ -10,9 +10,9 @@ export async function generateMetadata({
 
   return {
     ...generateSeoMetadata({
-      title: 'My Recipes - RecipeEasy',
-      description: 'Manage your saved recipes on RecipeEasy.',
-      path: 'my-recipes',
+      title: 'My Cookbook - RecipeEasy',
+      description: 'Manage your created and saved recipes on RecipeEasy.',
+      path: 'my-cookbook',
       locale: locale === 'en' ? undefined : locale,
     }),
     robots: {
@@ -26,7 +26,7 @@ export async function generateMetadata({
   };
 }
 
-export default function MyRecipesLayout({
+export default function MyCookbookLayout({
   children,
 }: {
   children: React.ReactNode;

@@ -1,20 +1,16 @@
 import {
-  Bookmark,
-  Check,
   ChefHat,
   Clock,
-  Copy,
   FlaskConical,
   Leaf,
   Lightbulb,
-  Loader2,
   RefreshCw,
   Tag,
   Users,
   X,
   ListOrdered,
 } from "lucide-react";
-import { Recipe, Ingredient } from "@/lib/types";
+import { Recipe } from "@/lib/types";
 import { APP_CONFIG, getImageUrl } from "@/lib/config";
 import { useState } from "react";
 import { Button } from "./button";
@@ -23,26 +19,22 @@ import { Dialog, DialogContent } from "./dialog";
 import { useTranslations, useLocale } from "next-intl";
 import { useUserUsage } from "@/hooks/use-user-usage";
 import { Card, CardContent } from "./card";
-import { Separator } from "./separator";
+import { normalizeRecipeVibe } from "@/lib/vibe";
 
 interface RecipeDisplayProps {
   recipes: Recipe[];
-  selectedIngredients: Ingredient[];
   imageLoadingStates?: Record<string, boolean>;
   onRegenerateImage?: (recipeId: string, recipe: Recipe) => void;
-  onSaveRecipe?: (recipe: Recipe) => Promise<void>;
 }
 
-const sectionCardClass = "home-card border-border/70 bg-card/90";
+const sectionCardClass = "home-card border-border-70 bg-card-90";
 const sectionTitleClass =
   "flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground md:text-xl";
 
 export const RecipeDisplay = ({
   recipes,
-  selectedIngredients,
   imageLoadingStates = {},
   onRegenerateImage,
-  onSaveRecipe,
 }: RecipeDisplayProps) => {
   const t = useTranslations("recipeDisplay");
   const tRecipeForm = useTranslations("recipeForm");
@@ -51,44 +43,20 @@ export const RecipeDisplay = ({
   const canGenerateImage = (credits?.credits ?? 0) >= APP_CONFIG.imageGenerationCost;
 
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
-  const [savingStates, setSavingStates] = useState<Record<string, boolean>>({});
-  const [copiedSection, setCopiedSection] = useState<{
-    recipeId: string;
-    type: "ingredients" | "seasoning" | "instructions";
-  } | null>(null);
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const getDifficultyLabel = (difficulty: string) => {
-    if (difficulty === "简单" || difficulty === "中等" || difficulty === "困难") {
-      return difficulty;
-    }
-
-    switch (difficulty.toLowerCase()) {
-      case "easy":
-        return t("easy");
-      case "medium":
-        return t("medium");
-      case "hard":
-        return t("hard");
+  const getVibeLabel = (vibe: string) => {
+    switch (normalizeRecipeVibe(vibe, "comfort")) {
+      case "quick":
+        return t("quick");
+      case "gourmet":
+        return t("gourmet");
+      case "healthy":
+        return t("healthy");
+      case "comfort":
       default:
-        return difficulty;
-    }
-  };
-
-  const copyToClipboard = async (
-    text: string,
-    recipeId: string,
-    type: "ingredients" | "seasoning" | "instructions"
-  ) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedSection({ recipeId, type });
-      setTimeout(() => {
-        setCopiedSection(null);
-      }, 3000);
-    } catch {
-      // Ignore clipboard errors in UI layer.
+        return t("comfort");
     }
   };
 
@@ -127,7 +95,7 @@ export const RecipeDisplay = ({
           return (
             <div
               key={recipe.id || `recipe-${index}`}
-              className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,320px)] lg:gap-8"
+              className="grid grid-cols-1 gap-6"
             >
               <div className="space-y-6">
                 <div className="home-card relative aspect-[4/3] overflow-hidden">
@@ -172,7 +140,7 @@ export const RecipeDisplay = ({
                               onRegenerateImage(recipe.id, recipe);
                             }
                           }}
-                          className="flex h-16 w-16 items-center justify-center rounded-full border border-border bg-background shadow-xl transition hover:scale-105 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 disabled:cursor-not-allowed"
+                          className="flex h-16 w-16 items-center justify-center rounded-full border border-border bg-background shadow-xl transition hover:scale-105 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-60 focus-visible:ring-offset-2 disabled:cursor-not-allowed"
                           disabled={imageLoadingStates[recipe.id]}
                         >
                           <RefreshCw
@@ -193,10 +161,10 @@ export const RecipeDisplay = ({
                     !imageErrors[recipe.id] &&
                     !imageLoadingStates[recipe.id] && (
                       <button
-                        className={`absolute bottom-3 right-3 flex h-12 w-12 items-center justify-center rounded-full border shadow-lg transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 ${
+                        className={`absolute bottom-3 right-3 flex h-12 w-12 items-center justify-center rounded-full border shadow-lg transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-60 focus-visible:ring-offset-2 ${
                           canGenerateImage
                             ? "border-border bg-background text-foreground hover:bg-muted"
-                            : "cursor-not-allowed border-border/70 bg-muted text-muted-foreground"
+                            : "cursor-not-allowed border-border-70 bg-muted text-muted-foreground"
                         }`}
                         onClick={(event) => {
                           event.stopPropagation();
@@ -232,7 +200,7 @@ export const RecipeDisplay = ({
                       {tags.map((tag, tagIndex) => (
                         <span
                           key={`${recipe.id}-tag-${tagIndex}`}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-border-80 bg-background-80 px-3 py-1 text-xs font-medium text-muted-foreground"
                         >
                           <Tag className="h-3.5 w-3.5" />
                           {tag}
@@ -245,7 +213,7 @@ export const RecipeDisplay = ({
                 <Card className={sectionCardClass}>
                   <CardContent className="grid grid-cols-1 gap-4 p-4 sm:p-5 md:grid-cols-3">
                     {recipe.cookingTime && (
-                      <div className="rounded-xl border border-border/70 bg-background/70 p-4">
+                      <div className="rounded-xl border border-border-70 bg-background-70 p-4">
                         <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                           <Clock className="h-4 w-4" />
                           <p className="text-xs font-semibold uppercase tracking-wide">
@@ -259,7 +227,7 @@ export const RecipeDisplay = ({
                     )}
 
                     {recipe.servings && (
-                      <div className="rounded-xl border border-border/70 bg-background/70 p-4">
+                      <div className="rounded-xl border border-border-70 bg-background-70 p-4">
                         <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                           <Users className="h-4 w-4" />
                           <p className="text-xs font-semibold uppercase tracking-wide">
@@ -272,16 +240,16 @@ export const RecipeDisplay = ({
                       </div>
                     )}
 
-                    {recipe.difficulty && (
-                      <div className="rounded-xl border border-border/70 bg-background/70 p-4">
+                    {recipe.vibe && (
+                      <div className="rounded-xl border border-border-70 bg-background-70 p-4">
                         <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                           <ChefHat className="h-4 w-4" />
                           <p className="text-xs font-semibold uppercase tracking-wide">
-                            {t("difficulty")}
+                            {t("vibe")}
                           </p>
                         </div>
                         <p className="text-base font-semibold text-foreground md:text-lg">
-                          {getDifficultyLabel(recipe.difficulty)}
+                          {getVibeLabel(recipe.vibe)}
                         </p>
                       </div>
                     )}
@@ -380,7 +348,7 @@ export const RecipeDisplay = ({
                           </div>
                         ))}
                       </div>
-                      <div className="mt-4 border-t border-border/80 pt-3">
+                      <div className="mt-4 border-t border-border-80 pt-3">
                         <p className="text-xs italic text-muted-foreground">
                           {t("aiContentNotice")}
                         </p>
@@ -390,122 +358,6 @@ export const RecipeDisplay = ({
                 )}
               </div>
 
-              <div className="h-fit lg:sticky lg:top-24">
-                <Card className={`${sectionCardClass} h-fit`}>
-                  <CardContent className="p-4 sm:p-5">
-                    <h3 className="text-base font-semibold tracking-tight text-foreground md:text-lg">
-                      {t("quickInfo")}
-                    </h3>
-
-                    <div className="mt-4 space-y-3">
-                      {recipe.cookingTime && (
-                        <div className="flex items-center justify-between gap-4 text-sm">
-                          <span className="text-muted-foreground">{t("cookTime")}</span>
-                          <span className="font-semibold text-foreground">
-                            {recipe.cookingTime} {t("mins")}
-                          </span>
-                        </div>
-                      )}
-
-                      {recipe.servings && (
-                        <div className="flex items-center justify-between gap-4 text-sm">
-                          <span className="text-muted-foreground">{t("serves")}</span>
-                          <span className="font-semibold text-foreground">{recipe.servings}</span>
-                        </div>
-                      )}
-
-                      {recipe.difficulty && (
-                        <div className="flex items-center justify-between gap-4 text-sm">
-                          <span className="text-muted-foreground">{t("difficulty")}</span>
-                          <span className="rounded-md bg-muted px-2 py-1 font-semibold text-foreground">
-                            {getDifficultyLabel(recipe.difficulty)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <Separator className="my-5" />
-
-                    <div className="space-y-2.5">
-                      {onSaveRecipe && (
-                        <Button
-                          className="min-h-11 w-full"
-                          disabled={savingStates[recipe.id]}
-                          onClick={async () => {
-                            setSavingStates((prev) => ({ ...prev, [recipe.id]: true }));
-                            try {
-                              await onSaveRecipe(recipe);
-                            } finally {
-                              setSavingStates((prev) => ({ ...prev, [recipe.id]: false }));
-                            }
-                          }}
-                        >
-                          {savingStates[recipe.id] ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <Bookmark className="mr-2 h-4 w-4" />
-                          )}
-                          {t("saveRecipe")}
-                        </Button>
-                      )}
-
-                      <Button
-                        variant="outline"
-                        className="min-h-11 w-full"
-                        onClick={() => {
-                          const allContent = [
-                            recipe.title,
-                            "",
-                            recipe.description,
-                            "",
-                            `${t("ingredients")}:`,
-                            ...ingredients.map((ingredient) => `• ${ingredient}`),
-                            "",
-                            `${t("seasoning")}:`,
-                            ...seasoning.map((season) => `• ${season}`),
-                            "",
-                            `${t("instructions")}:`,
-                            ...instructions.map(
-                              (instruction, instructionIndex) =>
-                                `${instructionIndex + 1}. ${instruction}`
-                            ),
-                            "",
-                            `${t("chefTips")}:`,
-                            ...chefTips.map((tip) => `• ${tip}`),
-                          ].join("\n");
-
-                          copyToClipboard(allContent, recipe.id, "ingredients");
-                        }}
-                      >
-                        {copiedSection?.recipeId === recipe.id &&
-                        copiedSection?.type === "ingredients" ? (
-                          <Check className="mr-2 h-4 w-4 text-green-600" />
-                        ) : (
-                          <Copy className="mr-2 h-4 w-4" />
-                        )}
-                        {t("copyFullRecipe")}
-                      </Button>
-
-                      <Button
-                        variant="outline"
-                        className="min-h-11 w-full"
-                        onClick={() => {
-                          const event = new CustomEvent("regenerateRecipe", {
-                            detail: {
-                              ingredients: selectedIngredients,
-                              recipe,
-                            },
-                          });
-                          window.dispatchEvent(event);
-                        }}
-                      >
-                        <RefreshCw className="mr-2 h-4 w-4" />
-                        {t("regenerate")}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
             </div>
           );
         })}

@@ -42,8 +42,8 @@ export const APP_CONFIG = {
   recipeGenerationCost: 1,
   imageGenerationCost: 2,
   
-  // 难度等级
-  difficulties: ['Easy', 'Medium', 'Hard'] as const,
+  // 菜谱风格
+  vibes: ['quick', 'comfort', 'gourmet', 'healthy'] as const,
 } as const;
 
 // ==================== 分类配置 ====================

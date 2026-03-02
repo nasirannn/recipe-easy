@@ -1,7 +1,7 @@
 # Privacy Policy
 
 **Effective Date:** February 27, 2026  
-**Last Updated:** February 27, 2026
+**Last Updated:** March 2, 2026
 
 This Privacy Policy explains how Recipe Easy ("Recipe Easy", "we", "our", "us") collects, uses, stores, and shares information when you use our website and services.
 
@@ -15,7 +15,7 @@ This policy applies to:
 ## 2. Information We Collect
 
 ### 2.1 Account and Profile Information
-When you sign in using email/password or Google OAuth (via Supabase), we may process:
+When you sign in using email one-time verification codes (OTP) or Google OAuth (via Supabase), we may process:
 - Account identifier (user ID)
 - Email address
 - Authentication provider data (for example, Google profile fields made available by Supabase)
@@ -23,9 +23,10 @@ When you sign in using email/password or Google OAuth (via Supabase), we may pro
 
 ### 2.2 Recipe and Content Information
 When you use product features, we may process:
-- Ingredient selections and recipe preferences (servings, cooking time, difficulty, cuisine, language)
+- Ingredient selections and recipe preferences (servings, cooking time, vibe, cuisine, language)
 - Generated recipe output
 - Saved recipe content (title, description, ingredients, seasoning, instructions, tags, chef tips)
+- Favorite-recipe relationships and cookbook listing metadata
 - Recipe translations generated for supported locales
 - Recipe image links and image model metadata
 - Avatar images you upload
@@ -88,7 +89,8 @@ We retain data for as long as needed for service operation and legitimate busine
 Typical retention logic:
 - **Account/profile data**: while account remains active
 - **Saved recipes and related metadata**: until you delete them or your account is removed
-- **Avatar and recipe images in storage**: until replaced/deleted/removed as part of account or content lifecycle
+- **Avatar images in storage**: until replaced/deleted/removed as part of account lifecycle
+- **Recipe images in storage**: based on storage lifecycle policy (currently up to about 7 days)
 - **Credits and transaction records**: as needed for account integrity, abuse prevention, and auditing
 - **Operational logs and analytics**: according to provider retention settings and legal requirements
 
@@ -102,6 +104,7 @@ In-product controls currently include:
 - Update display name
 - Upload/replace avatar
 - Delete your saved recipes
+- Manage recipe favorites
 
 For account-level data requests (access/export/deletion), contact us at `contact@recipe-easy.com`.
 

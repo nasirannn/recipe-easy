@@ -5,6 +5,8 @@ import { FooterSection } from '@/components/layout/sections/footer';
 import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
 import { env } from '@/lib/env';
 import { getImageUrl } from '@/lib/config';
+import { getPostgresPool } from '@/lib/server/postgres';
+import { getRecipeById } from '@/lib/server/recipes';
 
 interface RecipePageProps {
   params: Promise<{
@@ -43,6 +45,35 @@ function buildRecipeStructuredData(recipe: any, locale: string, id: string) {
   const cookingMinutes = Number.isFinite(Number(recipe.cookingTime))
     ? Math.max(0, Number(recipe.cookingTime))
     : 0;
+  const nutrition = recipe?.nutrition && typeof recipe.nutrition === 'object'
+    ? recipe.nutrition
+    : {};
+
+  const nutritionInformation = (() => {
+    const calories = Number(nutrition?.calories);
+    const protein = Number(nutrition?.protein);
+    const carbohydrates = Number(nutrition?.carbohydrates);
+    const fat = Number(nutrition?.fat);
+    const fiber = Number(nutrition?.fiber);
+    const sugar = Number(nutrition?.sugar);
+
+    const hasNutrition = [calories, protein, carbohydrates, fat, fiber, sugar].some((value) =>
+      Number.isFinite(value)
+    );
+    if (!hasNutrition) {
+      return undefined;
+    }
+
+    return {
+      '@type': 'NutritionInformation',
+      calories: Number.isFinite(calories) ? `${calories} kcal` : undefined,
+      proteinContent: Number.isFinite(protein) ? `${protein} g` : undefined,
+      carbohydrateContent: Number.isFinite(carbohydrates) ? `${carbohydrates} g` : undefined,
+      fatContent: Number.isFinite(fat) ? `${fat} g` : undefined,
+      fiberContent: Number.isFinite(fiber) ? `${fiber} g` : undefined,
+      sugarContent: Number.isFinite(sugar) ? `${sugar} g` : undefined,
+    };
+  })();
 
   return {
     '@context': 'https://schema.org',
@@ -55,6 +86,7 @@ function buildRecipeStructuredData(recipe: any, locale: string, id: string) {
     recipeYield: recipe.servings ? String(recipe.servings) : undefined,
     totalTime: cookingMinutes > 0 ? `PT${cookingMinutes}M` : undefined,
     recipeIngredient: ingredients,
+    nutrition: nutritionInformation,
     recipeInstructions: instructions.map((text, index) => ({
       '@type': 'HowToStep',
       name: isZh ? `步骤 ${index + 1}` : `Step ${index + 1}`,
@@ -72,12 +104,10 @@ export async function generateMetadata({
   const { locale, id } = await params;
   
   try {
-    // 获取菜谱数据用于SEO - 统一使用配置中的应用域名
-    const apiUrl = `${env.APP_URL}/api/recipes/${id}?lang=${locale}`;
-    const response = await fetch(apiUrl);
-    const data = await response.json() as any;
-    
-    if (!data.success || !data.recipe) {
+    const db = getPostgresPool();
+    const recipe = await getRecipeById(db, id, locale);
+
+    if (!recipe) {
       return generateSeoMetadata({
         title: 'Recipe Not Found - RecipeEasy',
         description: 'The requested recipe could not be found.',
@@ -86,7 +116,6 @@ export async function generateMetadata({
       });
     }
 
-    const recipe = data.recipe;
     return generateSeoMetadata({
       title: `${recipe.title} - RecipeEasy`,
       description: recipe.description || `Learn how to make ${recipe.title} with our step-by-step recipe guide.`,
@@ -107,26 +136,8 @@ export async function generateMetadata({
 
 async function getRecipe(id: string, locale: string) {
   try {
-    // 在服务器端统一使用配置中的应用域名
-    const apiUrl = `${env.APP_URL}/api/recipes/${id}?lang=${locale}`;
-    const response = await fetch(apiUrl, {
-      // 添加缓存控制
-      next: { revalidate: 3600 } // 1小时缓存
-    });
-    
-    if (!response.ok) {
-      // Failed to fetch recipe
-      return null;
-    }
-    
-    const data = await response.json() as any;
-    
-    if (!data.success) {
-      // Recipe API returned error
-      return null;
-    }
-    
-    return data.recipe;
+    const db = getPostgresPool();
+    return await getRecipeById(db, id, locale);
   } catch (error) {
     // Error fetching recipe
     return null;

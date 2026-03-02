@@ -1,7 +1,7 @@
 # Terms of Service
 
 **Effective Date:** February 27, 2026  
-**Last Updated:** February 27, 2026
+**Last Updated:** March 2, 2026
 
 These Terms of Service ("Terms") govern your use of Recipe Easy.
 
@@ -17,14 +17,15 @@ You agree that:
 - You are responsible for activity under your account
 - You will keep your account credentials secure
 
-Recipe Easy supports sign-in with email/password and Google OAuth.
+Recipe Easy currently supports sign-in with email one-time verification codes (OTP) and Google OAuth.
 
 ## 3. Service Description
 
 Recipe Easy provides AI-assisted cooking features, including:
 - Recipe generation from selected ingredients and preferences
 - AI image generation for recipes
-- Recipe saving, listing, editing, translation, and deletion
+- Recipe saving, listing, favorites management, and deletion
+- Automatic recipe translation for supported locales
 - Credits-based usage controls
 - Profile features such as display name and avatar
 

@@ -2,337 +2,186 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useTranslations } from 'next-intl';
-import { useLocale } from 'next-intl';
-import { useState } from 'react';
-import { ContactDialog } from '@/components/ui/contact-dialog';
-import { withLocalePath } from '@/lib/utils/locale-path';
+import { useLocale } from "next-intl";
+import { useState } from "react";
+import { ContactDialog } from "@/components/ui/contact-dialog";
+import { withLocalePath } from "@/lib/utils/locale-path";
 
 export const FooterSection = () => {
-  const t = useTranslations('footer');
-  const tContact = useTranslations('contactDialog');
   const locale = useLocale();
   const homeHref = withLocalePath(locale);
   const [showContactDialog, setShowContactDialog] = useState(false);
 
   return (
-    <footer id="footer" className="home-section-compact border-t border-border/70">
-      <div className="home-inner">
-        {/* Main content grid - two columns layout with right content grouped */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10">
-          {/* First column: Logo and description */}
-          <div className="text-center md:text-left">
-            <Link href={homeHref} className="inline-flex items-center gap-2 text-base font-semibold tracking-tight sm:text-lg">
-              <div className="relative w-7 h-7 sm:w-8 sm:h-8">
-                <Image 
-                  src="/images/recipe-easy-logo.svg"
-                  alt="Logo"
+    <footer id="footer" className="mt-10 border-t border-border-70 bg-background py-10 text-foreground">
+      <div className="px-4 md:px-10">
+        <div className="mx-auto w-full max-w-[1200px]">
+          <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="relative h-6 w-6 opacity-75">
+                <Image
+                  src="/logo.svg"
+                  alt="RecipeEasy"
                   fill
                   className="object-contain"
-                  sizes="(max-width: 640px) 28px, 32px"
+                  sizes="24px"
                 />
               </div>
-              RecipeEasy
-            </Link>
-            <p className="mt-3 max-w-xs text-sm leading-6 text-muted-foreground md:mx-0">
-              {t('description')}
-            </p>
-          </div>
+              <Link href={homeHref} className="font-bold text-muted-foreground hover:text-primary">
+                RecipeEasy © 2026
+              </Link>
+            </div>
 
-          {/* Second column: About, Help, and Friend sections grouped together */}
-          <div>
-            <div className="flex flex-wrap justify-center gap-8 md:justify-end">
-              {/* About section */}
-              <div className="flex flex-col gap-2 shrink-0 text-center md:text-left">
-                <h3 className="text-base font-semibold">{t('about')}</h3>
-                <div>
-                  <Link href={withLocalePath(locale, '#features')} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-                    {t('features')}
-                  </Link>
-                </div>
-              </div>
-
-              {/* Help section */}
-              <div className="flex flex-col gap-2 shrink-0 text-center md:text-left">
-                <h3 className="text-base font-semibold">{t('help')}</h3>
-                <div>
-                  <button 
-                    onClick={() => setShowContactDialog(true)}
-                    className="bg-transparent border-none p-0 text-sm text-muted-foreground transition-colors hover:text-foreground text-center md:text-left cursor-pointer"
-                  >
-                    {t('contact')}
-                  </button>
-                </div>
-                <div>
-                  <Link href={withLocalePath(locale, '#faq')} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-                    {t('faq')}
-                  </Link>
-                </div>
-              </div>
-
-              {/* Friend section */}
-              <div className="flex flex-col gap-2 shrink-0 text-center md:text-left">
-                <h3 className="text-base font-semibold">{t('friends')}</h3>
-                <div>
-                  <a 
-                    href="https://aiketorecipes.com/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    AI Keto Recipes
-                  </a>
-                </div>
-                <div>
-                  <a 
-                  href="https://aistage.net" 
-                  title="AIStage"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >AIStage</a>
-                </div>
-                <div>
-                  <a
-                    href="https://makernb.com"
-                    title="MakeRNB"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    MakeRNB
-                  </a>
-                </div>
-              </div>
+            <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground md:justify-end">
+              <Link href={withLocalePath(locale, "/privacy")} className="transition-colors hover:text-primary">
+                {locale === "zh" ? "隐私政策" : "Privacy Policy"}
+              </Link>
+              <Link href={withLocalePath(locale, "/terms")} className="transition-colors hover:text-primary">
+                {locale === "zh" ? "服务条款" : "Terms of Service"}
+              </Link>
+              <button
+                type="button"
+                onClick={() => setShowContactDialog(true)}
+                className="cursor-pointer bg-transparent p-0 text-sm text-muted-foreground transition-colors hover:text-primary"
+              >
+                {locale === "zh" ? "联系支持" : "Contact Support"}
+              </button>
             </div>
           </div>
-        </div>
 
-        {/* Copyright and legal links */}
-        <div className="my-6 h-px bg-border/70" />
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <h3 className="text-left text-sm text-muted-foreground">
-            {t('copyright')}
-          </h3>
-          <div className="flex gap-6 text-sm">
-            <Link href={withLocalePath(locale, '/privacy')} className="text-muted-foreground transition-colors hover:text-foreground">
-              {t('privacy')}
-            </Link>
-            <Link href={withLocalePath(locale, '/terms')} className="text-muted-foreground transition-colors hover:text-foreground">
-              {t('terms')}
-            </Link>
-          </div>
-        </div>
+          <div className="my-6 h-px bg-border-70" />
 
-        {/* Badges section */}
-        <div className="my-6 h-px bg-border/70" />
-        <div className="flex flex-wrap items-center justify-start gap-4">
-          <a 
-            href="https://startupfa.me/s/recipe-easy.com?utm_source=recipe-easy.com" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:opacity-80 transition-opacity"
-          >
-            <Image 
-              src="https://startupfa.me/badges/featured/default-small.webp" 
-              alt="Featured on Startup Fame" 
-              width={224}
-              height={36}
-              className="h-9 w-auto object-contain"
-              unoptimized
-            />
-          </a>
-          <a 
-            href="https://www.producthunt.com/products/recipeeasy?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-recipeeasy" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:opacity-80 transition-opacity"
-          >
-            <Image 
-              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1001064&theme=light&t=1754981113114" 
-              alt="RecipeEasy - AI Recipe Generator - Turn ingredients into recipe instantly | Product Hunt" 
-              width={250}
-              height={54}
-              className="h-9 w-auto object-contain"
-              unoptimized
-            />
-          </a>
-          <a 
-            href="https://fazier.com/launches/recipeeasy" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:opacity-80 transition-opacity"
-          >
-            <Image 
-              src="https://fazier.com/api/v1/public/badges/embed_image.svg?launch_id=5138&badge_type=weekly&theme=light" 
-              alt="Fazier badge" 
-              width={270}
-              height={36}
-              className="h-9 w-auto object-contain"
-              unoptimized
-            />
-          </a>
-          <a 
-            href="https://tinylaunch.com" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:opacity-80 transition-opacity"
-          >
-            <Image 
-              src="https://tinylaunch.com/tinylaunch_badge_featured_on.svg"
-              alt="TinyLaunch Badge"
-              width={202}
-              height={36}
-              className="h-9 w-auto object-contain"
-              unoptimized
-            />
-          </a>
-          <a 
-            href="https://firsto.co/projects/recipeeasy" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            title="Find us on Firsto"
-            className="hover:opacity-80 transition-opacity"
-          >
-            <Image 
-              src="https://firsto.co/images/badges/find-us-on-firsto.svg"
-              alt="Find us on Firsto"
-              width={195}
-              height={36}
-              className="h-9 w-auto object-contain"
-              unoptimized
-            />
-          </a>
-          <a 
-            href="https://www.saashub.com/recipe-easy?utm_source=badge&utm_campaign=badge&utm_content=recipe-easy&badge_variant=color&badge_kind=approved" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:opacity-80 transition-opacity"
-          >
-            <Image
-              src="https://cdn-b.saashub.com/img/badges/approved-color.png?v=1"
-              alt="Recipe Easy badge"
-              width={150}
-              height={36}
-              className="h-9 w-auto max-w-[150px] object-contain"
-              unoptimized
-            />
-          </a>
-          <a href="https://indie.deals?ref=https%3A%2F%2Frecipe-easy.com" target="_blank" rel="noopener noreferrer">
-            <style jsx>{`
-              .indie-deals-badge {
-                position: relative;
-                overflow: hidden;
-                display: inline-block;
-              }
-              .indie-deals-badge::after {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(45deg, 
-                  rgba(255,255,255,0) 0%, 
-                  rgba(255,255,255,0) 40%, 
-                  rgba(255,255,255,0) 40%, 
-                  rgba(255,255,255,0.9) 50%, 
-                  rgba(255,255,255,0) 60%, 
-                  rgba(255,255,255,0) 100%);
-                transform: translateX(-100%) rotate(45deg);
-                pointer-events: none;
-                transition: transform 0.3s ease-out;
-              }
-              .indie-deals-badge:hover::after {
-                animation: indie-deals-shine 1s ease-out;
-              }
-              @keyframes indie-deals-shine {
-                0% { transform: translateX(-100%) rotate(45deg); }
-                50% { transform: translateX(0%) rotate(45deg); }
-                100% { transform: translateX(100%) rotate(45deg); }
-              }
-            `}</style>
-            <svg 
-              width="120" 
-              height="40" 
-              viewBox="0 0 120 40"
-              xmlns="http://www.w3.org/2000/svg"
-              className="indie-deals-badge h-9 w-auto object-contain"
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <a
+              href="https://aiketorecipes.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-primary"
             >
-              <defs>
-                <linearGradient id="badgeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#ffffff" />
-                  <stop offset="100%" stopColor="#e6f0fc" />
-                </linearGradient>
-              </defs>
-              
-              <rect 
-                width="120" 
-                height="40" 
-                rx="10" 
-                fill="url(#badgeGradient)"
+              AI Keto Recipes
+            </a>
+            <a
+              href="https://aistage.net"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-primary"
+            >
+              AIStage
+            </a>
+            <a
+              href="https://makernb.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-primary"
+            >
+              MakeRNB
+            </a>
+          </div>
+
+          <div className="my-6 h-px bg-border-70" />
+
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <a
+              href="https://startupfa.me/s/recipe-easy.com?utm_source=recipe-easy.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <Image
+                src="https://startupfa.me/badges/featured/default-small.webp"
+                alt="Featured on Startup Fame"
+                width={224}
+                height={36}
+                className="h-9 w-auto object-contain"
+                unoptimized
               />
-              
-              <rect 
-                x="0.75" 
-                y="0.75" 
-                width="118.5" 
-                height="38.5" 
-                rx="9.25" 
-                fill="none"
-                stroke="#0070f3" 
-                strokeWidth="1.5" 
-                strokeOpacity="0.3"
+            </a>
+
+            <a
+              href="https://www.producthunt.com/products/recipeeasy?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-recipeeasy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <Image
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1001064&theme=light&t=1754981113114"
+                alt="RecipeEasy on Product Hunt"
+                width={250}
+                height={54}
+                className="h-9 w-auto object-contain"
+                unoptimized
               />
-              
-              <image 
-                href="https://indie.deals/logo_badge.png"
-                x="9.6"
-                y="8"
-                width="24"
-                height="24"
-                preserveAspectRatio="xMidYMid meet"
-                filter="drop-shadow(1px 1px 2px rgba(0,0,0,0.15))"
+            </a>
+
+            <a
+              href="https://fazier.com/launches/recipeeasy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <Image
+                src="https://fazier.com/api/v1/public/badges/embed_image.svg?launch_id=5138&badge_type=weekly&theme=light"
+                alt="RecipeEasy on Fazier"
+                width={270}
+                height={36}
+                className="h-9 w-auto object-contain"
+                unoptimized
               />
-              
-              <text 
-                x="80.4" 
-                y="15.2" 
-                textAnchor="middle" 
-                dominantBaseline="middle"
-                fontFamily="system-ui, -apple-system, sans-serif"
-                fontSize="7.199999999999999"
-                fontWeight="normal"
-                fill="#4b5563"
-                letterSpacing="0.01em"
-              >
-                Find us on
-              </text>
-              <text 
-                x="80.4" 
-                y="26" 
-                textAnchor="middle" 
-                dominantBaseline="middle"
-                fontFamily="system-ui, -apple-system, sans-serif"
-                fontSize="8.8"
-                fontWeight="bold"
-                fill="#0070f3"
-                letterSpacing="0.01em"
-              >
-                Indie.Deals
-              </text>
-            </svg>
-          </a>
+            </a>
+
+            <a
+              href="https://tinylaunch.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <Image
+                src="https://tinylaunch.com/tinylaunch_badge_featured_on.svg"
+                alt="Featured on TinyLaunch"
+                width={202}
+                height={36}
+                className="h-9 w-auto object-contain"
+                unoptimized
+              />
+            </a>
+
+            <a
+              href="https://firsto.co/projects/recipeeasy"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Find us on Firsto"
+              className="transition-opacity hover:opacity-80"
+            >
+              <Image
+                src="https://firsto.co/images/badges/find-us-on-firsto.svg"
+                alt="Find us on Firsto"
+                width={195}
+                height={36}
+                className="h-9 w-auto object-contain"
+                unoptimized
+              />
+            </a>
+
+            <a
+              href="https://www.saashub.com/recipe-easy?utm_source=badge&utm_campaign=badge&utm_content=recipe-easy&badge_variant=color&badge_kind=approved"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <Image
+                src="https://cdn-b.saashub.com/img/badges/approved-color.png?v=1"
+                alt="RecipeEasy on SaaSHub"
+                width={150}
+                height={36}
+                className="h-9 w-auto max-w-[150px] object-contain"
+                unoptimized
+              />
+            </a>
+          </div>
         </div>
       </div>
 
-      <ContactDialog
-        open={showContactDialog}
-        onOpenChange={setShowContactDialog}
-        email="contact@recipe-easy.com"
-        subject={tContact('defaultSubject')}
-        body={tContact('defaultBody')}
-      />
+      <ContactDialog open={showContactDialog} onOpenChange={setShowContactDialog} />
     </footer>
   );
 };

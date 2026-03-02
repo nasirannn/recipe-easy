@@ -11,6 +11,7 @@ import {
 import { APP_CONFIG } from '@/lib/config';
 import { useAuth } from '@/contexts/auth-context';
 import { useUserUsage } from './use-user-usage';
+import { createAuthRequiredError } from '@/lib/utils/auth-error';
 
 /**
  * 食谱生成相关的自定义Hook
@@ -24,11 +25,20 @@ export function useRecipeGeneration(): UseRecipeGenerationReturn {
   const locale = useLocale();
   const { session } = useAuth();
   const { updateCreditsLocally } = useUserUsage();
+  const signInRequiredMessage =
+    locale.toLowerCase().startsWith('zh')
+      ? '请先登录后再生成菜谱'
+      : 'Please sign in to generate recipes';
 
   /**
    * 生成食谱
    */
   const generateRecipe = useCallback(async (formData: RecipeFormData): Promise<Recipe[]> => {
+    if (!session?.access_token) {
+      setError(signInRequiredMessage);
+      throw createAuthRequiredError(signInRequiredMessage);
+    }
+
     setLoading(true);
     setError(null);
 
@@ -37,15 +47,14 @@ export function useRecipeGeneration(): UseRecipeGenerationReturn {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(session?.access_token
-            ? { Authorization: `Bearer ${session.access_token}` }
-            : {}),
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           ingredients: formData.ingredients,
           servings: formData.servings,
           cookingTime: formData.cookingTime,
-          difficulty: formData.difficulty,
+          vibe: formData.vibe,
+          mealType: formData.mealType,
           cuisine: formData.cuisine,
           language: locale,
           languageModel: formData.languageModel,
@@ -53,6 +62,9 @@ export function useRecipeGeneration(): UseRecipeGenerationReturn {
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw createAuthRequiredError(signInRequiredMessage);
+        }
         const errorData = await response.json() as any;
         throw new Error(errorData.error || '食谱生成失败');
       }
@@ -71,7 +83,7 @@ export function useRecipeGeneration(): UseRecipeGenerationReturn {
     } finally {
       setLoading(false);
     }
-  }, [locale, session?.access_token, updateCreditsLocally]);
+  }, [locale, session?.access_token, signInRequiredMessage, updateCreditsLocally]);
 
   /**
    * 重新生成食谱

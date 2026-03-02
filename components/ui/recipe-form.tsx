@@ -1,12 +1,10 @@
 "use client"
 
 import { Button } from "@/components/ui/button";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { IngredientSelector } from "./ingredients-selector";
-import { Sparkles, X, RotateCcw, Minus, Plus, Box, PencilLine } from "lucide-react";
-import { Label } from "@/components/ui/label";
+import { Sparkles, X, RotateCcw, Box, PencilLine, Gauge, Clock3, Users, ChefHat, Dumbbell, Globe, Heart } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AuthModal } from "@/components/auth/auth-modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useCuisines } from "@/hooks/use-cuisines";
@@ -15,8 +13,11 @@ import { RecipeFormData, Ingredient } from "@/lib/types";
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./sheet";
 import Image from "next/image";
-import { CATEGORIES_CONFIG, CAROUSEL_CONFIG } from '@/lib/config';
+import { APP_CONFIG, CATEGORIES_CONFIG, CAROUSEL_CONFIG } from '@/lib/config';
 import { useAuth } from "@/contexts/auth-context";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { buildAuthPath } from "@/lib/utils/auth-path";
+import { optionButtonClass } from "@/lib/utils/button-styles";
 
 interface RecipeFormProps {
   formData: RecipeFormData;
@@ -25,6 +26,7 @@ interface RecipeFormProps {
   loading: boolean;
   showRecipe: boolean;
   setShowRecipe: (show: boolean) => void;
+  remainingCredits?: number | null;
   // 新增：tab相关props
   activeTab?: 'recipe-maker' | 'meal-planner';
   onTabChange?: (tab: 'recipe-maker' | 'meal-planner') => void;
@@ -114,6 +116,32 @@ const MOBILE_BASKET_ICON_POSITIONS = [
   "left-[67%] top-[63%] rotate-[-5deg]",
 ] as const;
 
+const COOKING_TIME_DEFAULTS: Record<RecipeFormData["cookingTime"], number> = {
+  quick: 20,
+  medium: 30,
+  long: 75,
+};
+
+const mapMinutesToCookingTimePreset = (minutes: number): RecipeFormData["cookingTime"] => {
+  if (minutes <= 25) {
+    return "quick";
+  }
+  if (minutes <= 60) {
+    return "medium";
+  }
+  return "long";
+};
+
+const formatCookingTimeLabel = (minutes: number): string => {
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    const remainder = minutes % 60;
+    return remainder > 0 ? `${hours}h ${remainder}m` : `${hours}h`;
+  }
+
+  return `${minutes} min`;
+};
+
 const BasketIngredientIcon = ({
   ingredient,
   className,
@@ -154,13 +182,19 @@ export const RecipeForm = ({
   onSubmit,
   loading,
   setShowRecipe,
+  remainingCredits,
 }: RecipeFormProps) => {
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [cookingTimeMinutes, setCookingTimeMinutes] = useState<number>(
+    () => COOKING_TIME_DEFAULTS[formData.cookingTime] ?? 30
+  );
   const { user, loading: authLoading } = useAuth();
-  const { cuisines, loading: cuisinesLoading } = useCuisines();
+  const { cuisines } = useCuisines();
   const t = useTranslations('recipeForm');
   const tIngredientSelector = useTranslations('ingredientSelector');
   const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   
   // 使用自定义 hooks
   const { isMobile } = useResponsive();
@@ -180,6 +214,11 @@ export const RecipeForm = ({
   const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
   const [ingredientsLoading, setIngredientsLoading] = useState(true);
   const [ingredientsError, setIngredientsError] = useState<string | null>(null);
+  const authRedirectPath = useMemo(() => {
+    const query = searchParams.toString();
+    const nextPath = query ? `${pathname}?${query}` : pathname;
+    return buildAuthPath(locale, nextPath);
+  }, [locale, pathname, searchParams]);
 
   // 处理分类变更 - 使用 useCallback 优化
   const handleCategoryChange = useCallback((categoryId: keyof typeof CATEGORIES_CONFIG) => {
@@ -386,16 +425,6 @@ export const RecipeForm = ({
 
   // 检测屏幕尺寸 - 已移至 useResponsive hook
 
-  // 监听showLoginModal事件
-  useEffect(() => {
-    const handleShowLoginModal = () => {
-      setShowAuthModal(true);
-    };
-
-    window.addEventListener('showLoginModal', handleShowLoginModal);
-    return () => window.removeEventListener('showLoginModal', handleShowLoginModal);
-  }, []);
-
   useEffect(() => {
     if (formData.ingredients.length === 0) {
       setDesktopBasketEditorOpen(false);
@@ -440,7 +469,7 @@ export const RecipeForm = ({
     }
 
     if (!user) {
-      setShowAuthModal(true);
+      router.push(authRedirectPath);
       return;
     }
 
@@ -460,30 +489,35 @@ export const RecipeForm = ({
         }
       }, 100); // 短暂延迟确保DOM更新
     }
-  }, [authLoading, formData.ingredients.length, onSubmit, setShowRecipe, user]);
-
-  // 处理份数减少
-  const handleServingsDecrease = useCallback(() => {
-    if (formData.servings > 1) {
-      onFormChange({ ...formData, servings: formData.servings - 1 });
-    }
-  }, [formData, onFormChange]);
-
-  // 处理份数增加
-  const handleServingsIncrease = useCallback(() => {
-    if (formData.servings < 8) {
-      onFormChange({ ...formData, servings: formData.servings + 1 });
-    }
-  }, [formData, onFormChange]);
+  }, [authLoading, authRedirectPath, formData.ingredients.length, onSubmit, router, setShowRecipe, user]);
 
   // 处理烹饪时间变更
-  const handleCookingTimeChange = useCallback((value: string) => {
-    onFormChange({ ...formData, cookingTime: value as 'quick' | 'medium' | 'long' });
+  const handleCookingTimeChange = useCallback((value: number) => {
+    setCookingTimeMinutes(value);
+    const mappedPreset = mapMinutesToCookingTimePreset(value);
+
+    if (formData.cookingTime !== mappedPreset) {
+      onFormChange({ ...formData, cookingTime: mappedPreset });
+    }
   }, [formData, onFormChange]);
 
-  // 处理难度变更
-  const handleDifficultyChange = useCallback((value: 'easy' | 'medium' | 'hard') => {
-    onFormChange({ ...formData, difficulty: value });
+  useEffect(() => {
+    setCookingTimeMinutes((currentMinutes) => {
+      const sliderPreset = mapMinutesToCookingTimePreset(currentMinutes);
+      if (sliderPreset === formData.cookingTime) {
+        return currentMinutes;
+      }
+      return COOKING_TIME_DEFAULTS[formData.cookingTime] ?? 30;
+    });
+  }, [formData.cookingTime]);
+
+  // 处理风格偏好变更
+  const handleVibeChange = useCallback((value: RecipeFormData["vibe"]) => {
+    onFormChange({ ...formData, vibe: value });
+  }, [formData, onFormChange]);
+
+  const handleMealTypeChange = useCallback((value: RecipeFormData["mealType"]) => {
+    onFormChange({ ...formData, mealType: value });
   }, [formData, onFormChange]);
 
   // 处理菜系变更
@@ -506,6 +540,67 @@ export const RecipeForm = ({
   const basketGridIngredients = formData.ingredients.slice(0, 9);
   const isZhLocale = locale.toLowerCase().startsWith("zh");
   const selectedIngredientNames = formData.ingredients.map((ingredient) => ingredient.name).join(", ");
+  const formattedRemainingCredits =
+    typeof remainingCredits === "number"
+      ? Number.isInteger(Math.max(0, remainingCredits))
+        ? String(Math.max(0, remainingCredits))
+        : Math.max(0, remainingCredits).toFixed(1)
+      : "0";
+  const currentCookingTimeLabel =
+    formatCookingTimeLabel(cookingTimeMinutes);
+  const optionSectionCopy = isZhLocale
+    ? {
+        vibeTitle: "What's the vibe?",
+        mealTypeTitle: "餐次类型",
+        cookingTimeTitle: "Cooking Time",
+        servingsTitle: "Servings",
+        cuisineTitle: "Cuisine",
+        vibeOptions: [
+          { value: "quick" as const, label: "Quick", icon: Clock3 },
+          { value: "gourmet" as const, label: "Gourmet", icon: ChefHat },
+          { value: "comfort" as const, label: "Comfort", icon: Heart },
+          { value: "healthy" as const, label: "Healthy", icon: Dumbbell },
+        ],
+        mealTypeOptions: [
+          { value: "any" as const, label: "不限" },
+          { value: "breakfast" as const, label: "早餐" },
+          { value: "lunch" as const, label: "午餐" },
+          { value: "dinner" as const, label: "晚餐" },
+          { value: "snack" as const, label: "零食" },
+          { value: "dessert" as const, label: "甜品" },
+        ],
+      }
+    : {
+        vibeTitle: "What's the vibe?",
+        mealTypeTitle: "Meal Type",
+        cookingTimeTitle: "Cooking Time",
+        servingsTitle: "Servings",
+        cuisineTitle: "Cuisine",
+        vibeOptions: [
+          { value: "quick" as const, label: "Quick", icon: Clock3 },
+          { value: "gourmet" as const, label: "Gourmet", icon: ChefHat },
+          { value: "comfort" as const, label: "Comfort", icon: Heart },
+          { value: "healthy" as const, label: "Healthy", icon: Dumbbell },
+        ],
+        mealTypeOptions: [
+          { value: "any" as const, label: "Any" },
+          { value: "breakfast" as const, label: "Breakfast" },
+          { value: "lunch" as const, label: "Lunch" },
+          { value: "dinner" as const, label: "Dinner" },
+          { value: "snack" as const, label: "Snack" },
+          { value: "dessert" as const, label: "Dessert" },
+        ],
+      };
+  const servingsOptions = [1, 2, 3, 4, 5, 6, 7, 8];
+  const cuisineOptions = useMemo(() => {
+    const selected = cuisines.find((cuisine) => cuisine.id.toString() === formData.cuisine);
+    const baseList = cuisines.slice(0, 7);
+    const merged = selected && !baseList.some((item) => item.id === selected.id)
+      ? [selected, ...baseList]
+      : baseList;
+
+    return merged.slice(0, 8);
+  }, [cuisines, formData.cuisine]);
 
   const renderBasketEditorList = (onAfterAction?: () => void) => (
     <div className="space-y-3">
@@ -520,7 +615,7 @@ export const RecipeForm = ({
               clearIngredients();
               onAfterAction?.();
             }}
-            className="inline-flex h-7 items-center rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
+            className="inline-flex h-7 items-center rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-60 focus-visible:ring-offset-2"
           >
             {t('reset')}
           </button>
@@ -534,7 +629,7 @@ export const RecipeForm = ({
           {formData.ingredients.map((ingredient) => (
             <div
               key={`basket-editor-${ingredient.id}`}
-              className="grid min-h-[44px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-200 hover:bg-muted/50"
+              className="grid min-h-[44px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-200 hover:bg-muted-50"
             >
               <BasketIngredientIcon
                 ingredient={ingredient}
@@ -549,7 +644,7 @@ export const RecipeForm = ({
                 type="button"
                 aria-label={`${isZhLocale ? '移除' : 'Remove'} ${ingredient.name}`}
                 onClick={() => removeIngredient(ingredient.id)}
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors duration-200 hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors duration-200 hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-60 focus-visible:ring-offset-2"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -566,7 +661,7 @@ export const RecipeForm = ({
         {Array.from({ length: count }).map((_, index) => (
           <div
             key={`ingredient-skeleton-${index}`}
-            className="inline-flex min-h-[116px] w-[92px] shrink-0 flex-col items-center justify-start gap-2 rounded-xl border border-border/65 bg-card/95 px-2.5 py-2.5 shadow-sm"
+            className="inline-flex min-h-[116px] w-[92px] shrink-0 flex-col items-center justify-start gap-2 rounded-xl border border-border-65 bg-card-95 px-2.5 py-2.5 shadow-sm"
           >
             <Skeleton className="h-11 w-11 rounded-full" />
             <Skeleton className="h-3 w-14 rounded-sm" />
@@ -583,7 +678,7 @@ export const RecipeForm = ({
       <>
         {!isMobile ? (
             <div className="flex flex-col gap-4">
-              <section className="rounded-xl bg-muted/45 p-2">
+              <section className="py-1">
                 <div className="grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-8">
                   {Object.entries(CATEGORIES_CONFIG).map(([categoryId, category]) => {
                     const Icon = category.icon;
@@ -598,15 +693,18 @@ export const RecipeForm = ({
                         aria-label={categoryName}
                         title={categoryName}
                         onClick={() => handleCategoryChange(categoryId as keyof typeof CATEGORIES_CONFIG)}
-                        className={cn(
-                          "flex min-h-[40px] w-full min-w-0 cursor-pointer items-center justify-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium transition-all duration-200",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2",
-                          isActive
-                            ? "bg-primary/10 text-primary shadow-sm"
-                            : "bg-transparent text-muted-foreground hover:bg-muted/65 hover:text-foreground"
-                        )}
+                        className={optionButtonClass({
+                          active: isActive,
+                          className:
+                            "group flex min-h-[40px] w-full min-w-0 items-center justify-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium",
+                        })}
                       >
-                        <span className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : category.color)}>
+                        <span
+                          className={cn(
+                            "h-4 w-4 shrink-0 transition-colors duration-200",
+                            isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-primary"
+                          )}
+                        >
                           {Icon}
                         </span>
                         <span className="truncate whitespace-nowrap">{categoryName}</span>
@@ -617,7 +715,7 @@ export const RecipeForm = ({
               </section>
 
               <div className="grid grid-cols-[minmax(0,1fr)_19.5rem] gap-2">
-                <div className="relative overflow-hidden rounded-2xl bg-muted/45 p-2">
+                <div className="relative overflow-hidden rounded-xl border border-border-70 bg-card p-2">
                   <section className="flex h-[440px] min-h-0 flex-col overflow-hidden">
                     <div className="flex h-full min-h-0 flex-col">
                       <div className="min-h-0 flex-1 p-2">
@@ -638,7 +736,7 @@ export const RecipeForm = ({
                               <button
                                 type="button"
                                 onClick={fetchIngredientsData}
-                                className="inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
+                                className="inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-60 focus-visible:ring-offset-2"
                               >
                                 <RotateCcw className="h-3 w-3" />
                                 {tIngredientSelector('retry')}
@@ -661,9 +759,9 @@ export const RecipeForm = ({
                   </section>
                 </div>
 
-                <div className="relative overflow-hidden rounded-2xl bg-muted/45 p-2">
+                <div className="relative overflow-hidden rounded-xl border border-border-70 bg-card p-2">
                   <aside className="flex h-[440px] min-h-0 flex-col overflow-hidden">
-                    <div className="flex h-14 items-center justify-between gap-3 border-b border-dashed border-border/20 px-4">
+                    <div className="flex h-14 items-center justify-between gap-3 border-b border-dashed border-border-20 px-4">
                       <div className="flex min-w-0 items-center gap-2">
                         <h3 className="truncate text-sm font-semibold text-foreground">{t('basket')}</h3>
                         <span ref={desktopBasketBadgeRef} className="inline-flex h-6 items-center rounded-full bg-primary/10 px-2.5 text-xs font-semibold text-primary">
@@ -676,7 +774,7 @@ export const RecipeForm = ({
                             <button
                               type="button"
                               aria-label={isZhLocale ? '编辑已选食材' : 'Edit selected ingredients'}
-                              className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
+                              className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-60 focus-visible:ring-offset-2"
                             >
                               <PencilLine className="h-4 w-4" />
                               <span>{isZhLocale ? '编辑' : 'Edit'}</span>
@@ -685,7 +783,7 @@ export const RecipeForm = ({
                           <PopoverContent
                             align="end"
                             sideOffset={8}
-                            className="w-[min(92vw,22rem)] border-border/70 bg-card p-3 text-foreground"
+                            className="w-[min(92vw,22rem)] border-border-70 bg-card p-3 text-foreground"
                           >
                             {renderBasketEditorList()}
                           </PopoverContent>
@@ -756,12 +854,12 @@ export const RecipeForm = ({
           ) : (
             <div className="overflow-hidden">
               <div className="flex flex-col">
-                <section className="space-y-3 border-b border-border/20 p-4">
+                <section className="space-y-3 border-b border-border-20 p-4">
                   <div className="flex h-11 items-center justify-between gap-3">
                     <p className="truncate text-sm font-semibold tracking-tight text-foreground">
                       {activeCategoryName}
                     </p>
-                    <span className="inline-flex h-7 items-center rounded-full border border-border/70 bg-background/70 px-3 text-xs font-medium text-foreground">
+                    <span className="inline-flex h-7 items-center rounded-full border border-border-70 bg-background-70 px-3 text-xs font-medium text-foreground">
                       {formData.ingredients.length} {t('ingredients')}
                     </span>
                   </div>
@@ -770,7 +868,7 @@ export const RecipeForm = ({
                     value={activeCategory}
                     onValueChange={(value) => handleCategoryChange(value as keyof typeof CATEGORIES_CONFIG)}
                   >
-                    <SelectTrigger className="h-11 w-full cursor-pointer rounded-lg border-border/70 bg-background/70 text-sm transition-colors duration-200 hover:border-primary/50">
+                    <SelectTrigger className="h-11 w-full cursor-pointer rounded-lg border-border-70 bg-background-70 text-sm transition-colors duration-200 hover:border-primary/50">
                       <SelectValue>
                         <div className="flex items-center gap-2">
                           {CATEGORIES_CONFIG[activeCategory] && (() => {
@@ -781,7 +879,7 @@ export const RecipeForm = ({
                         </div>
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent className="max-h-[280px] overflow-y-auto rounded-xl border-border/70 bg-card">
+                    <SelectContent className="max-h-[280px] overflow-y-auto rounded-xl border-border-70 bg-card">
                       {Object.entries(CATEGORIES_CONFIG).map(([categoryId, category]) => {
                         const Icon = category.icon;
                         const categoryName =
@@ -805,7 +903,7 @@ export const RecipeForm = ({
                   </Select>
                 </section>
 
-                <section className="h-[320px] border-b border-border/20 p-3">
+                <section className="h-[320px] border-b border-border-20 bg-card p-3">
                   {ingredientsLoading ? (
                     renderIngredientsSkeleton(10)
                   ) : ingredientsError ? (
@@ -823,7 +921,7 @@ export const RecipeForm = ({
                         <button
                           type="button"
                           onClick={fetchIngredientsData}
-                          className="inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
+                          className="inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-60 focus-visible:ring-offset-2"
                         >
                           <RotateCcw className="h-3 w-3" />
                           {tIngredientSelector('retry')}
@@ -843,7 +941,7 @@ export const RecipeForm = ({
                   )}
                 </section>
 
-                <section className="h-[280px] p-3">
+                <section className="h-[280px] bg-card p-3">
                   <div className="mb-2 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-semibold text-foreground">{t('basket')}</h3>
@@ -857,13 +955,13 @@ export const RecipeForm = ({
                           <button
                             type="button"
                             aria-label={isZhLocale ? '编辑已选食材' : 'Edit selected ingredients'}
-                            className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
+                            className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-60 focus-visible:ring-offset-2"
                           >
                             <PencilLine className="h-4 w-4" />
                             <span>{isZhLocale ? '编辑' : 'Edit'}</span>
                           </button>
                         </SheetTrigger>
-                        <SheetContent side="bottom" className="max-h-[75vh] rounded-t-2xl border-border/70 px-4 pb-6 pt-8">
+                        <SheetContent side="bottom" className="max-h-[75vh] rounded-t-2xl border-border-70 px-4 pb-6 pt-8">
                           <SheetHeader className="mb-3 text-left">
                             <SheetTitle className="text-base font-semibold text-foreground">
                               {isZhLocale ? '已选食材' : 'Selected Ingredients'}
@@ -937,329 +1035,202 @@ export const RecipeForm = ({
         )}
       </>
       {/* 生成按钮和高级设置 */}
-      <div className={cn("pb-2", !isMobile && "rounded-2xl bg-muted/45 px-3 pt-1 md:px-4")}>
-        {/* 内容容器 */}
-        <div className="w-full pt-4">
-          {/* 桌面端：上方高级设置，下方独立生成按钮 */}
-          {!isMobile ? (
-            <div className="flex flex-col gap-3">
-              {/* 左侧：高级设置选项 */}
-              <div className="w-full">
-                {/* 选项面板（常显） */}
-                <div
-                  className="flex w-full flex-wrap items-center gap-2.5 xl:flex-nowrap xl:gap-3"
-                >
-                  {/* Servings 步进器 */}
-                  <div className="flex h-11 w-full min-w-[168px] flex-1 items-center gap-2 rounded-lg px-3 py-2.5">
-                    <Label htmlFor="servings" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
-                      <Image
-                      src="/images/options-icon/serving.svg"
-                      alt={t('servings')}
-                      width={20}
-                      height={20}
-                      className="w-5 h-5 object-contain"
-                      unoptimized={true}
-                    />
-                    <span>{t('servings')}</span>
-                    </Label>
-                    <div className="flex items-center gap-1 rounded-md p-1 ml-auto">
-                      <Button
+      <div className={cn("pb-2", !isMobile && "pt-4")}>
+        <div className="w-full">
+          <div className="flex flex-col gap-5">
+            <div className="grid gap-3 md:grid-cols-2">
+              <section className="space-y-3">
+                <p className="inline-flex items-center gap-2 text-base font-bold text-foreground">
+                  <Gauge className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+                  <span>{optionSectionCopy.vibeTitle}</span>
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {optionSectionCopy.vibeOptions.map((option) => {
+                    const active = formData.vibe === option.value;
+                    const Icon = option.icon;
+                    return (
+                      <button
+                        key={`vibe-${option.value}`}
                         type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
-                        onClick={handleServingsDecrease}
-                        disabled={formData.servings <= 1}
+                        aria-pressed={active}
+                        onClick={() => handleVibeChange(option.value)}
+                        className={optionButtonClass({
+                          active,
+                          className:
+                            "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold",
+                        })}
                       >
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <div className="w-6 px-1 text-center">
-                        <span className="text-sm font-semibold text-foreground">{formData.servings}</span>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
-                        onClick={handleServingsIncrease}
-                        disabled={formData.servings >= 8}
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Cooking Time 选择器 */}
-                  <div className="flex h-11 w-full min-w-[168px] flex-1 items-center gap-2 rounded-lg px-3 py-2.5">
-                    <Label htmlFor="cookingTime" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
-                      <Image
-                        src="/images/options-icon/cooking_time.svg"
-                        alt={t('cookingTime')}
-                        width={20}
-                        height={20}
-                        className="w-5 h-5 object-contain"
-                        unoptimized={true}
-                      />
-                      <span>{t('cookingTime')}</span>
-                    </Label>
-                    <Select
-                      value={formData.cookingTime}
-                      onValueChange={handleCookingTimeChange}
-                    >
-                      <SelectTrigger id="cookingTime" className="ml-auto h-8 w-24 border-0 bg-background text-xs transition-colors duration-200 sm:w-28">
-                        <SelectValue placeholder={t('selectCookingTime')} />
-                      </SelectTrigger>
-                      <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="z-50 border-border/70 bg-card text-foreground">
-                        <SelectItem value="quick">{t('quick')}</SelectItem>
-                        <SelectItem value="medium">{t('mediumTime')}</SelectItem>
-                        <SelectItem value="long">{t('long')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Difficulty 选择器 */}
-                  <div className="flex h-11 w-full min-w-[168px] flex-1 items-center gap-2 rounded-lg px-3 py-2.5">
-                    <Label htmlFor="difficulty" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
-                      <Image
-                        src="/images/options-icon/difficulty.svg"
-                        alt="Difficulty"
-                        width={20}
-                        height={20}
-                        className="w-5 h-5 object-contain"
-                        unoptimized={true}
-                      />
-                      <span>{t('difficulty')}</span>
-                    </Label>
-                    <Select
-                      value={formData.difficulty}
-                      onValueChange={handleDifficultyChange}
-                    >
-                      <SelectTrigger id="difficulty" className="ml-auto h-8 w-24 border-0 bg-background text-xs transition-colors duration-200 sm:w-28">
-                        <SelectValue placeholder={t('selectDifficulty')} />
-                      </SelectTrigger>
-                      <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="z-50 border-border/70 bg-card text-foreground">
-                        <SelectItem value="easy">{t('easy')}</SelectItem>
-                        <SelectItem value="medium">{t('mediumDifficulty')}</SelectItem>
-                        <SelectItem value="hard">{t('hard')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Cuisine 选择器 */}
-                  <div className="flex h-11 w-full min-w-[168px] flex-1 items-center gap-2 rounded-lg px-3 py-2.5">
-                    <Label htmlFor="cuisine" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
-                      <Image
-                        src="/images/options-icon/cuisine.svg"
-                        alt="Cuisine"
-                        width={20}
-                        height={20}
-                        className="w-5 h-5 object-contain"
-                        unoptimized={true}
-                      />
-                      <span>{t('cuisine')}</span>
-                    </Label>
-                    <Select
-                      value={formData.cuisine}
-                      onValueChange={handleCuisineChange}
-                    >
-                      <SelectTrigger id="cuisine" className="ml-auto h-8 w-24 border-0 bg-background text-xs transition-colors duration-200 sm:w-28">
-                        <SelectValue placeholder={t('selectCuisine')} />
-                      </SelectTrigger>
-                      <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="z-50 border-border/70 bg-card text-foreground">
-                        <SelectItem value="any">{t('anyCuisine')}</SelectItem>
-                        {cuisinesLoading ? (
-                          <SelectItem value="loading" disabled>{t('loadingCuisines')}</SelectItem>
-                        ) : (
-                          cuisines.map((cuisine) => (
-                            <SelectItem key={cuisine.id} value={cuisine.id.toString()}>
-                              {cuisine.name}
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
+                        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        {option.label}
+                      </button>
+                    );
+                  })}
                 </div>
-              </div>
+              </section>
 
-              {/* 下方：生成按钮（占整列） */}
-              <div className="w-full">
-                <Button
-                  onClick={handleGenerateClick}
-                  className={cn(
-                    "min-h-[48px] w-full text-sm font-semibold shadow-sm transition-all duration-200 hover:scale-[1.01]"
-                  )}
-                  size="sm"
-                  disabled={loading || authLoading || formData.ingredients.length < 2}
-                >
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  <span>{loading ? t('generating') : t('generate')}</span>
-                </Button>
-              </div>
+              <section className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p
+                    id="cooking-time-label"
+                    className="inline-flex items-center gap-2 text-base font-bold text-foreground"
+                  >
+                    <Clock3 className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+                    <span>{optionSectionCopy.cookingTimeTitle}</span>
+                  </p>
+                  <span className="text-sm font-semibold text-primary">{currentCookingTimeLabel}</span>
+                </div>
+                <div className="rounded-xl border border-border-70 bg-card/75 p-3.5">
+                  <input
+                    id="cooking-time-range"
+                    type="range"
+                    min={10}
+                    max={120}
+                    step={5}
+                    value={cookingTimeMinutes}
+                    onChange={(event) => handleCookingTimeChange(Number(event.target.value))}
+                    aria-labelledby="cooking-time-label"
+                    className={cn(
+                      "h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-primary focus:outline-none focus:ring-0 dark:bg-white/10",
+                      "[&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(22,163,74,0.55)]",
+                      "[&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:shadow-[0_0_10px_rgba(22,163,74,0.45)]"
+                    )}
+                  />
+                  <div className="relative mt-2 h-4 text-[11px] font-medium text-muted-foreground">
+                    <span className="absolute left-0 top-0">10m</span>
+                    <span className="absolute left-[18.18%] top-0 -translate-x-1/2">30m</span>
+                    <span className="absolute left-[45.45%] top-0 -translate-x-1/2">1h</span>
+                    <span className="absolute right-0 top-0">2h+</span>
+                  </div>
+                </div>
+              </section>
             </div>
-          ) : (
-            /* 移动端：垂直布局 */
-            <div className="flex flex-col gap-4">
-              {/* 选项面板（常显） */}
-              <div className="flex w-full flex-col gap-3">
-                {/* Servings 步进器 */}
-                <div className="flex h-11 w-full items-center gap-2 rounded-lg px-3 py-2.5">
-                  <Label htmlFor="servings" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
-                    <Image
-                      src="/images/options-icon/serving.svg"
-                      alt={t('servings')}
-                      width={20}
-                      height={20}
-                      className="w-5 h-5 object-contain"
-                      unoptimized={true}
-                    />
-                    <span>{t('servings')}</span>
-                  </Label>
-                  <div className="flex items-center gap-1 rounded-md p-1 ml-auto">
-                    <Button
+
+            <section className="space-y-3">
+              <p className="inline-flex items-center gap-2 text-base font-bold text-foreground">
+                <ChefHat className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+                <span>{optionSectionCopy.mealTypeTitle}</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {optionSectionCopy.mealTypeOptions.map((option) => {
+                  const active = formData.mealType === option.value;
+                  return (
+                    <button
+                      key={`meal-type-${option.value}`}
                       type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
-                      onClick={handleServingsDecrease}
-                      disabled={formData.servings <= 1}
+                      aria-pressed={active}
+                      onClick={() => handleMealTypeChange(option.value)}
+                      className={optionButtonClass({
+                        active,
+                        className:
+                          "inline-flex min-h-[40px] items-center justify-center rounded-full px-4 text-sm font-medium",
+                      })}
                     >
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <div className="w-6 px-1 text-center">
-                      <span className="text-sm font-semibold text-foreground">{formData.servings}</span>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
-                      onClick={handleServingsIncrease}
-                      disabled={formData.servings >= 8}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Cooking Time 选择器 */}
-                <div className="flex h-11 w-full items-center gap-2 rounded-lg px-3 py-2.5">
-                  <Label htmlFor="cookingTime" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
-                    <Image
-                      src="/images/options-icon/cooking_time.svg"
-                      alt={t('cookingTime')}
-                      width={20}
-                      height={20}
-                      className="w-5 h-5 object-contain"
-                      unoptimized={true}
-                    />
-                    <span>{t('cookingTime')}</span>
-                  </Label>
-                  <Select
-                    value={formData.cookingTime}
-                    onValueChange={handleCookingTimeChange}
-                  >
-                    <SelectTrigger id="cookingTime" className="ml-auto h-8 w-20 border-0 bg-background text-xs transition-colors duration-200 sm:w-24">
-                      <SelectValue placeholder={t('selectCookingTime')} />
-                    </SelectTrigger>
-                    <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="z-50 border-border/70 bg-card text-foreground">
-                      <SelectItem value="quick">{t('quick')}</SelectItem>
-                      <SelectItem value="medium">{t('mediumTime')}</SelectItem>
-                      <SelectItem value="long">{t('long')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Difficulty 选择器 */}
-                <div className="flex h-11 w-full items-center gap-2 rounded-lg px-3 py-2.5">
-                  <Label htmlFor="difficulty" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
-                    <Image
-                      src="/images/options-icon/difficulty.svg"
-                      alt="Difficulty"
-                      width={16}
-                      height={16}
-                      className="w-4 h-4 object-contain"
-                      unoptimized={true}
-                    />
-                    <span>{t('difficulty')}</span>
-                  </Label>
-                  <Select
-                    value={formData.difficulty}
-                    onValueChange={handleDifficultyChange}
-                  >
-                    <SelectTrigger id="difficulty" className="ml-auto h-8 w-20 border-0 bg-background text-xs transition-colors duration-200 sm:w-24">
-                      <SelectValue placeholder={t('selectDifficulty')} />
-                    </SelectTrigger>
-                    <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="z-50 border-border/70 bg-card text-foreground">
-                      <SelectItem value="easy">{t('easy')}</SelectItem>
-                      <SelectItem value="medium">{t('mediumDifficulty')}</SelectItem>
-                      <SelectItem value="hard">{t('hard')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Cuisine 选择器 */}
-                <div className="flex h-11 w-full items-center gap-2 rounded-lg px-3 py-2.5">
-                  <Label htmlFor="cuisine" className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
-                    <Image
-                      src="/images/options-icon/cuisine.svg"
-                      alt="Cuisine"
-                      width={20}
-                      height={20}
-                      className="w-5 h-5 object-contain"
-                      unoptimized={true}
-                    />
-                    <span>{t('cuisine')}</span>
-                  </Label>
-                  <Select
-                    value={formData.cuisine}
-                    onValueChange={handleCuisineChange}
-                  >
-                    <SelectTrigger id="cuisine" className="ml-auto h-8 w-20 border-0 bg-background text-xs transition-colors duration-200 sm:w-24">
-                      <SelectValue placeholder={t('selectCuisine')} />
-                    </SelectTrigger>
-                    <SelectContent sideOffset={4} onCloseAutoFocus={(e) => e.preventDefault()} className="z-50 border-border/70 bg-card text-foreground">
-                      <SelectItem value="any">{t('anyCuisine')}</SelectItem>
-                      {cuisinesLoading ? (
-                        <SelectItem value="loading" disabled>{t('loadingCuisines')}</SelectItem>
-                      ) : (
-                        cuisines.map((cuisine) => (
-                          <SelectItem key={cuisine.id} value={cuisine.id.toString()}>
-                            {cuisine.name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
+                      {option.label}
+                    </button>
+                  );
+                })}
               </div>
+            </section>
 
-              {/* 生成按钮 */}
-              <div className="flex justify-center">
-                <Button
-                  onClick={handleGenerateClick}
-                  className={cn(
-                    "min-h-[48px] w-full text-base font-semibold shadow-lg shadow-primary/25 transition-all duration-200 hover:scale-[1.01] hover:shadow-xl hover:shadow-primary/30"
-                  )}
-                  size="sm"
-                  disabled={loading || authLoading || formData.ingredients.length < 2}
+            <section className="space-y-3">
+              <p className="inline-flex items-center gap-2 text-base font-bold text-foreground">
+                <Globe className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+                <span>{optionSectionCopy.cuisineTitle}</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  aria-pressed={formData.cuisine === "any"}
+                  onClick={() => handleCuisineChange("any")}
+                  className={optionButtonClass({
+                    active: formData.cuisine === "any",
+                    className:
+                      "inline-flex min-h-[40px] items-center justify-center rounded-full px-4 text-sm font-medium",
+                  })}
                 >
-                  <Sparkles className="mr-2 h-5 w-5" />
-                  {loading ? (
-                    <span>{t('generating')}</span>
-                  ) : (
-                    <span>{t('generate')}</span>
-                  )}
-                </Button>
+                  {t("anyCuisine")}
+                </button>
+
+                {cuisineOptions.map((cuisine) => {
+                  const value = cuisine.id.toString();
+                  const active = formData.cuisine === value;
+
+                  return (
+                    <button
+                      key={`cuisine-chip-${cuisine.id}`}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => handleCuisineChange(value)}
+                      className={optionButtonClass({
+                        active,
+                        className:
+                          "inline-flex min-h-[40px] items-center justify-center rounded-full px-4 text-sm font-medium",
+                      })}
+                    >
+                      {cuisine.name}
+                    </button>
+                  );
+                })}
               </div>
+            </section>
+
+            <section className="space-y-3">
+              <p className="inline-flex items-center gap-2 text-base font-bold text-foreground">
+                <Users className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+                <span>{optionSectionCopy.servingsTitle}</span>
+              </p>
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+                {servingsOptions.map((servingsValue) => {
+                  const active = formData.servings === servingsValue;
+
+                  return (
+                    <button
+                      key={`servings-${servingsValue}`}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => onFormChange({ ...formData, servings: servingsValue })}
+                      className={optionButtonClass({
+                        active,
+                        className:
+                          "inline-flex min-h-[44px] items-center justify-center rounded-lg px-3 text-sm font-semibold",
+                      })}
+                    >
+                      {servingsValue}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            <div className="w-full pt-4">
+              <Button
+                onClick={handleGenerateClick}
+                className={cn(
+                  "group relative w-full min-h-[56px] cursor-pointer overflow-hidden rounded-xl bg-primary px-8 py-5 text-lg font-bold text-primary-foreground shadow-[0_0_20px_rgba(19,236,91,0.4)] transition-all duration-200 ease-out hover:scale-[1.01] hover:bg-primary hover:shadow-[0_0_30px_rgba(19,236,91,0.6)]"
+                )}
+                disabled={loading || authLoading || formData.ingredients.length < 2}
+              >
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 translate-y-full skew-y-12 bg-white/20 transition-transform duration-300 group-hover:translate-y-0 group-focus-visible:translate-y-0"
+                />
+                <Sparkles className="relative z-10 h-6 w-6" />
+                <span className="relative z-10">{loading ? t("generating") : t("generateCta")}</span>
+              </Button>
+              <p className="mt-3 text-center text-sm text-muted-foreground">
+                {t("creditsHelper", {
+                  cost: APP_CONFIG.recipeGenerationCost,
+                  remaining: formattedRemainingCredits,
+                })}
+              </p>
+              <p className="mt-3 rounded-lg border border-border-70 bg-card/55 px-3 py-2 text-sm leading-relaxed text-muted-foreground">
+                {t("safetyNotice")}
+              </p>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
-      {/* 登录模态框 */}
-      <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
     </div>
   );
-}; 
+};

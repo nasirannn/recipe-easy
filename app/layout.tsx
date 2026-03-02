@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Noto_Sans_SC, Plus_Jakarta_Sans } from "next/font/google";
+import { Noto_Sans, Noto_Sans_SC, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { generateMetadata, websiteStructuredData, organizationStructuredData, SITE_URL } from "@/lib/seo";
@@ -7,16 +7,23 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { AuthProvider } from "@/contexts/auth-context";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const notoSans = Noto_Sans({
   subsets: ["latin"],
-  variable: "--font-plus-jakarta",
-  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-noto-sans",
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
 const notoSansSc = Noto_Sans_SC({
   subsets: ["latin"],
   variable: "--font-noto-sans-sc",
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });
@@ -68,7 +75,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head></head>
       <body
-        className={`${plusJakartaSans.variable} ${notoSansSc.variable} font-sans antialiased`}
+        className={`${notoSans.variable} ${notoSansSc.variable} ${spaceGrotesk.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
         <ThemeProvider

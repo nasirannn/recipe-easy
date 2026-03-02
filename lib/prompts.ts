@@ -6,14 +6,22 @@ export const SYSTEM_PROMPTS = {
 Each generated recipe must include the following fields:
 - title: Recipe title, should be attractive and reflect main ingredients
 - description: Brief description highlighting dish characteristics and flavors (1-2 sentences)
-- cookingTime: Cooking time (minutes, integer, estimated within user's selected range)
+- cooking_time: Cooking time in minutes (integer, MUST be within the required range)
 - servings: Portion size (integer, based on user's selected servings)
-- difficulty: Difficulty level ("Easy", "Medium", or "Hard")
+- vibe: Recipe vibe ("quick", "comfort", "gourmet", or "healthy")
+- meal_type: Meal type, must be one of: "breakfast", "lunch", "dinner", "snack", "dessert"
 - ingredients: Ingredient list (string array, each item includes ingredient name, quantity, and preparation method such as whole, chunks, slices, strips, diced, minced, roll-cut pieces, etc.DO NOT include any seasonings)
 - seasoning: Seasoning list (string array, each item includes seasoning name, quantity, and usage method such as whole, ground, chopped, etc.)
 - instructions: Cooking steps (string array, each step clear and concise)
 - tags: (string array, including cuisine types, features, costs, etc.)
-- chefTips: Chef's cooking tips and suggestions (string array, 1-3 practical tips)
+- chef_tips: Chef's cooking tips and suggestions (string array, 1-3 practical tips)
+- nutrition: Nutrition per serving (object with numeric fields: calories in kcal; protein, carbohydrates, fat, fiber, sugar in grams)
+- pairing: Beverage pairing suggestion object with fields:
+  - type: pairing category, MUST be exactly one of: "drink", "wine", "tea", "cocktail", "mocktail", "beer", "juice", "coffee", "sake"
+  - name: specific beverage name
+  - note: short region/style/service note
+  - description: 1 sentence explaining why it pairs with this dish
+- Use snake_case keys exactly as listed above (for example: cooking_time, meal_type, chef_tips)
 
 ## Recipe Generation Rules
 
@@ -23,12 +31,13 @@ Each generated recipe must include the following fields:
 - Can appropriately add basic seasonings and common auxiliary ingredients
 - Prioritize fresh combinations and complementarity of ingredients
 
-### 2. Cooking Time and Difficulty
+### 2. Cooking Time and Vibe
 - Adjust cooking time according to user preferences
-- Difficulty should match actual cooking skill requirements
-- "Easy": Basic techniques, simple steps, 10-30 minutes, suitable for beginners
-- "Medium": Requires some cooking experience, 30-60 minutes, suitable for intermediate cooks
-- "Hard": Complex techniques or multi-step processes, 60-120 minutes, suitable for experienced cooks
+- Vibe should reflect the recipe style and effort profile
+- "quick": Practical and speedy meals, usually 10-30 minutes
+- "comfort": Familiar, cozy dishes with balanced effort, usually 20-60 minutes
+- "gourmet": Refined or multi-step dishes, often 45-120 minutes
+- "healthy": Lighter and nutrition-focused dishes with balanced seasoning
 
 ### 3. Instructions
 - Instructions should be clear, specific, and arranged in order
@@ -76,14 +85,22 @@ Please create authentic, innovative, and appropriately portioned dishes based on
 生成的每个菜谱必须包含以下字段：
 - title: 菜谱标题，应具有吸引力且体现主要食材特色
 - description: 简短描述，突出菜品特点和口味（1-2句话）
-- cookingTime: 烹饪时间（分钟，整数，在用户选择范围内估算）
+- cooking_time: 烹饪时间（分钟，整数，必须在要求范围内）
 - servings: 份量（整数，基于用户选择的份量）
-- difficulty: 难度等级（"简单"、"中等"或"困难"）
+- vibe: 菜谱风格（只能是 "quick"、"comfort"、"gourmet"、"healthy"）
+- meal_type: 餐次类型，必须是以下之一："breakfast"、"lunch"、"dinner"、"snack"、"dessert"
 - ingredients: 食材列表（字符串数组，每项包含食材名称、用量和预处理方法，如整块、切块、切片、切条、切丁、切碎、滚刀块等。注意：不要包含任何调味料）
 - seasoning: 调味料列表（字符串数组，每项包含调味料名称、用量和使用方法，如整块、研磨、切碎等）
 - instructions: 烹饪步骤（字符串数组，每步清晰简洁）
 - tags: 标签列表（字符串数组，包含菜系类型、特点、成本等）
-- chefTips: 厨师烹饪技巧和建议（字符串数组，1-3个实用技巧）
+- chef_tips: 厨师烹饪技巧和建议（字符串数组，1-3个实用技巧）
+- nutrition: 每份营养信息（对象，calories 单位为 kcal；protein、carbohydrates、fat、fiber、sugar 单位为克）
+- pairing: 饮品搭配建议对象，包含：
+  - type: 搭配类型，必须严格使用以下之一："drink"、"wine"、"tea"、"cocktail"、"mocktail"、"beer"、"juice"、"coffee"、"sake"
+  - name: 具体饮品名称
+  - note: 产区/风格/饮用方式等简短说明
+  - description: 1句说明该饮品为何适配本菜谱
+- 严格使用以上 snake_case 键名（例如：cooking_time、meal_type、chef_tips）
 
 ## 菜谱生成规则
 
@@ -93,12 +110,13 @@ Please create authentic, innovative, and appropriately portioned dishes based on
 - 可以适当添加基本调味料和常见辅助食材
 - 优先考虑食材的新鲜搭配和互补性
 
-### 2. 烹饪时间和难度
+### 2. 烹饪时间和风格
 - 根据用户偏好调整烹饪时间
-- 难度应与实际烹饪技能要求匹配
-- "简单"：基本技巧，简单步骤，10-30分钟，适合初学者
-- "中等"：需要一些烹饪经验，30-60分钟，适合中级厨师
-- "困难"：复杂技巧或多步骤过程，60-120分钟，适合有经验的厨师
+- 风格应反映菜谱体验和投入程度
+- "quick"：快手高效，步骤精简，通常 10-30 分钟
+- "comfort"：家常稳妥，体验温和，通常 20-60 分钟
+- "gourmet"：更精致或多步骤，通常 45-120 分钟
+- "healthy"：轻负担、营养导向，调味更克制
 
 ### 3. 烹饪步骤
 - 步骤应清晰、具体并按顺序排列
@@ -141,13 +159,21 @@ Please create authentic, innovative, and appropriately portioned dishes based on
 };
 
 export const USER_PROMPT_TEMPLATES = {
-  ENGLISH: (ingredients: string[], servings: number, cookingTime: string, difficulty: string, cuisine: string) =>
+  ENGLISH: (
+    ingredients: string[],
+    servings: number,
+    cookingTimePreset: string,
+    cookingTimeRange: string,
+    vibe: string,
+    cuisine: string
+  ) =>
     `Please generate EXACTLY 1 different style recipe based on the following information and output in JSON format:
 
 Ingredients: ${ingredients.join(', ')}
 Servings: ${servings} people per recipe
-Cooking time preference: ${cookingTime} minutes
-Difficulty preference: ${difficulty}
+Cooking time preset: ${cookingTimePreset}
+Required cooking_time range: ${cookingTimeRange} minutes (integer, inclusive)
+Vibe preference: ${vibe}
 Cuisine preference: ${cuisine === 'any' ? 'any' : cuisine}
 
 AVAILABLE CUISINES (with IDs):
@@ -175,17 +201,19 @@ CUISINE ID MAPPING RULES:
 
 CRITICAL REQUIREMENTS:
 1. Generate EXACTLY 1 recipe - no more, no less
-2. Recommend ONE recipe as your top choice and mark it with "recommended": true
-3. Place the recommended recipe FIRST in the recipes array
-4. Determine the cuisine type for each recipe and include the corresponding cuisine_id
+2. Determine the cuisine type and include the corresponding cuisine_id
+3. Use snake_case keys exactly as required
+4. Return ONLY raw JSON (no markdown code fences, no commentary, no extra text)
 
 Please output in JSON format with recipes array containing EXACTLY 1 recipe.
 Each recipe must include:
 - cooking_time, servings (integer values)
 - cuisine_id (integer, based on the cuisine type of the recipe)
-- difficulty (string: "Easy", "Medium", or "Hard")
+- vibe (string: one of "quick", "comfort", "gourmet", "healthy")
+- meal_type (string: one of "breakfast", "lunch", "dinner", "snack", "dessert")
 - title, description, ingredients, seasoning, instructions, tags, chef_tips (all in English)
-- recommended (boolean, only true for the recommended recipe)
+- nutrition (object with numeric fields: calories in kcal; protein, carbohydrates, fat, fiber, sugar in grams per serving)
+- pairing (object with fields: type, name, note, description; type must be one of drink/wine/tea/cocktail/mocktail/beer/juice/coffee/sake)
 
 EXAMPLE JSON OUTPUT:
 {
@@ -195,25 +223,47 @@ EXAMPLE JSON OUTPUT:
       "description": "A delicious example recipe",
       "cooking_time": 30,
       "servings": 2,
-      "difficulty": "Easy",
+      "vibe": "quick",
+      "meal_type": "dinner",
       "ingredients": ["ingredient 1", "ingredient 2"],
       "seasoning": ["seasoning 1", "seasoning 2"],
       "instructions": ["step 1", "step 2"],
       "tags": ["tag1", "tag2"],
       "chef_tips": ["tip 1", "tip 2"],
-      "recommended": true,
+      "nutrition": {
+        "calories": 430,
+        "protein": 12,
+        "carbohydrates": 48,
+        "fat": 18,
+        "fiber": 6,
+        "sugar": 4
+      },
+      "pairing": {
+        "type": "wine",
+        "name": "Sauvignon Blanc",
+        "note": "Serve lightly chilled",
+        "description": "Bright acidity balances rich flavors and refreshes the palate."
+      },
       "cuisine_id": 1
     }
   ]
 }`,
 
-  CHINESE: (ingredients: string[], servings: number, cookingTime: string, difficulty: string, cuisine: string) =>
+  CHINESE: (
+    ingredients: string[],
+    servings: number,
+    cookingTimePreset: string,
+    cookingTimeRange: string,
+    vibe: string,
+    cuisine: string
+  ) =>
     `请根据以下信息生成恰好1个不同风格的菜谱，并以JSON格式输出：
 
 食材：${ingredients.join('、')}
 份量：每个菜谱${servings}人份
-烹饪时间偏好：${cookingTime}分钟
-难度偏好：${difficulty}
+烹饪时间档位：${cookingTimePreset}
+要求的 cooking_time 范围：${cookingTimeRange} 分钟（整数，含边界）
+风格偏好：${vibe}
 菜系偏好：${cuisine === 'any' ? '任意' : cuisine}
 
 可用菜系（带ID）：
@@ -241,17 +291,19 @@ EXAMPLE JSON OUTPUT:
 
 关键要求：
 1. 生成恰好1个菜谱 - 不能多也不能少
-2. 推荐一个菜谱作为首选，并用 "recommended": true 标记
-3. 将推荐的菜谱放在recipes数组的第一位
-4. 为每个菜谱确定菜系类型并包含相应的cuisine_id
+2. 为菜谱确定菜系类型并包含相应的 cuisine_id
+3. 严格使用要求的 snake_case 字段名
+4. 只返回原始 JSON（不要 markdown 代码块，不要解释，不要额外文本）
 
 请以JSON格式输出，recipes数组包含恰好1个菜谱。
 每个菜谱必须包含：
 - cooking_time, servings（整数值）
 - cuisine_id（整数，基于菜谱的菜系类型）
-- difficulty（字符串："简单"、"中等"或"困难"）
+- vibe（字符串：必须是 "quick"、"comfort"、"gourmet"、"healthy" 之一）
+- meal_type（字符串：必须是 "breakfast"、"lunch"、"dinner"、"snack"、"dessert" 之一）
 - title, description, ingredients, seasoning, instructions, tags, chef_tips（全部使用中文）
-- recommended（布尔值，只有推荐的菜谱为true）
+- nutrition（对象，包含 calories 数值字段（单位 kcal）以及 protein、carbohydrates、fat、fiber、sugar 数值字段（单位每份克数））
+- pairing（对象，包含 type、name、note、description 字段；type 只能是：drink/wine/tea/cocktail/mocktail/beer/juice/coffee/sake）
 
 JSON输出示例：
 {
@@ -261,13 +313,27 @@ JSON输出示例：
       "description": "一道美味的示例菜谱",
       "cooking_time": 30,
       "servings": 2,
-      "difficulty": "简单",
+      "vibe": "quick",
+      "meal_type": "dinner",
       "ingredients": ["食材1", "食材2"],
       "seasoning": ["调味料1", "调味料2"],
       "instructions": ["步骤1", "步骤2"],
       "tags": ["标签1", "标签2"],
       "chef_tips": ["技巧1", "技巧2"],
-      "recommended": true,
+      "nutrition": {
+        "calories": 430,
+        "protein": 12,
+        "carbohydrates": 48,
+        "fat": 18,
+        "fiber": 6,
+        "sugar": 4
+      },
+      "pairing": {
+        "type": "drink",
+        "name": "柠檬薄荷气泡水",
+        "note": "冷饮",
+        "description": "清爽气泡感能平衡油脂并提升整体清新度。"
+      },
       "cuisine_id": 1
     }
   ]
@@ -303,12 +369,17 @@ export const TRANSLATION_SYSTEM_PROMPTS = {
 The translation must maintain the exact JSON structure with these fields:
 - title: Translated recipe title
 - description: Translated recipe description
-- difficulty: Translated difficulty level
+- vibe: Translated vibe level
 - ingredients: Translated ingredient list (array)
 - seasoning: Translated seasoning list (array)
 - instructions: Translated cooking instructions (array)
 - chefTips: Translated chef tips (array)
 - tags: Translated tags (array)
+- pairing: Translated beverage pairing object with:
+  - type (must remain one of: drink/wine/tea/cocktail/mocktail/beer/juice/coffee/sake)
+  - name
+  - note
+  - description
 
 ## Translation Guidelines
 
@@ -338,7 +409,7 @@ The translation must maintain the exact JSON structure with these fields:
 
 ## Quality Standards
 
-- Maintain the original recipe's difficulty level and cooking time
+- Maintain the original recipe's vibe level and cooking time
 - Preserve the chef's tips and professional insights
 - Ensure all translations are grammatically correct and natural
 - Keep the recipe's original charm and appeal in the target language
@@ -372,12 +443,13 @@ Please provide accurate, culturally appropriate, and professionally formatted re
 翻译必须保持精确的JSON结构，包含以下字段：
 - title: 翻译后的菜谱标题
 - description: 翻译后的菜谱描述
-- difficulty: 翻译后的难度等级
+- vibe: 翻译后的风格偏好
 - ingredients: 翻译后的食材列表（数组）
 - seasoning: 翻译后的调味料列表（数组）
 - instructions: 翻译后的烹饪说明（数组）
 - chefTips: 翻译后的厨师技巧（数组）
 - tags: 翻译后的标签（数组）
+- pairing: 翻译后的饮品搭配对象（包含 type、name、note、description；type 必须保持在 drink/wine/tea/cocktail/mocktail/beer/juice/coffee/sake 内）
 
 ## 翻译指南
 
@@ -407,7 +479,7 @@ Please provide accurate, culturally appropriate, and professionally formatted re
 
 ## 质量标准
 
-- 保持原始菜谱的难度等级和烹饪时间
+- 保持原始菜谱的风格偏好和烹饪时间
 - 保留厨师的技巧和专业见解
 - 确保所有翻译语法正确且自然
 - 在目标语言中保持菜谱的原始魅力和吸引力
@@ -426,7 +498,7 @@ export const TRANSLATION_USER_PROMPTS = {
 Recipe to translate:
 Title: ${recipe.title}
 Description: ${recipe.description}
-Difficulty: ${recipe.difficulty}
+Vibe: ${recipe.vibe}
 Servings: ${recipe.servings}
 Cooking Time: ${recipe.cookingTime} minutes
 
@@ -445,16 +517,28 @@ ${recipe.chefTips.map((tip: string, index: number) => `${index + 1}. ${tip}`).jo
 Tags:
 ${recipe.tags.join(', ')}
 
+Pairing:
+Type: ${recipe.pairing?.type || ''}
+Name: ${recipe.pairing?.name || ''}
+Note: ${recipe.pairing?.note || ''}
+Description: ${recipe.pairing?.description || ''}
+
 Please provide the translation in JSON format with the following structure:
 {
   "title": "translated title",
   "description": "translated description", 
-  "difficulty": "translated difficulty",
+  "vibe": "translated vibe",
   "ingredients": ["translated ingredient 1", "translated ingredient 2", ...],
   "seasoning": ["translated seasoning 1", "translated seasoning 2", ...],
   "instructions": ["translated instruction 1", "translated instruction 2", ...],
   "chefTips": ["translated tip 1", "translated tip 2", ...],
-  "tags": ["translated tag 1", "translated tag 2", ...]
+  "tags": ["translated tag 1", "translated tag 2", ...],
+  "pairing": {
+    "type": "one of drink/wine/tea/cocktail/mocktail/beer/juice/coffee/sake",
+    "name": "translated pairing name",
+    "note": "translated pairing note",
+    "description": "translated pairing description"
+  }
 }
 
 Important: Please ensure all measurements are properly converted and culinary terms are accurately translated.`;
@@ -469,7 +553,7 @@ Important: Please ensure all measurements are properly converted and culinary te
 要翻译的菜谱：
 标题：${recipe.title}
 描述：${recipe.description}
-难度：${recipe.difficulty}
+风格：${recipe.vibe}
 份量：${recipe.servings}
 烹饪时间：${recipe.cookingTime} 分钟
 
@@ -488,16 +572,28 @@ ${recipe.chefTips.map((tip: string, index: number) => `${index + 1}. ${tip}`).jo
 标签：
 ${recipe.tags.join('、')}
 
+饮品搭配：
+类型：${recipe.pairing?.type || ''}
+名称：${recipe.pairing?.name || ''}
+备注：${recipe.pairing?.note || ''}
+说明：${recipe.pairing?.description || ''}
+
 请以JSON格式提供翻译，结构如下：
 {
   "title": "翻译后的标题",
   "description": "翻译后的描述", 
-  "difficulty": "翻译后的难度",
+  "vibe": "翻译后的风格",
   "ingredients": ["翻译后的食材1", "翻译后的食材2", ...],
   "seasoning": ["翻译后的调味料1", "翻译后的调味料2", ...],
   "instructions": ["翻译后的步骤1", "翻译后的步骤2", ...],
   "chefTips": ["翻译后的提示1", "翻译后的提示2", ...],
-  "tags": ["翻译后的标签1", "翻译后的标签2", ...]
+  "tags": ["翻译后的标签1", "翻译后的标签2", ...],
+  "pairing": {
+    "type": "从 drink/wine/tea/cocktail/mocktail/beer/juice/coffee/sake 中选择一个",
+    "name": "翻译后的饮品名称",
+    "note": "翻译后的饮品备注",
+    "description": "翻译后的饮品说明"
+  }
 }
 
 重要：请确保所有计量单位都正确转换，厨艺术语准确翻译。`;

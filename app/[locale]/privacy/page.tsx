@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
-import { SimpleLayout } from '@/components/layout/simple-layout';
 import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
 import { getLegalDocument, normalizeLegalLocale } from '@/lib/server/legal-documents';
+import { FooterSection } from '@/components/layout/sections/footer';
 
 export async function generateMetadata({
   params,
@@ -51,13 +51,20 @@ async function getPrivacyPolicy(locale: string) {
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const content = await getPrivacyPolicy(locale);
+  const title = locale === 'zh' ? '隐私政策' : 'Privacy Policy';
 
   return (
-    <SimpleLayout title={locale === 'zh' ? '隐私政策' : 'Privacy Policy'}>
-      <div 
-        className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-ul:text-muted-foreground prose-li:text-muted-foreground"
-        dangerouslySetInnerHTML={{ __html: content }} 
-      />
-    </SimpleLayout>
+    <>
+      <main className="mx-auto w-full max-w-4xl px-4 py-10 md:py-14">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
+        </div>
+        <div
+          className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-ul:text-muted-foreground prose-li:text-muted-foreground"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      </main>
+      <FooterSection />
+    </>
   );
 }

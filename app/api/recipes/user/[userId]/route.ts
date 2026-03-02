@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { listRecipes } from '@/lib/server/recipes';
 import { validateUserId } from '@/lib/utils/validation';
 import { getPostgresPool } from '@/lib/server/postgres';
+import { supabase } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 
@@ -11,6 +12,16 @@ function toNumber(value: string | null): number | undefined {
   }
   const parsed = Number.parseInt(value, 10);
   return Number.isNaN(parsed) ? undefined : parsed;
+}
+
+function getBearerToken(request: NextRequest): string | null {
+  const value = request.headers.get('authorization') || '';
+  if (!value.toLowerCase().startsWith('bearer ')) {
+    return null;
+  }
+
+  const token = value.slice(7).trim();
+  return token || null;
 }
 
 export async function GET(
@@ -23,6 +34,28 @@ export async function GET(
       return NextResponse.json(
         { success: false, error: 'Invalid user ID' },
         { status: 400 }
+      );
+    }
+
+    const token = getBearerToken(request);
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+    if (data.user.id !== userId) {
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
       );
     }
 

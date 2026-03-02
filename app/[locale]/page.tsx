@@ -2,12 +2,13 @@ import { FAQSection } from "@/components/layout/sections/faq";
 import { FeaturesSection } from "@/components/layout/sections/features";
 import { FooterSection } from "@/components/layout/sections/footer";
 import { HeroSection } from "@/components/layout/sections/hero";
+import { IntroductionSection } from "@/components/layout/sections/introduction";
 import { RecipesSection } from "@/components/layout/sections/recipes";
 import { TestimonialSection } from "@/components/layout/sections/testimonial";
 import { TutorialSection } from "@/components/layout/sections/tutorial";
 import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
-import { IntroductionSection } from "@/components/layout/sections/introduction";
 import { AnchorHandler } from "@/components/layout/anchor-handler";
+import { getHomeRecipePreviews } from "@/lib/server/home";
 
 
 export async function generateMetadata({
@@ -25,14 +26,21 @@ export async function generateMetadata({
   });
 }
 
-export default function Home() {
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const featuredRecipes = await getHomeRecipePreviews(locale, 9);
+
   return (
     <main className="home-main">
       <AnchorHandler />
       <HeroSection />
       <div className="home-sections">
-        <RecipesSection />
         <TutorialSection />
+        <RecipesSection recipes={featuredRecipes} />
         <IntroductionSection />
         <FeaturesSection />
         <FAQSection />

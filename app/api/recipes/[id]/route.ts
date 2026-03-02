@@ -85,7 +85,9 @@ export async function PUT(
       );
     }
 
-    const recipe = await getRecipeById(db, id, body.language ?? 'en');
+    const recipe = body.language
+      ? await getRecipeById(db, id, body.language)
+      : (await getRecipeById(db, id, 'en')) ?? (await getRecipeById(db, id, 'zh'));
     return NextResponse.json({
       success: true,
       recipe,

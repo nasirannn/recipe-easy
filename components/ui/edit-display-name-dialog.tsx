@@ -21,6 +21,7 @@ import {
 } from '@/lib/utils/user-display'
 import { useTranslations } from 'next-intl'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 
 const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024
 const ACCEPTED_AVATAR_TYPES = new Set([
@@ -43,6 +44,7 @@ interface EditUserInfoDialogProps {
   onOpenChange: (open: boolean) => void
   user: User | null
   onSuccess?: () => void
+  themeClassName?: string
 }
 
 export function EditUserInfoDialog({
@@ -50,6 +52,7 @@ export function EditUserInfoDialog({
   onOpenChange,
   user,
   onSuccess,
+  themeClassName,
 }: EditUserInfoDialogProps) {
   const t = useTranslations('profile')
   const [displayName, setDisplayName] = useState('')
@@ -111,6 +114,8 @@ export function EditUserInfoDialog({
   }, [displayName, initialDisplayName, selectedAvatar])
 
   const canSubmit = Boolean(displayName.trim()) && hasChanges && !loading
+  const profileName =
+    displayName.trim() || initialDisplayName.trim() || user?.email?.split('@')[0] || t('username')
 
   const handleAvatarFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -219,105 +224,151 @@ export function EditUserInfoDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="overflow-hidden border-border/80 bg-background/95 p-0 sm:max-w-[520px]">
-        <div className="border-b border-border/80 bg-muted/45 px-6 py-5">
-          <DialogHeader className="space-y-2 text-left">
-            <DialogTitle className="text-xl font-semibold text-foreground">
+      <DialogContent
+        className={cn(
+          'w-[calc(100%-1.5rem)] max-h-[92dvh] overflow-hidden border-border-70 bg-card p-0 shadow-lg sm:max-w-[560px] sm:rounded-2xl',
+          themeClassName
+        )}
+      >
+        <div className="border-b border-border-60 px-6 pb-4 pt-6">
+          <DialogHeader className="space-y-1 text-left">
+            <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
               {t('editUserInfo')}
             </DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground">
+            <DialogDescription className="max-w-[42ch] text-sm leading-relaxed text-muted-foreground">
               {t('userInfoDescription')}
             </DialogDescription>
           </DialogHeader>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5 px-6 py-5">
-          <div className="rounded-xl border border-border/80 bg-muted/45 p-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <Avatar className="h-20 w-20 border border-border bg-background shadow-sm">
-                {avatarPreview ? (
-                  <AvatarImage
-                    src={avatarPreview}
-                    alt={displayName || t('username')}
-                    className="object-cover"
-                  />
-                ) : null}
-                <AvatarFallback className="bg-muted text-foreground">
-                  <UserRound className="h-8 w-8" />
-                </AvatarFallback>
-              </Avatar>
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          <div className="space-y-6 overflow-y-auto px-6 py-5">
+            <div className="rounded-xl border border-border-70 bg-muted-20 p-4 sm:p-5">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+                <div className="relative w-fit">
+                  <Avatar className="h-24 w-24 border border-border bg-card ring-2 ring-primary/15">
+                    {avatarPreview ? (
+                      <AvatarImage
+                        src={avatarPreview}
+                        alt={profileName}
+                        className="object-cover"
+                      />
+                    ) : null}
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      <UserRound className="h-9 w-9" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    className="absolute -bottom-1 -right-1 h-9 w-9 cursor-pointer rounded-full border-border bg-card text-foreground shadow-sm hover:bg-accent"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={loading}
+                  >
+                    <Camera className="h-4 w-4" />
+                    <span className="sr-only">
+                      {selectedAvatar ? t('changeAvatar') : t('uploadAvatar')}
+                    </span>
+                  </Button>
+                </div>
 
-              <div className="flex-1 space-y-2">
-                <div className="text-sm font-semibold text-foreground">
-                  {t('avatar')}
+                <div className="min-w-0 flex-1 space-y-3">
+                  <div className="space-y-1">
+                    <p className="truncate text-sm font-semibold text-foreground">{profileName}</p>
+                    {user?.email ? (
+                      <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                    ) : null}
+                  </div>
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    {t('avatarRequirements')}
+                  </p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="hidden"
+                    onChange={handleAvatarFileChange}
+                    disabled={loading}
+                  />
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <Button
+                      type="button"
+                      variant="default"
+                      className="h-10 cursor-pointer rounded-lg px-4 text-sm font-semibold"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={loading}
+                    >
+                      <Camera className="mr-2 h-4 w-4" />
+                      {selectedAvatar ? t('changeAvatar') : t('uploadAvatar')}
+                    </Button>
+                    {selectedAvatar ? (
+                      <span className="inline-flex max-w-[220px] items-center truncate rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-foreground">
+                        {selectedAvatar.name}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  {t('avatarRequirements')}
-                </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,image/gif"
-                  className="hidden"
-                  onChange={handleAvatarFileChange}
-                  disabled={loading}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-10 cursor-pointer rounded-lg"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={loading}
-                >
-                  <Camera className="mr-2 h-4 w-4" />
-                  {selectedAvatar ? t('changeAvatar') : t('uploadAvatar')}
-                </Button>
               </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <label htmlFor="displayName" className="text-sm font-semibold text-foreground">
-              {t('username')}
-            </label>
-            <Input
-              id="displayName"
-              value={displayName}
-              onChange={(event) => setDisplayName(event.target.value)}
-              placeholder={t('displayNamePlaceholder')}
-              maxLength={50}
-              disabled={loading}
-              autoFocus
-              className="h-11 rounded-lg border-border bg-background"
-            />
-          </div>
-
-          {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
-              {error}
+            <div className="space-y-0">
+              <label
+                htmlFor="displayName"
+                className="mb-3 block text-sm font-semibold leading-none text-foreground"
+              >
+                {t('username')}
+              </label>
+              <div className="relative">
+                <UserRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="displayName"
+                  value={displayName}
+                  onChange={(event) => setDisplayName(event.target.value)}
+                  placeholder={t('displayNamePlaceholder')}
+                  maxLength={50}
+                  disabled={loading}
+                  autoFocus
+                  className="h-11 rounded-xl border-border bg-background pl-10 text-sm"
+                />
+              </div>
+              <p className="mt-2 text-right text-xs text-muted-foreground">{displayName.length}/50</p>
             </div>
-          )}
 
-          <DialogFooter className="gap-2 sm:justify-end">
+            {error ? (
+              <div
+                role="alert"
+                className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              >
+                {error}
+              </div>
+            ) : null}
+          </div>
+
+          <DialogFooter className="gap-2.5 border-t border-border-60 bg-muted-20 px-6 py-4 sm:justify-end">
             <Button
               type="button"
-              variant="outline"
-              className="cursor-pointer"
-              onClick={handleReset}
-              disabled={loading}
-            >
-              {t('reset')}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
+              variant="ghost"
               className="cursor-pointer"
               onClick={() => handleOpenChange(false)}
               disabled={loading}
             >
               {t('cancel')}
             </Button>
-            <Button type="submit" className="cursor-pointer" disabled={!canSubmit}>
+            <Button
+              type="button"
+              variant="outline"
+              className="cursor-pointer"
+              onClick={handleReset}
+              disabled={loading || !hasChanges}
+            >
+              {t('reset')}
+            </Button>
+            <Button
+              type="submit"
+              className="min-w-[132px] cursor-pointer rounded-lg font-semibold"
+              disabled={!canSubmit}
+            >
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

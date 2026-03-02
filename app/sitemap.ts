@@ -9,9 +9,9 @@ type RecipeSitemapRow = {
   updated_at: Date | string | null;
 };
 
-async function getPublicFileLastModified(fileName: string, fallback: Date): Promise<Date> {
+async function getLegalFileLastModified(fileName: string, fallback: Date): Promise<Date> {
   try {
-    const absolutePath = path.join(process.cwd(), 'public', fileName);
+    const absolutePath = path.join(process.cwd(), 'docs', 'legal', fileName);
     const fileStat = await fs.stat(absolutePath);
     return fileStat.mtime;
   } catch {
@@ -62,10 +62,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const fallbackStaticDate = new Date('2024-12-01');
 
   const [privacyEnDate, termsEnDate, privacyZhDate, termsZhDate, recipeDetailRoutes] = await Promise.all([
-    getPublicFileLastModified('privacy-policy.md', fallbackStaticDate),
-    getPublicFileLastModified('terms-of-service.md', fallbackStaticDate),
-    getPublicFileLastModified('privacy-policy-zh.md', fallbackStaticDate),
-    getPublicFileLastModified('terms-of-service-zh.md', fallbackStaticDate),
+    getLegalFileLastModified('privacy-policy.md', fallbackStaticDate),
+    getLegalFileLastModified('terms-of-service.md', fallbackStaticDate),
+    getLegalFileLastModified('privacy-policy-zh.md', fallbackStaticDate),
+    getLegalFileLastModified('terms-of-service-zh.md', fallbackStaticDate),
     getRecipeDetailRoutes(baseUrl),
   ]);
 
@@ -77,7 +77,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
-      url: `${baseUrl}/recipes`,
+      url: `${baseUrl}/explore`,
       lastModified: now,
       changeFrequency: 'daily' as const,
       priority: 0.8,
@@ -104,7 +104,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/zh/recipes`,
+      url: `${baseUrl}/zh/explore`,
       lastModified: now,
       changeFrequency: 'daily' as const,
       priority: 0.8,

@@ -7,20 +7,88 @@ import { ChefHat, Clock, Users } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getImageUrl } from '@/lib/config';
-import { Recipe } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
-type RecipeListItem = Pick<
-  Recipe,
-  'id' | 'title' | 'description' | 'imagePath' | 'cookingTime' | 'servings' | 'difficulty'
->;
+type RecipeListItem = {
+  id: string;
+  title: string;
+  description?: string;
+  imagePath?: string;
+  cookingTime?: number;
+  servings?: number;
+  vibe?: string;
+};
+
+type VibeTone = 'quick' | 'comfort' | 'gourmet' | 'healthy';
+
+function normalizeVibe(value?: string): VibeTone {
+  const normalized = (value || '').trim().toLowerCase();
+  if (
+    normalized.includes('quick') ||
+    normalized.includes('easy') ||
+    normalized.includes('简单') ||
+    normalized.includes('快手') ||
+    normalized.includes('快速')
+  ) {
+    return 'quick';
+  }
+  if (
+    normalized.includes('gourmet') ||
+    normalized.includes('hard') ||
+    normalized.includes('困难') ||
+    normalized.includes('精致')
+  ) {
+    return 'gourmet';
+  }
+  if (
+    normalized.includes('healthy') ||
+    normalized.includes('健康') ||
+    normalized.includes('清淡')
+  ) {
+    return 'healthy';
+  }
+  return 'comfort';
+}
+
+function getVibeBadgeToneClass(
+  value: string | undefined,
+  variant: 'standard' | 'overlay'
+): string {
+  const tone = normalizeVibe(value);
+
+  if (variant === 'overlay') {
+    switch (tone) {
+      case 'quick':
+        return 'text-primary';
+      case 'gourmet':
+        return 'text-destructive';
+      case 'healthy':
+        return 'text-emerald-300';
+      case 'comfort':
+      default:
+        return 'text-secondary';
+    }
+  }
+
+  switch (tone) {
+    case 'quick':
+      return 'text-primary';
+    case 'gourmet':
+      return 'text-destructive';
+    case 'healthy':
+      return 'text-emerald-600 dark:text-emerald-300';
+    case 'comfort':
+    default:
+      return 'text-secondary';
+  }
+}
 
 interface RecipeListCardProps {
   recipe: RecipeListItem;
   href: string;
   minsLabel: string;
-  difficultyLabel?: string;
-  difficultyBadgeClassName?: string;
+  vibeLabel?: string;
+  vibeBadgeClassName?: string;
   topLeftContent?: ReactNode;
   topRightContent?: ReactNode;
   featured?: boolean;
@@ -34,8 +102,8 @@ export const RecipeListCard = ({
   recipe,
   href,
   minsLabel,
-  difficultyLabel,
-  difficultyBadgeClassName,
+  vibeLabel,
+  vibeBadgeClassName,
   topLeftContent,
   topRightContent,
   featured = false,
@@ -46,15 +114,24 @@ export const RecipeListCard = ({
 }: RecipeListCardProps) => {
   const imageSrc = getImageUrl(recipe.imagePath) || '/images/recipe-placeholder-bg.png';
   const mediaClasses = mediaClassName ?? (featured ? 'aspect-[16/8]' : 'aspect-[4/3]');
+  const vibeValue = recipe.vibe || vibeLabel;
 
-  const difficultyClassName = difficultyBadgeClassName
-    ? cn('inline-flex items-center gap-1 rounded-full px-2.5 py-1 ring-1', difficultyBadgeClassName)
-    : 'inline-flex items-center gap-1 rounded-full border border-border/70 bg-muted/60 px-2.5 py-1';
+  const vibeClassName = vibeBadgeClassName
+    ? cn('inline-flex items-center gap-1 font-semibold', vibeBadgeClassName)
+    : cn(
+        'inline-flex items-center gap-1 font-semibold',
+        getVibeBadgeToneClass(vibeValue, 'standard')
+      );
+
+  const overlayVibeClassName = cn(
+    'inline-flex items-center gap-1 font-semibold',
+    getVibeBadgeToneClass(vibeValue, 'overlay')
+  );
 
   return (
     <Card
       className={cn(
-        'group relative overflow-hidden rounded-3xl border border-border/75 bg-card/95 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-xl hover:shadow-primary/12 focus-within:ring-2 focus-within:ring-primary/55 focus-within:ring-offset-2 focus-within:ring-offset-background',
+        'group relative overflow-hidden rounded-3xl border border-recipe-surface-border bg-recipe-surface shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-xl hover:shadow-primary/12 focus-within:ring-2 focus-within:ring-primary/55 focus-within:ring-offset-2 focus-within:ring-offset-recipe-surface-focus-offset',
         className
       )}
     >
@@ -86,8 +163,8 @@ export const RecipeListCard = ({
             className={cn(
               'absolute inset-0 transition-opacity duration-300',
               layout === 'overlay'
-                ? 'bg-linear-to-t from-slate-950/92 via-slate-950/42 to-slate-950/12 opacity-95 group-hover:opacity-70'
-                : 'bg-linear-to-t from-slate-950/70 via-slate-950/20 to-transparent opacity-75 group-hover:opacity-55'
+                ? 'bg-[linear-gradient(to_top,var(--color-recipe-overlay-strong)_0%,var(--color-recipe-overlay-mid)_24%,transparent_52%)] opacity-92 group-hover:opacity-84'
+                : 'bg-linear-to-t from-recipe-overlay-strong via-recipe-overlay-mid to-transparent opacity-78 group-hover:opacity-58'
             )}
           />
         </Link>
@@ -108,7 +185,7 @@ export const RecipeListCard = ({
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-4 sm:p-5">
             <h3
               className={cn(
-                'line-clamp-2 font-semibold leading-snug tracking-tight text-white drop-shadow-[0_1px_1px_rgba(2,6,23,0.7)]',
+                'line-clamp-2 font-semibold leading-snug tracking-tight text-white drop-shadow-[0_1px_1px_rgba(10,24,15,0.72)]',
                 featured ? 'text-2xl' : 'text-xl'
               )}
             >
@@ -116,30 +193,38 @@ export const RecipeListCard = ({
             </h3>
 
             {recipe.description ? (
-              <p className="mt-2 line-clamp-1 text-sm leading-relaxed text-white/90 drop-shadow-[0_1px_1px_rgba(2,6,23,0.55)]">
+              <p className="mt-2 line-clamp-1 text-sm leading-relaxed text-white/90 drop-shadow-[0_1px_1px_rgba(10,24,15,0.6)]">
                 {recipe.description}
               </p>
             ) : null}
 
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-white/90">
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-white/90 drop-shadow-[0_1px_1px_rgba(10,24,15,0.62)]">
               {recipe.cookingTime ? (
-                <span className="inline-flex items-center gap-1 rounded-full border border-white/30 bg-slate-950/35 px-2.5 py-1 backdrop-blur-sm">
+                <span className="inline-flex items-center gap-1 font-medium">
                   <Clock className="h-3.5 w-3.5" />
                   {recipe.cookingTime} {minsLabel}
                 </span>
               ) : null}
 
+              {recipe.cookingTime && recipe.servings ? (
+                <span className="h-1 w-1 rounded-full bg-white/58" aria-hidden="true" />
+              ) : null}
+
               {recipe.servings ? (
-                <span className="inline-flex items-center gap-1 rounded-full border border-white/30 bg-slate-950/35 px-2.5 py-1 backdrop-blur-sm">
+                <span className="inline-flex items-center gap-1 font-medium">
                   <Users className="h-3.5 w-3.5" />
                   <span>{recipe.servings}</span>
                 </span>
               ) : null}
 
-              {difficultyLabel ? (
-                <span className="inline-flex items-center gap-1 rounded-full border border-white/30 bg-slate-950/35 px-2.5 py-1 backdrop-blur-sm">
+              {(recipe.cookingTime || recipe.servings) && vibeLabel ? (
+                <span className="h-1 w-1 rounded-full bg-white/58" aria-hidden="true" />
+              ) : null}
+
+              {vibeLabel ? (
+                <span className={overlayVibeClassName}>
                   <ChefHat className="h-3.5 w-3.5" />
-                  {difficultyLabel}
+                  {vibeLabel}
                 </span>
               ) : null}
             </div>
@@ -151,7 +236,7 @@ export const RecipeListCard = ({
         <div className="space-y-4 p-5 sm:p-6">
           <h3
             className={cn(
-              'line-clamp-2 font-semibold leading-snug tracking-tight text-foreground',
+              'line-clamp-2 font-semibold leading-snug tracking-tight text-recipe-surface-foreground',
               featured ? 'text-2xl' : 'text-xl'
             )}
           >
@@ -165,30 +250,38 @@ export const RecipeListCard = ({
           </h3>
 
           {recipe.description ? (
-            <p className="line-clamp-1 text-sm leading-relaxed text-muted-foreground">
+            <p className="line-clamp-1 text-sm leading-relaxed text-recipe-surface-muted-foreground">
               {recipe.description}
             </p>
           ) : null}
 
-          <div className="flex flex-wrap items-center gap-2.5 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-recipe-surface-muted-foreground">
             {recipe.cookingTime ? (
-              <span className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-muted/60 px-2.5 py-1">
+              <span className="inline-flex items-center gap-1 font-medium">
                 <Clock className="h-3.5 w-3.5" />
                 {recipe.cookingTime} {minsLabel}
               </span>
             ) : null}
 
+            {recipe.cookingTime && recipe.servings ? (
+              <span className="h-1 w-1 rounded-full bg-recipe-surface-skeleton-soft" aria-hidden="true" />
+            ) : null}
+
             {recipe.servings ? (
-              <span className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-muted/60 px-2.5 py-1">
+              <span className="inline-flex items-center gap-1 font-medium">
                 <Users className="h-3.5 w-3.5" />
                 <span>{recipe.servings}</span>
               </span>
             ) : null}
 
-            {difficultyLabel ? (
-              <span className={difficultyClassName}>
+            {(recipe.cookingTime || recipe.servings) && vibeLabel ? (
+              <span className="h-1 w-1 rounded-full bg-recipe-surface-skeleton-soft" aria-hidden="true" />
+            ) : null}
+
+            {vibeLabel ? (
+              <span className={vibeClassName}>
                 <ChefHat className="h-3.5 w-3.5" />
-                {difficultyLabel}
+                {vibeLabel}
               </span>
             ) : null}
           </div>
@@ -215,7 +308,7 @@ export const RecipeListCardSkeleton = ({
   return (
     <Card
       className={cn(
-        'overflow-hidden rounded-3xl border border-border/70 bg-card/95 shadow-sm',
+        'overflow-hidden rounded-3xl border border-recipe-surface-border bg-recipe-surface shadow-sm',
         className
       )}
     >
@@ -223,11 +316,11 @@ export const RecipeListCardSkeleton = ({
         <Skeleton className="h-full w-full rounded-none" />
         {layout === 'overlay' ? (
           <div className="absolute inset-x-0 bottom-0 space-y-2 p-4 sm:p-5">
-            <Skeleton className="h-5 w-4/5 bg-white/25" />
-            <Skeleton className="h-4 w-3/5 bg-white/20" />
+            <Skeleton className="h-5 w-4/5 bg-recipe-surface-skeleton" />
+            <Skeleton className="h-4 w-3/5 bg-recipe-surface-skeleton-soft" />
             <div className="flex items-center gap-2 pt-1">
-              <Skeleton className="h-6 w-20 rounded-full bg-white/20" />
-              <Skeleton className="h-6 w-16 rounded-full bg-white/20" />
+              <Skeleton className="h-6 w-20 rounded-full bg-recipe-surface-skeleton-soft" />
+              <Skeleton className="h-6 w-16 rounded-full bg-recipe-surface-skeleton-soft" />
             </div>
           </div>
         ) : null}
@@ -237,9 +330,11 @@ export const RecipeListCardSkeleton = ({
           <Skeleton className="h-6 w-4/5" />
           <Skeleton className="h-4 w-11/12" />
           <div className="flex items-center gap-2 pt-1">
-            <Skeleton className="h-6 w-20 rounded-full" />
-            <Skeleton className="h-6 w-16 rounded-full" />
-            <Skeleton className="h-6 w-20 rounded-full" />
+            <Skeleton className="h-4 w-20 rounded-sm" />
+            <Skeleton className="h-1 w-1 rounded-full" />
+            <Skeleton className="h-4 w-16 rounded-sm" />
+            <Skeleton className="h-1 w-1 rounded-full" />
+            <Skeleton className="h-4 w-20 rounded-sm" />
           </div>
         </div>
       ) : null}

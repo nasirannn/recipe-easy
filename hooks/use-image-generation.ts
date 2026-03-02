@@ -10,6 +10,7 @@ import {
 import { APP_CONFIG } from '@/lib/config';
 import { useAuth } from '@/contexts/auth-context';
 import { useUserUsage } from './use-user-usage';
+import { createAuthRequiredError, isAuthRequiredError } from '@/lib/utils/auth-error';
 
 /**
  * 图片生成相关的自定义Hook
@@ -22,6 +23,9 @@ export function useImageGeneration(): UseImageGenerationReturn {
   const locale = useLocale();
   const { session } = useAuth();
   const { updateCreditsLocally } = useUserUsage();
+  const signInRequiredMessage = locale.toLowerCase().startsWith('zh')
+    ? '请先登录以生成图片'
+    : 'Please sign in to generate images';
 
   /**
    * 设置单个食谱的图片加载状态
@@ -43,7 +47,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
     onSuccess: (imageUrl: string) => void
   ): Promise<void> => {
     if (!session?.access_token) {
-      throw new Error('请先登录以生成图片');
+      throw createAuthRequiredError(signInRequiredMessage);
     }
 
     try {
@@ -66,6 +70,9 @@ export function useImageGeneration(): UseImageGenerationReturn {
       });
 
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          throw createAuthRequiredError(signInRequiredMessage);
+        }
         const errorData = await response.json() as { error?: string };
         throw new Error(errorData.error || '图片生成失败');
       }
@@ -88,7 +95,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
       setImageLoadingState(recipeId, false);
       setImageGenerating(false);
     }
-  }, [locale, session?.access_token, setImageLoadingState, updateCreditsLocally]);
+  }, [locale, session?.access_token, setImageLoadingState, signInRequiredMessage, updateCreditsLocally]);
 
   /**
    * 生成食谱图片
@@ -143,7 +150,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
     onRecipeImageGenerated: (recipeId: string, imageUrl: string) => void
   ): Promise<void> => {
     if (!session?.access_token) {
-      throw new Error('请先登录以生成图片');
+      throw createAuthRequiredError(signInRequiredMessage);
     }
 
     try {
@@ -176,13 +183,21 @@ export function useImageGeneration(): UseImageGenerationReturn {
               }),
             });
 
-            if (response.ok) {
-              const data = await response.json() as { success?: boolean; imageUrl?: string };
-              if (data.success && data.imageUrl) {
-                onRecipeImageGenerated(recipe.id, data.imageUrl);
+            if (!response.ok) {
+              if (response.status === 401 || response.status === 403) {
+                throw createAuthRequiredError(signInRequiredMessage);
               }
+              return;
+            }
+
+            const data = await response.json() as { success?: boolean; imageUrl?: string };
+            if (data.success && data.imageUrl) {
+              onRecipeImageGenerated(recipe.id, data.imageUrl);
             }
           } catch (error) {
+            if (isAuthRequiredError(error)) {
+              throw error;
+            }
             // 单个图片生成失败
             // 单个图片生成失败不影响其他图片
           } finally {
@@ -199,7 +214,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
     } finally {
       setImageGenerating(false);
     }
-  }, [locale, session?.access_token, setImageLoadingState]);
+  }, [locale, session?.access_token, setImageLoadingState, signInRequiredMessage]);
 
   return {
     imageGenerating,

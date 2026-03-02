@@ -6,7 +6,6 @@ export type CuisineView = {
   id: number;
   slug: string;
   name: string;
-  cssClass?: string;
 };
 
 export type CategoryView = {
@@ -63,14 +62,12 @@ export async function listCuisines(
     id: number;
     slug: string;
     name: string;
-    css_class: string | null;
   }>(
     `
       SELECT
         c.id::int AS id,
         c.slug,
-        COALESCE(ci.name, c.name) AS name,
-        c.css_class
+        COALESCE(ci.name, c.name) AS name
       FROM cuisines c
       LEFT JOIN cuisines_i18n ci
         ON c.id = ci.cuisine_id AND ci.language_code = $1
@@ -83,7 +80,6 @@ export async function listCuisines(
     id: Number(row.id),
     slug: row.slug,
     name: row.name,
-    cssClass: row.css_class ?? undefined,
   }));
 
   return { language, results };

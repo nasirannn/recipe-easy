@@ -10,6 +10,7 @@ import { IntroductionSection } from "@/components/layout/sections/introduction";
 import { AnchorHandler } from "@/components/layout/anchor-handler";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
+import { getHomeRecipePreviews } from "@/lib/server/home";
 
 export async function generateMetadata() {
   return generateSeoMetadata({
@@ -22,18 +23,27 @@ export async function generateMetadata() {
 export default async function RootPage() {
   // 为根路径提供英文消息
   const messages = await getMessages({ locale: 'en' });
+  const featuredRecipes = await getHomeRecipePreviews('en', 9);
 
   return (
     <NextIntlClientProvider locale="en" messages={messages}>
-      <AnchorHandler />
-      <HeroSection />
-      <RecipesSection />
-      <TutorialSection />
-      <IntroductionSection />
-      <FeaturesSection />
-      <FAQSection />
-      <TestimonialSection />
-      <FooterSection />
+      <div className="theme-shell-base">
+        <div className="theme-shell-content">
+          <main className="home-main">
+            <AnchorHandler />
+            <HeroSection />
+            <div className="home-sections">
+              <TutorialSection />
+              <RecipesSection recipes={featuredRecipes} />
+              <IntroductionSection />
+              <FeaturesSection />
+              <FAQSection />
+              <TestimonialSection />
+              <FooterSection />
+            </div>
+          </main>
+        </div>
+      </div>
     </NextIntlClientProvider>
   );
 }

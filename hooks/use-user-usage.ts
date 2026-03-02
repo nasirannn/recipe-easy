@@ -122,20 +122,25 @@ export function useUserUsage() {
           const bonusText = Number.isInteger(grantedAmount)
             ? String(grantedAmount)
             : grantedAmount.toFixed(1);
+          const bonusTitle = isZh ? '每日登录奖励' : 'Daily Login Bonus!';
+          const bonusDescription = isZh
+            ? `你已获得 ${bonusText} 积分登录奖励，仅限当天（UTC）有效，请及时使用。`
+            : `You have received ${bonusText} credits as a daily login bonus. They are only valid today (UTC) - use them up soon.`;
 
           toast.success(
-            isZh ? '每日登录奖励' : 'Daily Login Bonus!',
+            createElement(
+              'span',
+              { className: 'inline-flex items-center gap-2' },
+              createElement(Gift, { className: 'h-4 w-4 text-primary' }),
+              createElement('span', { className: 'text-sm font-semibold text-foreground' }, bonusTitle)
+            ),
             {
-              icon: createElement(Gift, { className: 'h-4 w-4' }),
-              description: isZh
-                ? `你已获得 ${bonusText} 积分登录奖励，仅限当天（UTC）有效，请及时使用。`
-                : `You have received ${bonusText} credits as a daily login bonus. They are only valid today (UTC) - use them up soon.`,
+              icon: null,
+              description: bonusDescription,
               duration: 5600,
               className: 'border border-border/70 bg-background/95 text-foreground shadow-lg',
               classNames: {
-                title: 'text-sm font-semibold',
                 description: 'text-sm leading-6 text-muted-foreground',
-                icon: 'text-primary',
               },
             }
           );

@@ -33,7 +33,7 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       <PageViewTracker />
-      <RouteBackgroundShell locale={locale}>
+      <RouteBackgroundShell>
         <Navbar />
         {children}
       </RouteBackgroundShell>

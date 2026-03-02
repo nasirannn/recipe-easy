@@ -124,8 +124,8 @@ export const IngredientSelector = ({
                       onIngredientSelect(ingredient, sourceRect);
                     }}
                     className={cn(
-                      "ingredient-option group inline-flex min-h-[116px] w-[92px] shrink-0 flex-col items-center justify-start gap-2 rounded-xl border border-border/65 bg-card/95 px-2.5 py-2.5 text-center shadow-sm transition-[background-color,border-color,box-shadow] duration-200",
-                      "hover:border-primary/35 hover:bg-primary/5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
+                      "ingredient-option group inline-flex min-h-[116px] w-[92px] shrink-0 flex-col items-center justify-start gap-2 rounded-xl border border-border-65 bg-card-95 px-2.5 py-2.5 text-center shadow-sm transition-[background-color,border-color,box-shadow] duration-200",
+                      "hover:border-primary/35 hover:bg-primary/5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-60 focus-visible:ring-offset-2"
                     )}
                   >
                     {iconPath ? (
@@ -154,7 +154,7 @@ export const IngredientSelector = ({
             </div>
           ) : (
             <div className="flex h-full items-center justify-center px-3">
-              <div className="w-full max-w-sm rounded-xl border border-dashed border-border/80 bg-background/50 px-4 py-6 text-center">
+              <div className="w-full max-w-sm rounded-xl border border-dashed border-border-80 bg-background-50 px-4 py-6 text-center">
                 <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                   {allIngredients.length > 0 ? (
                     <SearchX className="h-[18px] w-[18px] text-muted-foreground" />

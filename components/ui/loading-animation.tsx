@@ -71,7 +71,7 @@ export const LoadingAnimation = ({
   }, [elapsedTime, language]);
 
   return (
-    <div className={cn("home-card border-border/70 bg-card/90 p-6 md:p-8", className)}>
+    <div className={cn("home-card border-border-70 bg-card-90 p-6 md:p-8", className)}>
       <div className="mx-auto flex max-w-xl flex-col items-center justify-center gap-6">
         <div className="relative">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">

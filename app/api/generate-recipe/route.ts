@@ -4,6 +4,14 @@ import { SYSTEM_PROMPTS, USER_PROMPT_TEMPLATES } from '@/lib/prompts';
 import { APP_CONFIG, getLanguageConfig } from '@/lib/config';
 import { generateRecipeId } from '@/lib/utils/id-generator';
 import { recordModelUsage as saveModelUsage } from '@/lib/server/model-usage';
+import { normalizePairingType } from '@/lib/pairing';
+import {
+  getMealTypeLabel,
+  normalizeMealTypePreference,
+  resolveMealType,
+  type MealTypePreference,
+} from '@/lib/meal-type';
+import { normalizeRecipeVibe } from '@/lib/vibe';
 import {
   ensureCreditsSchema,
   getOrCreateUserCredits,
@@ -39,32 +47,136 @@ function getBearerToken(request: NextRequest): string | null {
   return token || null;
 }
 
+type CookingTimePreset = 'quick' | 'medium' | 'long';
+
+function normalizeCookingTimePreset(value: unknown): CookingTimePreset {
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (raw === 'quick' || raw === 'medium' || raw === 'long') {
+    return raw;
+  }
+  return 'medium';
+}
+
+function getCookingTimeRange(preset: CookingTimePreset): { min: number; max: number } {
+  switch (preset) {
+    case 'quick':
+      return { min: 10, max: 25 };
+    case 'long':
+      return { min: 60, max: 120 };
+    case 'medium':
+    default:
+      return { min: 30, max: 60 };
+  }
+}
+
+function toNullableNumber(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) {
+      return null;
+    }
+    return Math.round(value * 10) / 10;
+  }
+
+  const parsed = Number.parseFloat(String(value));
+  if (Number.isNaN(parsed)) {
+    return null;
+  }
+
+  return Math.round(parsed * 10) / 10;
+}
+
+function pickNullableNumber(...candidates: unknown[]): number | null {
+  for (const value of candidates) {
+    const parsed = toNullableNumber(value);
+    if (parsed !== null) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
+function normalizePairingText(value: unknown, maxLength: number): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  return trimmed.slice(0, maxLength);
+}
+
 // 提取公共的数据转换函数
-function transformRecipeData(recipe: any, finalLanguageModel: string, language: string) {
+function transformRecipeData(
+  recipe: any,
+  finalLanguageModel: string,
+  language: string,
+  requestedMealTypePreference: MealTypePreference
+) {
   const recipeId = generateRecipeId();
+  const cookingTimeRaw = recipe?.cooking_time ?? recipe?.cookingTime;
+  const chefTipsRaw = recipe?.chef_tips ?? recipe?.chefTips;
+  const nutrition = recipe?.nutrition && typeof recipe.nutrition === 'object'
+    ? recipe.nutrition
+    : {};
+  const pairingRaw = recipe?.pairing && typeof recipe.pairing === 'object'
+    ? recipe.pairing
+    : {};
+  const pairing = {
+    type: normalizePairingType(
+      pairingRaw.type ?? recipe.pairingType ?? recipe.pairing_type
+    ),
+    name: normalizePairingText(pairingRaw.name ?? recipe.pairingName ?? recipe.pairing_name, 80),
+    note: normalizePairingText(pairingRaw.note ?? recipe.pairingNote ?? recipe.pairing_note, 120),
+    description: normalizePairingText(
+      pairingRaw.description ?? recipe.pairingDescription ?? recipe.pairing_description,
+      320
+    ),
+  };
+  const hasPairingData = Object.values(pairing).some((value) => value !== null);
+  const mealType = resolveMealType(
+    requestedMealTypePreference,
+    recipe?.meal_type ?? recipe?.mealType ?? recipe?.meal_type_inferred ?? recipe?.mealTypeInferred
+  );
   
   return {
     id: recipeId,
     title: recipe.title || '',
     description: recipe.description || '',
-    cookingTime: recipe.cooking_time || 0,     // 统一转换为驼峰
+    cookingTime: Number(cookingTimeRaw) || 0,     // 统一转换为驼峰
     servings: recipe.servings || 0,
-    difficulty: recipe.difficulty || 'medium',
+    vibe: normalizeRecipeVibe(recipe.vibe, 'comfort'),
     ingredients: recipe.ingredients || [],
     seasoning: recipe.seasoning || [],
     instructions: recipe.instructions || [],
     tags: recipe.tags || [],
-    chefTips: recipe.chef_tips || [],           // 统一转换为驼峰
-    recommended: recipe.recommended || false,
+    chefTips: Array.isArray(chefTipsRaw) ? chefTipsRaw : [],           // 统一转换为驼峰
     languageModel: finalLanguageModel,
-    language: language
+    language: language,
+    mealType,
+    pairing: hasPairingData ? pairing : undefined,
+    nutrition: {
+      calories: pickNullableNumber(nutrition.calories, recipe.calories, recipe.calories_kcal),
+      protein: pickNullableNumber(nutrition.protein, recipe.protein, recipe.protein_g),
+      carbohydrates: pickNullableNumber(nutrition.carbohydrates, recipe.carbohydrates, recipe.carbohydrates_g),
+      fat: pickNullableNumber(nutrition.fat, recipe.fat, recipe.fat_g),
+      fiber: pickNullableNumber(nutrition.fiber, recipe.fiber, recipe.fiber_g),
+      sugar: pickNullableNumber(nutrition.sugar, recipe.sugar, recipe.sugar_g),
+    },
   };
 }
 
 
 
 export async function POST(request: NextRequest) {
-  let ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel, finalLanguageModel;
+  let ingredients, servings, recipeCount, cookingTime, vibe, cuisine, mealType, language, languageModel, finalLanguageModel;
   
   try {
     const token = getBearerToken(request);
@@ -81,13 +193,14 @@ export async function POST(request: NextRequest) {
       ingredients: any[];
       servings: number;
       recipeCount?: number;
-      cookingTime: number;
-      difficulty: string;
+      cookingTime: string;
+      vibe: string;
       cuisine: string;
+      mealType?: string;
       language: string;
       languageModel?: string;
     };
-    ({ ingredients, servings, recipeCount, cookingTime, difficulty, cuisine, language, languageModel } = body);
+    ({ ingredients, servings, recipeCount, cookingTime, vibe, cuisine, mealType, language, languageModel } = body);
     const userId = authData.user.id;
     const db = getPostgresPool();
     const recipeGenerationCost = APP_CONFIG.recipeGenerationCost;
@@ -145,16 +258,42 @@ export async function POST(request: NextRequest) {
     // 根据用户语言选择提示词
     let systemPrompt, userPrompt;
     const ingredientNames = ingredients.map((ingredient: any) => ingredient.name);
+    const cookingTimePreset = normalizeCookingTimePreset(cookingTime);
+    const cookingTimeRange = getCookingTimeRange(cookingTimePreset);
+    const cookingTimeRangeLabel = `${cookingTimeRange.min}-${cookingTimeRange.max}`;
+    const vibeLabel = String(vibe ?? '');
+    const cuisineLabel = String(cuisine ?? '').trim() || 'any';
+    const mealTypePreference = normalizeMealTypePreference(mealType);
+    const mealTypeLabel =
+      mealTypePreference === 'any'
+        ? language === 'zh' || language === 'zh-CN'
+          ? '任意'
+          : 'any'
+        : getMealTypeLabel(mealTypePreference, language);
     
     if (language === 'zh' || language === 'zh-CN') {
 
       // 中文用户使用中文提示词
       systemPrompt = SYSTEM_PROMPTS.CHINESE;
-      userPrompt = `${USER_PROMPT_TEMPLATES.CHINESE}\n\n食材：${ingredientNames.join(', ')}\n份量：${servings}\n烹饪时间：${cookingTime}\n难度：${difficulty}\n菜系：${cuisine}`;
+      userPrompt = `${USER_PROMPT_TEMPLATES.CHINESE(
+        ingredientNames,
+        Number(servings),
+        cookingTimePreset,
+        cookingTimeRangeLabel,
+        vibeLabel,
+        cuisineLabel
+      )}\n\n餐次类型：${mealTypeLabel}\n请在每个菜谱中返回 meal_type 字段，值只能是 breakfast/lunch/dinner/snack/dessert。\n只返回原始 JSON，不要 markdown 代码块，不要解释说明。`;
     } else {
       // 英文用户使用英文提示词
       systemPrompt = SYSTEM_PROMPTS.DEFAULT;
-      userPrompt = `${USER_PROMPT_TEMPLATES.ENGLISH}\n\nIngredients: ${ingredientNames.join(', ')}\nServings: ${servings}\nCooking Time: ${cookingTime}\nDifficulty: ${difficulty}\nCuisine: ${cuisine}`;
+      userPrompt = `${USER_PROMPT_TEMPLATES.ENGLISH(
+        ingredientNames,
+        Number(servings),
+        cookingTimePreset,
+        cookingTimeRangeLabel,
+        vibeLabel,
+        cuisineLabel
+      )}\n\nMeal type preference: ${mealTypeLabel}\nReturn a meal_type field for each recipe, and the value must be one of breakfast/lunch/dinner/snack/dessert.\nReturn ONLY raw JSON. No markdown code fences and no explanatory text.`;
     }
 
     // 验证提示词是否为空
@@ -248,7 +387,7 @@ export async function POST(request: NextRequest) {
       }
 
       const recipesWithDefaults = recipes.map((recipe: any) => 
-        transformRecipeData(recipe, finalLanguageModel, language)
+        transformRecipeData(recipe, finalLanguageModel, language, mealTypePreference)
       );
 
       const spendResponse = await spendRecipeCredits();
@@ -314,7 +453,7 @@ export async function POST(request: NextRequest) {
 
     // 为每个食谱添加ID和其他默认值
     const recipesWithDefaults = recipes.map((recipe: any) => 
-      transformRecipeData(recipe, finalLanguageModel, language)
+      transformRecipeData(recipe, finalLanguageModel, language, mealTypePreference)
     );
 
     const spendResponse = await spendRecipeCredits();

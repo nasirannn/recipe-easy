@@ -1,6 +1,8 @@
 // ==================== 核心类型定义 ====================
 
 import React from 'react';
+import type { MealType, MealTypePreference } from '@/lib/meal-type';
+import type { RecipeVibe } from '@/lib/vibe';
 
 // 基础实体类型
 export interface BaseEntity {
@@ -56,17 +58,33 @@ export interface Cuisine {
   id: number;
   name: string;
   slug: string;
-  cssClass?: string; // CSS类名
 }
 
 // ==================== 食谱相关类型 ====================
+
+export interface RecipeNutrition {
+  calories: number | null;
+  protein: number | null;
+  carbohydrates: number | null;
+  fat: number | null;
+  fiber: number | null;
+  sugar: number | null;
+}
+
+export interface RecipePairing {
+  type: string | null;
+  name: string | null;
+  note: string | null;
+  description: string | null;
+}
 
 export interface Recipe extends BaseEntity {
   title: string;
   description: string;
   cookingTime: number;
   servings: number;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
+  vibe: RecipeVibe;
+  mealType?: MealType | null;
   ingredients: string[];
   seasoning: string[];
   instructions: string[];
@@ -81,6 +99,9 @@ export interface Recipe extends BaseEntity {
   languageModel?: string;
   language?: string;
   recommended?: boolean;
+  authorName?: string;
+  pairing?: RecipePairing;
+  nutrition?: RecipeNutrition;
 }
 
 // 数据库食谱类型（用于API响应）
@@ -92,7 +113,8 @@ export interface DatabaseRecipe {
   tags: string | null;
   cookingTime: number | null;
   servings: number | null;
-  difficulty: string | null;
+  vibe: string | null;
+  mealType?: MealType | null;
   ingredients: string;
   seasoning: string | null;
   instructions: string;
@@ -100,9 +122,20 @@ export interface DatabaseRecipe {
   cuisineId: number | null;
   cuisineName?: string | null;
   userId: string | null;
+  authorName?: string | null;
+  pairingType?: string | null;
+  pairingName?: string | null;
+  pairingNote?: string | null;
+  pairingDescription?: string | null;
   imageModel?: string | null;
   languageModel?: string | null;
   language: string;
+  proteinG?: number | null;
+  carbohydratesG?: number | null;
+  fatG?: number | null;
+  fiberG?: number | null;
+  sugarG?: number | null;
+  caloriesKcal?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -115,7 +148,8 @@ export interface RecipeInput {
   tags?: string[];
   cookingTime?: number;
   servings?: number;
-  difficulty?: string;
+  vibe?: RecipeVibe | string;
+  mealType?: MealType | null;
   ingredients: any[] | string;
   seasoning?: any[] | string;
   instructions: any[] | string;
@@ -123,6 +157,7 @@ export interface RecipeInput {
   cuisineId?: number;
   userId?: string;
   language?: string;
+  nutrition?: Partial<RecipeNutrition>;
 }
 
 // 食谱表单数据
@@ -131,7 +166,8 @@ export interface RecipeFormData {
   servings: number;
   recipeCount: number;
   cookingTime: 'quick' | 'medium' | 'long';
-  difficulty: 'easy' | 'medium' | 'hard';
+  vibe: 'quick' | 'gourmet' | 'comfort' | 'healthy';
+  mealType: MealTypePreference;
   cuisine: string;
   languageModel: LanguageModel;
   imageModel: ImageModel;
@@ -182,7 +218,8 @@ export interface GenerationRequest {
   ingredients: string[];
   servings: number;
   cookingTime: string;
-  difficulty: string;
+  vibe: string;
+  mealType?: MealTypePreference;
   cuisine: string;
   language: string;
   languageModel?: string;

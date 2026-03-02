@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateImageId } from '@/lib/utils/id-generator';
 import { getPostgresPool } from '@/lib/server/postgres';
-import { translateRecipeAsync } from '@/lib/services/translation';
+import { ensureRecipeNutritionSchema } from '@/lib/server/recipes';
 import { validateUserId } from '@/lib/utils/validation';
+import { supabase } from '@/lib/supabase';
 import {
   buildR2PublicUrl,
   extractR2ObjectKey,
   isR2S3Configured,
   uploadImageFromUrlToR2,
 } from '@/lib/server/r2';
+import { normalizePairingType } from '@/lib/pairing';
+import { normalizeMealType, type MealType } from '@/lib/meal-type';
+import { normalizeRecipeVibe, type RecipeVibe } from '@/lib/vibe';
 
 export const runtime = 'nodejs';
 
@@ -20,7 +24,7 @@ interface SaveRecipeRequest {
     cookingTime?: number;
     cooking_time?: number;
     servings?: number;
-    difficulty?: string;
+    vibe?: string;
     ingredients?: unknown[];
     seasoning?: unknown[];
     instructions?: unknown[];
@@ -29,10 +33,49 @@ interface SaveRecipeRequest {
     chef_tips?: unknown[];
     imagePath?: string;
     imageModel?: string;
+    authorName?: string;
+    author_name?: string;
+    pairing?: {
+      type?: string | null;
+      name?: string | null;
+      note?: string | null;
+      description?: string | null;
+    };
+    pairingType?: string | null;
+    pairingName?: string | null;
+    pairingNote?: string | null;
+    pairingDescription?: string | null;
+    pairing_type?: string | null;
+    pairing_name?: string | null;
+    pairing_note?: string | null;
+    pairing_description?: string | null;
+    mealType?: MealType | string | null;
+    meal_type?: MealType | string | null;
     cuisineId?: number;
+    nutrition?: {
+      calories?: number | null;
+      protein?: number | null;
+      carbohydrates?: number | null;
+      fat?: number | null;
+      fiber?: number | null;
+      sugar?: number | null;
+    };
+    calories?: number | null;
+    protein?: number | null;
+    carbohydrates?: number | null;
+    fat?: number | null;
+    fiber?: number | null;
+    sugar?: number | null;
+    protein_g?: number | null;
+    carbohydrates_g?: number | null;
+    fat_g?: number | null;
+    fiber_g?: number | null;
+    sugar_g?: number | null;
+    calories_kcal?: number | null;
   };
   recipes?: Array<Record<string, unknown>>;
   userId?: string;
+  authorName?: string;
   language?: string;
 }
 
@@ -42,7 +85,7 @@ type SaveRecipeInput = {
   description: string;
   cookingTime: number;
   servings: number;
-  difficulty: string;
+  vibe: RecipeVibe;
   ingredients: unknown[];
   seasoning: unknown[];
   instructions: unknown[];
@@ -50,8 +93,34 @@ type SaveRecipeInput = {
   chefTips: unknown[];
   imagePath?: string;
   imageModel?: string;
+  authorName?: string;
+  pairing: {
+    type: string | null;
+    name: string | null;
+    note: string | null;
+    description: string | null;
+  };
+  mealType: MealType | null;
   cuisineId: number;
+  nutrition: {
+    calories: number | null;
+    protein: number | null;
+    carbohydrates: number | null;
+    fat: number | null;
+    fiber: number | null;
+    sugar: number | null;
+  };
 };
+
+function getBearerToken(request: NextRequest): string | null {
+  const value = request.headers.get('authorization') || '';
+  if (!value.toLowerCase().startsWith('bearer ')) {
+    return null;
+  }
+
+  const token = value.slice(7).trim();
+  return token || null;
+}
 
 function normalizeImagePathForStorage(imagePath: string): string {
   const trimmed = imagePath.trim();
@@ -95,22 +164,60 @@ function parseArray(value: unknown): unknown[] {
   return [];
 }
 
-function normalizeStringArray(values: unknown[]): string[] {
-  return values
-    .map((item) => {
-      if (typeof item === 'string') {
-        return item;
-      }
-      if (typeof item === 'number') {
-        return String(item);
-      }
-      if (item && typeof item === 'object' && 'name' in (item as Record<string, unknown>)) {
-        const name = (item as Record<string, unknown>).name;
-        return typeof name === 'string' ? name : '';
-      }
-      return '';
-    })
-    .filter(Boolean);
+function toNullableNumber(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) {
+      return null;
+    }
+    return Math.round(value * 10) / 10;
+  }
+
+  const parsed = Number.parseFloat(String(value));
+  if (Number.isNaN(parsed)) {
+    return null;
+  }
+
+  return Math.round(parsed * 10) / 10;
+}
+
+function pickNullableNumber(...candidates: unknown[]): number | null {
+  for (const value of candidates) {
+    const parsed = toNullableNumber(value);
+    if (parsed !== null) {
+      return parsed;
+    }
+  }
+  return null;
+}
+
+function normalizeAuthorName(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  return trimmed.slice(0, 80);
+}
+
+function normalizePairingText(value: unknown, maxLength: number): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  return trimmed.slice(0, maxLength);
 }
 
 function normalizeRecipeForDatabase(recipe: Record<string, unknown>): SaveRecipeInput {
@@ -122,6 +229,15 @@ function normalizeRecipeForDatabase(recipe: Record<string, unknown>): SaveRecipe
   const cookingTimeNum = Number(cookingTimeRaw);
   const servingsNum = Number(servingsRaw);
   const cuisineIdNum = Number(cuisineIdRaw);
+  const nutritionRaw =
+    recipe.nutrition && typeof recipe.nutrition === 'object'
+      ? (recipe.nutrition as Record<string, unknown>)
+      : null;
+  const pairingRaw =
+    recipe.pairing && typeof recipe.pairing === 'object'
+      ? (recipe.pairing as Record<string, unknown>)
+      : null;
+  const mealType = normalizeMealType(recipe.mealType ?? recipe.meal_type, null);
 
   const cookingTime = Number.isFinite(cookingTimeNum) ? cookingTimeNum : 30;
   const servings = Number.isFinite(servingsNum) ? servingsNum : 4;
@@ -133,7 +249,7 @@ function normalizeRecipeForDatabase(recipe: Record<string, unknown>): SaveRecipe
     description: String(recipe.description ?? ''),
     cookingTime,
     servings,
-    difficulty: String(recipe.difficulty ?? 'easy'),
+    vibe: normalizeRecipeVibe(recipe.vibe, 'comfort'),
     ingredients: parseArray(recipe.ingredients),
     seasoning: parseArray(recipe.seasoning),
     instructions: parseArray(recipe.instructions),
@@ -141,7 +257,34 @@ function normalizeRecipeForDatabase(recipe: Record<string, unknown>): SaveRecipe
     chefTips: parseArray(chefTipsRaw),
     imagePath: typeof recipe.imagePath === 'string' ? recipe.imagePath : undefined,
     imageModel: typeof recipe.imageModel === 'string' ? recipe.imageModel : undefined,
+    authorName: normalizeAuthorName(recipe.authorName ?? recipe.author_name),
+    pairing: {
+      type: normalizePairingType(
+        pairingRaw?.type ?? recipe.pairingType ?? recipe.pairing_type
+      ),
+      name: normalizePairingText(
+        pairingRaw?.name ?? recipe.pairingName ?? recipe.pairing_name,
+        80
+      ),
+      note: normalizePairingText(
+        pairingRaw?.note ?? recipe.pairingNote ?? recipe.pairing_note,
+        120
+      ),
+      description: normalizePairingText(
+        pairingRaw?.description ?? recipe.pairingDescription ?? recipe.pairing_description,
+        320
+      ),
+    },
+    mealType,
     cuisineId,
+    nutrition: {
+      calories: pickNullableNumber(nutritionRaw?.calories, recipe.calories, recipe.calories_kcal),
+      protein: pickNullableNumber(nutritionRaw?.protein, recipe.protein, recipe.protein_g),
+      carbohydrates: pickNullableNumber(nutritionRaw?.carbohydrates, recipe.carbohydrates, recipe.carbohydrates_g),
+      fat: pickNullableNumber(nutritionRaw?.fat, recipe.fat, recipe.fat_g),
+      fiber: pickNullableNumber(nutritionRaw?.fiber, recipe.fiber, recipe.fiber_g),
+      sugar: pickNullableNumber(nutritionRaw?.sugar, recipe.sugar, recipe.sugar_g),
+    },
   };
 }
 
@@ -189,9 +332,9 @@ async function upsertRecipeImage(
 }
 
 async function saveRecipeToDatabase(request: NextRequest) {
-  const db = getPostgresPool();
   const body = (await request.json()) as SaveRecipeRequest;
-  const { recipe, recipes, userId, language } = body;
+  const { recipe, recipes, userId, authorName, language } = body;
+  const requestAuthorName = normalizeAuthorName(authorName);
 
   if (!validateUserId(userId)) {
     return NextResponse.json(
@@ -199,6 +342,32 @@ async function saveRecipeToDatabase(request: NextRequest) {
       { status: 400 }
     );
   }
+
+  const token = getBearerToken(request);
+  if (!token) {
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
+  const { data: authData, error: authError } = await supabase.auth.getUser(token);
+  if (authError || !authData.user?.id) {
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
+  if (authData.user.id !== userId) {
+    return NextResponse.json(
+      { success: false, error: 'Forbidden' },
+      { status: 403 }
+    );
+  }
+
+  const db = getPostgresPool();
+  await ensureRecipeNutritionSchema(db);
 
   let recipeArray: Array<Record<string, unknown>> = [];
   if (Array.isArray(recipes)) {
@@ -217,12 +386,14 @@ async function saveRecipeToDatabase(request: NextRequest) {
   }
 
   const savedRecipes: SaveRecipeInput[] = [];
-  const newlySavedRecipes: SaveRecipeInput[] = [];
   let hasUpdatedImage = false;
   let alreadyExists = false;
+  const sourceLanguage = (language ?? 'en').toLowerCase().startsWith('zh') ? 'zh' : 'en';
 
   for (const rawRecipe of recipeArray) {
     const normalizedRecipe = normalizeRecipeForDatabase(rawRecipe);
+    const resolvedAuthorName = normalizedRecipe.authorName ?? requestAuthorName;
+    normalizedRecipe.authorName = resolvedAuthorName;
     if (!normalizedRecipe.id || !normalizedRecipe.title) {
       return NextResponse.json(
         { success: false, error: 'Recipe ID and title are required' },
@@ -246,30 +417,56 @@ async function saveRecipeToDatabase(request: NextRequest) {
             description = $2,
             cooking_time = $3,
             servings = $4,
-            difficulty = $5,
+            vibe = $5,
             ingredients = $6,
             seasoning = $7,
             instructions = $8,
             tags = $9,
             chef_tips = $10,
             user_id = $11,
-            cuisine_id = $12,
+            author_name = $12,
+            pairing_type = $13,
+            pairing_name = $14,
+            pairing_note = $15,
+            pairing_description = $16,
+            meal_type = $17,
+            cuisine_id = $18,
+            calories_kcal = $19,
+            protein_g = $20,
+            carbohydrates_g = $21,
+            fat_g = $22,
+            fiber_g = $23,
+            sugar_g = $24,
+            language_code = $25,
             updated_at = NOW()
-          WHERE id = $13
+          WHERE id = $26
         `,
         [
           normalizedRecipe.title,
           normalizedRecipe.description,
           normalizedRecipe.cookingTime,
           normalizedRecipe.servings,
-          normalizedRecipe.difficulty,
+          normalizedRecipe.vibe,
           JSON.stringify(normalizedRecipe.ingredients),
           JSON.stringify(normalizedRecipe.seasoning),
           JSON.stringify(normalizedRecipe.instructions),
           JSON.stringify(normalizedRecipe.tags),
           JSON.stringify(normalizedRecipe.chefTips),
           userId,
+          resolvedAuthorName ?? null,
+          normalizedRecipe.pairing.type,
+          normalizedRecipe.pairing.name,
+          normalizedRecipe.pairing.note,
+          normalizedRecipe.pairing.description,
+          normalizedRecipe.mealType,
           normalizedRecipe.cuisineId,
+          normalizedRecipe.nutrition.calories,
+          normalizedRecipe.nutrition.protein,
+          normalizedRecipe.nutrition.carbohydrates,
+          normalizedRecipe.nutrition.fat,
+          normalizedRecipe.nutrition.fiber,
+          normalizedRecipe.nutrition.sugar,
+          sourceLanguage,
           normalizedRecipe.id,
         ]
       );
@@ -277,14 +474,20 @@ async function saveRecipeToDatabase(request: NextRequest) {
       await db.query(
         `
           INSERT INTO recipes (
-            id, title, description, cooking_time, servings, difficulty,
+            id, title, description, cooking_time, servings, vibe,
             ingredients, seasoning, instructions, tags, chef_tips,
-            user_id, cuisine_id, created_at, updated_at
+            user_id, language_code, author_name, pairing_type, pairing_name, pairing_note, pairing_description,
+            meal_type,
+            cuisine_id, calories_kcal, protein_g, carbohydrates_g, fat_g, fiber_g, sugar_g,
+            created_at, updated_at
           )
           VALUES (
             $1, $2, $3, $4, $5, $6,
             $7, $8, $9, $10, $11,
-            $12, $13, NOW(), NOW()
+            $12, $13, $14, $15, $16, $17, $18,
+            $19,
+            $20, $21, $22, $23, $24, $25, $26,
+            NOW(), NOW()
           )
         `,
         [
@@ -293,18 +496,29 @@ async function saveRecipeToDatabase(request: NextRequest) {
           normalizedRecipe.description,
           normalizedRecipe.cookingTime,
           normalizedRecipe.servings,
-          normalizedRecipe.difficulty,
+          normalizedRecipe.vibe,
           JSON.stringify(normalizedRecipe.ingredients),
           JSON.stringify(normalizedRecipe.seasoning),
           JSON.stringify(normalizedRecipe.instructions),
           JSON.stringify(normalizedRecipe.tags),
           JSON.stringify(normalizedRecipe.chefTips),
           userId,
+          sourceLanguage,
+          resolvedAuthorName ?? null,
+          normalizedRecipe.pairing.type,
+          normalizedRecipe.pairing.name,
+          normalizedRecipe.pairing.note,
+          normalizedRecipe.pairing.description,
+          normalizedRecipe.mealType,
           normalizedRecipe.cuisineId,
+          normalizedRecipe.nutrition.calories,
+          normalizedRecipe.nutrition.protein,
+          normalizedRecipe.nutrition.carbohydrates,
+          normalizedRecipe.nutrition.fat,
+          normalizedRecipe.nutrition.fiber,
+          normalizedRecipe.nutrition.sugar,
         ]
       );
-
-      newlySavedRecipes.push(normalizedRecipe);
     }
 
     if (normalizedRecipe.imagePath) {
@@ -336,37 +550,6 @@ async function saveRecipeToDatabase(request: NextRequest) {
     }
 
     savedRecipes.push(normalizedRecipe);
-  }
-
-  if (newlySavedRecipes.length > 0) {
-    const sourceLanguage = (language ?? 'en').toLowerCase().startsWith('zh') ? 'zh' : 'en';
-    const targetLanguage = sourceLanguage === 'zh' ? 'en' : 'zh';
-
-    // Fire-and-forget translation to avoid blocking save latency.
-    void (async () => {
-      const tasks = newlySavedRecipes.map((savedRecipe) =>
-        translateRecipeAsync(
-          {
-            id: savedRecipe.id,
-            title: savedRecipe.title,
-            description: savedRecipe.description,
-            difficulty: savedRecipe.difficulty,
-            servings: savedRecipe.servings,
-            cookingTime: savedRecipe.cookingTime,
-            ingredients: normalizeStringArray(savedRecipe.ingredients),
-            seasoning: normalizeStringArray(savedRecipe.seasoning),
-            instructions: normalizeStringArray(savedRecipe.instructions),
-            chefTips: normalizeStringArray(savedRecipe.chefTips),
-            tags: normalizeStringArray(savedRecipe.tags),
-            language: sourceLanguage,
-          },
-          targetLanguage,
-          db
-        )
-      );
-
-      await Promise.allSettled(tasks);
-    })();
   }
 
   return NextResponse.json({
