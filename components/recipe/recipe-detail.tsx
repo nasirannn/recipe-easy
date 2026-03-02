@@ -3,14 +3,37 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Bookmark, Check, ChefHat, Clock, Flame, Info, Lightbulb, ListOrdered, Share2, Sparkles, ShoppingBasket, Users, Wine } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Bookmark, Check, ChefHat, Clock, Flame, Info, Lightbulb, ListOrdered, Loader2, MoreHorizontal, Share2, Sparkles, ShoppingBasket, Users, Wine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Recipe } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { APP_CONFIG } from "@/lib/config";
 import { getImageUrl } from "@/lib/config";
 import { normalizeRecipeVibe } from "@/lib/vibe";
+import { useAuth } from "@/contexts/auth-context";
+import { useUserUsage } from "@/hooks/use-user-usage";
+import { useImageGeneration } from "@/hooks/use-image-generation";
+import { useRecipeSave } from "@/hooks/use-recipe-save";
+import { buildAuthPath } from "@/lib/utils/auth-path";
+import { isAuthRequiredError } from "@/lib/utils/auth-error";
+import { toast } from "sonner";
 
 type RecipeDetailRecipe = Omit<Recipe, "created_at" | "updated_at" | "vibe" | "cuisine"> & {
   vibe: string;
@@ -88,10 +111,31 @@ function parseJsonArray(data: unknown): string[] {
 export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
   const t = useTranslations("recipeDisplay");
   const isZh = locale.toLowerCase().startsWith("zh");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { user } = useAuth();
+  const { credits } = useUserUsage();
+  const { regenerateImage, imageLoadingStates } = useImageGeneration();
+  const { saveRecipe } = useRecipeSave();
   const [copiedSection, setCopiedSection] = useState<CopySection | null>(null);
   const [isHeroImageLoaded, setIsHeroImageLoaded] = useState(false);
   const [hasHeroImageError, setHasHeroImageError] = useState(false);
+  const [currentImagePath, setCurrentImagePath] = useState<string | undefined>(recipe.imagePath);
+  const [isPersistingImage, setIsPersistingImage] = useState(false);
+  const [isGenerateCoverConfirmOpen, setIsGenerateCoverConfirmOpen] = useState(false);
   const servingsCount = Math.max(1, Number(recipe.servings) || 2);
+  const canGenerateImage = (credits?.credits ?? 0) >= APP_CONFIG.imageGenerationCost;
+  const isRecipeOwner = Boolean(user?.id && recipe.userId && user.id === recipe.userId);
+  const selectedImageModel: "wanx" | "flux" =
+    recipe.imageModel === "wanx" || recipe.imageModel === "flux"
+      ? recipe.imageModel
+      : (isZh ? "wanx" : "flux");
+  const authPath = (() => {
+    const query = searchParams.toString();
+    const currentPath = query ? `${pathname}?${query}` : pathname;
+    return buildAuthPath(locale, currentPath);
+  })();
 
   const ingredients = parseJsonArray(recipe.ingredients);
   const seasoning = parseJsonArray(recipe.seasoning);
@@ -144,6 +188,14 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
     ? {
         copyRecipe: "复制",
         share: "分享",
+        more: "更多",
+        generateCover: "生成封面图",
+        generateCoverDialogTitle: "确认生成封面图",
+        generateCoverDialogDescription: "将根据当前菜谱内容生成一张封面图，并自动保存到该菜谱。",
+        generateCoverDialogCost: `本次操作将消耗 ${APP_CONFIG.imageGenerationCost} 个积分。`,
+        cancelAction: "取消",
+        confirmGenerateAction: "确认生成",
+        generatingAction: "生成中...",
         copied: "已复制",
         linkCopied: "链接已复制",
         ingredientsTitle: "Ingredients",
@@ -167,6 +219,14 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
     : {
         copyRecipe: "Copy",
         share: "Share",
+        more: "More",
+        generateCover: "Generate Cover",
+        generateCoverDialogTitle: "Generate cover image",
+        generateCoverDialogDescription: "A new cover will be generated from this recipe and saved automatically.",
+        generateCoverDialogCost: `This action will consume ${APP_CONFIG.imageGenerationCost} credits.`,
+        cancelAction: "Cancel",
+        confirmGenerateAction: "Generate",
+        generatingAction: "Generating...",
         copied: "Copied",
         linkCopied: "Link copied",
         ingredientsTitle: "Ingredients",
@@ -242,9 +302,16 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
     await copyToClipboard(currentUrl, "link");
   };
 
-  const heroImage = recipe.imagePath ? getImageUrl(recipe.imagePath) : null;
-  const shouldShowHeroImage = Boolean(heroImage) && !hasHeroImageError;
+  const fallbackHeroImage = "/images/recipe-placeholder-bg.png";
+  const primaryHeroImage = currentImagePath ? getImageUrl(currentImagePath) : null;
+  const heroImage = hasHeroImageError || !primaryHeroImage ? fallbackHeroImage : primaryHeroImage;
+  const shouldShowHeroImage = Boolean(heroImage);
   const shouldShowHeroSkeleton = !shouldShowHeroImage || !isHeroImageLoaded;
+  const hasCoverImage = Boolean(currentImagePath);
+  const shouldShowGenerateCoverButton = isRecipeOwner && !hasCoverImage;
+  const shouldShowActionMenu = !hasCoverImage && shouldShowGenerateCoverButton;
+  const shouldShowInlineCopyShare = hasCoverImage || !shouldShowGenerateCoverButton;
+  const isCoverImageLoading = Boolean(imageLoadingStates[recipe.id]) || isPersistingImage;
   const primaryTags = tags.length > 0 ? tags.slice(0, 2) : [getVibeLabel(recipe.vibe || "comfort")];
   const mainTip = chefTips[0] || labels.tipsFallback;
   const pairingType = normalizeText(recipe.pairing?.type);
@@ -272,10 +339,113 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
     return `${displayValue}${unit === "kcal" ? " kcal" : "g"}`;
   };
 
+  const handleOpenGenerateCoverConfirm = () => {
+    if (!user?.id) {
+      router.push(authPath);
+      return;
+    }
+
+    setIsGenerateCoverConfirmOpen(true);
+  };
+
+  const handleGenerateCoverImage = async () => {
+    if (!user?.id) {
+      router.push(authPath);
+      return;
+    }
+
+    if (!canGenerateImage) {
+      toast.error(
+        isZh
+          ? `积分不足，生成图片需要 ${APP_CONFIG.imageGenerationCost} 个积分。`
+          : `Insufficient credits. Image generation requires ${APP_CONFIG.imageGenerationCost} credits.`
+      );
+      return;
+    }
+
+    const previousImagePath = currentImagePath;
+    let didPersist = false;
+
+    try {
+      let generatedImageUrl: string | null = null;
+
+      await regenerateImage(
+        recipe.id,
+        {
+          ...recipe,
+          vibe: normalizeRecipeVibe(recipe.vibe, "comfort"),
+          imagePath: currentImagePath,
+        } as Recipe,
+        selectedImageModel,
+        (imageUrl) => {
+          generatedImageUrl = imageUrl;
+          setCurrentImagePath(imageUrl);
+          setHasHeroImageError(false);
+          setIsHeroImageLoaded(false);
+        }
+      );
+
+      if (!generatedImageUrl) {
+        throw new Error(isZh ? "图片生成成功，但未返回可保存地址。" : "Image generated without a persistable URL.");
+      }
+
+      setIsPersistingImage(true);
+
+      const saveResult = await saveRecipe(
+        {
+          ...recipe,
+          vibe: normalizeRecipeVibe(recipe.vibe, "comfort"),
+          imagePath: generatedImageUrl,
+          imageModel: selectedImageModel,
+        } as Recipe,
+        user.id
+      );
+
+      const persistedImagePath =
+        Array.isArray(saveResult?.recipes) && saveResult.recipes[0]?.imagePath
+          ? String(saveResult.recipes[0].imagePath)
+          : generatedImageUrl;
+
+      setCurrentImagePath(persistedImagePath);
+      setHasHeroImageError(false);
+      setIsHeroImageLoaded(false);
+      didPersist = true;
+      setIsGenerateCoverConfirmOpen(false);
+      router.refresh();
+
+      toast.success(
+        isZh
+          ? `图片生成并保存成功！已消耗 ${APP_CONFIG.imageGenerationCost} 个积分。`
+          : `Image generated and saved! ${APP_CONFIG.imageGenerationCost} credits consumed.`
+      );
+    } catch (error) {
+      if (!didPersist) {
+        setCurrentImagePath(previousImagePath);
+        setHasHeroImageError(false);
+        setIsHeroImageLoaded(false);
+      }
+
+      if (isAuthRequiredError(error)) {
+        router.push(authPath);
+        return;
+      }
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : isZh
+            ? "生成图片失败，请稍后重试"
+            : "Failed to generate image, please try again";
+      toast.error(message);
+    } finally {
+      setIsPersistingImage(false);
+    }
+  };
+
   useEffect(() => {
     setIsHeroImageLoaded(false);
     setHasHeroImageError(false);
-  }, [heroImage]);
+  }, [primaryHeroImage]);
 
   return (
     <div className="bg-background text-foreground">
@@ -300,8 +470,10 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                 )}
                 onLoad={() => setIsHeroImageLoaded(true)}
                 onError={() => {
-                  setHasHeroImageError(true);
                   setIsHeroImageLoaded(false);
+                  if (!hasHeroImageError) {
+                    setHasHeroImageError(true);
+                  }
                 }}
               />
             )}
@@ -344,28 +516,137 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                 </div>
 
                 <div className="flex flex-nowrap items-center gap-2.5 overflow-x-auto pb-1">
-                  <Button
-                    type="button"
-                    className="h-10 shrink-0 gap-2 whitespace-nowrap bg-primary px-4 font-bold text-primary-foreground hover:bg-primary/90"
-                    onClick={handleCopyFullRecipe}
-                  >
-                    {copiedSection === "full" ? <Check className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-                    {copiedSection === "full" ? labels.copied : labels.copyRecipe}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="h-10 shrink-0 gap-2 whitespace-nowrap border-recipe-surface-border bg-recipe-overlay-mid px-4 font-bold !text-white backdrop-blur-sm hover:bg-recipe-overlay-strong hover:!text-white focus-visible:!text-white"
-                    onClick={handleShare}
-                  >
-                    {copiedSection === "link" ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
-                    {copiedSection === "link" ? labels.linkCopied : labels.share}
-                  </Button>
+                  {shouldShowGenerateCoverButton ? (
+                    <Button
+                      type="button"
+                      className="h-10 shrink-0 gap-2 whitespace-nowrap bg-primary px-4 font-bold text-primary-foreground hover:bg-primary/90"
+                      onClick={handleOpenGenerateCoverConfirm}
+                      disabled={isCoverImageLoading}
+                    >
+                      {isCoverImageLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4" />
+                      )}
+                      {labels.generateCover}
+                    </Button>
+                  ) : null}
+                  {shouldShowInlineCopyShare ? (
+                    <>
+                      <Button
+                        type="button"
+                        className="h-10 shrink-0 gap-2 whitespace-nowrap bg-primary px-4 font-bold text-primary-foreground hover:bg-primary/90"
+                        onClick={handleCopyFullRecipe}
+                      >
+                        {copiedSection === "full" ? <Check className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                        {copiedSection === "full" ? labels.copied : labels.copyRecipe}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-10 shrink-0 gap-2 whitespace-nowrap border-recipe-surface-border bg-recipe-overlay-mid px-4 font-bold !text-white backdrop-blur-sm hover:bg-recipe-overlay-strong hover:!text-white focus-visible:!text-white"
+                        onClick={handleShare}
+                      >
+                        {copiedSection === "link" ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+                        {copiedSection === "link" ? labels.linkCopied : labels.share}
+                      </Button>
+                    </>
+                  ) : null}
+                  {shouldShowActionMenu ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="h-10 shrink-0 gap-2 whitespace-nowrap border-recipe-surface-border bg-recipe-overlay-mid px-4 font-bold !text-white backdrop-blur-sm hover:bg-recipe-overlay-strong hover:!text-white focus-visible:!text-white"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                          {labels.more}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="theme-surface-base min-w-[176px] border-border-70 bg-background-95 p-1"
+                      >
+                        <DropdownMenuItem
+                          className="cursor-pointer rounded-md text-foreground focus:bg-muted-50"
+                          onClick={handleCopyFullRecipe}
+                        >
+                          {copiedSection === "full" ? <Check className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                          {copiedSection === "full" ? labels.copied : labels.copyRecipe}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="cursor-pointer rounded-md text-foreground focus:bg-muted-50"
+                          onClick={handleShare}
+                        >
+                          {copiedSection === "link" ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+                          {copiedSection === "link" ? labels.linkCopied : labels.share}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : null}
                 </div>
               </div>
             </div>
           </div>
         </section>
+
+        <Dialog
+          open={isGenerateCoverConfirmOpen}
+          onOpenChange={(open) => {
+            if (!open && isCoverImageLoading) {
+              return;
+            }
+            setIsGenerateCoverConfirmOpen(open);
+          }}
+        >
+          <DialogContent className="theme-surface-base w-[calc(100%-2rem)] max-w-[430px] rounded-xl border border-border-70 bg-card p-0 shadow-xl">
+            <DialogHeader className="border-b border-border-70 px-5 py-4 text-left">
+              <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary-20 text-primary">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <DialogTitle className="text-lg font-bold text-foreground">
+                {labels.generateCoverDialogTitle}
+              </DialogTitle>
+              <DialogDescription className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                {labels.generateCoverDialogDescription}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="px-5 py-4">
+              <div className="rounded-lg border border-border-70 bg-muted-30 px-3 py-2.5">
+                <p className="text-sm font-semibold text-foreground">
+                  {labels.generateCoverDialogCost}
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter className="border-t border-border-70 px-5 py-4 sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-10 border-border-70 bg-transparent px-4 text-foreground hover:bg-muted-50"
+                onClick={() => setIsGenerateCoverConfirmOpen(false)}
+                disabled={isCoverImageLoading}
+              >
+                {labels.cancelAction}
+              </Button>
+              <Button
+                type="button"
+                className="h-10 bg-primary px-4 font-bold text-primary-foreground hover:bg-primary/90"
+                onClick={handleGenerateCoverImage}
+                disabled={isCoverImageLoading}
+              >
+                {isCoverImageLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
+                {isCoverImageLoading ? labels.generatingAction : labels.confirmGenerateAction}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <section className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           <div className="space-y-8 lg:col-span-8">

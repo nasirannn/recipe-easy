@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, LogOut, BookOpen, Star, HelpCircle, ChevronRight, ArrowRight, Compass, Coins, User } from "lucide-react";
+import { Menu, LogOut, BookOpen, Star, HelpCircle, ChevronRight, ArrowRight, Compass, Coins, User, CirclePlus } from "lucide-react";
 import React, { useState } from "react";
 import {
   DropdownMenu,
@@ -49,6 +49,7 @@ export const Navbar = () => {
   const locale = useLocale();
   const homeHref = withLocalePath(locale);
   const myCookbookPath = withLocalePath(locale, "/my-cookbook");
+  const workspacePath = withLocalePath(locale, "/workspace");
   const menuThemeTokenClassName = "theme-surface-base";
 
   const clearAvatarMenuCloseTimer = React.useCallback(() => {
@@ -97,6 +98,10 @@ export const Navbar = () => {
     "h-10 w-10 cursor-pointer overflow-hidden rounded-full border-2 p-0 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring-60 focus-visible:ring-offset-2",
     "border-primary/30 bg-background-72 hover:border-primary/75",
     "data-[state=open]:border-primary"
+  );
+  const createRecipeButtonClassName = cn(
+    "hidden h-10 cursor-pointer items-center gap-2 rounded-lg px-4 text-sm font-bold whitespace-nowrap transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-60 focus-visible:ring-offset-2 md:inline-flex",
+    "bg-primary text-primary-foreground hover:bg-primary/90"
   );
 
   const avatarMenuClassName = cn(
@@ -317,98 +322,107 @@ export const Navbar = () => {
               {/* 用户菜单 */}
               {!loading && (
                 user ? (
-                  <DropdownMenu
-                    modal={false}
-                    open={isAvatarMenuOpen}
-                    onOpenChange={(open) => {
-                      clearAvatarMenuCloseTimer();
-                      setIsAvatarMenuOpen(open);
-                    }}
-                  >
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={avatarTriggerClassName}
+                  <>
+                    <Link
+                      href={workspacePath}
+                      className={createRecipeButtonClassName}
+                    >
+                      <CirclePlus className="h-4.5 w-4.5" />
+                      <span>{t("newRecipe")}</span>
+                    </Link>
+                    <DropdownMenu
+                      modal={false}
+                      open={isAvatarMenuOpen}
+                      onOpenChange={(open) => {
+                        clearAvatarMenuCloseTimer();
+                        setIsAvatarMenuOpen(open);
+                      }}
+                    >
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={avatarTriggerClassName}
+                          onMouseEnter={openAvatarMenu}
+                          onMouseLeave={scheduleAvatarMenuClose}
+                        >
+                          <UserAvatar user={user} size="lg" className="h-10 w-10" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        sideOffset={10}
+                        className={cn(
+                          avatarMenuClassName,
+                          "data-[state=open]:zoom-in-100 data-[state=closed]:zoom-out-100",
+                          "data-[side=bottom]:slide-in-from-top-0 data-[side=left]:slide-in-from-right-0 data-[side=right]:slide-in-from-left-0 data-[side=top]:slide-in-from-bottom-0"
+                        )}
+                        onCloseAutoFocus={(e) => e.preventDefault()}
                         onMouseEnter={openAvatarMenu}
                         onMouseLeave={scheduleAvatarMenuClose}
                       >
-                        <UserAvatar user={user} size="lg" className="h-10 w-10" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      sideOffset={10}
-                      className={cn(
-                        avatarMenuClassName,
-                        "data-[state=open]:zoom-in-100 data-[state=closed]:zoom-out-100",
-                        "data-[side=bottom]:slide-in-from-top-0 data-[side=left]:slide-in-from-right-0 data-[side=right]:slide-in-from-left-0 data-[side=top]:slide-in-from-bottom-0"
-                      )}
-                      onCloseAutoFocus={(e) => e.preventDefault()}
-                      onMouseEnter={openAvatarMenu}
-                      onMouseLeave={scheduleAvatarMenuClose}
-                    >
-                      <div className="space-y-3 py-1">
-                        <div className="space-y-1.5">
-                          <p className="truncate text-sm font-semibold text-foreground">
-                            {getUserDisplayName(user)}
-                          </p>
-                          <p className={cn("line-clamp-2 break-all text-xs leading-4", avatarSubtleTextClassName)}>
-                            {user.email}
-                          </p>
-                        </div>
-
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className={cn("inline-flex items-center gap-1.5 font-medium", avatarLabelTextClassName)}>
-                              <Coins className={cn("h-3.5 w-3.5", avatarSubtleTextClassName)} />
-                              {t('credits')}
-                            </span>
-                            <span className="font-semibold tabular-nums text-foreground">
-                              {creditProgressLabel}
-                            </span>
+                        <div className="space-y-3 py-1">
+                          <div className="space-y-1.5">
+                            <p className="truncate text-sm font-semibold text-foreground">
+                              {getUserDisplayName(user)}
+                            </p>
+                            <p className={cn("line-clamp-2 break-all text-xs leading-4", avatarSubtleTextClassName)}>
+                              {user.email}
+                            </p>
                           </div>
-                          <div className={avatarProgressTrackClassName}>
-                            <div
-                              className={avatarProgressBarClassName}
-                              style={{ width: `${creditProgress}%` }}
-                            />
+
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className={cn("inline-flex items-center gap-1.5 font-medium", avatarLabelTextClassName)}>
+                                <Coins className={cn("h-3.5 w-3.5", avatarSubtleTextClassName)} />
+                                {t('credits')}
+                              </span>
+                              <span className="font-semibold tabular-nums text-foreground">
+                                {creditProgressLabel}
+                              </span>
+                            </div>
+                            <div className={avatarProgressTrackClassName}>
+                              <div
+                                className={avatarProgressBarClassName}
+                                style={{ width: `${creditProgress}%` }}
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <DropdownMenuSeparator className={avatarMenuSeparatorClassName} />
+                        <DropdownMenuSeparator className={avatarMenuSeparatorClassName} />
 
-                      <DropdownMenuItem
-                        onClick={() => setShowEditUserInfoDialog(true)}
-                        className={avatarMenuItemClassName}
-                      >
-                        <User className={cn("h-4 w-4", avatarSubtleTextClassName)} />
-                        {t('profile')}
-                      </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setShowEditUserInfoDialog(true)}
+                          className={avatarMenuItemClassName}
+                        >
+                          <User className={cn("h-4 w-4", avatarSubtleTextClassName)} />
+                          {t('profile')}
+                        </DropdownMenuItem>
 
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setIsAvatarMenuOpen(false);
-                          router.push(withLocalePath(locale, '/my-cookbook'));
-                        }}
-                        className={avatarMenuItemClassName}
-                      >
-                        <BookOpen className={cn("h-4 w-4", avatarSubtleTextClassName)} />
-                        {t('myRecipes')}
-                      </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setIsAvatarMenuOpen(false);
+                            router.push(withLocalePath(locale, '/my-cookbook'));
+                          }}
+                          className={avatarMenuItemClassName}
+                        >
+                          <BookOpen className={cn("h-4 w-4", avatarSubtleTextClassName)} />
+                          {t('myRecipes')}
+                        </DropdownMenuItem>
 
-                      <DropdownMenuSeparator className={avatarMenuSeparatorClassName} />
+                        <DropdownMenuSeparator className={avatarMenuSeparatorClassName} />
 
-                      <DropdownMenuItem
-                        onClick={handleLogout}
-                        className={avatarMenuDangerItemClassName}
-                      >
-                        <LogOut className="h-4 w-4 text-destructive" />
-                        {t('signout')}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        <DropdownMenuItem
+                          onClick={handleLogout}
+                          className={avatarMenuDangerItemClassName}
+                        >
+                          <LogOut className="h-4 w-4 text-destructive" />
+                          {t('signout')}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </>
                 ) : (
                   <button
                     type="button"

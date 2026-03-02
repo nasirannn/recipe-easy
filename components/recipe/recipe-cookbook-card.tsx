@@ -121,7 +121,6 @@ export const RecipeCookbookCard = ({
               target.src = "/images/recipe-placeholder-bg.png";
             }}
           />
-          <div className="absolute inset-0 bg-linear-to-t from-recipe-overlay-strong via-recipe-overlay-mid to-transparent" />
         </Link>
 
         {topRightAction ? (
@@ -216,7 +215,6 @@ export const RecipeCookbookCardSkeleton = ({
     >
       <div className={cn("relative overflow-hidden", imageHeightClassName)}>
         <Skeleton className="h-full w-full rounded-none bg-recipe-surface-skeleton" />
-        <div className="absolute inset-0 bg-linear-to-t from-recipe-overlay-strong via-recipe-overlay-mid to-transparent" />
 
         <div className="absolute right-3 top-3 z-20 flex items-center gap-2">
           <Skeleton className="h-8 w-8 rounded-full bg-recipe-surface-skeleton-soft" />

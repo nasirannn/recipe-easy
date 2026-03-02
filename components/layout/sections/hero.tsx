@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, Sparkles, UtensilsCrossed } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -28,18 +28,6 @@ export const HeroSection = () => {
   const heroImageAlt = useMemo(() => {
     return locale === "zh" ? "RecipeEasy 工作台预览" : "RecipeEasy workspace preview";
   }, [locale]);
-
-  const heroPreviewCopy = locale === "zh"
-    ? {
-        badge: "工作台预览",
-        title: "选择食材，几秒生成菜谱与图片",
-        status: "实时体验",
-      }
-    : {
-        badge: "Workspace Preview",
-        title: "Pick ingredients, generate recipes and images in seconds",
-        status: "Live demo",
-      };
 
   const shouldShowHeroImage = !hasHeroImageError;
   const shouldShowHeroSkeleton = !shouldShowHeroImage || !isHeroImageLoaded;
@@ -164,23 +152,6 @@ export const HeroSection = () => {
                     />
                   ) : null}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent" />
-                  <div className="absolute bottom-6 left-6 right-6 flex items-center gap-4 rounded-xl border border-border-70 bg-background-90 p-4 shadow-lg backdrop-blur-sm">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
-                      <UtensilsCrossed className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="mb-0.5 text-xs font-medium text-primary">
-                        {heroPreviewCopy.badge}
-                      </p>
-                      <p className="truncate text-sm font-bold text-foreground">
-                        {heroPreviewCopy.title}
-                      </p>
-                    </div>
-                    <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs font-bold text-foreground">
-                      <Sparkles className="h-3.5 w-3.5 text-primary" />
-                      {heroPreviewCopy.status}
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>

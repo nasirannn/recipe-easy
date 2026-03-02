@@ -8,6 +8,9 @@ import { getImageUrl } from '@/lib/config';
 import { getPostgresPool } from '@/lib/server/postgres';
 import { getRecipeById } from '@/lib/server/recipes';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface RecipePageProps {
   params: Promise<{
     locale: string;

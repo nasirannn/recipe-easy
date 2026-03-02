@@ -94,6 +94,8 @@ interface RecipeListCardProps {
   featured?: boolean;
   mediaClassName?: string;
   layout?: 'standard' | 'overlay';
+  showCoverOverlay?: boolean;
+  showDescription?: boolean;
   className?: string;
   prefetch?: boolean;
 }
@@ -109,6 +111,8 @@ export const RecipeListCard = ({
   featured = false,
   mediaClassName,
   layout = 'standard',
+  showCoverOverlay = true,
+  showDescription = true,
   className,
   prefetch = true,
 }: RecipeListCardProps) => {
@@ -159,14 +163,16 @@ export const RecipeListCard = ({
               target.src = '/images/recipe-placeholder-bg.png';
             }}
           />
-          <div
-            className={cn(
-              'absolute inset-0 transition-opacity duration-300',
-              layout === 'overlay'
-                ? 'bg-[linear-gradient(to_top,var(--color-recipe-overlay-strong)_0%,var(--color-recipe-overlay-mid)_24%,transparent_52%)] opacity-92 group-hover:opacity-84'
-                : 'bg-linear-to-t from-recipe-overlay-strong via-recipe-overlay-mid to-transparent opacity-78 group-hover:opacity-58'
-            )}
-          />
+          {showCoverOverlay ? (
+            <div
+              className={cn(
+                'absolute inset-0 transition-opacity duration-300',
+                layout === 'overlay'
+                  ? 'bg-[linear-gradient(to_top,var(--color-recipe-overlay-strong)_0%,var(--color-recipe-overlay-mid)_24%,transparent_52%)] opacity-92 group-hover:opacity-84'
+                  : 'bg-linear-to-t from-recipe-overlay-strong via-recipe-overlay-mid to-transparent opacity-78 group-hover:opacity-58'
+              )}
+            />
+          ) : null}
         </Link>
 
         {topLeftContent ? (
@@ -192,7 +198,7 @@ export const RecipeListCard = ({
               {recipe.title}
             </h3>
 
-            {recipe.description ? (
+            {showDescription && recipe.description ? (
               <p className="mt-2 line-clamp-1 text-sm leading-relaxed text-white/90 drop-shadow-[0_1px_1px_rgba(10,24,15,0.6)]">
                 {recipe.description}
               </p>
@@ -249,7 +255,7 @@ export const RecipeListCard = ({
             </Link>
           </h3>
 
-          {recipe.description ? (
+          {showDescription && recipe.description ? (
             <p className="line-clamp-1 text-sm leading-relaxed text-recipe-surface-muted-foreground">
               {recipe.description}
             </p>

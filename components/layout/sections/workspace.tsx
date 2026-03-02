@@ -124,11 +124,6 @@ export const WorkspaceSection = ({ initialRecentRecipes }: WorkspaceSectionProps
         recipesToSave.forEach((recipe) => {
           autoSavedRecipeIdsRef.current.add(recipe.id);
         });
-        toast.success(
-          locale === "zh"
-            ? `已自动保存 ${recipesToSave.length} 条菜谱`
-            : `Auto-saved ${recipesToSave.length} recipe${recipesToSave.length > 1 ? "s" : ""}`
-        );
       } catch (saveError) {
         if (isAuthRequiredError(saveError)) {
           router.push(authPath);
@@ -246,7 +241,10 @@ export const WorkspaceSection = ({ initialRecentRecipes }: WorkspaceSectionProps
     }
 
     try {
+      let generatedImageUrl: string | null = null;
+
       await regenerateImage(recipeId, recipe, formData.imageModel, (imageUrl) => {
+        generatedImageUrl = imageUrl;
         setRecipes((prevRecipes) =>
           prevRecipes.map((currentRecipe) =>
             currentRecipe.id === recipeId
@@ -254,13 +252,47 @@ export const WorkspaceSection = ({ initialRecentRecipes }: WorkspaceSectionProps
               : currentRecipe
           )
         );
-
-        toast.success(
-          locale === "zh"
-            ? `图片重新生成成功！已消耗 ${APP_CONFIG.imageGenerationCost} 个积分。`
-            : `Image regenerated successfully! ${APP_CONFIG.imageGenerationCost} credits consumed.`
-        );
       });
+
+      if (!generatedImageUrl) {
+        throw new Error(
+          locale === "zh" ? "图片生成成功，但未返回可保存的图片地址。" : "Image generated without a persistable URL."
+        );
+      }
+
+      const saveResult = await saveRecipe(
+        {
+          ...recipe,
+          imagePath: generatedImageUrl,
+          imageModel: formData.imageModel,
+        },
+        user.id
+      );
+
+      const persistedImagePath =
+        Array.isArray(saveResult?.recipes) && saveResult.recipes[0]?.imagePath
+          ? String(saveResult.recipes[0].imagePath)
+          : generatedImageUrl;
+
+      if (persistedImagePath !== generatedImageUrl) {
+        setRecipes((prevRecipes) =>
+          prevRecipes.map((currentRecipe) =>
+            currentRecipe.id === recipeId
+              ? { ...currentRecipe, imagePath: persistedImagePath }
+              : currentRecipe
+          )
+        );
+      }
+
+      if (recipe.id) {
+        autoSavedRecipeIdsRef.current.add(recipe.id);
+      }
+
+      toast.success(
+        locale === "zh"
+          ? `图片重新生成并保存成功！已消耗 ${APP_CONFIG.imageGenerationCost} 个积分。`
+          : `Image regenerated and saved successfully! ${APP_CONFIG.imageGenerationCost} credits consumed.`
+      );
     } catch (regenerateError) {
       if (isAuthRequiredError(regenerateError)) {
         router.push(authPath);
@@ -421,7 +453,7 @@ export const WorkspaceSection = ({ initialRecentRecipes }: WorkspaceSectionProps
         viewAll: "查看全部菜谱",
         emptyRecent: "还没有最近生成且带图片的菜谱。",
         tipTitle: "Chef's Tip",
-        tipContent: "食材尽量具体，例如“2个鸡蛋 + 半个洋葱 + 一块鸡胸肉”，生成结果会更稳定。",
+        tipContent: "先选择 2-6 个核心食材，再设置 Vibe、Meal Type、Cuisine 和 Servings，生成结果会更贴合你的需求。",
       }
     : {
         badge: "AI Cooking Workspace",
@@ -438,7 +470,7 @@ export const WorkspaceSection = ({ initialRecentRecipes }: WorkspaceSectionProps
         emptyRecent: "No recent recipes with images available yet.",
         tipTitle: "Chef's Tip",
         tipContent:
-          "Be specific with quantities. For example: 2 eggs + half an onion + one chicken breast.",
+          "Pick 2-6 core ingredients, then set Vibe, Meal Type, Cuisine, and Servings for more tailored results.",
       };
 
   return (
@@ -628,6 +660,8 @@ export const WorkspaceSection = ({ initialRecentRecipes }: WorkspaceSectionProps
                         minsLabel={tRecipeDisplay("mins")}
                         vibeLabel={recipe.vibe ? tRecipeDisplay(normalizedVibe) : undefined}
                         layout="standard"
+                        showCoverOverlay={false}
+                        showDescription={false}
                         mediaClassName="h-32"
                         topLeftContent={
                           topBadgeLabel ? (
