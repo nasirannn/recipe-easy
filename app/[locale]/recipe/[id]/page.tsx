@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { cache } from 'react';
 import { RecipeDetail } from '@/components/recipe/recipe-detail';
 import { FooterSection } from '@/components/layout/sections/footer';
 import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
@@ -105,36 +106,14 @@ export async function generateMetadata({
   params,
 }: RecipePageProps): Promise<Metadata> {
   const { locale, id } = await params;
-  
-  try {
-    const db = getPostgresPool();
-    const recipe = await getRecipeById(db, id, locale);
 
-    if (!recipe) {
-      return generateSeoMetadata({
-        title: 'Recipe Not Found - RecipeEasy',
-        description: 'The requested recipe could not be found.',
-        path: `recipe/${id}`,
-        locale,
-      });
-    }
-
-    return generateSeoMetadata({
-      title: `${recipe.title} - RecipeEasy`,
-      description: recipe.description || `Learn how to make ${recipe.title} with our step-by-step recipe guide.`,
-      path: `recipe/${id}`,
-      locale,
-      type: 'article'
-    });
-  } catch (error) {
-    // Error generating metadata
-    return generateSeoMetadata({
-      title: 'Recipe - RecipeEasy',
-      description: 'Discover delicious recipes on RecipeEasy.',
-      path: `recipe/${id}`,
-      locale,
-    });
-  }
+  return generateSeoMetadata({
+    title: 'Recipe - RecipeEasy',
+    description: 'Discover delicious recipes on RecipeEasy.',
+    path: `recipe/${id}`,
+    locale,
+    type: 'article',
+  });
 }
 
 async function getRecipe(id: string, locale: string) {
@@ -147,10 +126,12 @@ async function getRecipe(id: string, locale: string) {
   }
 }
 
+const getRecipeCached = cache(getRecipe);
+
 export default async function RecipePage({ params }: RecipePageProps) {
   const { locale, id } = await params;
   
-  const recipe = await getRecipe(id, locale);
+  const recipe = await getRecipeCached(id, locale);
   
   if (!recipe) {
     notFound();

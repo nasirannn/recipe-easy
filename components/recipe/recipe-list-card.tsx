@@ -127,10 +127,12 @@ export const RecipeListCard = ({
         getVibeBadgeToneClass(vibeValue, 'standard')
       );
 
-  const overlayVibeClassName = cn(
-    'inline-flex items-center gap-1 font-semibold',
-    getVibeBadgeToneClass(vibeValue, 'overlay')
-  );
+  const overlayVibeClassName = vibeBadgeClassName
+    ? cn('inline-flex items-center gap-1 font-semibold', vibeBadgeClassName)
+    : cn(
+        'inline-flex items-center gap-1 font-semibold',
+        getVibeBadgeToneClass(vibeValue, 'overlay')
+      );
 
   return (
     <Card
@@ -191,7 +193,7 @@ export const RecipeListCard = ({
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-4 sm:p-5">
             <h3
               className={cn(
-                'line-clamp-2 font-semibold leading-snug tracking-tight text-white drop-shadow-[0_1px_1px_rgba(10,24,15,0.72)]',
+                'line-clamp-2 font-semibold leading-snug tracking-tight text-white drop-shadow-[0_1px_1px_rgba(10,24,15,0.72)] transition-colors duration-200 group-hover:text-primary',
                 featured ? 'text-2xl' : 'text-xl'
               )}
             >
@@ -242,13 +244,13 @@ export const RecipeListCard = ({
         <div className="space-y-4 p-5 sm:p-6">
           <h3
             className={cn(
-              'line-clamp-2 font-semibold leading-snug tracking-tight text-recipe-surface-foreground',
+              'line-clamp-2 font-semibold leading-snug tracking-tight text-recipe-surface-foreground transition-colors duration-200 group-hover:text-primary',
               featured ? 'text-2xl' : 'text-xl'
             )}
           >
             <Link
               href={href}
-              className="block cursor-pointer transition-colors hover:text-primary"
+              className="block cursor-pointer"
               prefetch={prefetch}
             >
               {recipe.title}

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Bookmark, Check, ChefHat, Clock, Flame, Info, Lightbulb, ListOrdered, Loader2, MoreHorizontal, Share2, Sparkles, ShoppingBasket, Users, Wine } from "lucide-react";
+import { Bookmark, Check, ChefHat, Clock, Flame, Info, Lightbulb, ListOrdered, Loader2, MoreHorizontal, Share2, Sparkles, ShoppingBasket, Tags as TagsIcon, Users, Wine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -33,6 +33,7 @@ import { useImageGeneration } from "@/hooks/use-image-generation";
 import { useRecipeSave } from "@/hooks/use-recipe-save";
 import { buildAuthPath } from "@/lib/utils/auth-path";
 import { isAuthRequiredError } from "@/lib/utils/auth-error";
+import { overlayIconButtonClass } from "@/lib/utils/button-styles";
 import { toast } from "sonner";
 
 type RecipeDetailRecipe = Omit<Recipe, "created_at" | "updated_at" | "vibe" | "cuisine"> & {
@@ -114,7 +115,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { credits } = useUserUsage();
   const { regenerateImage, imageLoadingStates } = useImageGeneration();
   const { saveRecipe } = useRecipeSave();
@@ -123,7 +124,11 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
   const [hasHeroImageError, setHasHeroImageError] = useState(false);
   const [currentImagePath, setCurrentImagePath] = useState<string | undefined>(recipe.imagePath);
   const [isPersistingImage, setIsPersistingImage] = useState(false);
+  const [isHeroPreviewOpen, setIsHeroPreviewOpen] = useState(false);
   const [isGenerateCoverConfirmOpen, setIsGenerateCoverConfirmOpen] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
+  const [isFavoriteUpdating, setIsFavoriteUpdating] = useState(false);
   const servingsCount = Math.max(1, Number(recipe.servings) || 2);
   const canGenerateImage = (credits?.credits ?? 0) >= APP_CONFIG.imageGenerationCost;
   const isRecipeOwner = Boolean(user?.id && recipe.userId && user.id === recipe.userId);
@@ -189,6 +194,10 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
         copyRecipe: "复制",
         share: "分享",
         more: "更多",
+        addFavorite: "收藏菜谱",
+        removeFavorite: "取消收藏",
+        previewCover: "查看大图",
+        previewCoverTitle: "封面大图预览",
         generateCover: "生成封面图",
         generateCoverDialogTitle: "确认生成封面图",
         generateCoverDialogDescription: "将根据当前菜谱内容生成一张封面图，并自动保存到该菜谱。",
@@ -201,6 +210,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
         ingredientsTitle: "Ingredients",
         seasoningTitle: "Seasoning",
         instructionsTitle: "Instructions",
+        tagsTitle: "标签",
         tipsTitle: "ChefAI Tips",
         tipsFallback:
           "先用干锅将藜麦轻炒 2 分钟，再加水煮制，可以获得更浓郁的坚果香气。",
@@ -220,6 +230,10 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
         copyRecipe: "Copy",
         share: "Share",
         more: "More",
+        addFavorite: "Save recipe",
+        removeFavorite: "Remove favorite",
+        previewCover: "View full-size image",
+        previewCoverTitle: "Cover image preview",
         generateCover: "Generate Cover",
         generateCoverDialogTitle: "Generate cover image",
         generateCoverDialogDescription: "A new cover will be generated from this recipe and saved automatically.",
@@ -232,6 +246,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
         ingredientsTitle: "Ingredients",
         seasoningTitle: "Seasoning",
         instructionsTitle: "Instructions",
+        tagsTitle: "Tags",
         tipsTitle: "ChefAI Tips",
         tipsFallback:
           "Toast the grains for 2 minutes before simmering to bring out extra nutty flavor.",
@@ -306,6 +321,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
   const primaryHeroImage = currentImagePath ? getImageUrl(currentImagePath) : null;
   const heroImage = hasHeroImageError || !primaryHeroImage ? fallbackHeroImage : primaryHeroImage;
   const shouldShowHeroImage = Boolean(heroImage);
+  const canOpenHeroPreview = Boolean(primaryHeroImage);
   const shouldShowHeroSkeleton = !shouldShowHeroImage || !isHeroImageLoaded;
   const hasCoverImage = Boolean(currentImagePath);
   const shouldShowGenerateCoverButton = isRecipeOwner && !hasCoverImage;
@@ -313,6 +329,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
   const shouldShowInlineCopyShare = hasCoverImage || !shouldShowGenerateCoverButton;
   const isCoverImageLoading = Boolean(imageLoadingStates[recipe.id]) || isPersistingImage;
   const primaryTags = tags.length > 0 ? tags.slice(0, 2) : [getVibeLabel(recipe.vibe || "comfort")];
+  const detailTags = Array.from(new Set(tags.map((tag) => tag.trim()).filter(Boolean)));
   const mainTip = chefTips[0] || labels.tipsFallback;
   const pairingType = normalizeText(recipe.pairing?.type);
   const pairingTitle = `${toTitleCase(pairingType ?? labels.pairingTypeFallback)} Pairing`;
@@ -346,6 +363,56 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
     }
 
     setIsGenerateCoverConfirmOpen(true);
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!user?.id || !session?.access_token) {
+      router.push(authPath);
+      return;
+    }
+
+    const previousFavorite = isFavorite;
+    const nextFavorite = !previousFavorite;
+    setIsFavorite(nextFavorite);
+    setIsFavoriteUpdating(true);
+
+    try {
+      const response = await fetch("/api/recipes/favorites", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          recipeId: recipe.id,
+          favorite: nextFavorite,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          router.push(authPath);
+          return;
+        }
+        throw new Error("Failed to update favorite recipe");
+      }
+
+      const result = (await response.json()) as {
+        success?: boolean;
+        favorite?: boolean;
+      };
+
+      if (!result.success || typeof result.favorite !== "boolean") {
+        throw new Error("Failed to update favorite recipe");
+      }
+
+      setIsFavorite(result.favorite);
+    } catch {
+      setIsFavorite(previousFavorite);
+    } finally {
+      setIsFavoriteUpdating(false);
+    }
   };
 
   const handleGenerateCoverImage = async () => {
@@ -447,6 +514,77 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
     setHasHeroImageError(false);
   }, [primaryHeroImage]);
 
+  useEffect(() => {
+    if (!user?.id || !session?.access_token) {
+      setIsFavorite(false);
+      setIsFavoriteLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    let isMounted = true;
+
+    const loadFavoriteStatus = async () => {
+      try {
+        setIsFavoriteLoading(true);
+        const response = await fetch(
+          `/api/recipes/favorites?userId=${encodeURIComponent(user.id)}`,
+          {
+            signal: controller.signal,
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          if (response.status === 401 || response.status === 403) {
+            if (isMounted) {
+              setIsFavorite(false);
+            }
+            return;
+          }
+          throw new Error("Failed to load favorite recipes");
+        }
+
+        const result = (await response.json()) as {
+          success?: boolean;
+          favoriteRecipeIds?: string[];
+        };
+
+        if (!result.success) {
+          throw new Error("Failed to load favorite recipes");
+        }
+
+        const favoriteIds = Array.isArray(result.favoriteRecipeIds)
+          ? result.favoriteRecipeIds.map((item) => String(item)).filter(Boolean)
+          : [];
+
+        if (isMounted) {
+          setIsFavorite(favoriteIds.includes(recipe.id));
+        }
+      } catch (error) {
+        if ((error as Error).name === "AbortError") {
+          return;
+        }
+        if (isMounted) {
+          setIsFavorite(false);
+        }
+      } finally {
+        if (isMounted) {
+          setIsFavoriteLoading(false);
+        }
+      }
+    };
+
+    loadFavoriteStatus();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [recipe.id, session?.access_token, user?.id]);
+
   return (
     <div className="bg-background text-foreground">
       <div className="mx-auto w-full max-w-[1200px] px-4 pb-12 pt-6 md:px-10 lg:pb-16">
@@ -485,8 +623,32 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                   : "bg-linear-to-t from-black/78 via-black/42 to-black/12"
               )}
             />
+            {canOpenHeroPreview ? (
+              <button
+                type="button"
+                aria-label={labels.previewCover}
+                onClick={() => setIsHeroPreviewOpen(true)}
+                className="absolute inset-0 z-[15] cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
+              />
+            ) : null}
+            <div className="absolute right-4 top-4 z-20 sm:right-5 sm:top-5">
+              <button
+                type="button"
+                aria-pressed={isFavorite}
+                aria-label={isFavorite ? labels.removeFavorite : labels.addFavorite}
+                onClick={handleToggleFavorite}
+                disabled={isFavoriteLoading || isFavoriteUpdating}
+                className={overlayIconButtonClass({
+                  active: isFavorite,
+                  disabled: isFavoriteLoading || isFavoriteUpdating,
+                  className: "h-9 w-9 shadow-md",
+                })}
+              >
+                <Bookmark className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
+              </button>
+            </div>
 
-            <div className="relative z-10 flex min-h-[380px] flex-col justify-end p-6 sm:min-h-[420px] sm:p-8">
+            <div className="relative z-20 flex min-h-[380px] flex-col justify-end p-6 pointer-events-none sm:min-h-[420px] sm:p-8">
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 {primaryTags.map((tag, index) => (
                   <span
@@ -515,7 +677,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                   )}
                 </div>
 
-                <div className="flex flex-nowrap items-center gap-2.5 overflow-x-auto pb-1">
+                <div className="pointer-events-auto flex flex-nowrap items-center gap-2.5 overflow-x-auto pb-1">
                   {shouldShowGenerateCoverButton ? (
                     <Button
                       type="button"
@@ -590,6 +752,29 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
             </div>
           </div>
         </section>
+
+        <Dialog
+          open={isHeroPreviewOpen}
+          onOpenChange={setIsHeroPreviewOpen}
+        >
+          <DialogContent className="theme-surface-base w-[calc(100%-1.5rem)] max-w-[min(1200px,96vw)] overflow-hidden rounded-xl border border-border-70 bg-background-95 p-0">
+            <DialogHeader className="sr-only">
+              <DialogTitle>{labels.previewCoverTitle}</DialogTitle>
+            </DialogHeader>
+            {heroImage ? (
+              <div className="relative h-[78vh] w-full min-h-[340px] bg-black/90">
+                <Image
+                  src={heroImage}
+                  alt={recipe.title}
+                  fill
+                  unoptimized={true}
+                  sizes="96vw"
+                  className="object-contain"
+                />
+              </div>
+            ) : null}
+          </DialogContent>
+        </Dialog>
 
         <Dialog
           open={isGenerateCoverConfirmOpen}
@@ -735,6 +920,29 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                           <p className="text-sm leading-7 text-muted-foreground sm:text-base">{step}</p>
                         </div>
                       </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {detailTags.length > 0 && (
+              <Card className="overflow-hidden rounded-xl border border-border-70 bg-card">
+                <div className="border-b border-border-70 bg-muted-30 px-5 py-4 sm:px-6">
+                  <h2 className="flex items-center gap-2.5 text-xl font-bold text-foreground">
+                    <TagsIcon className="h-5 w-5 text-primary" />
+                    {labels.tagsTitle}
+                  </h2>
+                </div>
+                <CardContent className="p-5 sm:p-6">
+                  <div className="flex flex-wrap gap-2.5">
+                    {detailTags.map((tag, index) => (
+                      <span
+                        key={`${tag}-${index}`}
+                        className="inline-flex items-center rounded-full border border-border-70 bg-muted-30 px-3 py-1 text-xs font-semibold text-foreground"
+                      >
+                        {tag}
+                      </span>
                     ))}
                   </div>
                 </CardContent>

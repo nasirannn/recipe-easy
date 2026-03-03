@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateImageId } from '@/lib/utils/id-generator';
 import { getPostgresPool } from '@/lib/server/postgres';
-import { ensureRecipeNutritionSchema } from '@/lib/server/recipes';
 import { validateUserId } from '@/lib/utils/validation';
 import { supabase } from '@/lib/supabase';
 import {
@@ -367,7 +366,6 @@ async function saveRecipeToDatabase(request: NextRequest) {
   }
 
   const db = getPostgresPool();
-  await ensureRecipeNutritionSchema(db);
 
   let recipeArray: Array<Record<string, unknown>> = [];
   if (Array.isArray(recipes)) {

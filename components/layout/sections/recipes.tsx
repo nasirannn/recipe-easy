@@ -2,7 +2,7 @@
 
 import { useTranslations, useLocale } from 'next-intl';
 import { SectionHeader } from '@/components/layout/section-header';
-import { RecipeListCard } from '@/components/recipe/recipe-list-card';
+import { ExploreRecipeCard } from '@/components/recipe/explore-recipe-card';
 import type { HomeRecipePreview } from '@/lib/home-types';
 import { withLocalePath } from '@/lib/utils/locale-path';
 import { getMealTypeLabel } from '@/lib/meal-type';
@@ -49,22 +49,16 @@ export const RecipesSection = ({ recipes }: RecipesSectionProps) => {
                   (recipe.mealType ? getMealTypeLabel(recipe.mealType, locale) : undefined) ||
                   recipe.cuisine?.name;
                 return (
-                  <RecipeListCard
+                  <ExploreRecipeCard
                     key={recipe.id}
                     recipe={recipe}
                     href={withLocalePath(locale, `/recipe/${recipe.id}`)}
                     minsLabel={tRecipe('mins')}
                     vibeLabel={recipe.vibe ? tRecipe(normalizedVibe) : undefined}
-                    layout="overlay"
+                    metaRightLabel={topBadgeLabel}
+                    vibeBadgeClassName="text-white/90"
                     mediaClassName={getMasonryMediaClass(recipe.id)}
                     className="mb-6 break-inside-avoid"
-                    topLeftContent={
-                      topBadgeLabel ? (
-                        <span className="inline-flex items-center rounded-full bg-background-80 px-3 py-1 text-xs font-semibold text-foreground ring-1 ring-border">
-                          {topBadgeLabel}
-                        </span>
-                      ) : undefined
-                    }
                   />
                 );
               })}

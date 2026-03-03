@@ -1,22 +1,17 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { Bookmark } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import {
-  RecipeListCard,
   RecipeListCardSkeleton,
 } from "@/components/recipe/recipe-list-card";
+import { ExploreRecipeCard } from "@/components/recipe/explore-recipe-card";
 import type { HomeRecipePreview } from "@/lib/home-types";
 import { withLocalePath } from "@/lib/utils/locale-path";
-import { buildAuthPath } from "@/lib/utils/auth-path";
-import { useAuth } from "@/contexts/auth-context";
 import { getMealTypeLabel, normalizeMealType } from "@/lib/meal-type";
 import { normalizeRecipeVibe } from "@/lib/vibe";
-import { overlayIconButtonClass } from "@/lib/utils/button-styles";
 
 interface RecipesListProps {
   locale: string;
@@ -43,13 +38,9 @@ export const RecipesList = ({
   initialRecipes = [],
   initialHasMore = false,
 }: RecipesListProps) => {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const t = useTranslations("recipes");
   const tRecipe = useTranslations("recipeDisplay");
   const isZh = locale.toLowerCase().startsWith("zh");
-  const { user, session } = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
   const [recipes, setRecipes] = useState<RecipeWithMeta[]>(
@@ -57,12 +48,6 @@ export const RecipesList = ({
   );
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(initialHasMore);
-  const [favoriteRecipeIds, setFavoriteRecipeIds] = useState<Set<string>>(new Set());
-  const authPath = useMemo(() => {
-    const query = searchParams.toString();
-    const nextPath = query ? `${pathname}?${query}` : pathname;
-    return buildAuthPath(locale, nextPath);
-  }, [locale, pathname, searchParams]);
 
   const uiText = isZh
     ? {
@@ -73,8 +58,6 @@ export const RecipesList = ({
         heroNoteSuffix: "持续解锁更多优质菜谱内容。",
         emptyStateTitle: "暂时还没有可展示的菜谱",
         emptyStateHint: "请稍后再来看看，我们会持续更新带图片的菜谱。",
-        addFavoriteLabel: "收藏菜谱",
-        removeFavoriteLabel: "取消收藏",
       }
     : {
         eyebrow: "Explore",
@@ -85,8 +68,6 @@ export const RecipesList = ({
         heroNoteSuffix: "and unlock more complete recipe content.",
         emptyStateTitle: "No recipes are available right now",
         emptyStateHint: "Please check back soon. New recipes with images are added continuously.",
-        addFavoriteLabel: "Save recipe",
-        removeFavoriteLabel: "Remove favorite",
       };
 
   useEffect(() => {
@@ -95,129 +76,6 @@ export const RecipesList = ({
     setPage(1);
     setIsLoading(false);
   }, [initialRecipes, initialHasMore]);
-
-  useEffect(() => {
-    if (user?.id && session?.access_token) {
-      const controller = new AbortController();
-      const loadFavorites = async () => {
-        try {
-          const response = await fetch(
-            `/api/recipes/favorites?userId=${encodeURIComponent(user.id)}`,
-            {
-              signal: controller.signal,
-              headers: {
-                Authorization: `Bearer ${session.access_token}`,
-              },
-            }
-          );
-          if (!response.ok) {
-            if (response.status === 401 || response.status === 403) {
-              router.replace(authPath);
-              return;
-            }
-            throw new Error('Failed to load favorite recipes');
-          }
-          const result = await response.json() as {
-            success?: boolean;
-            favoriteRecipeIds?: string[];
-          };
-
-          if (!result.success) {
-            throw new Error('Failed to load favorite recipes');
-          }
-
-          const ids = Array.isArray(result.favoriteRecipeIds)
-            ? result.favoriteRecipeIds.map((item) => String(item)).filter(Boolean)
-            : [];
-          setFavoriteRecipeIds(new Set(ids));
-        } catch (error) {
-          if ((error as Error).name === "AbortError") {
-            return;
-          }
-          setFavoriteRecipeIds(new Set());
-        }
-      };
-
-      loadFavorites();
-      return () => controller.abort();
-    }
-
-    setFavoriteRecipeIds(new Set());
-  }, [authPath, router, session?.access_token, user?.id]);
-
-  const toggleFavorite = useCallback(
-    async (recipeId: string) => {
-      if (!user?.id || !session?.access_token) {
-        router.push(authPath);
-        return;
-      }
-
-      const currentFavorite = favoriteRecipeIds.has(recipeId);
-      const nextFavorite = !currentFavorite;
-
-      setFavoriteRecipeIds((prev) => {
-        const next = new Set(prev);
-        if (nextFavorite) {
-          next.add(recipeId);
-        } else {
-          next.delete(recipeId);
-        }
-        return next;
-      });
-
-      try {
-        const response = await fetch('/api/recipes/favorites', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({
-            userId: user.id,
-            recipeId,
-            favorite: nextFavorite,
-          }),
-        });
-
-        if (!response.ok) {
-          if (response.status === 401 || response.status === 403) {
-            router.push(authPath);
-            return;
-          }
-          throw new Error('Failed to update favorite recipe');
-        }
-
-        const result = await response.json() as {
-          success?: boolean;
-          favorite?: boolean;
-        };
-        if (!result.success) {
-          throw new Error('Failed to update favorite recipe');
-        }
-
-        setFavoriteRecipeIds((prev) => {
-          const next = new Set(prev);
-          if (result.favorite) {
-            next.add(recipeId);
-          } else {
-            next.delete(recipeId);
-          }
-          return next;
-        });
-      } catch {
-        setFavoriteRecipeIds((prev) => {
-          const next = new Set(prev);
-          if (currentFavorite) {
-            next.add(recipeId);
-          } else {
-            next.delete(recipeId);
-          }
-          return next;
-        });
-      }
-    },
-    [authPath, favoriteRecipeIds, router, session?.access_token, user?.id]
-  );
 
   useEffect(() => {
     if (page <= 1) {
@@ -336,46 +194,21 @@ export const RecipesList = ({
           ) : (
             <div className="columns-1 gap-6 md:columns-2 lg:columns-3">
               {recipes.map((recipe) => {
-                const isFavorite = favoriteRecipeIds.has(recipe.id);
                 const normalizedVibe = normalizeRecipeVibe(recipe.vibe, "comfort");
                 const topBadgeLabel =
                   (recipe.mealType ? getMealTypeLabel(recipe.mealType, locale) : undefined) ||
                   recipe.cuisine?.name;
                 return (
-                  <RecipeListCard
+                  <ExploreRecipeCard
                     key={recipe.id}
                     recipe={recipe}
                     href={withLocalePath(locale, `/recipe/${recipe.id}`)}
                     minsLabel={tRecipe("mins")}
                     vibeLabel={recipe.vibe ? tRecipe(normalizedVibe) : undefined}
-                    layout="overlay"
+                    metaRightLabel={topBadgeLabel}
+                    vibeBadgeClassName="text-white/90"
                     mediaClassName={getMasonryMediaClass(recipe.id)}
                     className="mb-6 break-inside-avoid"
-                    topLeftContent={
-                      topBadgeLabel ? (
-                        <span className="inline-flex items-center rounded-full bg-background-80 px-3 py-1 text-xs font-semibold text-foreground ring-1 ring-border">
-                          {topBadgeLabel}
-                        </span>
-                      ) : undefined
-                    }
-                    topRightContent={
-                      <button
-                        type="button"
-                        aria-pressed={isFavorite}
-                        aria-label={isFavorite ? uiText.removeFavoriteLabel : uiText.addFavoriteLabel}
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          toggleFavorite(recipe.id);
-                        }}
-                        className={overlayIconButtonClass({
-                          active: isFavorite,
-                          className: "h-8 w-8",
-                        })}
-                      >
-                        <Bookmark className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
-                      </button>
-                    }
                   />
                 );
               })}

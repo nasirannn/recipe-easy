@@ -179,7 +179,6 @@ export type RecipeView = {
   };
 };
 
-let ensureRecipeNutritionSchemaPromise: Promise<void> | null = null;
 let ensureRecipeFavoritesSchemaPromise: Promise<void> | null = null;
 
 function normalizeImagePathForStorage(imagePath: string): string {
@@ -232,177 +231,6 @@ function getSiblingRecipeIdByLanguage(
   }
 
   return null;
-}
-
-export async function ensureRecipeNutritionSchema(db: PgClientLike): Promise<void> {
-  if (!ensureRecipeNutritionSchemaPromise) {
-    ensureRecipeNutritionSchemaPromise = (async () => {
-      await db.query(`
-        ALTER TABLE recipes
-        ADD COLUMN IF NOT EXISTS author_name TEXT,
-        ADD COLUMN IF NOT EXISTS vibe TEXT,
-        ADD COLUMN IF NOT EXISTS pairing_type TEXT,
-        ADD COLUMN IF NOT EXISTS pairing_name TEXT,
-        ADD COLUMN IF NOT EXISTS pairing_note TEXT,
-        ADD COLUMN IF NOT EXISTS pairing_description TEXT,
-        ADD COLUMN IF NOT EXISTS calories_kcal NUMERIC(10, 2),
-        ADD COLUMN IF NOT EXISTS protein_g NUMERIC(10, 2),
-        ADD COLUMN IF NOT EXISTS carbohydrates_g NUMERIC(10, 2),
-        ADD COLUMN IF NOT EXISTS fat_g NUMERIC(10, 2),
-        ADD COLUMN IF NOT EXISTS fiber_g NUMERIC(10, 2),
-        ADD COLUMN IF NOT EXISTS sugar_g NUMERIC(10, 2),
-        ADD COLUMN IF NOT EXISTS meal_type TEXT,
-        ADD COLUMN IF NOT EXISTS language_code TEXT
-      `);
-
-      await db.query(`
-        DO $$
-        DECLARE
-          has_requested BOOLEAN;
-          has_inferred BOOLEAN;
-        BEGIN
-          SELECT EXISTS (
-            SELECT 1
-            FROM information_schema.columns
-            WHERE table_schema = 'public'
-              AND table_name = 'recipes'
-              AND column_name = 'requested_meal_type'
-          ) INTO has_requested;
-
-          SELECT EXISTS (
-            SELECT 1
-            FROM information_schema.columns
-            WHERE table_schema = 'public'
-              AND table_name = 'recipes'
-              AND column_name = 'inferred_meal_type'
-          ) INTO has_inferred;
-
-          IF has_requested AND has_inferred THEN
-            EXECUTE $sql$
-              UPDATE recipes
-              SET meal_type = COALESCE(
-                NULLIF(BTRIM(meal_type), ''),
-                NULLIF(BTRIM(requested_meal_type), ''),
-                NULLIF(BTRIM(inferred_meal_type), '')
-              )
-              WHERE meal_type IS NULL OR BTRIM(meal_type) = ''
-            $sql$;
-          ELSIF has_requested THEN
-            EXECUTE $sql$
-              UPDATE recipes
-              SET meal_type = COALESCE(
-                NULLIF(BTRIM(meal_type), ''),
-                NULLIF(BTRIM(requested_meal_type), '')
-              )
-              WHERE meal_type IS NULL OR BTRIM(meal_type) = ''
-            $sql$;
-          ELSIF has_inferred THEN
-            EXECUTE $sql$
-              UPDATE recipes
-              SET meal_type = COALESCE(
-                NULLIF(BTRIM(meal_type), ''),
-                NULLIF(BTRIM(inferred_meal_type), '')
-              )
-              WHERE meal_type IS NULL OR BTRIM(meal_type) = ''
-            $sql$;
-          END IF;
-        END
-        $$;
-      `);
-
-      await db.query(`
-        UPDATE recipes
-        SET vibe = CASE
-          WHEN LOWER(BTRIM(vibe)) IN ('quick', 'easy', '简单', 'fast') THEN 'quick'
-          WHEN LOWER(BTRIM(vibe)) IN ('gourmet', 'hard', '困难', 'complex') THEN 'gourmet'
-          WHEN LOWER(BTRIM(vibe)) IN ('healthy', '健康', 'light') THEN 'healthy'
-          WHEN LOWER(BTRIM(vibe)) IN ('comfort', 'medium', '中等') THEN 'comfort'
-          ELSE 'comfort'
-        END
-        WHERE vibe IS NULL OR BTRIM(vibe) = ''
-           OR LOWER(BTRIM(vibe)) NOT IN ('quick', 'comfort', 'gourmet', 'healthy')
-      `);
-
-      await db.query(`
-        UPDATE recipes
-        SET language_code = CASE
-          WHEN language_code ILIKE 'zh%' THEN 'zh'
-          ELSE 'en'
-        END
-        WHERE language_code IS NOT NULL
-      `);
-
-      await db.query(`
-        UPDATE recipes
-        SET language_code = 'en'
-        WHERE language_code IS NULL OR BTRIM(language_code) = ''
-      `);
-
-      await db.query(`
-        CREATE INDEX IF NOT EXISTS idx_recipes_language_code_created_at
-        ON recipes (language_code, created_at DESC)
-      `);
-
-      await db.query(`
-        ALTER TABLE recipes
-        ALTER COLUMN language_code SET DEFAULT 'en'
-      `);
-
-      await db.query(`
-        ALTER TABLE recipes
-        ALTER COLUMN vibe SET DEFAULT 'comfort'
-      `);
-
-      await db.query(`
-        ALTER TABLE recipes
-        ALTER COLUMN language_code SET NOT NULL
-      `);
-
-      await db.query(`
-        ALTER TABLE recipes
-        ALTER COLUMN vibe SET NOT NULL
-      `);
-
-      await db.query(`
-        DO $$
-        BEGIN
-          IF NOT EXISTS (
-            SELECT 1
-            FROM pg_constraint
-            WHERE conname = 'recipes_language_code_check'
-              AND conrelid = 'recipes'::regclass
-          ) THEN
-            ALTER TABLE recipes
-            ADD CONSTRAINT recipes_language_code_check
-            CHECK (language_code IN ('en', 'zh'));
-          END IF;
-        END
-        $$;
-      `);
-
-      await db.query(`
-        DO $$
-        BEGIN
-          IF NOT EXISTS (
-            SELECT 1
-            FROM pg_constraint
-            WHERE conname = 'recipes_vibe_check'
-              AND conrelid = 'recipes'::regclass
-          ) THEN
-            ALTER TABLE recipes
-            ADD CONSTRAINT recipes_vibe_check
-            CHECK (vibe IN ('quick', 'comfort', 'gourmet', 'healthy'));
-          END IF;
-        END
-        $$;
-      `);
-    })().catch((error) => {
-      ensureRecipeNutritionSchemaPromise = null;
-      throw error;
-    });
-  }
-
-  await ensureRecipeNutritionSchemaPromise;
 }
 
 export async function ensureRecipeFavoritesSchema(db: PgClientLike): Promise<void> {
@@ -822,7 +650,6 @@ export async function listRecipes(
   totalPages: number;
   language: SupportedRecipeLanguage;
 }> {
-  await ensureRecipeNutritionSchema(db);
   if (options.favoriteUserId) {
     await ensureRecipeFavoritesSchema(db);
   }
@@ -892,8 +719,6 @@ export async function getRecipeById(
   recipeId: string,
   lang?: string
 ): Promise<RecipeView | null> {
-  await ensureRecipeNutritionSchema(db);
-
   const language = normalizeLanguage(lang);
   const queryByIdAndLanguage = async (targetRecipeId: string): Promise<RecipeRow | null> => {
     const result = await db.query<RecipeRow>(
@@ -927,8 +752,6 @@ export async function updateRecipeById(
   userId: string,
   input: RecipeMutationInput
 ): Promise<boolean> {
-  await ensureRecipeNutritionSchema(db);
-
   const existingResult = await db.query<MutableRecipeRow>(
     `
       SELECT id, title, description, cooking_time, servings, vibe,

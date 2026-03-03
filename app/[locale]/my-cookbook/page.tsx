@@ -4,11 +4,12 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { AlertTriangle, Bookmark, ChevronDown, Plus, Search, SlidersHorizontal, Trash2 } from "lucide-react";
+import { AlertTriangle, Bookmark, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FooterSection } from "@/components/layout/sections/footer";
 import {
   RecipeCookbookCard,
@@ -26,10 +27,11 @@ import type { HomeRecipePreview } from "@/lib/home-types";
 import { withLocalePath } from "@/lib/utils/locale-path";
 import { buildAuthPath } from "@/lib/utils/auth-path";
 import { getMealTypeLabel, MEAL_TYPE_OPTIONS, normalizeMealType, type MealType } from "@/lib/meal-type";
-import { normalizeRecipeVibe } from "@/lib/vibe";
+import { normalizeRecipeVibe, RECIPE_VIBES, type RecipeVibe } from "@/lib/vibe";
 import { optionButtonClass, overlayIconButtonClass } from "@/lib/utils/button-styles";
 
 type MealTypeFilter = "all" | MealType;
+type VibeFilter = "all" | RecipeVibe;
 type CollectionFilter = "recipes" | "favorites";
 type SortOption = "newest" | "timeAsc" | "titleAsc";
 
@@ -80,7 +82,6 @@ export default function MyRecipesPage() {
   const t = useTranslations("myRecipes");
   const tRecipe = useTranslations("recipeDisplay");
   const homeHref = withLocalePath(locale);
-  const workspaceHref = withLocalePath(locale, "/workspace");
   const isZh = locale.toLowerCase().startsWith("zh");
   const cacheKey = user?.id ? `${user.id}:${locale}` : null;
   const initialCacheSnapshot = cacheKey ? cookbookCache.get(cacheKey) : undefined;
@@ -109,6 +110,7 @@ export default function MyRecipesPage() {
 
   const [collectionFilter, setCollectionFilter] = useState<CollectionFilter>("recipes");
   const [activeMealType, setActiveMealType] = useState<MealTypeFilter>("all");
+  const [activeVibe, setActiveVibe] = useState<VibeFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
 
@@ -117,7 +119,10 @@ export default function MyRecipesPage() {
         subtitle: "管理你创建和收藏的菜谱，一页完成整理与回看。",
         recipesLabel: "菜谱",
         favoritesLabel: "收藏",
-        filterLabel: "餐次筛选",
+        mealTypeLabel: "类型",
+        mealTypeAll: "全部类型",
+        vibeLabel: "风格",
+        vibeAll: "全部风格",
         searchPlaceholder: "搜索菜谱名称、描述或菜系...",
         sortLabel: "排序",
         sortNewest: "最新创建",
@@ -129,14 +134,15 @@ export default function MyRecipesPage() {
         emptyFilterHint: "可以清空筛选或修改关键词后再试。",
         removeFavoriteLabel: "取消收藏",
         addFavoriteLabel: "收藏菜谱",
-        addCardTitle: "生成新菜谱",
-        addCardDescription: "使用 AI 生成新菜谱，或在工作台中继续创作。",
       }
     : {
         subtitle: "Manage the recipes you created and saved in one unified cookbook.",
         recipesLabel: "Recipes",
         favoritesLabel: "Favorites",
-        filterLabel: "Filter by meal type",
+        mealTypeLabel: "Type",
+        mealTypeAll: "Any type",
+        vibeLabel: "Vibe",
+        vibeAll: "Any vibe",
         searchPlaceholder: "Search by title, description, or cuisine...",
         sortLabel: "Sort",
         sortNewest: "Newest first",
@@ -148,8 +154,6 @@ export default function MyRecipesPage() {
         emptyFilterHint: "Try adjusting filters or search terms to see more results.",
         removeFavoriteLabel: "Remove favorite",
         addFavoriteLabel: "Save recipe",
-        addCardTitle: "Generate New",
-        addCardDescription: "Create a fresh recipe with AI and continue in the workspace.",
       };
 
   useEffect(() => {
@@ -325,10 +329,18 @@ export default function MyRecipesPage() {
   }, [createdRecipes, favoriteRecipes, favoriteRecipeIds, user?.id]);
 
   const mealTypeFilters: Array<{ key: MealTypeFilter; label: string }> = [
-    { key: "all", label: isZh ? "全部" : "All" },
+    { key: "all", label: copy.mealTypeAll },
     ...MEAL_TYPE_OPTIONS.map((mealType) => ({
       key: mealType,
       label: getMealTypeLabel(mealType, locale),
+    })),
+  ];
+
+  const vibeFilters: Array<{ key: VibeFilter; label: string }> = [
+    { key: "all", label: copy.vibeAll },
+    ...RECIPE_VIBES.map((vibe) => ({
+      key: vibe,
+      label: tRecipe(vibe),
     })),
   ];
 
@@ -343,15 +355,21 @@ export default function MyRecipesPage() {
         ? byCollection
         : byCollection.filter((recipe) => normalizeMealType(recipe.mealType, null) === activeMealType);
 
+    const byVibe =
+      activeVibe === "all"
+        ? byMealType
+        : byMealType.filter((recipe) => normalizeRecipeVibe(recipe.vibe, "comfort") === activeVibe);
+
     const query = searchQuery.trim().toLowerCase();
     const bySearch = query
-      ? byMealType.filter((recipe) => {
+      ? byVibe.filter((recipe) => {
           const mealTypeLabel = recipe.mealType ? getMealTypeLabel(recipe.mealType, locale) : "";
+          const vibeLabel = tRecipe(normalizeRecipeVibe(recipe.vibe, "comfort"));
           const haystack =
-            `${recipe.title} ${recipe.description || ""} ${recipe.cuisine?.name || ""} ${mealTypeLabel}`.toLowerCase();
+            `${recipe.title} ${recipe.description || ""} ${recipe.cuisine?.name || ""} ${mealTypeLabel} ${vibeLabel}`.toLowerCase();
           return haystack.includes(query);
         })
-      : byMealType;
+      : byVibe;
 
     return [...bySearch].sort((a, b) => {
       if (sortBy === "titleAsc") {
@@ -368,7 +386,7 @@ export default function MyRecipesPage() {
       const timeB = new Date(b.createdAt || 0).getTime();
       return timeB - timeA;
     });
-  }, [activeMealType, allRecipes, collectionFilter, isZh, locale, searchQuery, sortBy]);
+  }, [activeMealType, activeVibe, allRecipes, collectionFilter, isZh, locale, searchQuery, sortBy, tRecipe]);
 
   const openDeleteDialog = (recipe: CookbookRecipe) => {
     setRecipeToDelete(recipe);
@@ -556,59 +574,105 @@ export default function MyRecipesPage() {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="relative">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative w-full lg:max-w-[460px]">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder={copy.searchPlaceholder}
-            className="block h-12 w-full rounded-xl border border-border bg-card pl-12 pr-4 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className="block h-11 w-full rounded-xl border border-border bg-card pl-12 pr-4 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
-            {mealTypeFilters.map((filter) => {
-              const active = activeMealType === filter.key;
-              return (
-                <button
-                  key={filter.key}
-                  type="button"
-                  disabled={disabled}
-                  aria-pressed={active}
-                  onClick={disabled ? undefined : () => setActiveMealType(filter.key)}
-                  className={optionButtonClass({
-                    active,
-                    disabled,
-                    className: "inline-flex h-9 items-center rounded-full px-3.5 text-sm font-medium",
-                  })}
-                >
-                  {filter.label}
-                </button>
-              );
-            })}
+        <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:flex-nowrap lg:justify-end">
+          <div className="w-full sm:w-[180px]">
+            <Select
+              value={activeMealType}
+              disabled={disabled}
+              onValueChange={(value) => setActiveMealType(value as MealTypeFilter)}
+            >
+              <SelectTrigger
+                aria-label={copy.mealTypeLabel}
+                className="h-11 w-full rounded-xl border-border/70 bg-card px-3 text-sm font-medium text-foreground shadow-sm transition-[border-color,box-shadow] hover:border-primary/40 focus:border-primary/60 focus:ring-2 focus:ring-primary/25 data-[state=open]:border-primary/55"
+              >
+                <SelectValue placeholder={copy.mealTypeLabel} className="truncate" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-border/70 bg-card p-1 shadow-lg">
+                {mealTypeFilters.map((filter) => (
+                  <SelectItem
+                    key={filter.key}
+                    value={filter.key}
+                    className="cursor-pointer rounded-lg py-2 text-sm font-medium focus:bg-primary/10"
+                  >
+                    {filter.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="ml-auto w-full sm:w-auto">
-            <div className="relative min-w-[220px] sm:min-w-[280px]">
-              <SlidersHorizontal className="pointer-events-none absolute left-4 top-1/2 z-10 h-[18px] w-[18px] -translate-y-1/2 text-primary" />
-              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 z-10 h-[18px] w-[18px] -translate-y-1/2 text-foreground/70" />
-              <label htmlFor="my-cookbook-sort-select" className="sr-only">
-                {copy.sortLabel}
-              </label>
-              <select
-                id="my-cookbook-sort-select"
-                value={sortBy}
-                onChange={(event) => setSortBy(event.target.value as SortOption)}
-                className="relative z-0 h-12 w-full cursor-pointer appearance-none rounded-2xl border border-border/70 bg-card/85 pl-11 pr-12 text-[15px] font-semibold leading-none text-foreground shadow-sm backdrop-blur-sm transition-colors hover:border-primary/35 focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30"
+          <div className="w-full sm:w-[150px]">
+            <Select
+              value={activeVibe}
+              disabled={disabled}
+              onValueChange={(value) => setActiveVibe(value as VibeFilter)}
+            >
+              <SelectTrigger
+                aria-label={copy.vibeLabel}
+                className="h-11 w-full rounded-xl border-border/70 bg-card px-3 text-sm font-medium text-foreground shadow-sm transition-[border-color,box-shadow] hover:border-primary/40 focus:border-primary/60 focus:ring-2 focus:ring-primary/25 data-[state=open]:border-primary/55"
               >
-                <option value="newest">{copy.sortNewest}</option>
-                <option value="timeAsc">{copy.sortTime}</option>
-                <option value="titleAsc">{copy.sortTitle}</option>
-              </select>
-            </div>
+                <SelectValue placeholder={copy.vibeLabel} className="truncate" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-border/70 bg-card p-1 shadow-lg">
+                {vibeFilters.map((filter) => (
+                  <SelectItem
+                    key={filter.key}
+                    value={filter.key}
+                    className="cursor-pointer rounded-lg py-2 text-sm font-medium focus:bg-primary/10"
+                  >
+                    {filter.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="w-full sm:w-[210px]">
+            <Select value={sortBy} disabled={disabled} onValueChange={(value) => setSortBy(value as SortOption)}>
+              <SelectTrigger
+                aria-label={copy.sortLabel}
+                className="h-11 w-full rounded-xl border-border/70 bg-card px-3 text-sm font-medium text-foreground shadow-sm transition-[border-color,box-shadow] hover:border-primary/40 focus:border-primary/60 focus:ring-2 focus:ring-primary/25 data-[state=open]:border-primary/55"
+              >
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/12 text-primary">
+                    <SlidersHorizontal className="h-4 w-4" />
+                  </span>
+                  <SelectValue placeholder={copy.sortLabel} className="truncate" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-border/70 bg-card p-1 shadow-lg">
+                <SelectItem
+                  value="newest"
+                  className="cursor-pointer rounded-lg py-2 text-sm font-medium focus:bg-primary/10"
+                >
+                  {copy.sortNewest}
+                </SelectItem>
+                <SelectItem
+                  value="timeAsc"
+                  className="cursor-pointer rounded-lg py-2 text-sm font-medium focus:bg-primary/10"
+                >
+                  {copy.sortTime}
+                </SelectItem>
+                <SelectItem
+                  value="titleAsc"
+                  className="cursor-pointer rounded-lg py-2 text-sm font-medium focus:bg-primary/10"
+                >
+                  {copy.sortTitle}
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
@@ -624,21 +688,11 @@ export default function MyRecipesPage() {
     </div>
   );
 
-  const renderAddCardSkeleton = () => (
-    <div className="relative flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/65 px-6 py-10">
-      <Skeleton className="mb-5 h-14 w-14 rounded-full bg-recipe-surface-skeleton-soft" />
-      <Skeleton className="h-6 w-32 bg-recipe-surface-skeleton" />
-      <Skeleton className="mt-2 h-4 w-44 bg-recipe-surface-skeleton-soft" />
-      <Skeleton className="mt-1 h-4 w-36 bg-recipe-surface-skeleton-soft" />
-    </div>
-  );
-
   const renderRecipeGridSkeleton = () => (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {Array.from({ length: 7 }).map((_, index) => (
+      {Array.from({ length: 8 }).map((_, index) => (
         <RecipeCookbookCardSkeleton key={`my-cookbook-skeleton-${index}`} />
       ))}
-      {renderAddCardSkeleton()}
     </div>
   );
 
@@ -713,6 +767,7 @@ export default function MyRecipesPage() {
             onClick={() => {
               setCollectionFilter("recipes");
               setActiveMealType("all");
+              setActiveVibe("all");
               setSearchQuery("");
             }}
             className="mt-6 inline-flex h-11 cursor-pointer items-center rounded-full border border-border bg-muted px-5 text-sm font-semibold text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2"
@@ -782,18 +837,6 @@ export default function MyRecipesPage() {
               />
             );
           })}
-          <Link
-            href={workspaceHref}
-            className="group relative flex min-h-[320px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/65 px-6 py-10 text-center transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/60 hover:bg-card hover:shadow-lg hover:shadow-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2"
-          >
-            <span className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-full border border-border bg-muted text-primary transition-colors group-hover:border-primary/45 group-hover:bg-primary group-hover:text-primary-foreground">
-              <Plus className="h-7 w-7" />
-            </span>
-            <p className="text-lg font-bold tracking-tight text-foreground">{copy.addCardTitle}</p>
-            <p className="mt-2 max-w-[20ch] text-sm leading-relaxed text-muted-foreground">
-              {copy.addCardDescription}
-            </p>
-          </Link>
         </div>
       )}
 

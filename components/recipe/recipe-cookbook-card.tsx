@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChefHat, Clock, Users } from "lucide-react";
+import { ChefHat, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getImageUrl } from "@/lib/config";
@@ -87,7 +87,7 @@ export const RecipeCookbookCard = ({
   topRightAction,
   footerLabel,
   footerActionLabel,
-  imageHeightClassName = "aspect-square",
+  imageHeightClassName = "",
   className,
   prefetch = true,
 }: RecipeCookbookCardProps) => {
@@ -104,16 +104,17 @@ export const RecipeCookbookCard = ({
       <div className={cn("relative overflow-hidden", imageHeightClassName)}>
         <Link
           href={href}
-          className="absolute inset-0 z-10 block cursor-pointer focus-visible:outline-none"
+          className="block cursor-pointer focus-visible:outline-none"
           prefetch={prefetch}
           aria-label={recipe.title}
         >
           <Image
             src={imageSrc}
             alt={recipe.title}
-            fill
+            width={1024}
+            height={1024}
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="h-auto w-full object-cover transition-transform duration-500 group-hover:scale-105"
             unoptimized={true}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -133,7 +134,7 @@ export const RecipeCookbookCard = ({
       <div className="flex h-full flex-col gap-3 p-4">
         <div className="flex items-center justify-between gap-2 text-xs">
           <span className="truncate font-semibold uppercase tracking-wider text-primary">{accentLabel}</span>
-          {recipe.cookingTime || recipe.servings || vibeLabel ? (
+          {recipe.cookingTime || vibeLabel ? (
             <span className="shrink-0 inline-flex items-center gap-1.5 text-recipe-surface-muted-foreground">
               {recipe.cookingTime ? (
                 <span className="inline-flex items-center gap-1 font-normal">
@@ -142,18 +143,7 @@ export const RecipeCookbookCard = ({
                 </span>
               ) : null}
 
-              {recipe.cookingTime && (recipe.servings || vibeLabel) ? (
-                <span className="h-1 w-1 rounded-full bg-recipe-surface-muted-foreground" aria-hidden="true" />
-              ) : null}
-
-              {recipe.servings ? (
-                <span className="inline-flex items-center gap-1 font-normal">
-                  <Users className="h-3.5 w-3.5" />
-                  {recipe.servings}
-                </span>
-              ) : null}
-
-              {recipe.servings && vibeLabel ? (
+              {recipe.cookingTime && vibeLabel ? (
                 <span className="h-1 w-1 rounded-full bg-recipe-surface-muted-foreground" aria-hidden="true" />
               ) : null}
 
@@ -166,7 +156,7 @@ export const RecipeCookbookCard = ({
           ) : null}
         </div>
 
-        <h3 className="line-clamp-2 text-lg font-bold leading-snug tracking-tight text-recipe-surface-foreground transition-colors duration-200 group-hover:text-primary">
+        <h3 className="truncate text-lg font-bold leading-snug tracking-tight text-recipe-surface-foreground transition-colors duration-200 group-hover:text-primary">
           <Link href={href} className="cursor-pointer" prefetch={prefetch}>
             {recipe.title}
           </Link>
