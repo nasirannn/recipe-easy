@@ -12,6 +12,7 @@
     "totalEarned": "Total Earned",
     "myRecipes": "My Cookbook",
     "newRecipe": "New Recipe",
+    "buyCredits": "Pricing",
     "appearance": "Appearance",
     "language": "Language"
   },
@@ -230,6 +231,79 @@
     "loading": "Loading...",
     "noCreditsLeft": "No credits left",
     "consumeOneCredit": "1 image = 2 credits"
+  },
+  "billing": {
+    "eyebrow": "Credits",
+    "title": "Buy Credit Packages",
+    "description": "Top up your RecipeEasy credits with PayPal. Credits are added instantly after payment succeeds.",
+    "loading": "Loading packages...",
+    "popular": "Most Popular",
+    "oneTimePurchase": "One-time purchase",
+    "buyNow": "Continue with PayPal",
+    "selectPlan": "Select Plan",
+    "selected": "Selected",
+    "checkoutTitle": "Complete Checkout",
+    "checkoutHint": "Selected: {packageName} · {price}",
+    "checkoutHintEmpty": "Select a package to continue.",
+    "signInToCheckout": "Sign in to checkout",
+    "loadingCheckout": "Loading PayPal checkout...",
+    "walletUnavailable": "PayPal wallet button is unavailable. You can still continue with redirect checkout.",
+    "payWithCard": "Pay with credit or debit card",
+    "loadingCardFields": "Loading card fields...",
+    "cardName": "Name on card",
+    "cardNumber": "Card number",
+    "cardExpiry": "Expiry",
+    "cardCvv": "CVV",
+    "cardPayButton": "Pay {price}",
+    "processingCard": "Processing payment...",
+    "cardUnavailableHint": "Card fields are currently unavailable for this account or region.",
+    "redirecting": "Redirecting...",
+    "creditsCount": "{count} Credits",
+    "creditsBreakdown": "Base {base} + Bonus {bonus}",
+    "creditsBaseOnly": "Includes {base} base credits",
+    "errors": {
+      "createOrderFailed": "Unable to create PayPal order.",
+      "approvalUrlMissing": "PayPal approval URL was not returned.",
+      "captureFailed": "Unable to confirm payment.",
+      "cardUnavailable": "Card checkout is unavailable right now.",
+      "sdkLoadFailed": "Unable to load PayPal checkout.",
+      "missingClientId": "PayPal client id is not configured.",
+      "signInRequired": "Please sign in before starting checkout."
+    },
+    "packages": {
+      "starter": {
+        "name": "Starter",
+        "description": "Best for trying paid generation and quick top-ups."
+      },
+      "popular": {
+        "name": "Popular",
+        "description": "Balanced option for weekly recipe and image usage."
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "For heavy creators generating recipes every day."
+      },
+      "studio": {
+        "name": "Studio",
+        "description": "High-volume package for teams or long sessions."
+      }
+    },
+    "return": {
+      "processing": "Confirming your payment",
+      "processingHint": "Please wait while we credit your account.",
+      "signInRequired": "Sign-in required to finish confirmation",
+      "signInRequiredHint": "Sign in with the same account used to start checkout.",
+      "signInToContinue": "Sign In to Continue",
+      "failed": "Payment confirmation failed",
+      "retry": "Retry",
+      "backToPricing": "Back to Pricing",
+      "successTitle": "Credits added successfully",
+      "successDescription": "We've added {credits} credits to your account.",
+      "buyMore": "Buy More Credits",
+      "goWorkspace": "Go to Workspace",
+      "successToast": "Payment confirmed. Credits are now available.",
+      "orderMissing": "Missing PayPal order token."
+    }
   },
   "tutorial": {
     "title": "How It Works",

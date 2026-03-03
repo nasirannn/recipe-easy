@@ -12,6 +12,7 @@
     "totalEarned": "累计获得",
     "myRecipes": "我的菜谱库",
     "newRecipe": "新建菜谱",
+    "buyCredits": "定价",
     "appearance": "外观",
     "language": "语言"
   },
@@ -231,6 +232,79 @@
     "loading": "加载中...",
     "noCreditsLeft": "积分已用完",
     "consumeOneCredit": "1图片 = 2积分"
+  },
+  "billing": {
+    "eyebrow": "积分充值",
+    "title": "购买积分包",
+    "description": "使用 PayPal 充值 RecipeEasy 积分。支付成功后积分会立即到账。",
+    "loading": "正在加载积分包...",
+    "popular": "推荐",
+    "oneTimePurchase": "一次性购买",
+    "buyNow": "继续使用 PayPal 支付",
+    "selectPlan": "选择套餐",
+    "selected": "已选中",
+    "checkoutTitle": "完成支付",
+    "checkoutHint": "当前选择：{packageName} · {price}",
+    "checkoutHintEmpty": "请先选择一个积分套餐。",
+    "signInToCheckout": "登录后继续支付",
+    "loadingCheckout": "正在加载 PayPal 收银台...",
+    "walletUnavailable": "PayPal 钱包按钮暂不可用，你仍可使用跳转支付。",
+    "payWithCard": "信用卡 / 借记卡支付",
+    "loadingCardFields": "正在加载卡片输入框...",
+    "cardName": "持卡人姓名",
+    "cardNumber": "卡号",
+    "cardExpiry": "有效期",
+    "cardCvv": "安全码 CVV",
+    "cardPayButton": "支付 {price}",
+    "processingCard": "正在处理支付...",
+    "cardUnavailableHint": "当前账号或地区暂不支持卡片直付。",
+    "redirecting": "跳转支付中...",
+    "creditsCount": "{count} 积分",
+    "creditsBreakdown": "基础 {base} + 赠送 {bonus}",
+    "creditsBaseOnly": "包含 {base} 基础积分",
+    "errors": {
+      "createOrderFailed": "创建 PayPal 订单失败。",
+      "approvalUrlMissing": "未获取到 PayPal 支付链接。",
+      "captureFailed": "支付确认失败。",
+      "cardUnavailable": "当前暂不可用卡片支付。",
+      "sdkLoadFailed": "PayPal 收银台加载失败。",
+      "missingClientId": "PayPal Client ID 未配置。",
+      "signInRequired": "请先登录再开始支付。"
+    },
+    "packages": {
+      "starter": {
+        "name": "Starter",
+        "description": "适合首次体验付费能力和小额补充。"
+      },
+      "popular": {
+        "name": "Popular",
+        "description": "适合每周稳定生成菜谱和图片。"
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "适合高频创作者的日常使用。"
+      },
+      "studio": {
+        "name": "Studio",
+        "description": "适合团队或长时高强度创作场景。"
+      }
+    },
+    "return": {
+      "processing": "正在确认支付结果",
+      "processingHint": "请稍候，我们正在为你入账积分。",
+      "signInRequired": "需要登录后完成支付确认",
+      "signInRequiredHint": "请使用发起支付时的同一账号登录。",
+      "signInToContinue": "登录后继续",
+      "failed": "支付确认失败",
+      "retry": "重试",
+      "backToPricing": "返回积分页",
+      "successTitle": "积分已成功到账",
+      "successDescription": "我们已向你的账户添加 {credits} 积分。",
+      "buyMore": "继续购买",
+      "goWorkspace": "前往工作台",
+      "successToast": "支付已确认，积分已到账。",
+      "orderMissing": "缺少 PayPal 订单标识。"
+    }
   },
   "tutorial": {
     "title": "使用方法",

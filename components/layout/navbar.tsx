@@ -50,6 +50,7 @@ export const Navbar = () => {
   const homeHref = withLocalePath(locale);
   const myCookbookPath = withLocalePath(locale, "/my-cookbook");
   const workspacePath = withLocalePath(locale, "/workspace");
+  const pricingPath = withLocalePath(locale, "/pricing");
   const menuThemeTokenClassName = "theme-surface-base";
 
   const clearAvatarMenuCloseTimer = React.useCallback(() => {
@@ -235,6 +236,7 @@ export const Navbar = () => {
 
   const routeList: RouteProps[] = [
     { href: withLocalePath(locale, '/explore'), label: t('explore'), icon: <Compass className="h-4 w-4" /> },
+    { href: pricingPath, label: t('buyCredits'), icon: <Coins className="h-4 w-4" /> },
     { href: withLocalePath(locale, '#features'), label: t('features'), icon: <Star className="h-4 w-4" /> },
     { href: withLocalePath(locale, '#faq'), label: t('faq'), icon: <HelpCircle className="h-4 w-4" /> },
   ];
@@ -409,6 +411,17 @@ export const Navbar = () => {
                         >
                           <BookOpen className={cn("h-4 w-4", avatarSubtleTextClassName)} />
                           {t('myRecipes')}
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setIsAvatarMenuOpen(false);
+                            router.push(pricingPath);
+                          }}
+                          className={avatarMenuItemClassName}
+                        >
+                          <Coins className={cn("h-4 w-4", avatarSubtleTextClassName)} />
+                          {t('buyCredits')}
                         </DropdownMenuItem>
 
                         <DropdownMenuSeparator className={avatarMenuSeparatorClassName} />

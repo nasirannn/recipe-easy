@@ -54,6 +54,13 @@ QWENPLUS_API_KEY=<token>
 DASHSCOPE_API_KEY=<token>
 DEEPSEEK_API_KEY=<token>
 
+# PayPal (credit purchase)
+# sandbox | live
+PAYPAL_MODE=sandbox
+PAYPAL_CLIENT_ID=<paypal-client-id>
+PAYPAL_CLIENT_SECRET=<paypal-client-secret>
+PAYPAL_WEBHOOK_ID=<paypal-webhook-id>
+
 # Shared R2 endpoint (S3 compatible)
 R2_ENDPOINT=https://<accountid>.r2.cloudflarestorage.com
 
@@ -71,6 +78,18 @@ R2_SECRET_ACCESS_KEY_DOC=<secret>
 R2_PUBLIC_URL_DOC=https://<your-r2-doc-public-domain>
 NEXT_PUBLIC_R2_PUBLIC_URL_DOC=https://<your-r2-doc-public-domain>
 ```
+
+## PayPal Credits Purchase
+
+- Pricing page: `/pricing` (English) / `/zh/pricing` (Chinese)
+- Create order API: `POST /api/payments/paypal/create-order`
+- Capture API: `POST /api/payments/paypal/capture-order`
+- Webhook API: `POST /api/payments/paypal/webhook`
+
+Configure `PAYPAL_WEBHOOK_ID` in PayPal dashboard and subscribe to:
+- `CHECKOUT.ORDER.APPROVED`
+- `PAYMENT.CAPTURE.COMPLETED`
+- `PAYMENT.CAPTURE.DENIED`
 
 ## Database
 

@@ -221,6 +221,23 @@ export function useUserUsage() {
     }
   }, [user?.id, initialized, requestInProgress, fetchCredits, reset]);
 
+  useEffect(() => {
+    if (!user?.id) {
+      return;
+    }
+
+    const handleCreditsUpdated = () => {
+      if (!requestInProgress) {
+        fetchCredits();
+      }
+    };
+
+    window.addEventListener('creditsUpdated', handleCreditsUpdated);
+    return () => {
+      window.removeEventListener('creditsUpdated', handleCreditsUpdated);
+    };
+  }, [user?.id, requestInProgress, fetchCredits]);
+
   return {
     credits,
     canGenerate,
