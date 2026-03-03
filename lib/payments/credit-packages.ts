@@ -1,4 +1,4 @@
-export type CreditPackageId = 'starter' | 'popular' | 'pro' | 'studio';
+export type CreditPackageId = 'starter' | 'pro' | 'studio';
 
 export type CreditPackage = {
   id: CreditPackageId;
@@ -13,20 +13,11 @@ export type CreditPackage = {
 const CREDIT_PACKAGES: CreditPackage[] = [
   {
     id: 'starter',
-    credits: 500,
-    bonusCredits: 0,
-    priceCents: 399,
-    currency: 'USD',
-    sortOrder: 1,
-    highlighted: false,
-  },
-  {
-    id: 'popular',
     credits: 1200,
     bonusCredits: 0,
     priceCents: 899,
     currency: 'USD',
-    sortOrder: 2,
+    sortOrder: 1,
     highlighted: true,
   },
   {
@@ -35,7 +26,7 @@ const CREDIT_PACKAGES: CreditPackage[] = [
     bonusCredits: 0,
     priceCents: 1999,
     currency: 'USD',
-    sortOrder: 3,
+    sortOrder: 2,
     highlighted: false,
   },
   {
@@ -44,7 +35,7 @@ const CREDIT_PACKAGES: CreditPackage[] = [
     bonusCredits: 0,
     priceCents: 4999,
     currency: 'USD',
-    sortOrder: 4,
+    sortOrder: 3,
     highlighted: false,
   },
 ];
@@ -69,4 +60,3 @@ export function formatUsdFromCents(value: number): string {
   const normalized = Number.isFinite(value) ? Math.max(0, Math.round(value)) : 0;
   return (normalized / 100).toFixed(2);
 }
-

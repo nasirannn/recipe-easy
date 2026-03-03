@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/auth-context";
 
+const DAILY_LOGIN_FREE_CREDITS = 3;
+
 type CreditPackageDto = {
   id: string;
   credits: number;
@@ -103,7 +105,6 @@ export function CreditPackagesSection() {
   const packageNameMap = useMemo(
     () => ({
       starter: t("packages.starter.name"),
-      popular: t("packages.popular.name"),
       pro: t("packages.pro.name"),
       studio: t("packages.studio.name"),
     }),
@@ -113,7 +114,6 @@ export function CreditPackagesSection() {
   const packageDescriptionMap = useMemo(
     () => ({
       starter: t("packages.starter.description"),
-      popular: t("packages.popular.description"),
       pro: t("packages.pro.description"),
       studio: t("packages.studio.description"),
     }),
@@ -180,6 +180,39 @@ export function CreditPackagesSection() {
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <Card className="flex h-full flex-col rounded-2xl border border-border-70 bg-card">
+              <CardHeader className="space-y-3">
+                <CardTitle className="text-xl font-bold text-foreground">{t("freePlan.name")}</CardTitle>
+                <CardDescription className="min-h-[44px] text-sm leading-6 text-muted-foreground">
+                  {t("freePlan.description")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-1 flex-col gap-5">
+                <div className="space-y-1">
+                  <p className="text-3xl font-black tracking-tight text-foreground">{t("freePlan.price")}</p>
+                  <p className="text-xs text-muted-foreground">{t("freePlan.subtitle")}</p>
+                </div>
+
+                <div className="rounded-xl border border-border-70 bg-background/70 p-3">
+                  <p className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <Coins className="h-4 w-4 text-primary" />
+                    {t("freePlan.credits", { count: DAILY_LOGIN_FREE_CREDITS })}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t("freePlan.hint")}</p>
+                </div>
+
+                <Button
+                  type="button"
+                  className="mt-auto h-11 w-full"
+                  variant="outline"
+                  onClick={() => setShowAuthModal(true)}
+                  disabled={Boolean(session?.access_token)}
+                >
+                  {session?.access_token ? t("freePlan.loggedIn") : t("freePlan.signIn")}
+                </Button>
+              </CardContent>
+            </Card>
+
             {packages.map((pkg) => {
               const packageName = packageNameMap[pkg.id as keyof typeof packageNameMap] ?? pkg.id;
               const packageDescription =

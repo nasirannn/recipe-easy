@@ -239,6 +239,16 @@
     "description": "使用 PayPal 充值 RecipeEasy 积分。支付成功后积分会立即到账。",
     "loading": "正在加载积分包...",
     "popular": "推荐",
+    "freePlan": {
+      "name": "Free",
+      "description": "无需付费即可开始使用。每天登录可领取免费积分。",
+      "price": "免费",
+      "subtitle": "每日登录奖励",
+      "credits": "每天 {count} 积分",
+      "hint": "每日奖励积分 24 小时后未使用会过期。",
+      "signIn": "登录领取",
+      "loggedIn": "每日奖励已开启"
+    },
     "oneTimePurchase": "一次性购买",
     "buyNow": "继续使用 PayPal 支付",
     "selectPlan": "选择套餐",
@@ -274,10 +284,6 @@
     "packages": {
       "starter": {
         "name": "Starter",
-        "description": "适合首次体验付费能力和小额补充。"
-      },
-      "popular": {
-        "name": "Popular",
         "description": "适合每周稳定生成菜谱和图片。"
       },
       "pro": {

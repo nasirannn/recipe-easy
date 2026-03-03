@@ -238,6 +238,16 @@
     "description": "Top up your RecipeEasy credits with PayPal. Credits are added instantly after payment succeeds.",
     "loading": "Loading packages...",
     "popular": "Most Popular",
+    "freePlan": {
+      "name": "Free",
+      "description": "Start without payment. Sign in daily to collect free credits.",
+      "price": "Free",
+      "subtitle": "Daily login reward",
+      "credits": "{count} credits per day",
+      "hint": "Daily bonus credits expire after 24 hours if unused.",
+      "signIn": "Sign in to claim",
+      "loggedIn": "Daily bonus enabled"
+    },
     "oneTimePurchase": "One-time purchase",
     "buyNow": "Continue with PayPal",
     "selectPlan": "Select Plan",
@@ -273,10 +283,6 @@
     "packages": {
       "starter": {
         "name": "Starter",
-        "description": "Best for trying paid generation and quick top-ups."
-      },
-      "popular": {
-        "name": "Popular",
         "description": "Balanced option for weekly recipe and image usage."
       },
       "pro": {
