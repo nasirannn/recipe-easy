@@ -1,6 +1,23 @@
 import { User } from '@supabase/supabase-js'
 import { supabase } from '../supabase'
 
+function normalizeAvatarUrl(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null
+  }
+  const trimmed = value.trim()
+  return trimmed ? trimmed : null
+}
+
+function isUiAvatarUrl(value: string): boolean {
+  return value.includes('ui-avatars.com/')
+}
+
+export function buildUiAvatarUrl(name: string): string {
+  const normalizedName = name.trim() || 'User'
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(normalizedName)}&background=0f172a&color=fff&size=150`
+}
+
 /**
  * 获取用户友好的显示名称
  * 优先级：Supabase display_name > Google full_name > 邮箱前缀美化 > 默认名称
@@ -156,37 +173,46 @@ function capitalizeFirstLetter(str: string): string {
  * 获取用户头像URL
  */
 export function getUserAvatarUrl(user: any): string | null {
-  if (!user) return null;
+  return getUserAvatarCandidates(user as User | null)[0] ?? null
+}
 
-  // 1. 首先检查用户元数据中的 avatar_url 字段
-  const userMetadata = user.user_metadata || {};
-  
-  if (userMetadata.avatar_url) {
-    return userMetadata.avatar_url;
+export function getUserAvatarCandidates(user: User | null): string[] {
+  if (!user) {
+    return []
   }
 
-  // 2. 检查用户元数据中的 picture 字段（Google OAuth）
-  if (userMetadata.picture) {
-    return userMetadata.picture;
-  }
+  const userMetadata = user.user_metadata || {}
+  const avatarFromMetadata = normalizeAvatarUrl(userMetadata.avatar_url)
+  const pictureFromMetadata = normalizeAvatarUrl(userMetadata.picture)
+  const identityPicture = Array.isArray(user.identities)
+    ? user.identities
+        .map((identity: any) => normalizeAvatarUrl(identity?.identity_data?.picture))
+        .find(Boolean) ?? null
+    : null
+  const fallbackUiAvatar = user.email
+    ? buildUiAvatarUrl(getUserDisplayName(user))
+    : null
 
-  // 3. 如果是Google用户，尝试从identities中获取
-  if (user.identities) {
-    const googleIdentity = user.identities.find((identity: any) => 
-      identity.provider === 'google'
-    );
-    
-    if (googleIdentity?.identity_data?.picture) {
-      return googleIdentity.identity_data.picture;
+  const candidates: string[] = []
+  const pushCandidate = (value: string | null) => {
+    if (!value) {
+      return
+    }
+    if (!candidates.includes(value)) {
+      candidates.push(value)
     }
   }
 
-  // 4. 生成回退头像URL
-  if (user.email) {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(getUserDisplayName(user))}&background=0f172a&color=fff&size=150`;
+  // 优先真实头像：如果 avatar_url 是 ui-avatars，优先尝试 picture。
+  if (avatarFromMetadata && !isUiAvatarUrl(avatarFromMetadata)) {
+    pushCandidate(avatarFromMetadata)
   }
-  
-  return null;
+  pushCandidate(pictureFromMetadata)
+  pushCandidate(identityPicture)
+  pushCandidate(avatarFromMetadata)
+  pushCandidate(fallbackUiAvatar)
+
+  return candidates
 }
 
 /**

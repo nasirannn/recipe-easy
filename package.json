@@ -10,6 +10,7 @@
     "preview": "next build && next start",
     "check-compatibility": "node scripts/check-compatibility.js",
     "db:init": "node scripts/init-db.js",
+    "profiles:backfill": "node scripts/backfill-user-profiles.js",
     "indexnow": "node scripts/submit-indexnow.js",
     "indexnow:submit": "node scripts/submit-indexnow.js",
     "r2:migrate-keys:dry": "node scripts/migrate-r2-recipe-image-keys.js --dry-run",

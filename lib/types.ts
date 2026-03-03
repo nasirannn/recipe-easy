@@ -100,6 +100,7 @@ export interface Recipe extends BaseEntity {
   language?: string;
   recommended?: boolean;
   authorName?: string;
+  authorAvatarUrl?: string;
   pairing?: RecipePairing;
   nutrition?: RecipeNutrition;
 }
@@ -123,6 +124,7 @@ export interface DatabaseRecipe {
   cuisineName?: string | null;
   userId: string | null;
   authorName?: string | null;
+  authorAvatarUrl?: string | null;
   pairingType?: string | null;
   pairingName?: string | null;
   pairingNote?: string | null;

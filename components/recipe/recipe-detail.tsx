@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Bookmark, Check, ChefHat, Clock, Flame, Info, Lightbulb, ListOrdered, Loader2, MoreHorizontal, Share2, Sparkles, ShoppingBasket, Tags as TagsIcon, Users, Wine } from "lucide-react";
+import { Bookmark, Check, ChefHat, Clock, Copy, Flame, Info, Lightbulb, ListOrdered, Loader2, MoreHorizontal, Share2, Sparkles, ShoppingBasket, Tags as TagsIcon, Users, Wine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +35,7 @@ import { useRecipeSave } from "@/hooks/use-recipe-save";
 import { buildAuthPath } from "@/lib/utils/auth-path";
 import { isAuthRequiredError } from "@/lib/utils/auth-error";
 import { overlayIconButtonClass } from "@/lib/utils/button-styles";
+import { buildUiAvatarUrl, getUserAvatarCandidates, getUserAvatarUrl } from "@/lib/utils/user-display";
 import { toast } from "sonner";
 
 type RecipeDetailRecipe = Omit<Recipe, "created_at" | "updated_at" | "vibe" | "cuisine"> & {
@@ -88,6 +90,22 @@ function formatCaloriesValue(value: number | null | undefined, fallback: string)
   const normalized = Number(value);
   const displayValue = Number.isInteger(normalized) ? normalized.toString() : normalized.toFixed(1);
   return `${displayValue} kcal`;
+}
+
+function getAvatarInitials(name: string): string {
+  const normalized = name.trim();
+  if (!normalized) {
+    return "?";
+  }
+
+  const segments = normalized.split(/\s+/).filter(Boolean);
+  if (segments.length === 1) {
+    return segments[0]?.slice(0, 1).toUpperCase() || "?";
+  }
+
+  const first = segments[0]?.slice(0, 1) ?? "";
+  const second = segments[1]?.slice(0, 1) ?? "";
+  return `${first}${second}`.toUpperCase() || "?";
 }
 
 function parseJsonArray(data: unknown): string[] {
@@ -225,6 +243,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
         pairingTypeFallback: "Drink",
         pairingNameFallback: "待定",
         pairingDescriptionFallback: "当前菜谱暂未生成饮品搭配说明。",
+        creatorFallback: "ChefAI",
       }
     : {
         copyRecipe: "Copy",
@@ -261,7 +280,51 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
         pairingTypeFallback: "Drink",
         pairingNameFallback: "TBD",
         pairingDescriptionFallback: "Pairing notes are not available for this recipe yet.",
+        creatorFallback: "ChefAI",
       };
+
+  const ownerDisplayName = normalizeText(
+    typeof user?.user_metadata?.display_name === "string"
+      ? user.user_metadata.display_name
+      : typeof user?.user_metadata?.full_name === "string"
+        ? user.user_metadata.full_name
+        : typeof user?.user_metadata?.name === "string"
+          ? user.user_metadata.name
+          : null
+  );
+  const emailPrefix = normalizeText(user?.email?.split("@")[0]);
+  const creatorName =
+    normalizeText(recipe.authorName) ??
+    (isRecipeOwner ? ownerDisplayName ?? emailPrefix : null) ??
+    labels.creatorFallback;
+  const ownerAvatarCandidates = useMemo(() => getUserAvatarCandidates(user), [user]);
+  const creatorAvatarCandidates = useMemo(() => {
+    const candidates: string[] = [];
+    const pushCandidate = (value: string | null | undefined) => {
+      const normalized = normalizeText(value);
+      if (!normalized) {
+        return;
+      }
+      if (!candidates.includes(normalized)) {
+        candidates.push(normalized);
+      }
+    };
+
+    pushCandidate(recipe.authorAvatarUrl);
+    if (isRecipeOwner) {
+      ownerAvatarCandidates.forEach((candidate) => pushCandidate(candidate));
+      pushCandidate(getUserAvatarUrl(user));
+    }
+    pushCandidate(buildUiAvatarUrl(creatorName));
+    return candidates;
+  }, [creatorName, isRecipeOwner, ownerAvatarCandidates, recipe.authorAvatarUrl, user]);
+  const creatorAvatarSignature = creatorAvatarCandidates.join("|");
+  const [creatorAvatarCandidateIndex, setCreatorAvatarCandidateIndex] = useState(0);
+  useEffect(() => {
+    setCreatorAvatarCandidateIndex(0);
+  }, [creatorAvatarSignature]);
+  const creatorAvatarUrl = creatorAvatarCandidates[creatorAvatarCandidateIndex] ?? undefined;
+  const creatorInitials = getAvatarInitials(creatorName);
 
   const copyToClipboard = async (text: string, section: CopySection) => {
     try {
@@ -675,6 +738,30 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                       {recipe.description}
                     </p>
                   )}
+                  <div className="mt-4 flex items-center gap-2.5 text-slate-200">
+                    <Avatar className="h-8 w-8 border border-white/30 bg-black/40">
+                      {creatorAvatarUrl ? (
+                        <AvatarImage
+                          src={creatorAvatarUrl}
+                          alt={creatorName}
+                          onError={() =>
+                            setCreatorAvatarCandidateIndex((previousIndex) => {
+                              const nextIndex = previousIndex + 1;
+                              return nextIndex < creatorAvatarCandidates.length
+                                ? nextIndex
+                                : creatorAvatarCandidates.length;
+                            })
+                          }
+                        />
+                      ) : null}
+                      <AvatarFallback className="bg-primary/20 text-xs font-semibold text-primary-foreground">
+                        {creatorInitials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-white">{creatorName}</p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="pointer-events-auto flex flex-nowrap items-center gap-2.5 overflow-x-auto pb-1">
@@ -700,7 +787,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                         className="h-10 shrink-0 gap-2 whitespace-nowrap bg-primary px-4 font-bold text-primary-foreground hover:bg-primary/90"
                         onClick={handleCopyFullRecipe}
                       >
-                        {copiedSection === "full" ? <Check className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                        {copiedSection === "full" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                         {copiedSection === "full" ? labels.copied : labels.copyRecipe}
                       </Button>
                       <Button
@@ -734,7 +821,7 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                           className="cursor-pointer rounded-md text-foreground focus:bg-muted-50"
                           onClick={handleCopyFullRecipe}
                         >
-                          {copiedSection === "full" ? <Check className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                          {copiedSection === "full" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                           {copiedSection === "full" ? labels.copied : labels.copyRecipe}
                         </DropdownMenuItem>
                         <DropdownMenuItem

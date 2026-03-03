@@ -3,9 +3,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { User as UserIcon } from "lucide-react"
 import { User } from '@supabase/supabase-js'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { cn } from "@/lib/utils"
-import { getUserDisplayName, getUserAvatarUrl } from '@/lib/utils/user-display'
+import { getUserAvatarCandidates, getUserDisplayName } from '@/lib/utils/user-display'
 import { Minus } from "lucide-react"
 
 interface UserAvatarProps {
@@ -35,19 +35,15 @@ export function UserAvatar({
   size = 'md', 
   showFallback = true
 }: UserAvatarProps) {
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
-  const [imageError, setImageError] = useState(false)
+  const avatarCandidates = useMemo(() => getUserAvatarCandidates(user), [user])
+  const candidateSignature = avatarCandidates.join('|')
+  const [avatarCandidateIndex, setAvatarCandidateIndex] = useState(0)
   const [showCreditDeduction, setShowCreditDeduction] = useState(false)
+  const currentAvatarUrl = avatarCandidates[avatarCandidateIndex] ?? null
 
-  // 获取头像URL
   useEffect(() => {
-    if (user) {
-      const newAvatarUrl = getUserAvatarUrl(user);
-      setAvatarUrl(newAvatarUrl);
-    } else {
-      setAvatarUrl(null);
-    }
-  }, [user]);
+    setAvatarCandidateIndex(0)
+  }, [candidateSignature])
 
   // 监听积分扣减事件
   useEffect(() => {
@@ -69,30 +65,27 @@ export function UserAvatar({
   }, [])
 
   const handleImageError = () => {
-    // Image load error
-    setImageError(true)
-  }
-
-  const handleImageLoad = () => {
-    // Image loaded successfully
-    setImageError(false)
+    setAvatarCandidateIndex((previousIndex) => {
+      const nextIndex = previousIndex + 1
+      return nextIndex < avatarCandidates.length ? nextIndex : avatarCandidates.length
+    })
   }
 
   return (
     <div className="relative">
       <Avatar className={cn(sizeClasses[size], className)}>
-        {avatarUrl && !imageError ? (
+        {currentAvatarUrl ? (
           <AvatarImage 
-            src={avatarUrl} 
+            src={currentAvatarUrl} 
             alt={getUserDisplayName(user)}
             onError={handleImageError}
-            onLoad={handleImageLoad}
           />
         ) : null}
-        {/* 始终显示备用头像，如果没有头像URL或图片加载失败 */}
-        <AvatarFallback className="bg-[--color-primary-10] text-primary">
-          <UserIcon className={iconSizes[size]} />
-        </AvatarFallback>
+        {showFallback ? (
+          <AvatarFallback className="bg-[--color-primary-10] text-primary">
+            <UserIcon className={iconSizes[size]} />
+          </AvatarFallback>
+        ) : null}
       </Avatar>
       
       {/* 积分扣减气泡 */}

@@ -49,6 +49,7 @@ export async function getRecipePreviews(
         mealType: recipe.mealType ?? null,
         userId: recipe.userId,
         authorName: recipe.authorName,
+        authorAvatarUrl: recipe.authorAvatarUrl,
         imagePath: recipe.imagePath,
         createdAt: recipe.createdAt,
         cuisine: recipe.cuisine,

@@ -90,6 +90,8 @@ type RecipeRow = {
   chef_tips: string | null;
   user_id: string | null;
   author_name: string | null;
+  author_display_name: string | null;
+  author_avatar_url: string | null;
   pairing_type: string | null;
   pairing_name: string | null;
   pairing_note: string | null;
@@ -154,6 +156,7 @@ export type RecipeView = {
   imageModel?: string;
   userId?: string;
   authorName?: string;
+  authorAvatarUrl?: string;
   pairing?: {
     type: string | null;
     name: string | null;
@@ -180,6 +183,7 @@ export type RecipeView = {
 };
 
 let ensureRecipeFavoritesSchemaPromise: Promise<void> | null = null;
+let ensureUserProfilesSchemaPromise: Promise<void> | null = null;
 
 function normalizeImagePathForStorage(imagePath: string): string {
   const trimmed = imagePath.trim();
@@ -263,6 +267,44 @@ export async function ensureRecipeFavoritesSchema(db: PgClientLike): Promise<voi
   await ensureRecipeFavoritesSchemaPromise;
 }
 
+export async function ensureUserProfilesSchema(db: PgClientLike): Promise<void> {
+  if (!ensureUserProfilesSchemaPromise) {
+    ensureUserProfilesSchemaPromise = (async () => {
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS user_profiles (
+          user_id TEXT PRIMARY KEY,
+          display_name TEXT,
+          avatar_url TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `);
+
+      await db.query(`
+        CREATE INDEX IF NOT EXISTS idx_user_profiles_updated_at
+        ON user_profiles (updated_at DESC)
+      `);
+
+      await db.query(`
+        INSERT INTO user_profiles (user_id, display_name, created_at, updated_at)
+        SELECT DISTINCT
+          r.user_id,
+          NULLIF(BTRIM(r.author_name), ''),
+          NOW(),
+          NOW()
+        FROM recipes r
+        WHERE r.user_id IS NOT NULL
+        ON CONFLICT (user_id) DO NOTHING
+      `);
+    })().catch((error) => {
+      ensureUserProfilesSchemaPromise = null;
+      throw error;
+    });
+  }
+
+  await ensureUserProfilesSchemaPromise;
+}
+
 function normalizePage(input: number | undefined): number {
   if (!Number.isFinite(input)) {
     return 1;
@@ -337,6 +379,19 @@ function normalizeAuthorName(value: unknown): string | null {
   }
 
   return trimmed.slice(0, 80);
+}
+
+function normalizeAuthorAvatarUrl(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  return trimmed.slice(0, 2048);
 }
 
 function normalizePairingText(value: unknown, maxLength: number): string | null {
@@ -521,7 +576,11 @@ function toRecipeView(row: RecipeRow): RecipeView {
     imagePath: row.image_path ?? undefined,
     imageModel: row.image_model ?? undefined,
     userId: row.user_id ?? undefined,
-    authorName: normalizeAuthorName(row.author_name) ?? undefined,
+    authorName:
+      normalizeAuthorName(row.author_display_name) ??
+      normalizeAuthorName(row.author_name) ??
+      undefined,
+    authorAvatarUrl: normalizeAuthorAvatarUrl(row.author_avatar_url) ?? undefined,
     pairing: hasPairingData ? pairing : undefined,
     mealType,
     cuisineId,
@@ -606,6 +665,8 @@ const RECIPE_SELECT_SQL = `
     r.chef_tips,
     r.user_id,
     r.author_name,
+    up.display_name AS author_display_name,
+    up.avatar_url AS author_avatar_url,
     r.pairing_type,
     r.pairing_name,
     r.pairing_note,
@@ -633,6 +694,8 @@ const RECIPE_SELECT_SQL = `
     ORDER BY rimg.created_at DESC
     LIMIT 1
   ) rim ON TRUE
+  LEFT JOIN user_profiles up
+    ON up.user_id = r.user_id
   LEFT JOIN cuisines c
     ON r.cuisine_id = c.id
   LEFT JOIN cuisines_i18n ci
@@ -653,6 +716,7 @@ export async function listRecipes(
   if (options.favoriteUserId) {
     await ensureRecipeFavoritesSchema(db);
   }
+  await ensureUserProfilesSchema(db);
 
   const language = normalizeLanguage(options.lang);
   const page = normalizePage(options.page);
@@ -719,6 +783,7 @@ export async function getRecipeById(
   recipeId: string,
   lang?: string
 ): Promise<RecipeView | null> {
+  await ensureUserProfilesSchema(db);
   const language = normalizeLanguage(lang);
   const queryByIdAndLanguage = async (targetRecipeId: string): Promise<RecipeRow | null> => {
     const result = await db.query<RecipeRow>(

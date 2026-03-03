@@ -105,6 +105,7 @@ export const RecipesList = ({
             mealType: normalizeMealType(recipe.mealType ?? recipe.meal_type, null),
             userId: recipe.userId || recipe.user_id || undefined,
             authorName: recipe.authorName || recipe.author_name || undefined,
+            authorAvatarUrl: recipe.authorAvatarUrl || recipe.author_avatar_url || undefined,
             cuisine: recipe.cuisine
               ? {
                   id: recipe.cuisine.id,

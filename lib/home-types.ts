@@ -11,6 +11,7 @@ export type HomeRecipePreview = {
   mealType?: MealType | null;
   userId?: string;
   authorName?: string;
+  authorAvatarUrl?: string;
   imagePath?: string;
   createdAt?: string;
   cuisine?: {

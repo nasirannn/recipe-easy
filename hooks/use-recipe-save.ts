@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { Recipe } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
 import { useLocale } from 'next-intl';
-import { getUserDisplayName } from '@/lib/utils/user-display';
+import { getUserDisplayName, getUserAvatarUrl } from '@/lib/utils/user-display';
 import { createAuthRequiredError } from '@/lib/utils/auth-error';
 
 export const useRecipeSave = () => {
@@ -39,6 +39,7 @@ export const useRecipeSave = () => {
           recipes,
           userId: userId || user?.id,
           authorName: getUserDisplayName(user),
+          authorAvatarUrl: getUserAvatarUrl(user),
           language: locale, // 传递当前语言
         }),
       });

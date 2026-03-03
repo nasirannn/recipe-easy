@@ -3,6 +3,7 @@ import { generateImageId } from '@/lib/utils/id-generator';
 import { getPostgresPool } from '@/lib/server/postgres';
 import { validateUserId } from '@/lib/utils/validation';
 import { supabase } from '@/lib/supabase';
+import { ensureUserProfilesSchema } from '@/lib/server/recipes';
 import {
   buildR2PublicUrl,
   extractR2ObjectKey,
@@ -75,6 +76,7 @@ interface SaveRecipeRequest {
   recipes?: Array<Record<string, unknown>>;
   userId?: string;
   authorName?: string;
+  authorAvatarUrl?: string;
   language?: string;
 }
 
@@ -206,6 +208,67 @@ function normalizeAuthorName(value: unknown): string | undefined {
   return trimmed.slice(0, 80);
 }
 
+function normalizeAuthorAvatarUrl(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  return trimmed.slice(0, 2048);
+}
+
+function getAuthDisplayName(user: {
+  user_metadata?: {
+    display_name?: unknown;
+    full_name?: unknown;
+    name?: unknown;
+  };
+} | null | undefined): string | undefined {
+  if (!user) {
+    return undefined;
+  }
+
+  const displayName = normalizeAuthorName(user.user_metadata?.display_name);
+  if (displayName) {
+    return displayName;
+  }
+
+  const fullName = normalizeAuthorName(user.user_metadata?.full_name);
+  if (fullName) {
+    return fullName;
+  }
+
+  return normalizeAuthorName(user.user_metadata?.name);
+}
+
+function getAuthAvatarUrl(user: {
+  user_metadata?: { avatar_url?: unknown; picture?: unknown };
+  identities?: Array<{ identity_data?: { picture?: unknown } }>;
+} | null | undefined): string | undefined {
+  if (!user) {
+    return undefined;
+  }
+
+  const metadataAvatarUrl = normalizeAuthorAvatarUrl(user.user_metadata?.avatar_url);
+  if (metadataAvatarUrl) {
+    return metadataAvatarUrl;
+  }
+
+  const metadataPicture = normalizeAuthorAvatarUrl(user.user_metadata?.picture);
+  if (metadataPicture) {
+    return metadataPicture;
+  }
+
+  const identityPicture = user.identities
+    ?.map((identity) => normalizeAuthorAvatarUrl(identity.identity_data?.picture))
+    .find(Boolean);
+  return identityPicture;
+}
+
 function normalizePairingText(value: unknown, maxLength: number): string | null {
   if (typeof value !== 'string') {
     return null;
@@ -332,7 +395,7 @@ async function upsertRecipeImage(
 
 async function saveRecipeToDatabase(request: NextRequest) {
   const body = (await request.json()) as SaveRecipeRequest;
-  const { recipe, recipes, userId, authorName, language } = body;
+  const { recipe, recipes, userId, authorName, authorAvatarUrl, language } = body;
   const requestAuthorName = normalizeAuthorName(authorName);
 
   if (!validateUserId(userId)) {
@@ -366,6 +429,31 @@ async function saveRecipeToDatabase(request: NextRequest) {
   }
 
   const db = getPostgresPool();
+  await ensureUserProfilesSchema(db);
+  const profileDisplayName = requestAuthorName ?? getAuthDisplayName(authData.user);
+  const requestAuthorAvatarUrl =
+    normalizeAuthorAvatarUrl(authorAvatarUrl) ?? getAuthAvatarUrl(authData.user);
+
+  await db.query(
+    `
+      INSERT INTO user_profiles (user_id, display_name, avatar_url, created_at, updated_at)
+      VALUES ($1, $2, $3, NOW(), NOW())
+      ON CONFLICT (user_id) DO UPDATE
+      SET
+        display_name = COALESCE(EXCLUDED.display_name, user_profiles.display_name),
+        avatar_url = CASE
+          WHEN EXCLUDED.avatar_url IS NULL OR BTRIM(EXCLUDED.avatar_url) = ''
+            THEN user_profiles.avatar_url
+          WHEN EXCLUDED.avatar_url LIKE 'https://ui-avatars.com/%'
+            AND user_profiles.avatar_url IS NOT NULL
+            AND user_profiles.avatar_url NOT LIKE 'https://ui-avatars.com/%'
+            THEN user_profiles.avatar_url
+          ELSE EXCLUDED.avatar_url
+        END,
+        updated_at = NOW()
+    `,
+    [userId, profileDisplayName ?? null, requestAuthorAvatarUrl ?? null]
+  );
 
   let recipeArray: Array<Record<string, unknown>> = [];
   if (Array.isArray(recipes)) {
@@ -390,7 +478,7 @@ async function saveRecipeToDatabase(request: NextRequest) {
 
   for (const rawRecipe of recipeArray) {
     const normalizedRecipe = normalizeRecipeForDatabase(rawRecipe);
-    const resolvedAuthorName = normalizedRecipe.authorName ?? requestAuthorName;
+    const resolvedAuthorName = normalizedRecipe.authorName ?? profileDisplayName;
     normalizedRecipe.authorName = resolvedAuthorName;
     if (!normalizedRecipe.id || !normalizedRecipe.title) {
       return NextResponse.json(

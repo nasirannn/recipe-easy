@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { getPostgresPool } from '@/lib/server/postgres';
+import { ensureUserProfilesSchema } from '@/lib/server/recipes';
 import {
   deleteImageFromR2,
   extractR2ObjectKey,
@@ -33,6 +35,15 @@ function normalizeMimeType(value: string): string {
     return 'image/jpeg';
   }
   return normalized;
+}
+
+function normalizeDisplayName(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed.slice(0, 80) : null;
 }
 
 export async function POST(request: NextRequest) {
@@ -118,6 +129,26 @@ export async function POST(request: NextRequest) {
         }
       }
     }
+
+    const profileDisplayName =
+      normalizeDisplayName(authData.user.user_metadata?.display_name) ??
+      normalizeDisplayName(authData.user.user_metadata?.full_name) ??
+      normalizeDisplayName(authData.user.user_metadata?.name);
+
+    const db = getPostgresPool();
+    await ensureUserProfilesSchema(db);
+    await db.query(
+      `
+        INSERT INTO user_profiles (user_id, display_name, avatar_url, created_at, updated_at)
+        VALUES ($1, $2, $3, NOW(), NOW())
+        ON CONFLICT (user_id) DO UPDATE
+        SET
+          display_name = COALESCE(EXCLUDED.display_name, user_profiles.display_name),
+          avatar_url = EXCLUDED.avatar_url,
+          updated_at = NOW()
+      `,
+      [authData.user.id, profileDisplayName, uploaded.publicUrl]
+    );
 
     return NextResponse.json({
       success: true,
