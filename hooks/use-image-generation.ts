@@ -38,6 +38,23 @@ export function useImageGeneration(): UseImageGenerationReturn {
   }, []);
 
   /**
+   * 构建饮品搭配请求负载，兼容历史字段
+   */
+  const buildPairingPayload = useCallback((recipe: Recipe) => {
+    const pairing = recipe.pairing ?? {
+      type: (recipe as Recipe & { pairingType?: string | null }).pairingType ?? null,
+      name: (recipe as Recipe & { pairingName?: string | null }).pairingName ?? null,
+      note: (recipe as Recipe & { pairingNote?: string | null }).pairingNote ?? null,
+      description: (recipe as Recipe & { pairingDescription?: string | null }).pairingDescription ?? null,
+    };
+
+    const hasPairingValue = [pairing.type, pairing.name, pairing.note, pairing.description]
+      .some((value) => typeof value === "string" && value.trim().length > 0);
+
+    return hasPairingValue ? pairing : undefined;
+  }, []);
+
+  /**
    * 生成图片的通用方法
    */
   const generateImageInternal = useCallback(async (
@@ -65,6 +82,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
           recipeTitle: recipe.title,
           recipeDescription: recipe.description,
           recipeIngredients: recipe.ingredients,
+          recipePairing: buildPairingPayload(recipe),
           language: locale
         }),
       });
@@ -95,7 +113,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
       setImageLoadingState(recipeId, false);
       setImageGenerating(false);
     }
-  }, [locale, session?.access_token, setImageLoadingState, signInRequiredMessage, updateCreditsLocally]);
+  }, [buildPairingPayload, locale, session?.access_token, setImageLoadingState, signInRequiredMessage, updateCreditsLocally]);
 
   /**
    * 生成食谱图片
@@ -179,6 +197,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
                 recipeTitle: recipe.title,
                 recipeDescription: recipe.description,
                 recipeIngredients: recipe.ingredients,
+                recipePairing: buildPairingPayload(recipe),
                 language: locale
               }),
             });
@@ -214,7 +233,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
     } finally {
       setImageGenerating(false);
     }
-  }, [locale, session?.access_token, setImageLoadingState, signInRequiredMessage]);
+  }, [buildPairingPayload, locale, session?.access_token, setImageLoadingState, signInRequiredMessage]);
 
   return {
     imageGenerating,

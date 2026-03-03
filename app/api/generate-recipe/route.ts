@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { SYSTEM_PROMPTS, USER_PROMPT_TEMPLATES } from '@/lib/prompts';
 import { APP_CONFIG, getLanguageConfig } from '@/lib/config';
 import { generateRecipeId } from '@/lib/utils/id-generator';
 import { recordModelUsage as saveModelUsage } from '@/lib/server/model-usage';
 import { normalizePairingType } from '@/lib/pairing';
 import {
-  getMealTypeLabel,
-  normalizeMealTypePreference,
   resolveMealType,
   type MealTypePreference,
 } from '@/lib/meal-type';
+import { buildRecipeGenerationPrompts } from '@/lib/recipe-generation-prompts';
 import { normalizeRecipeVibe } from '@/lib/vibe';
 import {
   ensureCreditsSchema,
@@ -45,28 +43,6 @@ function getBearerToken(request: NextRequest): string | null {
 
   const token = value.slice(7).trim();
   return token || null;
-}
-
-type CookingTimePreset = 'quick' | 'medium' | 'long';
-
-function normalizeCookingTimePreset(value: unknown): CookingTimePreset {
-  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  if (raw === 'quick' || raw === 'medium' || raw === 'long') {
-    return raw;
-  }
-  return 'medium';
-}
-
-function getCookingTimeRange(preset: CookingTimePreset): { min: number; max: number } {
-  switch (preset) {
-    case 'quick':
-      return { min: 10, max: 25 };
-    case 'long':
-      return { min: 60, max: 120 };
-    case 'medium':
-    default:
-      return { min: 30, max: 60 };
-  }
 }
 
 function toNullableNumber(value: unknown): number | null {
@@ -256,45 +232,19 @@ export async function POST(request: NextRequest) {
     }
 
     // 根据用户语言选择提示词
-    let systemPrompt, userPrompt;
-    const ingredientNames = ingredients.map((ingredient: any) => ingredient.name);
-    const cookingTimePreset = normalizeCookingTimePreset(cookingTime);
-    const cookingTimeRange = getCookingTimeRange(cookingTimePreset);
-    const cookingTimeRangeLabel = `${cookingTimeRange.min}-${cookingTimeRange.max}`;
-    const vibeLabel = String(vibe ?? '');
-    const cuisineLabel = String(cuisine ?? '').trim() || 'any';
-    const mealTypePreference = normalizeMealTypePreference(mealType);
-    const mealTypeLabel =
-      mealTypePreference === 'any'
-        ? language === 'zh' || language === 'zh-CN'
-          ? '任意'
-          : 'any'
-        : getMealTypeLabel(mealTypePreference, language);
-    
-    if (language === 'zh' || language === 'zh-CN') {
-
-      // 中文用户使用中文提示词
-      systemPrompt = SYSTEM_PROMPTS.CHINESE;
-      userPrompt = `${USER_PROMPT_TEMPLATES.CHINESE(
-        ingredientNames,
-        Number(servings),
-        cookingTimePreset,
-        cookingTimeRangeLabel,
-        vibeLabel,
-        cuisineLabel
-      )}\n\n餐次类型：${mealTypeLabel}\n请在每个菜谱中返回 meal_type 字段，值只能是 breakfast/lunch/dinner/snack/dessert。\n只返回原始 JSON，不要 markdown 代码块，不要解释说明。`;
-    } else {
-      // 英文用户使用英文提示词
-      systemPrompt = SYSTEM_PROMPTS.DEFAULT;
-      userPrompt = `${USER_PROMPT_TEMPLATES.ENGLISH(
-        ingredientNames,
-        Number(servings),
-        cookingTimePreset,
-        cookingTimeRangeLabel,
-        vibeLabel,
-        cuisineLabel
-      )}\n\nMeal type preference: ${mealTypeLabel}\nReturn a meal_type field for each recipe, and the value must be one of breakfast/lunch/dinner/snack/dessert.\nReturn ONLY raw JSON. No markdown code fences and no explanatory text.`;
-    }
+    const {
+      systemPrompt,
+      userPrompt,
+      mealTypePreference,
+    } = buildRecipeGenerationPrompts({
+      ingredients,
+      servings,
+      cookingTime,
+      vibe,
+      cuisine,
+      mealType,
+      language,
+    });
 
     // 验证提示词是否为空
     if (!systemPrompt || !userPrompt) {

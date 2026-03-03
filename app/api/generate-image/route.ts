@@ -7,6 +7,7 @@ import {
 } from '@/lib/server/credits';
 import { recordModelUsage } from '@/lib/server/model-usage';
 import { getPostgresPool } from '@/lib/server/postgres';
+import { buildRecipeImagePrompt } from '@/lib/image-prompts';
 import { supabase } from '@/lib/supabase';
 
 // 强制动态渲染
@@ -44,6 +45,7 @@ export async function POST(request: NextRequest) {
     const { 
       recipeTitle,
       recipeIngredients,
+      recipePairing,
       language = 'en'
     } = body;
 
@@ -72,17 +74,12 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // 构建提示词
-    const ingredientList = Array.isArray(recipeIngredients) 
-      ? recipeIngredients.join(', ') 
-      : recipeIngredients;
-    
-    let prompt;
-    if (language === 'zh') {
-      prompt = `美食照片：${recipeTitle}，主要食材包含${ingredientList}。纯净虚化的极简背景，高清特写镜头，微距视角，高清晰写实风格突出食物细节主体，在柔和自然光下拍摄以展现食材的质感与色彩层次，营造温暖诱人的食欲氛围。`;
-    } else {
-      prompt = `Professional food photograph of ${recipeTitle}, featuring ingredients ${ingredientList}. Clean and blurred minimalist background, high-definition close-up shot, macro perspective, high-definition realistic style, highlighting the food details, captured under soft natural lighting to showcase the texture and color layers of the ingredients, creating a warm and appetizing atmosphere.`;
-    }
+    const prompt = buildRecipeImagePrompt({
+      recipeTitle,
+      recipeIngredients,
+      recipePairing,
+      language,
+    });
 
     let imageUrl = '';
     let modelUsed = '';
