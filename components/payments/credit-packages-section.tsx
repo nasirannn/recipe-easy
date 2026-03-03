@@ -7,9 +7,11 @@ import { toast } from "sonner";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/auth-context";
 
 const DAILY_LOGIN_FREE_CREDITS = 3;
+const PRICING_SKELETON_CARD_COUNT = 4;
 
 type CreditPackageDto = {
   id: string;
@@ -51,6 +53,34 @@ function formatCurrency(currency: string, amount: string): string {
   } catch {
     return `${currency} ${amount}`;
   }
+}
+
+function PricingPackageSkeletonCard({ showBadge }: { showBadge?: boolean }) {
+  return (
+    <Card className="flex h-full flex-col rounded-2xl border border-border-70 bg-card">
+      <CardHeader className="space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <Skeleton className="h-7 w-28" />
+          {showBadge ? <Skeleton className="h-6 w-24 rounded-full" /> : null}
+        </div>
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-4/5" />
+      </CardHeader>
+      <CardContent className="flex flex-1 flex-col gap-5">
+        <div className="space-y-2">
+          <Skeleton className="h-9 w-28" />
+          <Skeleton className="h-3 w-24" />
+        </div>
+
+        <div className="rounded-xl border border-border-70 bg-background/70 p-3">
+          <Skeleton className="h-4 w-36" />
+          <Skeleton className="mt-2 h-3 w-28" />
+        </div>
+
+        <Skeleton className="mt-auto h-11 w-full rounded-md" />
+      </CardContent>
+    </Card>
+  );
 }
 
 export function CreditPackagesSection() {
@@ -171,8 +201,10 @@ export function CreditPackagesSection() {
         </header>
 
         {loadingPackages ? (
-          <div className="rounded-2xl border border-border-70 bg-card p-8 text-center text-sm text-muted-foreground">
-            {t("loading")}
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label={t("loading")}>
+            {Array.from({ length: PRICING_SKELETON_CARD_COUNT }).map((_, index) => (
+              <PricingPackageSkeletonCard key={`pricing-skeleton-${index}`} showBadge={index === 1} />
+            ))}
           </div>
         ) : packagesError ? (
           <div className="rounded-2xl border border-destructive/25 bg-destructive/5 p-8 text-center text-sm text-destructive">
