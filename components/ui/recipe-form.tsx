@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { IngredientSelector } from "./ingredients-selector";
-import { Sparkles, X, RotateCcw, Box, PencilLine, Gauge, Clock3, Users, ChefHat, Dumbbell, Globe, Heart } from "lucide-react";
+import { Sparkles, X, RotateCcw, Box, PencilLine, Gauge, Clock3, Users, ChefHat, Dumbbell, Globe, Heart, UtensilsCrossed } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -1107,7 +1107,7 @@ export const RecipeForm = ({
 
             <section className="space-y-3">
               <p className="inline-flex items-center gap-2 text-base font-bold text-foreground">
-                <ChefHat className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+                <UtensilsCrossed className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
                 <span>{optionSectionCopy.mealTypeTitle}</span>
               </p>
               <div className="flex flex-wrap gap-2">

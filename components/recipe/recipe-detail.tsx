@@ -939,8 +939,8 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
             </div>
 
             {ingredients.length > 0 && (
-              <Card className="overflow-hidden rounded-xl border border-border-70 bg-card">
-                <div className="flex items-center border-b border-border-70 bg-muted-30 px-5 py-4 sm:px-6">
+              <Card className="overflow-hidden rounded-xl border border-border-70 bg-linear-to-br from-primary/10 via-card to-card">
+                <div className="flex items-center border-b border-border-70 bg-primary/5 px-5 py-4 sm:px-6">
                   <h2 className="flex items-center gap-2.5 text-xl font-bold text-foreground">
                     <ShoppingBasket className="h-5 w-5 text-primary" />
                     {labels.ingredientsTitle}
@@ -980,8 +980,8 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
             )}
 
             {instructions.length > 0 && (
-              <Card className="overflow-hidden rounded-xl border border-border-70 bg-card">
-                <div className="border-b border-border-70 bg-muted-30 px-5 py-4 sm:px-6">
+              <Card className="overflow-hidden rounded-xl border border-border-70 bg-linear-to-br from-primary/10 via-card to-card">
+                <div className="border-b border-border-70 bg-primary/5 px-5 py-4 sm:px-6">
                   <h2 className="flex items-center gap-2.5 text-xl font-bold text-foreground">
                     <ListOrdered className="h-5 w-5 text-primary" />
                     {labels.instructionsTitle}
@@ -1014,8 +1014,8 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
             )}
 
             {detailTags.length > 0 && (
-              <Card className="overflow-hidden rounded-xl border border-border-70 bg-card">
-                <div className="border-b border-border-70 bg-muted-30 px-5 py-4 sm:px-6">
+              <Card className="overflow-hidden rounded-xl border border-border-70 bg-linear-to-br from-primary/10 via-card to-card">
+                <div className="border-b border-border-70 bg-primary/5 px-5 py-4 sm:px-6">
                   <h2 className="flex items-center gap-2.5 text-xl font-bold text-foreground">
                     <TagsIcon className="h-5 w-5 text-primary" />
                     {labels.tagsTitle}
@@ -1038,22 +1038,22 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
           </div>
 
           <aside className="space-y-6 lg:col-span-4">
-            <Card className="relative overflow-hidden rounded-xl border border-primary/30 bg-linear-to-br from-[#1a3324] to-[#102216]">
+            <Card className="relative overflow-hidden rounded-xl border border-border-70 bg-card">
               <CardContent className="p-6">
-                <div className="pointer-events-none absolute right-4 top-4 opacity-20">
+                <div className="pointer-events-none absolute right-4 top-4 opacity-10">
                   <Sparkles className="h-14 w-14 text-primary" />
                 </div>
                 <h3 className="mb-2 flex items-center gap-2 text-lg font-bold text-primary">
                   <Lightbulb className="h-5 w-5" />
                   {labels.tipsTitle}
                 </h3>
-                <p className="text-sm leading-relaxed text-slate-200">{mainTip}</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">{mainTip}</p>
               </CardContent>
             </Card>
 
-            <Card className="overflow-hidden rounded-xl border border-[#2a4b37] bg-linear-to-br from-[#153826] via-[#123224] to-[#112c21] text-[#f1f8f3]">
-              <div className="border-b border-[#2f4f3d] px-5 py-4">
-                <h3 className="text-base font-bold leading-6 text-[#f1f8f3]">
+            <Card className="overflow-hidden rounded-xl border border-border-70 bg-card">
+              <div className="border-b border-border-70 bg-muted-30 px-5 py-4">
+                <h3 className="text-base font-bold leading-6 text-foreground">
                   {labels.nutritionTitle}
                 </h3>
               </div>
@@ -1062,24 +1062,26 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                   {nutritionRows.map((item) => (
                     <div
                       key={item.label}
-                      className="flex items-center justify-between border-b border-[#2d4a38] py-2.5 last:border-none"
+                      className="flex items-center justify-between border-b border-border-70 py-2.5 last:border-none"
                     >
-                      <span className="text-sm font-medium text-[#a6bdaf]">{item.label}</span>
-                      <span className="text-base font-bold tabular-nums text-[#f1f8f3] sm:text-lg">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {item.label}
+                      </span>
+                      <span className="text-base font-bold tabular-nums text-foreground sm:text-lg">
                         {formatNutritionValue(item.value, item.unit)}
                       </span>
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 border-t border-dashed border-[#3d5d4a] pt-4">
+                <div className="mt-4 border-t border-dashed border-border-70 pt-4">
                   <div className="flex items-start gap-2">
-                    <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-400" />
+                    <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
                     <div>
-                      <p className="text-[10px] leading-tight text-[#98b2a2]">
+                      <p className="text-[10px] leading-tight text-muted-foreground">
                         {labels.nutritionNote}
                       </p>
                       {!hasNutritionData && (
-                        <p className="mt-1 text-[10px] leading-tight text-[#86a092]">
+                        <p className="mt-1 text-[10px] leading-tight text-muted-foreground/90">
                           {isZh ? "当前菜谱尚未生成营养估算。" : "Nutrition estimates are not available for this recipe yet."}
                         </p>
                       )}
