@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChefHat, Clock } from "lucide-react";
+import { ChefHat, Clock, UtensilsCrossed } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { getImageUrl } from "@/lib/config";
 import { cn } from "@/lib/utils";
@@ -52,7 +52,7 @@ export const ExploreRecipeCard = ({
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden rounded-3xl border border-recipe-surface-border bg-recipe-surface shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-xl hover:shadow-primary/12 focus-within:ring-2 focus-within:ring-primary/55 focus-within:ring-offset-2 focus-within:ring-offset-recipe-surface-focus-offset",
+        "group relative overflow-hidden rounded-3xl border border-recipe-surface-border bg-recipe-surface shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/12 focus-within:ring-2 focus-within:ring-primary/55 focus-within:ring-offset-2 focus-within:ring-offset-recipe-surface-focus-offset",
         className
       )}
     >
@@ -104,10 +104,6 @@ export const ExploreRecipeCard = ({
               </span>
             ) : null}
 
-            {recipe.cookingTime && vibeLabel ? (
-              <span className="h-1 w-1 rounded-full bg-white/58" aria-hidden="true" />
-            ) : null}
-
             {vibeLabel ? (
               <span
                 className={cn(
@@ -120,12 +116,11 @@ export const ExploreRecipeCard = ({
               </span>
             ) : null}
 
-            {vibeLabel && metaRightLabel ? (
-              <span className="h-1 w-1 rounded-full bg-white/58" aria-hidden="true" />
-            ) : null}
-
             {metaRightLabel ? (
-              <span className="truncate font-semibold text-white/90">{metaRightLabel}</span>
+              <span className="inline-flex items-center gap-1 truncate font-semibold text-white/90">
+                <UtensilsCrossed className="h-3.5 w-3.5" />
+                {metaRightLabel}
+              </span>
             ) : null}
           </div>
         </div>

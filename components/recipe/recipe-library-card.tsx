@@ -40,7 +40,7 @@ export const RecipeLibraryCard = ({
   return (
     <Card
       className={cn(
-        "group relative self-start overflow-hidden rounded-2xl border border-recipe-surface-border bg-recipe-surface shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lg hover:shadow-primary/10",
+        "group relative self-start overflow-hidden rounded-2xl border border-recipe-surface-border bg-recipe-surface shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10",
         className
       )}
     >

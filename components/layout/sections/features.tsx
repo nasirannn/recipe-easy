@@ -64,7 +64,7 @@ export const FeaturesSection = () => {
             {features.map((feature) => (
               <div 
                 key={feature.id} 
-                className="home-card group flex min-h-[220px] gap-4 p-6 transition-colors hover:border-primary/30"
+                className="home-card group flex min-h-[220px] gap-4 p-6 transition-colors"
               >
                 <div className="shrink-0">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/12 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-primary-foreground">

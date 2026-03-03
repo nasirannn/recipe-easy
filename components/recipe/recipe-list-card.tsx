@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChefHat, Clock, Users } from 'lucide-react';
+import { ChefHat, Clock, Users, UtensilsCrossed } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getImageUrl } from '@/lib/config';
@@ -88,6 +88,7 @@ interface RecipeListCardProps {
   href: string;
   minsLabel: string;
   vibeLabel?: string;
+  metaRightLabel?: string;
   vibeBadgeClassName?: string;
   topLeftContent?: ReactNode;
   topRightContent?: ReactNode;
@@ -105,6 +106,7 @@ export const RecipeListCard = ({
   href,
   minsLabel,
   vibeLabel,
+  metaRightLabel,
   vibeBadgeClassName,
   topLeftContent,
   topRightContent,
@@ -119,25 +121,26 @@ export const RecipeListCard = ({
   const imageSrc = getImageUrl(recipe.imagePath) || '/images/recipe-placeholder-bg.png';
   const mediaClasses = mediaClassName ?? (featured ? 'aspect-[16/8]' : 'aspect-[4/3]');
   const vibeValue = recipe.vibe || vibeLabel;
+  const showServingsInStandard = !metaRightLabel && Boolean(recipe.servings);
 
   const vibeClassName = vibeBadgeClassName
-    ? cn('inline-flex items-center gap-1 font-semibold', vibeBadgeClassName)
+    ? cn('inline-flex items-center gap-1 font-medium', vibeBadgeClassName)
     : cn(
-        'inline-flex items-center gap-1 font-semibold',
+        'inline-flex items-center gap-1 font-medium',
         getVibeBadgeToneClass(vibeValue, 'standard')
       );
 
   const overlayVibeClassName = vibeBadgeClassName
-    ? cn('inline-flex items-center gap-1 font-semibold', vibeBadgeClassName)
+    ? cn('inline-flex items-center gap-1 font-medium', vibeBadgeClassName)
     : cn(
-        'inline-flex items-center gap-1 font-semibold',
+        'inline-flex items-center gap-1 font-medium',
         getVibeBadgeToneClass(vibeValue, 'overlay')
       );
 
   return (
     <Card
       className={cn(
-        'group relative overflow-hidden rounded-3xl border border-recipe-surface-border bg-recipe-surface shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-xl hover:shadow-primary/12 focus-within:ring-2 focus-within:ring-primary/55 focus-within:ring-offset-2 focus-within:ring-offset-recipe-surface-focus-offset',
+        'group relative overflow-hidden rounded-3xl border border-recipe-surface-border bg-recipe-surface shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/12 focus-within:ring-2 focus-within:ring-primary/55 focus-within:ring-offset-2 focus-within:ring-offset-recipe-surface-focus-offset',
         className
       )}
     >
@@ -263,7 +266,7 @@ export const RecipeListCard = ({
             </p>
           ) : null}
 
-          <div className="flex flex-wrap items-center gap-2 text-xs text-recipe-surface-muted-foreground">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs text-recipe-surface-muted-foreground">
             {recipe.cookingTime ? (
               <span className="inline-flex items-center gap-1 font-medium">
                 <Clock className="h-3.5 w-3.5" />
@@ -271,18 +274,18 @@ export const RecipeListCard = ({
               </span>
             ) : null}
 
-            {recipe.cookingTime && recipe.servings ? (
+            {recipe.cookingTime && (showServingsInStandard || vibeLabel || metaRightLabel) ? (
               <span className="h-1 w-1 rounded-full bg-recipe-surface-skeleton-soft" aria-hidden="true" />
             ) : null}
 
-            {recipe.servings ? (
+            {showServingsInStandard ? (
               <span className="inline-flex items-center gap-1 font-medium">
                 <Users className="h-3.5 w-3.5" />
                 <span>{recipe.servings}</span>
               </span>
             ) : null}
 
-            {(recipe.cookingTime || recipe.servings) && vibeLabel ? (
+            {vibeLabel && showServingsInStandard ? (
               <span className="h-1 w-1 rounded-full bg-recipe-surface-skeleton-soft" aria-hidden="true" />
             ) : null}
 
@@ -290,6 +293,17 @@ export const RecipeListCard = ({
               <span className={vibeClassName}>
                 <ChefHat className="h-3.5 w-3.5" />
                 {vibeLabel}
+              </span>
+            ) : null}
+
+            {vibeLabel && metaRightLabel ? (
+              <span className="h-1 w-1 rounded-full bg-recipe-surface-skeleton-soft" aria-hidden="true" />
+            ) : null}
+
+            {metaRightLabel ? (
+              <span className="inline-flex items-center gap-1 truncate font-medium text-recipe-surface-muted-foreground">
+                <UtensilsCrossed className="h-3.5 w-3.5" />
+                <span className="truncate">{metaRightLabel}</span>
               </span>
             ) : null}
           </div>

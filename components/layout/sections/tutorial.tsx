@@ -20,7 +20,7 @@ const TutorialStep = ({ index, title, description, icon }: TutorialStepProps) =>
   const displayTitle = hasStepPrefix(title) ? title : `${index + 1}. ${title}`;
 
   return (
-    <article className="group flex h-full flex-col gap-4 rounded-xl border border-border-70 bg-card-90 p-6 shadow-sm transition-colors duration-200 hover:border-primary/50">
+    <article className="group flex h-full flex-col gap-4 rounded-xl border border-border-70 bg-card-90 p-6 shadow-sm transition-colors duration-200">
       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted text-foreground transition-colors duration-200 group-hover:bg-primary group-hover:text-primary-foreground">
           {icon}
       </div>

@@ -635,7 +635,7 @@ export const WorkspaceSection = ({ initialRecentRecipes }: WorkspaceSectionProps
               </div>
 
               {recentRecipesLoading ? (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {Array.from({ length: 3 }).map((_, index) => (
                     <RecipeListCardSkeleton
                       key={`workspace-recent-skeleton-${index}`}
@@ -645,7 +645,7 @@ export const WorkspaceSection = ({ initialRecentRecipes }: WorkspaceSectionProps
                   ))}
                 </div>
               ) : recentRecipes.length > 0 ? (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {recentRecipes.map((recipe) => {
                     const normalizedVibe = normalizeRecipeVibe(recipe.vibe, "comfort");
                     const topBadgeLabel =
@@ -659,17 +659,12 @@ export const WorkspaceSection = ({ initialRecentRecipes }: WorkspaceSectionProps
                         href={withLocalePath(locale, `/recipe/${recipe.id}`)}
                         minsLabel={tRecipeDisplay("mins")}
                         vibeLabel={recipe.vibe ? tRecipeDisplay(normalizedVibe) : undefined}
+                        vibeBadgeClassName="text-recipe-surface-muted-foreground"
+                        metaRightLabel={topBadgeLabel}
                         layout="standard"
                         showCoverOverlay={false}
                         showDescription={false}
                         mediaClassName="h-32"
-                        topLeftContent={
-                          topBadgeLabel ? (
-                            <span className="inline-flex items-center rounded-full bg-background-80 px-3 py-1 text-xs font-semibold text-foreground ring-1 ring-border">
-                              {topBadgeLabel}
-                            </span>
-                          ) : undefined
-                        }
                         prefetch={false}
                       />
                     );

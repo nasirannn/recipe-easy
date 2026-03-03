@@ -97,7 +97,7 @@ export const RecipeCookbookCard = ({
   return (
     <Card
       className={cn(
-        "group relative self-start overflow-hidden rounded-xl border border-recipe-surface-border bg-recipe-surface shadow-lg shadow-primary/12 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10",
+        "group relative self-start overflow-hidden rounded-xl border border-recipe-surface-border bg-recipe-surface shadow-lg shadow-primary/12 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/10",
         className
       )}
     >
