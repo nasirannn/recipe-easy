@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, LogOut, BookOpen, Star, HelpCircle, ChevronRight, ArrowRight, Compass, Coins, User, CirclePlus, CalendarDays } from "lucide-react";
+import { Menu, LogOut, BookOpen, HelpCircle, ChevronRight, ArrowRight, Compass, Coins, User, CirclePlus, CalendarDays } from "lucide-react";
 import React, { useState } from "react";
 import {
   DropdownMenu,
@@ -240,7 +240,6 @@ export const Navbar = () => {
     { href: mealPlanPath, label: t('mealPlan'), icon: <CalendarDays className="h-4 w-4" /> },
     { href: withLocalePath(locale, '/explore'), label: t('explore'), icon: <Compass className="h-4 w-4" /> },
     { href: pricingPath, label: t('buyCredits'), icon: <Coins className="h-4 w-4" /> },
-    { href: withLocalePath(locale, '#features'), label: t('features'), icon: <Star className="h-4 w-4" /> },
     { href: withLocalePath(locale, '#faq'), label: t('faq'), icon: <HelpCircle className="h-4 w-4" /> },
   ];
 
