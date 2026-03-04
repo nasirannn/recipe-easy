@@ -1,6 +1,7 @@
 {
   "navigation": {
     "home": "首页",
+    "mealPlan": "膳食计划",
     "explore": "探索",
     "features": "功能",
     "faq": "常见问题",
@@ -11,6 +12,7 @@
     "credits": "积分",
     "totalEarned": "累计获得",
     "myRecipes": "我的菜谱库",
+    "myMealPlans": "膳食计划",
     "newRecipe": "新建菜谱",
     "buyCredits": "定价",
     "appearance": "外观",
@@ -177,6 +179,87 @@
     "saveFailed": "保存失败",
     "insufficientCredits": "积分不足，无法生成图片"
   },
+  "mealPlanPage": {
+    "eyebrow": "膳食规划器",
+    "title": "这周想吃点什么？",
+    "description": "输入你的饮食目标、过敏禁忌、口味偏好、预算和备餐时间，AI 会为你生成一周四餐安排。",
+    "capabilitiesEyebrow": "核心能力",
+    "landingTitle": "几分钟搞定一整周吃什么",
+    "landingDescription": "告诉我们你想吃什么、要避开什么、每天时间和预算如何，系统会给你一份可执行的膳食安排。",
+    "highlights": {
+      "fast": "几分钟出结果",
+      "covered": "天数灵活，每天 4 餐",
+      "flexible": "按你的偏好定制"
+    },
+    "benefits": {
+      "personalized": {
+        "title": "更贴合你的生活节奏",
+        "description": "无论是高蛋白、低碳、素食，还是家庭友好需求，都能按你的目标生成。"
+      },
+      "consistent": {
+        "title": "一周安排更稳定",
+        "description": "提前看完整周四餐，减少每天纠结吃什么，也更容易坚持饮食目标。"
+      },
+      "practical": {
+        "title": "真正在家做得出来",
+        "description": "优先考虑可执行的备餐时间和食材搭配，让日常下厨更省心。"
+      }
+    },
+    "workflow": {
+      "title": "使用方式",
+      "subtitle": "从需求到可执行的一周安排，只要三个步骤。",
+      "step1": {
+        "title": "说清你的需求",
+        "description": "用自然语言写下偏好、忌口、预算和时间安排。"
+      },
+      "step2": {
+        "title": "一键生成膳食计划",
+        "description": "系统会自动给出每天的早餐、午餐、晚餐和加餐建议。"
+      },
+      "step3": {
+        "title": "按需替换，灵活执行",
+        "description": "可直接照做，也可以结合家里现有食材自由调整。"
+      }
+    },
+    "textareaLabel": "告诉我们你的膳食需求",
+    "textareaPlaceholder": "例如：无麸质、高蛋白、四口之家、工作日午餐要快、每周至少一顿鱼、不要花生、预算友好。",
+    "inputHint": "补充过敏原、营养目标、菜系偏好、预算和备餐时间，结果会更贴合。",
+    "creditsTag": "{cost} 积分",
+    "hintLabel": "提示",
+    "hintAction": "点击填入",
+    "hintAriaLabel": "使用这条示例膳食需求",
+    "generate": "生成膳食计划",
+    "generating": "正在生成膳食计划...",
+    "viewDetails": "查看详情",
+    "downloadPdf": "下载 PDF",
+    "downloadingPdf": "正在生成 PDF...",
+    "autoSavedToMealPlans": "该膳食计划已自动保存到 Meal Plans。",
+    "loginRequired": "请先登录后再生成膳食计划。",
+    "resultTitle": "膳食计划",
+    "emptyTitle": "你的膳食计划会显示在这里",
+    "emptyDescription": "输入需求并点击生成，即可获得一整周的早餐、午餐、晚餐和加餐安排。",
+    "breakfast": "早餐",
+    "lunch": "午餐",
+    "dinner": "晚餐",
+    "snack": "加餐",
+    "promptSuggestions": {
+      "seasonalSummer": "帮我做一份适合夏季时令食材的膳食计划",
+      "highProtein": "做一份增肌高蛋白的一周四餐，每餐烹饪控制在 30 分钟内",
+      "familyBudget": "给四口之家做一份预算友好的一周膳食计划，不要辣",
+      "vegetarianWorkdays": "给我一份工作日可提前准备的素食午餐计划",
+      "lowSodiumHeart": "做一份低钠地中海风味的一周计划，并包含一顿鱼类晚餐"
+    },
+    "pdfGeneratedFrom": "生成依据",
+    "generatedFrom": "生成依据",
+    "safetyNotice": "膳食计划由 AI 生成，仅供灵感参考。下厨前请结合个人过敏信息、饮食限制与食品安全规范进行判断。",
+    "success": "膳食计划生成成功。",
+    "errors": {
+      "tooShort": "请输入至少 10 个字符。",
+      "failed": "膳食计划生成失败，请稍后重试。",
+      "downloadPdfFailed": "导出 PDF 失败，请稍后重试。",
+      "insufficientCredits": "积分不足，无法生成膳食计划。"
+    }
+  },
   "recipes": {
     "title": "精选菜谱",
     "subtitle": "AI生成的烹饪杰作",
@@ -221,6 +304,46 @@
       "deleting": "删除中..."
     },
     "allRecipesDisplayed": "已显示全部菜谱库内容"
+  },
+  "myMealPlans": {
+    "title": "我的膳食计划",
+    "subtitle": "你生成过的膳食计划都会保存在这里。点击卡片可查看完整安排。",
+    "newPlan": "新建膳食计划",
+    "loading": "正在加载你的膳食计划...",
+    "loadError": "加载膳食计划失败",
+    "delete": "删除",
+    "deleting": "删除中...",
+    "deleteSuccess": "膳食计划删除成功",
+    "deleteError": "删除膳食计划失败",
+    "emptyState": {
+      "title": "还没有膳食计划",
+      "description": "先生成一份膳食计划，系统会自动保存并展示在这里。",
+      "action": "生成第一份计划"
+    },
+    "cards": {
+      "planBadge": "膳食计划",
+      "createdAt": "{date}",
+      "days": "天数",
+      "dayCount": "{count}",
+      "totalMeals": "餐次",
+      "mealCount": "{count}",
+      "viewDetails": "查看完整计划"
+    },
+    "allPlansDisplayed": "已显示全部膳食计划",
+    "deleteDialog": {
+      "title": "删除膳食计划",
+      "description": "你确定要删除「{title}」吗？此操作无法撤销。",
+      "cancel": "取消",
+      "confirm": "删除计划",
+      "deleting": "删除中..."
+    },
+    "detail": {
+      "loadError": "加载该膳食计划失败",
+      "backToList": "返回膳食计划列表",
+      "generatedFrom": "生成依据",
+      "missingTitle": "未找到该膳食计划",
+      "missingDescription": "该计划可能已删除，或你暂时没有访问权限。"
+    }
   },
   "credits": {
     "credits": "积分",

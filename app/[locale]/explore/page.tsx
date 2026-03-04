@@ -14,10 +14,13 @@ export async function generateMetadata({
   params,
 }: ExplorePageProps): Promise<Metadata> {
   const { locale } = await params;
+  const isZh = locale.toLowerCase().startsWith('zh');
 
   return generateSeoMetadata({
-    title: 'All Recipes - RecipeEasy',
-    description: 'Discover delicious recipes from around the world. Browse our collection of AI-generated recipes with step-by-step instructions.',
+    title: isZh ? '全部菜谱 - RecipeEasy' : 'All Recipes - RecipeEasy',
+    description: isZh
+      ? '浏览来自不同风味的 AI 菜谱合集，查看清晰步骤并快速找到今天就能做的菜。'
+      : 'Discover delicious recipes from around the world. Browse our collection of AI-generated recipes with step-by-step instructions.',
     path: 'explore',
     locale,
   });

@@ -9,10 +9,13 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  const isZh = locale.toLowerCase().startsWith('zh');
   
   return generateSeoMetadata({
-    title: 'Terms of Service - Recipe Easy',
-    description: 'Recipe Easy服务条款，了解使用我们服务的条款和条件。',
+    title: isZh ? '服务条款 - RecipeEasy' : 'Terms of Service - RecipeEasy',
+    description: isZh
+      ? '了解使用 RecipeEasy 服务时适用的条款、责任与使用规范。'
+      : 'Read the terms and conditions for using RecipeEasy services.',
     path: 'terms',
     locale,
   });

@@ -8,13 +8,26 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const isZh = locale.toLowerCase().startsWith("zh");
 
-  return generateSeoMetadata({
-    title: "RecipeEasy - Payment Confirmation",
-    description: "Confirming your PayPal payment and crediting your RecipeEasy account.",
-    path: "/pricing/paypal-return",
-    locale,
-  });
+  return {
+    ...generateSeoMetadata({
+      title: isZh ? "RecipeEasy - 支付确认" : "RecipeEasy - Payment Confirmation",
+      description: isZh
+        ? "正在确认你的 PayPal 支付并为 RecipeEasy 账户入账积分。"
+        : "Confirming your PayPal payment and crediting your RecipeEasy account.",
+      path: "/pricing/paypal-return",
+      locale,
+    }),
+    robots: {
+      index: false,
+      follow: false,
+      googleBot: {
+        index: false,
+        follow: false,
+      },
+    },
+  };
 }
 
 export default function PayPalReturnPage() {
@@ -29,4 +42,3 @@ export default function PayPalReturnPage() {
     </main>
   );
 }
-

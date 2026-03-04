@@ -2,6 +2,7 @@
 
 // 网站基础 URL
 export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://recipe-easy.com';
+const SEO_LOCALES = ['en', 'zh'] as const;
 
 // 生成 canonical URL
 export function generateCanonicalUrl(path: string = '', locale?: string): string {
@@ -18,6 +19,19 @@ export function generateCanonicalUrl(path: string = '', locale?: string): string
 
   // 对于其他语言，使用语言前缀
   return cleanPath ? `${SITE_URL}/${locale}/${cleanPath}` : `${SITE_URL}/${locale}`;
+}
+
+function generateLanguageAlternates(path: string) {
+  const languages = SEO_LOCALES.reduce<Record<string, string>>((accumulator, currentLocale) => {
+    accumulator[currentLocale] = generateCanonicalUrl(
+      path,
+      currentLocale === 'en' ? undefined : currentLocale
+    );
+    return accumulator;
+  }, {});
+
+  languages['x-default'] = generateCanonicalUrl(path);
+  return languages;
 }
 
 // 生成页面元数据
@@ -44,6 +58,7 @@ export function generateMetadata({
     description,
     alternates: {
       canonical: canonicalUrl,
+      languages: generateLanguageAlternates(path),
     },
     openGraph: {
       title,

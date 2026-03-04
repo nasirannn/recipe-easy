@@ -8,10 +8,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const isZh = locale.toLowerCase().startsWith("zh");
 
   return generateSeoMetadata({
-    title: "RecipeEasy Credits - Buy PayPal Credit Packages",
-    description: "Buy RecipeEasy credit packages with PayPal and unlock recipe and image generation instantly.",
+    title: isZh
+      ? "RecipeEasy 积分充值 - 购买 PayPal 积分包"
+      : "RecipeEasy Credits - Buy PayPal Credit Packages",
+    description: isZh
+      ? "通过 PayPal 购买 RecipeEasy 积分，立即解锁菜谱与图片生成功能。"
+      : "Buy RecipeEasy credit packages with PayPal and unlock recipe and image generation instantly.",
     path: "/pricing",
     locale,
   });

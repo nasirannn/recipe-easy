@@ -9,11 +9,13 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const isZh = locale.toLowerCase().startsWith("zh");
 
   return generateSeoMetadata({
-    title: "RecipeEasy Workspace - AI Recipe Generator",
-    description:
-      "Select ingredients, generate recipes and recipe images in one workspace.",
+    title: isZh ? "RecipeEasy 工作台 - AI 菜谱生成器" : "RecipeEasy Workspace - AI Recipe Generator",
+    description: isZh
+      ? "在同一工作台选择食材、生成菜谱与菜品图片，快速完成从想法到出品。"
+      : "Select ingredients, generate recipes and recipe images in one workspace.",
     path: "/workspace",
     locale: locale === "en" ? undefined : locale,
   });

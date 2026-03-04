@@ -40,6 +40,7 @@ export const APP_CONFIG = {
   // 积分配置
   generationCost: 1,
   recipeGenerationCost: 1,
+  mealPlanGenerationCost: 1,
   imageGenerationCost: 2,
   
   // 菜谱风格

@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, LogOut, BookOpen, Star, HelpCircle, ChevronRight, ArrowRight, Compass, Coins, User, CirclePlus } from "lucide-react";
+import { Menu, LogOut, BookOpen, Star, HelpCircle, ChevronRight, ArrowRight, Compass, Coins, User, CirclePlus, CalendarDays } from "lucide-react";
 import React, { useState } from "react";
 import {
   DropdownMenu,
@@ -49,7 +49,9 @@ export const Navbar = () => {
   const locale = useLocale();
   const homeHref = withLocalePath(locale);
   const myCookbookPath = withLocalePath(locale, "/my-cookbook");
+  const myMealPlansPath = withLocalePath(locale, "/meal-plans");
   const workspacePath = withLocalePath(locale, "/workspace");
+  const mealPlanPath = withLocalePath(locale, "/meal-plan");
   const pricingPath = withLocalePath(locale, "/pricing");
   const menuThemeTokenClassName = "theme-surface-base";
 
@@ -235,6 +237,7 @@ export const Navbar = () => {
   }
 
   const routeList: RouteProps[] = [
+    { href: mealPlanPath, label: t('mealPlan'), icon: <CalendarDays className="h-4 w-4" /> },
     { href: withLocalePath(locale, '/explore'), label: t('explore'), icon: <Compass className="h-4 w-4" /> },
     { href: pricingPath, label: t('buyCredits'), icon: <Coins className="h-4 w-4" /> },
     { href: withLocalePath(locale, '#features'), label: t('features'), icon: <Star className="h-4 w-4" /> },
@@ -416,6 +419,17 @@ export const Navbar = () => {
                         <DropdownMenuItem
                           onClick={() => {
                             setIsAvatarMenuOpen(false);
+                            router.push(myMealPlansPath);
+                          }}
+                          className={avatarMenuItemClassName}
+                        >
+                          <CalendarDays className={cn("h-4 w-4", avatarSubtleTextClassName)} />
+                          {t('myMealPlans')}
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setIsAvatarMenuOpen(false);
                             router.push(pricingPath);
                           }}
                           className={avatarMenuItemClassName}
@@ -560,19 +574,34 @@ export const Navbar = () => {
                         
                         {/* 我的菜谱链接 - 仅登录用户显示 */}
                         {!loading && user && (
-                          <Link
-                            href={withLocalePath(locale, '/my-cookbook')}
-                            className={cn(
-                              mobileNavLinkBaseClassName,
-                              pathname.startsWith(myCookbookPath)
-                                ? mobileNavLinkActiveClassName
-                                : mobileNavLinkIdleClassName
-                            )}
-                            onClick={() => setIsOpen(false)}
-                          >
-                            <BookOpen className="mr-2 h-4 w-4" />
-                            {t('myRecipes')}
-                          </Link>
+                          <>
+                            <Link
+                              href={withLocalePath(locale, '/my-cookbook')}
+                              className={cn(
+                                mobileNavLinkBaseClassName,
+                                pathname === myCookbookPath
+                                  ? mobileNavLinkActiveClassName
+                                  : mobileNavLinkIdleClassName
+                              )}
+                              onClick={() => setIsOpen(false)}
+                            >
+                              <BookOpen className="mr-2 h-4 w-4" />
+                              {t('myRecipes')}
+                            </Link>
+                            <Link
+                              href={myMealPlansPath}
+                              className={cn(
+                                mobileNavLinkBaseClassName,
+                                pathname.startsWith(myMealPlansPath)
+                                  ? mobileNavLinkActiveClassName
+                                  : mobileNavLinkIdleClassName
+                              )}
+                              onClick={() => setIsOpen(false)}
+                            >
+                              <CalendarDays className="mr-2 h-4 w-4" />
+                              {t('myMealPlans')}
+                            </Link>
+                          </>
                         )}
                       </nav>
                     </div>

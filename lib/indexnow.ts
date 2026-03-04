@@ -119,6 +119,8 @@ export async function submitMainPagesToIndexNow(): Promise<boolean> {
   const mainPages = [
     '/',
     '/zh',
+    '/meal-plan',
+    '/zh/meal-plan',
     '/explore',
     '/zh/explore',
     '/my-cookbook',

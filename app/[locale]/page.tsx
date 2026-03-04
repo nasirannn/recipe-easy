@@ -17,10 +17,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const isZh = locale.toLowerCase().startsWith("zh");
 
   return generateSeoMetadata({
-    title: "RecipeEasy - AI Recipe Generator, Random Recipes, Meal Ideas",
-    description: "Stuck on what to cook? Enter your ingredients and get random, AI-generated recipes based on what you have — solve your 'what can I use' problem.",
+    title: isZh
+      ? "RecipeEasy - AI 菜谱生成器，随机菜谱与做饭灵感"
+      : "RecipeEasy - AI Recipe Generator, Random Recipes, Meal Ideas",
+    description: isZh
+      ? "不知道今天做什么？输入现有食材，快速获得 AI 生成的随机菜谱和可执行做法。"
+      : "Stuck on what to cook? Enter your ingredients and get random, AI-generated recipes based on what you have — solve your 'what can I use' problem.",
     path: "/",
     locale: locale === 'en' ? undefined : locale, // 英文页面不传递locale，确保canonical指向根路径
   });

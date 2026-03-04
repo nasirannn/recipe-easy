@@ -1,6 +1,7 @@
 {
   "navigation": {
     "home": "Home",
+    "mealPlan": "Meal Plan",
     "explore": "Explore",
     "features": "Features",
     "faq": "FAQ",
@@ -11,6 +12,7 @@
     "credits": "Credits",
     "totalEarned": "Total Earned",
     "myRecipes": "My Cookbook",
+    "myMealPlans": "Meal Plans",
     "newRecipe": "New Recipe",
     "buyCredits": "Pricing",
     "appearance": "Appearance",
@@ -176,6 +178,87 @@
     "saveFailed": "Save failed",
     "insufficientCredits": "Insufficient credits to generate image"
   },
+  "mealPlanPage": {
+    "eyebrow": "Meal Planner",
+    "title": "What do you feel like eating this week?",
+    "description": "Describe your dietary goals, allergies, cuisine preferences, budget, and prep constraints. AI will generate breakfast, lunch, dinner, and snack for each day.",
+    "capabilitiesEyebrow": "Capabilities",
+    "landingTitle": "Plan a full week of meals in just a few minutes",
+    "landingDescription": "Share what you like to eat, what to avoid, and your daily constraints. You will get a practical meal plan with breakfast, lunch, dinner, and snack.",
+    "highlights": {
+      "fast": "Ready in minutes",
+      "covered": "Flexible days, 4 meals each day",
+      "flexible": "Built around your preferences"
+    },
+    "benefits": {
+      "personalized": {
+        "title": "Tailored to your routine",
+        "description": "Add goals like high-protein, low-carb, vegetarian, or family-friendly and get meals that fit your week."
+      },
+      "consistent": {
+        "title": "Stay consistent all week",
+        "description": "Seeing the full week helps cut daily decision fatigue and keeps your nutrition plan steady."
+      },
+      "practical": {
+        "title": "Actually doable meals",
+        "description": "Plans prioritize realistic prep time and ingredient choices so cooking stays manageable."
+      }
+    },
+    "workflow": {
+      "title": "How it works",
+      "subtitle": "From your preferences to a practical weekly plan in three quick steps.",
+      "step1": {
+        "title": "Tell us what matters",
+        "description": "Write your preferences, allergies, budget, and schedule in plain language."
+      },
+      "step2": {
+        "title": "Generate your meal plan",
+        "description": "One click gives you breakfast, lunch, dinner, and snack for every day."
+      },
+      "step3": {
+        "title": "Cook, swap, and repeat",
+        "description": "Use the plan as-is or swap meals based on what you already have."
+      }
+    },
+    "textareaLabel": "Tell us your meal planning needs",
+    "textareaPlaceholder": "Example: Gluten-free, high-protein, family of 4, quick weekday lunches, one fish dinner, no peanuts, budget-friendly.",
+    "inputHint": "Include allergies, nutrition goals, cuisine style, budget, and prep time for more tailored results.",
+    "creditsTag": "{cost} credit",
+    "hintLabel": "Hint",
+    "hintAction": "Click to use",
+    "hintAriaLabel": "Use this sample meal plan hint",
+    "generate": "Generate Meal Plan",
+    "generating": "Generating meal plan...",
+    "viewDetails": "View Details",
+    "downloadPdf": "Download PDF",
+    "downloadingPdf": "Generating PDF...",
+    "autoSavedToMealPlans": "This meal plan has been automatically saved to Meal Plans.",
+    "loginRequired": "Please sign in to generate a meal plan.",
+    "resultTitle": "Meal Plan",
+    "emptyTitle": "Your meal plan will appear here",
+    "emptyDescription": "Enter your requirements, then generate to get a complete weekly plan with breakfast, lunch, dinner, and snack.",
+    "breakfast": "Breakfast",
+    "lunch": "Lunch",
+    "dinner": "Dinner",
+    "snack": "Snack",
+    "promptSuggestions": {
+      "seasonalSummer": "A meal plan to help me use seasonal summer produce",
+      "highProtein": "High-protein weekly meals for muscle gain, each meal within 30 minutes",
+      "familyBudget": "A budget-friendly meal plan for a family of 4 with no spicy food",
+      "vegetarianWorkdays": "Vegetarian weekday lunches I can prep ahead for office days",
+      "lowSodiumHeart": "Low-sodium weekly meals with Mediterranean flavors and one fish dinner"
+    },
+    "pdfGeneratedFrom": "Generated from",
+    "generatedFrom": "Generated from your request",
+    "safetyNotice": "Meal plans are AI-generated for inspiration. Please double-check allergies, dietary restrictions, and food safety before cooking.",
+    "success": "Meal plan generated successfully.",
+    "errors": {
+      "tooShort": "Please enter at least 10 characters.",
+      "failed": "Failed to generate meal plan. Please try again.",
+      "downloadPdfFailed": "Failed to export PDF. Please try again.",
+      "insufficientCredits": "Insufficient credits to generate a meal plan."
+    }
+  },
   "recipes": {
     "title": "Featured Recipes",
     "subtitle": "AI-Generated Culinary Masterpieces",
@@ -220,6 +303,46 @@
       "deleting": "Deleting..."
     },
     "allRecipesDisplayed": "All cookbook recipes loaded"
+  },
+  "myMealPlans": {
+    "title": "My Meal Plans",
+    "subtitle": "Your generated meal plans are saved here. Open any card to review the full schedule.",
+    "newPlan": "Create New Meal Plan",
+    "loading": "Loading your meal plans...",
+    "loadError": "Failed to load meal plans",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "deleteSuccess": "Meal plan deleted successfully",
+    "deleteError": "Failed to delete meal plan",
+    "emptyState": {
+      "title": "No meal plans yet",
+      "description": "Generate your first meal plan and it will appear here automatically.",
+      "action": "Generate Your First Plan"
+    },
+    "cards": {
+      "planBadge": "Meal Plan",
+      "createdAt": "{date}",
+      "days": "Days",
+      "dayCount": "{count}",
+      "totalMeals": "Meals",
+      "mealCount": "{count}",
+      "viewDetails": "View Full Plan"
+    },
+    "allPlansDisplayed": "All meal plans loaded",
+    "deleteDialog": {
+      "title": "Delete Meal Plan",
+      "description": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete Plan",
+      "deleting": "Deleting..."
+    },
+    "detail": {
+      "loadError": "Failed to load this meal plan",
+      "backToList": "Back to Meal Plans",
+      "generatedFrom": "Generated from",
+      "missingTitle": "Meal plan not found",
+      "missingDescription": "This plan may have been removed, or you may not have access to it."
+    }
   },
   "credits": {
     "credits": "Credits",

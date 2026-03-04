@@ -106,13 +106,55 @@ export async function generateMetadata({
   params,
 }: RecipePageProps): Promise<Metadata> {
   const { locale, id } = await params;
+  const isZh = locale.toLowerCase().startsWith('zh');
+  const recipe = await getRecipeCached(id, locale);
+
+  if (!recipe) {
+    return {
+      ...generateSeoMetadata({
+        title: isZh ? '菜谱 - RecipeEasy' : 'Recipe - RecipeEasy',
+        description: isZh
+          ? '浏览 RecipeEasy 上的菜谱内容。'
+          : 'Discover delicious recipes on RecipeEasy.',
+        path: `recipe/${id}`,
+        locale,
+        type: 'article',
+      }),
+      robots: {
+        index: false,
+        follow: false,
+        googleBot: {
+          index: false,
+          follow: false,
+        },
+      },
+    };
+  }
+
+  const recipeTitle =
+    typeof recipe.title === 'string' && recipe.title.trim().length > 0
+      ? recipe.title.trim()
+      : isZh
+        ? '菜谱'
+        : 'Recipe';
+  const rawDescription =
+    typeof recipe.description === 'string' && recipe.description.trim().length > 0
+      ? recipe.description.trim()
+      : '';
+  const fallbackDescription = isZh
+    ? `查看 ${recipeTitle} 的食材、步骤和做法细节。`
+    : `Discover ingredients and step-by-step instructions for ${recipeTitle}.`;
+  const description = (rawDescription || fallbackDescription).slice(0, 160);
+  const imagePath = typeof recipe.imagePath === 'string' ? recipe.imagePath.trim() : '';
+  const image = imagePath ? getImageUrl(imagePath) : undefined;
 
   return generateSeoMetadata({
-    title: 'Recipe - RecipeEasy',
-    description: 'Discover delicious recipes on RecipeEasy.',
+    title: `${recipeTitle} - RecipeEasy`,
+    description,
     path: `recipe/${id}`,
     locale,
     type: 'article',
+    image,
   });
 }
 
