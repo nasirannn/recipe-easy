@@ -44,6 +44,8 @@
     "title": "AI Recipes Generator From Any Ingredients",
     "description": "Simply select or enter ingredients, and our AI will create random, creative, and easy-to-follow recipes for you. No more \"what can i make with these ingredients\" stress.",
     "tryNow": "Get Started for Free",
+    "generateRecipeCta": "Generate Recipe",
+    "generateMealPlanCta": "Generate Meal Plan",
     "badgeFreeRecipeCreation": "1 credit per recipe",
     "badgeRegisterForImages": "Register to generate images",
     "badgeStartWithCredits": "Free daily credits",

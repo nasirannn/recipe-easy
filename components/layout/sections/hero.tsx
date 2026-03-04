@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Check, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,7 @@ export const HeroSection = () => {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
   const workspacePath = withLocalePath(locale, "/workspace");
+  const mealPlanPath = withLocalePath(locale, "/meal-plan");
   const [isHeroImageLoaded, setIsHeroImageLoaded] = useState(false);
   const [hasHeroImageError, setHasHeroImageError] = useState(false);
   const [isThemeHydrated, setIsThemeHydrated] = useState(false);
@@ -44,12 +45,6 @@ export const HeroSection = () => {
           { value: "2", label: "credits per image" },
           { value: "3", label: "daily sign-in credits" },
         ];
-
-  const scrollToSection = useCallback((sectionId: string) => {
-    const sectionElement = document.getElementById(sectionId);
-    if (!sectionElement) return;
-    sectionElement.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, []);
 
   useEffect(() => {
     setIsHeroImageLoaded(false);
@@ -100,14 +95,14 @@ export const HeroSection = () => {
                   onClick={() => router.push(workspacePath)}
                   className="inline-flex h-12 min-w-[140px] cursor-pointer items-center justify-center rounded-lg bg-primary px-6 text-base font-bold leading-normal tracking-[0.015em] text-primary-foreground shadow-[0_0_20px_rgba(19,236,91,0.3)] transition-all hover:bg-primary/90 hover:shadow-[0_0_30px_rgba(19,236,91,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-60 focus-visible:ring-offset-2"
                 >
-                  <span>{t("tryNow")}</span>
+                  <span>{t("generateRecipeCta")}</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => scrollToSection("tutorial")}
+                  onClick={() => router.push(mealPlanPath)}
                   className="inline-flex h-12 min-w-[140px] cursor-pointer items-center justify-center rounded-lg border border-border-70 bg-background-85 px-6 text-base font-bold leading-normal tracking-[0.015em] text-foreground transition-colors hover:bg-muted-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-60 focus-visible:ring-offset-2"
                 >
-                  <span>{locale === "zh" ? "了解流程" : "See How It Works"}</span>
+                  <span>{t("generateMealPlanCta")}</span>
                 </button>
               </div>
 

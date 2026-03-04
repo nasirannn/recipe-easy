@@ -45,6 +45,8 @@
     "mainTitle": "用任意食材，生成AI食谱",
     "description": "只需选择或输入现有食材，AI 即刻为您生成随机搭配、创意十足、简单易做的食谱。从此告别\"今晚吃什么？\"的烦恼。",
     "tryNow": "立即试用",
+    "generateRecipeCta": "生成菜谱",
+    "generateMealPlanCta": "生成膳食计划",
     "badgeFreeRecipeCreation": "每份菜谱1积分",
     "badgeRegisterForImages": "注册生成图片",
     "badgeStartWithCredits": "每日免费积分",
