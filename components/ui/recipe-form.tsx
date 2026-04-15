@@ -298,7 +298,7 @@ export const RecipeForm = ({
     if (iconPath) {
       const iconImage = document.createElement('img');
       iconImage.src = iconPath;
-      iconImage.alt = '';
+      iconImage.alt = ingredient.name;
       Object.assign(iconImage.style, {
         width: '22px',
         height: '22px',
@@ -539,7 +539,13 @@ export const RecipeForm = ({
     dynamicCategories[activeCategory]?.name || tIngredientSelector(`categories.${activeCategory}`);
   const basketGridIngredients = formData.ingredients.slice(0, 9);
   const isZhLocale = locale.toLowerCase().startsWith("zh");
-  const selectedIngredientNames = formData.ingredients.map((ingredient) => ingredient.name).join(", ");
+  const selectedIngredientNames = formData.ingredients
+    .map((ingredient) => ingredient.name)
+    .join(isZhLocale ? "、" : ", ");
+  const emptyBasketAlt = isZhLocale ? "空食材篮插图" : "Empty ingredient basket illustration";
+  const selectedBasketAlt = isZhLocale
+    ? "已放入食材的篮子插图"
+    : "Ingredient basket illustration with selected items";
   const formattedRemainingCredits =
     typeof remainingCredits === "number"
       ? Number.isInteger(Math.max(0, remainingCredits))
@@ -798,7 +804,7 @@ export const RecipeForm = ({
                             <div ref={desktopBasketVisualRef} className="mx-auto mb-3 w-[170px]">
                               <Image
                                 src="/images/empty_vegetable_basket.webp"
-                                alt=""
+                                alt={emptyBasketAlt}
                                 width={170}
                                 height={170}
                                 className="mx-auto h-auto w-[160px]"
@@ -815,7 +821,7 @@ export const RecipeForm = ({
                           <div ref={desktopBasketVisualRef} className="relative mb-3 w-[170px]">
                             <Image
                               src="/images/empty_vegetable_basket_topdowm.webp"
-                              alt=""
+                              alt={selectedBasketAlt}
                               width={170}
                               height={170}
                               className="mx-auto h-auto w-[160px]"
@@ -980,7 +986,7 @@ export const RecipeForm = ({
                           <div ref={mobileBasketVisualRef} className="mx-auto mb-3 w-[166px]">
                             <Image
                               src="/images/empty_vegetable_basket.webp"
-                              alt=""
+                              alt={emptyBasketAlt}
                               width={166}
                               height={166}
                               className="mx-auto h-auto w-[150px]"
@@ -997,7 +1003,7 @@ export const RecipeForm = ({
                         <div ref={mobileBasketVisualRef} className="relative mb-3 w-[166px]">
                           <Image
                             src="/images/empty_vegetable_basket_topdowm.webp"
-                            alt=""
+                            alt={selectedBasketAlt}
                             width={166}
                             height={166}
                             className="mx-auto h-auto w-[150px]"

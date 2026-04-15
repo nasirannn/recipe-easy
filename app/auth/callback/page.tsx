@@ -109,7 +109,8 @@ export default function AuthCallbackPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-background px-6">
-      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+      <div className="flex items-center gap-3 text-sm text-muted-foreground" aria-live="polite">
+        <h1 className="sr-only">Authentication callback</h1>
         <Loader2 className="h-4 w-4 animate-spin" />
         <span>Signing you in...</span>
       </div>

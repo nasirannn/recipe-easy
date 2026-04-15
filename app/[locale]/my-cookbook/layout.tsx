@@ -11,7 +11,7 @@ export async function generateMetadata({
   return {
     ...generateSeoMetadata({
       title: 'My Cookbook - RecipeEasy',
-      description: 'Manage your created and saved recipes on RecipeEasy.',
+      description: 'Manage the recipes you created or saved on RecipeEasy, revisit ingredients and steps, and keep favorites ready for your next meal.',
       path: 'my-cookbook',
       locale: locale === 'en' ? undefined : locale,
     }),

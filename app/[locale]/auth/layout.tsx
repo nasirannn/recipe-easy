@@ -11,7 +11,7 @@ export async function generateMetadata({
   return {
     ...generateSeoMetadata({
       title: "Sign In - RecipeEasy",
-      description: "Sign in to access your saved recipes and meal plans.",
+      description: "Sign in to RecipeEasy to save recipes, access your cookbook, manage meal plans, and continue generating personalized dishes and images.",
       path: "auth",
       locale: locale === "en" ? undefined : locale,
     }),

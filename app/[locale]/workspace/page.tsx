@@ -14,8 +14,8 @@ export async function generateMetadata({
   return generateSeoMetadata({
     title: isZh ? "RecipeEasy 工作台 - AI 菜谱生成器" : "RecipeEasy Workspace - AI Recipe Generator",
     description: isZh
-      ? "在同一工作台选择食材、生成菜谱与菜品图片，快速完成从想法到出品。"
-      : "Select ingredients, generate recipes and recipe images in one workspace.",
+      ? "在同一工作台中选择食材、设置偏好并生成 AI 菜谱与菜品图片，更快完成从灵感到上桌的整个流程。"
+      : "Select ingredients, set preferences, and generate RecipeEasy recipes plus dish images in one workspace built for faster cooking decisions.",
     path: "/workspace",
     locale: locale === "en" ? undefined : locale,
   });

@@ -991,7 +991,11 @@ export const RecipeDetail = ({ recipe, locale }: RecipeDetailProps) => {
                 <CardContent className="p-5 sm:p-6">
                   <div className="space-y-5">
                     {instructions.map((step, index) => (
-                      <div key={`${step}-${index}`} className="flex gap-4">
+                      <div
+                        id={`recipe-step-${index + 1}`}
+                        key={`${step}-${index}`}
+                        className="flex scroll-mt-24 gap-4"
+                      >
                         <div className="flex w-8 shrink-0 flex-col items-center">
                           <div className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-primary/30 bg-primary-20 text-sm font-bold text-primary">
                             {index + 1}

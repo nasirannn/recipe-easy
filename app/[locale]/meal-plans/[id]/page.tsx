@@ -298,7 +298,11 @@ export default function MealPlanDetailPage() {
             ) : null}
           </div>
 
-          <p className="mt-4 text-base leading-relaxed font-semibold text-foreground sm:text-lg sm:leading-8">
+          <h1 className="mt-4 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            {mealPlan.planTitle || tMeal("resultTitle")}
+          </h1>
+
+          <p className="mt-3 text-base leading-relaxed text-foreground sm:text-lg sm:leading-8">
             {mealPlan.prompt}
           </p>
         </Card>

@@ -6,6 +6,7 @@ import { FooterSection } from '@/components/layout/sections/footer';
 import { generateMetadata as generateSeoMetadata } from '@/lib/seo';
 import { env } from '@/lib/env';
 import { getImageUrl } from '@/lib/config';
+import { getMealTypeLabel, normalizeMealType } from '@/lib/meal-type';
 import { getPostgresPool } from '@/lib/server/postgres';
 import { getRecipeById } from '@/lib/server/recipes';
 
@@ -36,6 +37,43 @@ function normalizeStringArray(value: unknown): string[] {
   }
 }
 
+function normalizeOptionalString(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const normalized = value.trim();
+  return normalized || undefined;
+}
+
+function buildRecipeInstructionAnchorId(stepNumber: number): string {
+  return `recipe-step-${stepNumber}`;
+}
+
+function buildRecipeCategory(recipe: any, locale: string, tags: string[]): string | undefined {
+  const mealType = normalizeMealType(recipe?.mealType ?? recipe?.meal_type, null);
+  if (mealType) {
+    return getMealTypeLabel(mealType, locale);
+  }
+
+  return tags[0];
+}
+
+function buildRecipeInstructionName(text: string, locale: string, stepNumber: number): string {
+  const normalizedText = text.replace(/\s+/g, ' ').trim();
+  if (!normalizedText) {
+    return locale.toLowerCase().startsWith('zh') ? `步骤 ${stepNumber}` : `Step ${stepNumber}`;
+  }
+
+  const firstSentence = normalizedText
+    .split(/[。！？.!?]/)
+    .map((segment) => segment.trim())
+    .find(Boolean);
+
+  const candidate = firstSentence || normalizedText;
+  return candidate.length <= 80 ? candidate : `${candidate.slice(0, 77).trimEnd()}...`;
+}
+
 function buildRecipeStructuredData(recipe: any, locale: string, id: string) {
   const baseUrl = env.APP_URL.replace(/\/+$/, '');
   const isZh = locale.toLowerCase().startsWith('zh');
@@ -46,6 +84,8 @@ function buildRecipeStructuredData(recipe: any, locale: string, id: string) {
   const tags = normalizeStringArray(recipe.tags);
   const rawImage = typeof recipe.imagePath === 'string' ? recipe.imagePath : '';
   const imageUrl = rawImage ? getImageUrl(rawImage) : '';
+  const recipeCategory = buildRecipeCategory(recipe, locale, tags);
+  const recipeCuisine = normalizeOptionalString(recipe?.cuisine?.name ?? recipe?.cuisineName);
   const cookingMinutes = Number.isFinite(Number(recipe.cookingTime))
     ? Math.max(0, Number(recipe.cookingTime))
     : 0;
@@ -87,14 +127,18 @@ function buildRecipeStructuredData(recipe: any, locale: string, id: string) {
     url: pageUrl,
     inLanguage: isZh ? 'zh-CN' : 'en',
     image: imageUrl ? [imageUrl] : undefined,
+    recipeCategory,
+    recipeCuisine,
     recipeYield: recipe.servings ? String(recipe.servings) : undefined,
     totalTime: cookingMinutes > 0 ? `PT${cookingMinutes}M` : undefined,
     recipeIngredient: ingredients,
     nutrition: nutritionInformation,
     recipeInstructions: instructions.map((text, index) => ({
       '@type': 'HowToStep',
-      name: isZh ? `步骤 ${index + 1}` : `Step ${index + 1}`,
+      name: buildRecipeInstructionName(text, locale, index + 1),
       text,
+      url: `${pageUrl}#${buildRecipeInstructionAnchorId(index + 1)}`,
+      image: imageUrl || undefined,
     })),
     keywords: tags.length > 0 ? tags.join(', ') : undefined,
     datePublished: recipe.createdAt || undefined,
